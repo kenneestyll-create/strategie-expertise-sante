@@ -1,0 +1,231 @@
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { 
+  ArrowRight, 
+  FileSearch, 
+  Shield, 
+  Users, 
+  BookOpen, 
+  CheckCircle,
+  Clock,
+  MessageCircle 
+} from 'lucide-react';
+
+export const ServicesPage = () => {
+  const services = [
+    {
+      icon: FileSearch,
+      title: "Analyse de dossier médical et administratif",
+      description: "Je passe en revue l'ensemble de vos documents : certificats médicaux, rapports d'expertise, courriers de la CPAM, contrats d'assurance. L'objectif est de comprendre votre situation dans sa globalité et d'identifier les points forts et les failles de votre dossier.",
+      includes: [
+        "Lecture complète de votre dossier",
+        "Identification des documents manquants",
+        "Repérage des incohérences ou erreurs",
+        "Recommandations personnalisées"
+      ],
+      duration: "Selon la complexité du dossier"
+    },
+    {
+      icon: Shield,
+      title: "Préparation aux expertises médicales",
+      description: "L'expertise médicale est souvent un moment stressant et décisif. Je vous aide à vous y préparer : quoi apporter, comment présenter vos symptômes, quels pièges éviter, et comment rester serein face à l'expert.",
+      includes: [
+        "Simulation d'entretien d'expertise",
+        "Liste des documents à préparer",
+        "Conseils sur la présentation de vos symptômes",
+        "Aide à la rédaction de vos observations"
+      ],
+      duration: "1 à 2 séances de préparation"
+    },
+    {
+      icon: Users,
+      title: "Stratégie AT/MP et CRRMP",
+      description: "La reconnaissance d'une maladie professionnelle est un parcours semé d'embûches. Je vous guide dans les démarches : déclaration initiale, constitution du dossier, passage devant le CRRMP, et suivi de votre demande.",
+      includes: [
+        "Aide à la déclaration de maladie professionnelle",
+        "Préparation du dossier CRRMP",
+        "Suivi des délais et relances",
+        "Conseils en cas de refus"
+      ],
+      duration: "Accompagnement sur plusieurs mois"
+    },
+    {
+      icon: BookOpen,
+      title: "Accompagnement assurantiel",
+      description: "Face à votre assurance prévoyance ou emprunteur, vous n'êtes pas seul. Je vous aide à décrypter vos contrats, à comprendre les garanties (PTIA, invalidité), et à défendre vos droits en cas de refus d'indemnisation.",
+      includes: [
+        "Analyse de vos contrats d'assurance",
+        "Décryptage des conditions générales",
+        "Aide à la rédaction de courriers de contestation",
+        "Conseils pour la négociation"
+      ],
+      duration: "Variable selon les procédures"
+    }
+  ];
+
+  const process = [
+    {
+      step: "1",
+      title: "Premier contact gratuit",
+      description: "Échange téléphonique ou visio de 20 minutes pour comprendre votre situation et voir si je peux vous aider."
+    },
+    {
+      step: "2",
+      title: "Analyse de votre dossier",
+      description: "Envoi de vos documents, que j'étudie en détail. Je prépare un compte-rendu avec mes observations."
+    },
+    {
+      step: "3",
+      title: "Plan d'action personnalisé",
+      description: "Nous définissons ensemble les étapes à suivre, adaptées à votre situation et vos priorités."
+    },
+    {
+      step: "4",
+      title: "Accompagnement continu",
+      description: "Je reste disponible pour répondre à vos questions, relire vos courriers et vous soutenir dans vos démarches."
+    }
+  ];
+
+  return (
+    <main className="page-transition pt-20">
+      {/* Hero Section */}
+      <section className="section-padding bg-secondary">
+        <div className="max-w-7xl mx-auto">
+          <div className="max-w-3xl">
+            <span className="text-sm font-medium text-accent uppercase tracking-wider">Accompagnements</span>
+            <h1 className="text-4xl sm:text-5xl font-semibold mt-2 mb-6" data-testid="services-title">
+              Des services adaptés à votre parcours
+            </h1>
+            <p className="text-lg text-muted-foreground mb-6">
+              Chaque situation est unique. Je propose un accompagnement personnalisé, 
+              à votre rythme, pour vous aider à traverser les épreuves administratives 
+              et médicales liées à la maladie professionnelle ou à l'accident du travail.
+            </p>
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-accent" />
+                <span>Premier échange gratuit</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <MessageCircle className="w-4 h-4 text-accent" />
+                <span>Suivi personnalisé</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Services Section */}
+      <section className="section-padding">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid gap-8">
+            {services.map((service, index) => (
+              <Card 
+                key={index} 
+                className="overflow-hidden border-border"
+                data-testid={`service-detail-${index}`}
+              >
+                <div className="grid lg:grid-cols-3">
+                  <CardHeader className="lg:col-span-1 bg-muted/30 p-8">
+                    <service.icon className="w-12 h-12 text-accent mb-4" strokeWidth={1.5} />
+                    <CardTitle className="text-2xl mb-2">{service.title}</CardTitle>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-4">
+                      <Clock className="w-4 h-4" />
+                      <span>{service.duration}</span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="lg:col-span-2 p-8">
+                    <p className="text-muted-foreground mb-6">{service.description}</p>
+                    <h4 className="font-semibold mb-4">Ce que comprend cet accompagnement :</h4>
+                    <ul className="space-y-3">
+                      {service.includes.map((item, i) => (
+                        <li key={i} className="flex items-start gap-3">
+                          <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Process Section */}
+      <section className="section-padding bg-card">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <span className="text-sm font-medium text-accent uppercase tracking-wider">Comment ça marche</span>
+            <h2 className="text-3xl sm:text-4xl font-semibold mt-2 mb-4">
+              Un accompagnement en 4 étapes
+            </h2>
+            <p className="text-muted-foreground">
+              Simple, transparent et adapté à votre rythme.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {process.map((item, index) => (
+              <div 
+                key={index} 
+                className="relative bg-background p-6 rounded-xl border border-border"
+                data-testid={`process-step-${index}`}
+              >
+                <div className="absolute -top-4 left-6 w-8 h-8 bg-accent text-accent-foreground rounded-full flex items-center justify-center font-semibold text-sm">
+                  {item.step}
+                </div>
+                <h3 className="font-semibold mt-4 mb-2">{item.title}</h3>
+                <p className="text-sm text-muted-foreground">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Disclaimer Section */}
+      <section className="section-padding">
+        <div className="max-w-4xl mx-auto">
+          <Card className="bg-muted/30 border-border">
+            <CardContent className="p-8">
+              <h3 className="text-xl font-semibold mb-4">Important à savoir</h3>
+              <p className="text-muted-foreground mb-4">
+                Je ne suis ni médecin, ni avocat, ni expert agréé. Mon accompagnement repose sur mon expérience 
+                personnelle et ne se substitue pas aux conseils médicaux ou juridiques professionnels.
+              </p>
+              <p className="text-muted-foreground">
+                Pour les questions juridiques complexes ou les procédures contentieuses, je vous orienterai 
+                vers les professionnels compétents (avocats spécialisés, associations de victimes, etc.).
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="section-padding bg-foreground text-primary-foreground">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl sm:text-4xl font-semibold mb-6">
+            Besoin d'un accompagnement personnalisé ?
+          </h2>
+          <p className="text-primary-foreground/70 mb-8 max-w-2xl mx-auto">
+            Contactez-moi pour un premier échange gratuit. Nous verrons ensemble 
+            comment je peux vous aider dans votre situation.
+          </p>
+          <Link to="/contact">
+            <Button 
+              size="lg" 
+              className="rounded-full px-8 gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
+              data-testid="services-cta-button"
+            >
+              Prendre rendez-vous
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Link>
+        </div>
+      </section>
+    </main>
+  );
+};

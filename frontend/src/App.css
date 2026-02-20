@@ -1,34 +1,76 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* Custom App Styles */
+
+/* Hero section gradient overlay for images */
+.hero-overlay {
+    background: linear-gradient(to bottom, rgba(249, 247, 242, 0.1), rgba(249, 247, 242, 0.95));
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+/* Smooth page transitions */
+.page-transition {
+    animation: fadeIn 0.4s ease-out;
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
-}
-
-.App-link {
-    color: #61dafb;
-}
-
-@keyframes App-logo-spin {
+@keyframes fadeIn {
     from {
-        transform: rotate(0deg);
+        opacity: 0;
+        transform: translateY(10px);
     }
     to {
-        transform: rotate(360deg);
+        opacity: 1;
+        transform: translateY(0);
     }
+}
+
+/* Staggered animation delays */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+
+/* Section styling */
+.section-padding {
+    padding: 5rem 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .section-padding {
+        padding: 6rem 2rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .section-padding {
+        padding: 8rem 2rem;
+    }
+}
+
+/* Focus states for accessibility */
+.focus-ring:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+}
+
+/* Selection color */
+::selection {
+    background-color: hsl(var(--accent) / 0.3);
+    color: hsl(var(--foreground));
 }
