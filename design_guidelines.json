@@ -1,0 +1,104 @@
+{
+  "identity": "E1 - The Anti-AI Designer",
+  "project_name": "Consulting AT/MP - Warm & Reassuring",
+  "theme": "Organic & Earthy (Archetype 1)",
+  "emotional_tone": "Human, Accessible, Reassuring, Dignified",
+  "typography": {
+    "headings": {
+      "font_family": "Playfair Display, serif",
+      "weights": ["400", "600"],
+      "usage": "All section titles, hero headings. Use italics for emphasis.",
+      "letter_spacing": "tracking-tight"
+    },
+    "body": {
+      "font_family": "Manrope, sans-serif",
+      "weights": ["400", "500", "600"],
+      "usage": "Paragraphs, navigation, buttons, inputs.",
+      "letter_spacing": "tracking-normal"
+    },
+    "mono": {
+      "font_family": "JetBrains Mono, monospace",
+      "usage": "Tiny labels, dates, legal references."
+    }
+  },
+  "colors": {
+    "palette": {
+      "background": "#F9F7F2",
+      "foreground": "#2D2A26",
+      "card": "#FFFFFF",
+      "card_foreground": "#2D2A26",
+      "primary": "#2D2A26",
+      "primary_foreground": "#F9F7F2",
+      "secondary": "#E8E4DA",
+      "secondary_foreground": "#2D2A26",
+      "accent": "#C66B57",
+      "accent_foreground": "#FFFFFF",
+      "muted": "#F0EDE6",
+      "muted_foreground": "#787570",
+      "border": "#E5E0D6",
+      "input": "#E5E0D6",
+      "ring": "#C66B57"
+    },
+    "notes": "Override the default HSL values in index.css with these exact hex codes converted to HSL where needed, or use the hex codes directly in the tailwind config extension. Do NOT use default gray/slate colors."
+  },
+  "layout_strategy": {
+    "spacing": "Generous. Use p-12 to p-24 for section padding. Avoid cramped text.",
+    "containers": "Max-width 1200px for reading comfort. 1400px for grids.",
+    "grids": "Use 'Bento Grid Mode A' for the Resources/Services section. Mix wide cards with tall cards.",
+    "borders": "Soft, organic borders. Use rounded-xl or rounded-2xl. Optional: 1px border with #E5E0D6."
+  },
+  "components": {
+    "buttons": {
+      "style": "Pill-shaped (rounded-full) or soft rectangle (rounded-lg).",
+      "hover": "Subtle scale up (scale-105) and color shift. No heavy shadows."
+    },
+    "cards": {
+      "style": "Flat with 1px border (border-border) OR Soft shadow (shadow-sm). White background.",
+      "interaction": "Lift on hover (-translate-y-1)."
+    },
+    "forms": {
+      "style": "Minimalist. Inputs with bg-transparent and border-b (underline style) OR soft filled inputs (bg-white).",
+      "validation": "Use red-500 for errors, but keep the tone gentle."
+    },
+    "toast": {
+      "library": "sonner",
+      "style": "Clean white toast with black text."
+    },
+    "navigation": {
+      "style": "Floating glassmorphism header (bg-background/80 backdrop-blur-md) or Sticky solid.",
+      "links": "Underline animation on hover."
+    }
+  },
+  "visual_enhancers": {
+    "texture": "Add a subtle 'noise' or 'grain' overlay to the body background to remove digital coldness.",
+    "masks": "Use soft image masks (arch shapes or rounded corners) for photos.",
+    "icons": "Use 'Lucide React' with stroke-width=1.5 for elegance. For specific needs, use 'Phosphor Icons' (Duotone)."
+  },
+  "image_urls": {
+    "hero_bg": "https://images.unsplash.com/photo-1598016677484-ad34c3fd766e",
+    "about_hero": "https://images.pexels.com/photos/18465014/pexels-photo-18465014.jpeg",
+    "services_support": "https://images.pexels.com/photos/7111462/pexels-photo-7111462.jpeg",
+    "resources_cover": "https://images.pexels.com/photos/733854/pexels-photo-733854.jpeg",
+    "contact_bg": "https://images.unsplash.com/photo-1651602855717-9f79c72893cc"
+  },
+  "3d_libraries": {
+    "usage": "Minimal. Use Framer Motion for 2D transitions. No heavy 3D required for this persona."
+  },
+  "instructions_to_main_agent": [
+    "1. INSTALL FONTS: Add '@fontsource/playfair-display' and '@fontsource/manrope' via npm/yarn.",
+    "2. THEME SETUP: Update '/app/frontend/src/index.css' to use the Warm Beige palette defined above. Replace the 'zinc' grays.",
+    "3. PAGE STRUCTURE: Create the 5 core pages (Home, About, Services, Resources, Contact).",
+    "4. ADMIN: Build the '/admin' route with JWT auth. Keep it simple and functional.",
+    "5. CONTENT: Use the 'Resilience Building' typewriter image for the About page to emphasize the 4-year battle.",
+    "6. TONE: Ensure all copy text provided (even placeholders) is in French and sounds empathetic.",
+    "7. TESTING: Add 'data-testid' to all interactive elements (buttons, inputs, links).",
+    "8. ACCESSIBILITY: Ensure text contrast ratio > 4.5:1. The charcoal text on beige background is safe."
+  ],
+  "universal_guidelines": [
+    "Do not use generic gradients.",
+    "Avoid 'Medical Blue' (#007AFF). Use Earthy tones.",
+    "Spacing is luxury. Don't crowd the content.",
+    "Use 'sonner' for notifications.",
+    "Components must use named exports."
+  ]
+}
