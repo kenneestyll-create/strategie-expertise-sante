@@ -222,9 +222,12 @@ async def get_faq():
     faqs = await db.faq.find({}, {"_id": 0}).sort("ordre", 1).to_list(100)
     return faqs
 
-@api_router.get("/faq/{categorie}", response_model=List[FAQItem])
+@api_router.get("/faq/category/{categorie:path}", response_model=List[FAQItem])
 async def get_faq_by_category(categorie: str):
-    faqs = await db.faq.find({"categorie": categorie}, {"_id": 0}).sort("ordre", 1).to_list(100)
+    # Decode URL-encoded category (e.g., "AT%2FMP" -> "AT/MP")
+    from urllib.parse import unquote
+    decoded_categorie = unquote(categorie)
+    faqs = await db.faq.find({"categorie": decoded_categorie}, {"_id": 0}).sort("ordre", 1).to_list(100)
     return faqs
 
 # ==================== AUTH ROUTES ====================
