@@ -32,12 +32,12 @@ export const Header = () => {
     { name: 'Entreprises', href: '/entreprises' },
     { name: 'Partenaires', href: '/partenaires' },
     { name: 'Simulateur', href: '/simulateur' },
-  ];
-
-  const secondaryNavigation = [
     { name: 'Forum', href: '/forum' },
     { name: 'Avis', href: '/avis' },
     { name: 'Ressources', href: '/ressources' },
+  ];
+
+  const secondaryNavigation = [
     { name: 'Agenda', href: '/agenda' },
     { name: 'Contact', href: '/contact' },
   ];
@@ -77,8 +77,8 @@ export const Header = () => {
             className="flex items-center gap-2 text-foreground hover:opacity-80 transition-opacity"
             data-testid="header-logo"
           >
-            <Heart className="w-6 h-6 text-accent" strokeWidth={1.5} />
-            <span className="font-semibold text-lg tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <Heart className="w-6 h-6 text-accent flex-shrink-0" strokeWidth={1.5} />
+            <span className="font-semibold text-base tracking-tight whitespace-nowrap" style={{ fontFamily: "'Playfair Display', serif" }}>
               Stratégie & Expertise Santé
             </span>
           </Link>
@@ -90,7 +90,7 @@ export const Header = () => {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`px-3 py-2 text-sm font-medium transition-colors rounded-lg hover:bg-muted ${
+                className={`px-3 py-2 text-sm font-medium transition-colors rounded-lg hover:bg-muted whitespace-nowrap ${
                   isActive(item.href) 
                     ? 'text-foreground' 
                     : 'text-muted-foreground hover:text-foreground'
@@ -166,7 +166,7 @@ export const Header = () => {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`px-3 py-2 text-sm font-medium transition-colors rounded-lg hover:bg-muted ${
+                className={`px-3 py-2 text-sm font-medium transition-colors rounded-lg hover:bg-muted whitespace-nowrap ${
                   isActive(item.href) 
                     ? 'text-foreground' 
                     : 'text-muted-foreground hover:text-foreground'

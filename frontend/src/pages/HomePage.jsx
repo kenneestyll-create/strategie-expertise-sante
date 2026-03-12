@@ -122,7 +122,7 @@ export const HomePage = () => {
             >
               Vous n'êtes plus seul face à la maladie professionnelle
             </h1>
-            <p className="text-base sm:text-lg font-medium text-foreground/80 mb-3 max-w-2xl" data-testid="hero-tagline">
+            <p className="text-base sm:text-lg font-medium text-foreground mb-3 max-w-2xl bg-background/70 backdrop-blur-sm inline-block px-4 py-2 rounded-lg" data-testid="hero-tagline">
               Conseil stratégique en expertise médicale, invalidité et démarches médico-administratives.
             </p>
             <p className="text-base sm:text-lg text-muted-foreground mb-8 max-w-2xl">
