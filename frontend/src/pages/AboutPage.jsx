@@ -175,28 +175,54 @@ export const AboutPage = () => {
 
           <Card className="border-border overflow-hidden">
             <CardContent className="p-0">
-              {/* PDF Placeholder - will be replaced when user uploads their PDF */}
-              <div className="bg-muted/50 p-12 text-center" data-testid="pdf-placeholder">
-                <FileText className="w-16 h-16 text-accent mx-auto mb-4" strokeWidth={1} />
-                <h3 className="font-semibold text-lg mb-2">Décision du Tribunal de Chartres</h3>
-                <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
-                  Le document PDF sera affiché ici une fois intégré. 
-                  Il sera consultable directement dans votre navigateur.
-                </p>
-                <div className="flex items-center justify-center gap-3">
-                  <Button 
-                    variant="outline" 
-                    className="rounded-lg gap-2"
-                    disabled
-                    data-testid="pdf-download-button"
-                  >
-                    <Download className="w-4 h-4" />
-                    Télécharger le document
-                  </Button>
+              {/* PDF Embedded Viewer */}
+              <div className="w-full bg-muted/30" data-testid="pdf-embed-container">
+                <object
+                  data="/decision-tribunal-chartres.pdf"
+                  type="application/pdf"
+                  className="w-full"
+                  style={{ height: '700px' }}
+                  data-testid="pdf-object"
+                >
+                  <div className="p-12 text-center">
+                    <FileText className="w-16 h-16 text-accent mx-auto mb-4" strokeWidth={1} />
+                    <h3 className="font-semibold text-lg mb-2">Décision du Tribunal Judiciaire de Chartres</h3>
+                    <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
+                      Votre navigateur ne prend pas en charge l'affichage PDF intégré. 
+                      Vous pouvez télécharger le document ci-dessous.
+                    </p>
+                    <a 
+                      href="/decision-tribunal-chartres.pdf" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                    >
+                      <Button className="rounded-lg gap-2">
+                        <Download className="w-4 h-4" />
+                        Ouvrir le PDF
+                      </Button>
+                    </a>
+                  </div>
+                </object>
+              </div>
+              {/* Download bar */}
+              <div className="flex items-center justify-between p-4 bg-card border-t border-border">
+                <div className="flex items-center gap-3">
+                  <FileText className="w-5 h-5 text-accent" strokeWidth={1.5} />
+                  <div>
+                    <p className="text-sm font-medium">Tribunal Judiciaire de Chartres — N°23/00331</p>
+                    <p className="text-xs text-muted-foreground">Décision du 17/10/2025 — PDF, 50 Ko</p>
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-4">
-                  Document en cours d'intégration
-                </p>
+                <a 
+                  href="/decision-tribunal-chartres.pdf" 
+                  download="Decision-Tribunal-Chartres-2300331.pdf"
+                  data-testid="pdf-download-button"
+                >
+                  <Button variant="outline" className="rounded-lg gap-2">
+                    <Download className="w-4 h-4" />
+                    Télécharger
+                  </Button>
+                </a>
               </div>
             </CardContent>
           </Card>
