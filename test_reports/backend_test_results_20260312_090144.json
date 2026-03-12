@@ -1,0 +1,278 @@
+{
+  "test_summary": {
+    "total_tests": 13,
+    "passed_tests": 12,
+    "success_rate": "92.3%"
+  },
+  "test_details": [
+    {
+      "test_name": "Health Check",
+      "success": true,
+      "details": "Status: 200",
+      "response_data": {
+        "status": "healthy",
+        "timestamp": "2026-03-12T09:01:42.922280+00:00"
+      },
+      "timestamp": "2026-03-12T09:01:42.939083"
+    },
+    {
+      "test_name": "Root Endpoint",
+      "success": true,
+      "details": "Status: 200",
+      "response_data": {
+        "message": "Bienvenue sur l'API Accompagn'Santé"
+      },
+      "timestamp": "2026-03-12T09:01:43.105682"
+    },
+    {
+      "test_name": "Seed Data",
+      "success": true,
+      "details": "Status: 200",
+      "response_data": {
+        "success": true,
+        "message": "Données initiales créées"
+      },
+      "timestamp": "2026-03-12T09:01:43.238952"
+    },
+    {
+      "test_name": "Get All FAQ",
+      "success": true,
+      "details": "Status: 200",
+      "response_data": [
+        {
+          "id": "5522b589-7c5a-423e-bd30-37962c17023a",
+          "question": "Qu'est-ce qu'une maladie professionnelle ?",
+          "reponse": "Une maladie professionnelle est une affection contractée en raison de l'exposition à un risque lors de l'exercice de votre activité professionnelle. Elle doit figurer dans un tableau des maladies professionnelles ou être reconnue par le CRRMP.",
+          "categorie": "AT/MP",
+          "ordre": 1
+        },
+        {
+          "id": "d3bd3b96-e612-4d14-9bc5-d5d3bfb43a2f",
+          "question": "Comment se préparer à une expertise médicale ?",
+          "reponse": "Préparez un dossier complet avec tous vos documents médicaux, listez vos symptômes au quotidien, et n'hésitez pas à vous faire accompagner. L'expertise dure généralement 30 à 60 minutes. Soyez honnête et précis dans vos réponses.",
+          "categorie": "Expertises",
+          "ordre": 1
+        },
+        {
+          "id": "b4a0d3c4-227e-453d-adbe-81664ea859da",
+          "question": "Qu'est-ce que la PTIA ?",
+          "reponse": "La Perte Totale et Irréversible d'Autonomie (PTIA) est une garantie d'assurance qui couvre l'impossibilité définitive d'exercer toute activité professionnelle et la nécessité d'une assistance pour les actes de la vie quotidienne.",
+          "categorie": "Assurances",
+          "ordre": 1
+        },
+        {
+          "id": "9f494c16-5797-4642-b5f3-f4d120f3a173",
+          "question": "Comment demander la RQTH ?",
+          "reponse": "La Reconnaissance de la Qualité de Travailleur Handicapé (RQTH) se demande auprès de la MDPH de votre département. Un formulaire unique accompagné d'un certificat médical est nécessaire. Le délai moyen de traitement est de 4 à 6 mois.",
+          "categorie": "MDPH",
+          "ordre": 1
+        },
+        {
+          "id": "92c47684-ad42-4313-8fd2-d6b327cbe651",
+          "question": "Comment faire reconnaître une maladie professionnelle ?",
+          "reponse": "Vous devez déclarer votre maladie à la CPAM dans les 15 jours suivant la date de cessation de travail. Un formulaire spécifique (cerfa) accompagné d'un certificat médical initial est nécessaire. La caisse dispose ensuite de 3 mois pour statuer.",
+          "categorie": "AT/MP",
+          "ordre": 2
+        },
+        {
+          "id": "91070a2c-0d83-4cc1-91bc-48027d3f00b8",
+          "question": "Puis-je contester une expertise médicale ?",
+          "reponse": "Oui, vous pouvez demander une contre-expertise. Il est conseillé de consulter votre propre médecin expert pour obtenir un avis différent. Vous disposez de délais légaux pour contester.",
+          "categorie": "Expertises",
+          "ordre": 2
+        },
+        {
+          "id": "f5b4e7a3-2126-42cc-89fa-84dab90b7e46",
+          "question": "Mon assurance refuse de m'indemniser, que faire ?",
+          "reponse": "Commencez par demander les motifs précis du refus par écrit. Vérifiez votre contrat et les conditions générales. Vous pouvez saisir le médiateur de l'assurance ou engager une procédure de contestation.",
+          "categorie": "Assurances",
+          "ordre": 2
+        },
+        {
+          "id": "db191e6c-32a5-45e1-ab2d-d70625238a40",
+          "question": "Qu'est-ce que l'AAH ?",
+          "reponse": "L'Allocation aux Adultes Handicapés (AAH) est une aide financière pour les personnes handicapées ayant un taux d'incapacité d'au moins 80%, ou entre 50% et 79% avec une restriction substantielle d'accès à l'emploi.",
+          "categorie": "MDPH",
+          "ordre": 2
+        },
+        {
+          "id": "3a249fa1-71a0-4749-aaec-f05b9242e9f2",
+          "question": "Qu'est-ce que l'IPP ?",
+          "reponse": "L'Incapacité Permanente Partielle (IPP) est un taux qui évalue vos séquelles définitives suite à un accident du travail ou une maladie professionnelle. Ce taux détermine le montant de votre indemnisation.",
+          "categorie": "AT/MP",
+          "ordre": 3
+        },
+        {
+          "id": "0083a506-5815-4e36-b2b8-15b3fefb9c60",
+          "question": "L'expert médical est-il impartial ?",
+          "reponse": "L'expert est tenu à l'impartialité, mais il est désigné et rémunéré par l'assurance. C'est pourquoi il est important de bien préparer votre dossier et de connaître vos droits.",
+          "categorie": "Expertises",
+          "ordre": 3
+        },
+        {
+          "id": "2337aea3-4be4-4456-afa4-fda965226b1b",
+          "question": "Comment fonctionne une assurance prévoyance ?",
+          "reponse": "L'assurance prévoyance vous couvre contre les risques liés à la personne : incapacité de travail, invalidité, décès. Elle verse des indemnités ou une rente selon votre contrat et le niveau de votre incapacité.",
+          "categorie": "Assurances",
+          "ordre": 3
+        },
+        {
+          "id": "ff920faf-3fca-44ed-a421-c37dcd77f5be",
+          "question": "Qu'est-ce que le CRRMP ?",
+          "reponse": "Le Comité Régional de Reconnaissance des Maladies Professionnelles intervient quand votre maladie ne figure pas dans un tableau, ou que les conditions du tableau ne sont pas remplies. Il établit un lien direct entre votre travail et votre maladie.",
+          "categorie": "AT/MP",
+          "ordre": 4
+        }
+      ],
+      "timestamp": "2026-03-12T09:01:43.387874"
+    },
+    {
+      "test_name": "Get FAQ by Category (AT/MP)",
+      "success": false,
+      "details": "Expected 200, got 404. Response: {\"detail\":\"Not Found\"}",
+      "response_data": {
+        "detail": "Not Found"
+      },
+      "timestamp": "2026-03-12T09:01:43.521406"
+    },
+    {
+      "test_name": "Create Contact",
+      "success": true,
+      "details": "Status: 200",
+      "response_data": {
+        "success": true,
+        "message": "Votre demande a été envoyée avec succès. Nous vous recontacterons rapidement.",
+        "id": "1b978553-1508-48f2-93a1-4d64b2c5bbdc"
+      },
+      "timestamp": "2026-03-12T09:01:43.711312"
+    },
+    {
+      "test_name": "Admin Login (Invalid)",
+      "success": true,
+      "details": "Status: 401",
+      "response_data": {
+        "detail": "Email ou mot de passe incorrect"
+      },
+      "timestamp": "2026-03-12T09:01:44.071390"
+    },
+    {
+      "test_name": "Admin Login",
+      "success": true,
+      "details": "Status: 200",
+      "response_data": {
+        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhN2UyNGQ1My0xMDhhLTQ2YzktODA2OS1iMTVkNDc1Y2RhYTUiLCJlbWFpbCI6ImFkbWluQGFjY29tcGFnbi1zYW50ZS5mciIsImV4cCI6MTc3MzM5MjUwNH0.jyX-UJb2Ansxd6XAZ9cm5EY_-9FKsJ9ZBv1JjDT4c78",
+        "token_type": "bearer",
+        "admin_name": "Administrateur"
+      },
+      "timestamp": "2026-03-12T09:01:44.397455"
+    },
+    {
+      "test_name": "Auth Me",
+      "success": true,
+      "details": "Status: 200",
+      "response_data": {
+        "email": "admin@accompagn-sante.fr",
+        "id": "a7e24d53-108a-46c9-8069-b15d475cdaa5"
+      },
+      "timestamp": "2026-03-12T09:01:44.490645"
+    },
+    {
+      "test_name": "Get Admin Stats",
+      "success": true,
+      "details": "Status: 200",
+      "response_data": {
+        "total": 3,
+        "nouveau": 1,
+        "en_cours": 2,
+        "traite": 0
+      },
+      "timestamp": "2026-03-12T09:01:44.591394"
+    },
+    {
+      "test_name": "Get Admin Contacts",
+      "success": true,
+      "details": "Status: 200",
+      "response_data": [
+        {
+          "id": "1b978553-1508-48f2-93a1-4d64b2c5bbdc",
+          "nom": "Test",
+          "prenom": "User",
+          "email": "test@example.com",
+          "telephone": "0600000000",
+          "sujet": "Test de l'API",
+          "message": "Ceci est un message de test pour vérifier l'API",
+          "type_accompagnement": "analyse_dossier",
+          "created_at": "2026-03-12T09:01:43.689349Z",
+          "status": "nouveau",
+          "notes_admin": null
+        },
+        {
+          "id": "0b4c6cb5-8833-43d4-938a-77f59332bb39",
+          "nom": "Dupont",
+          "prenom": "Jean",
+          "email": "jean.dupont@test.fr",
+          "telephone": "0600000000",
+          "sujet": "Question sur AT/MP",
+          "message": "Bonjour, j'aimerais avoir des informations sur la reconnaissance d'une maladie professionnelle.",
+          "type_accompagnement": "analyse_dossier",
+          "created_at": "2026-02-20T07:19:17.589876Z",
+          "status": "en_cours",
+          "notes_admin": ""
+        },
+        {
+          "id": "f78d9142-f9c0-4ad5-b21c-c2c88ec0e9a3",
+          "nom": "Test",
+          "prenom": "User",
+          "email": "test@example.com",
+          "telephone": "0600000000",
+          "sujet": "Test de l'API",
+          "message": "Ceci est un message de test pour vérifier l'API",
+          "type_accompagnement": "analyse_dossier",
+          "created_at": "2026-02-20T07:18:01.622569Z",
+          "status": "en_cours",
+          "notes_admin": "Test note from API testing"
+        }
+      ],
+      "timestamp": "2026-03-12T09:01:44.697391"
+    },
+    {
+      "test_name": "Get Contact by ID",
+      "success": true,
+      "details": "Status: 200",
+      "response_data": {
+        "id": "1b978553-1508-48f2-93a1-4d64b2c5bbdc",
+        "nom": "Test",
+        "prenom": "User",
+        "email": "test@example.com",
+        "telephone": "0600000000",
+        "sujet": "Test de l'API",
+        "message": "Ceci est un message de test pour vérifier l'API",
+        "type_accompagnement": "analyse_dossier",
+        "created_at": "2026-03-12T09:01:43.689349Z",
+        "status": "nouveau",
+        "notes_admin": null
+      },
+      "timestamp": "2026-03-12T09:01:44.808357"
+    },
+    {
+      "test_name": "Update Contact",
+      "success": true,
+      "details": "Status: 200",
+      "response_data": {
+        "id": "1b978553-1508-48f2-93a1-4d64b2c5bbdc",
+        "nom": "Test",
+        "prenom": "User",
+        "email": "test@example.com",
+        "telephone": "0600000000",
+        "sujet": "Test de l'API",
+        "message": "Ceci est un message de test pour vérifier l'API",
+        "type_accompagnement": "analyse_dossier",
+        "created_at": "2026-03-12T09:01:43.689349Z",
+        "status": "en_cours",
+        "notes_admin": "Test note from API testing"
+      },
+      "timestamp": "2026-03-12T09:01:44.922082"
+    }
+  ],
+  "timestamp": "2026-03-12T09:01:44.922823"
+}

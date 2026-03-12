@@ -115,6 +115,26 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
     admin_name: str
 
+# Avis / Témoignages
+class Avis(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    nom: str
+    situation: Optional[str] = None
+    note: int = Field(ge=1, le=5)
+    temoignage: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    status: str = "en_attente"  # en_attente, publie, rejete
+
+class AvisCreate(BaseModel):
+    nom: str
+    situation: Optional[str] = None
+    note: int = Field(ge=1, le=5)
+    temoignage: str
+
+class AvisUpdate(BaseModel):
+    status: Optional[str] = None
+
 # ==================== AUTH HELPERS ====================
 
 def hash_password(password: str) -> str:
@@ -229,6 +249,31 @@ async def get_faq_by_category(categorie: str):
     decoded_categorie = unquote(categorie)
     faqs = await db.faq.find({"categorie": decoded_categorie}, {"_id": 0}).sort("ordre", 1).to_list(100)
     return faqs
+
+# Avis Routes (Public)
+@api_router.get("/avis", response_model=List[Avis])
+async def get_published_avis():
+    """Get all published testimonials"""
+    avis_list = await db.avis.find({"status": "publie"}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    for avis in avis_list:
+        if isinstance(avis.get('created_at'), str):
+            avis['created_at'] = datetime.fromisoformat(avis['created_at'])
+    return avis_list
+
+@api_router.post("/avis", response_model=dict)
+async def create_avis(input_data: AvisCreate):
+    """Submit a new testimonial (pending approval)"""
+    avis_obj = Avis(**input_data.model_dump())
+    doc = avis_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.avis.insert_one(doc)
+    
+    return {
+        "success": True,
+        "message": "Votre témoignage a été soumis et sera publié après validation.",
+        "id": avis_obj.id
+    }
 
 # ==================== AUTH ROUTES ====================
 
@@ -349,6 +394,70 @@ async def delete_faq(faq_id: str, admin: dict = Depends(get_current_admin)):
         raise HTTPException(status_code=404, detail="FAQ non trouvée")
     
     return {"success": True, "message": "FAQ supprimée"}
+
+# Avis Admin Routes
+@api_router.get("/admin/avis", response_model=List[Avis])
+async def get_all_avis(
+    status: Optional[str] = None,
+    admin: dict = Depends(get_current_admin)
+):
+    """Get all testimonials for admin"""
+    query = {}
+    if status:
+        query["status"] = status
+    
+    avis_list = await db.avis.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    
+    for avis in avis_list:
+        if isinstance(avis.get('created_at'), str):
+            avis['created_at'] = datetime.fromisoformat(avis['created_at'])
+    
+    return avis_list
+
+@api_router.get("/admin/avis/stats")
+async def get_avis_stats(admin: dict = Depends(get_current_admin)):
+    total = await db.avis.count_documents({})
+    en_attente = await db.avis.count_documents({"status": "en_attente"})
+    publie = await db.avis.count_documents({"status": "publie"})
+    rejete = await db.avis.count_documents({"status": "rejete"})
+    
+    return {
+        "total": total,
+        "en_attente": en_attente,
+        "publie": publie,
+        "rejete": rejete
+    }
+
+@api_router.patch("/admin/avis/{avis_id}")
+async def update_avis_status(
+    avis_id: str,
+    update_data: AvisUpdate,
+    admin: dict = Depends(get_current_admin)
+):
+    """Update testimonial status (approve/reject)"""
+    update_dict = {k: v for k, v in update_data.model_dump().items() if v is not None}
+    
+    if not update_dict:
+        raise HTTPException(status_code=400, detail="Aucune donnée à mettre à jour")
+    
+    result = await db.avis.update_one(
+        {"id": avis_id},
+        {"$set": update_dict}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Avis non trouvé")
+    
+    return {"success": True, "message": "Avis mis à jour"}
+
+@api_router.delete("/admin/avis/{avis_id}")
+async def delete_avis(avis_id: str, admin: dict = Depends(get_current_admin)):
+    result = await db.avis.delete_one({"id": avis_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Avis non trouvé")
+    
+    return {"success": True, "message": "Avis supprimé"}
 
 # ==================== SEED DATA ====================
 
