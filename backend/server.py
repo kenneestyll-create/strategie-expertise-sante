@@ -60,6 +60,10 @@ PAYMENT_PACKAGES = {
     "accompagnement_mdph": {"name": "Accompagnement MDPH", "amount": 200.00, "currency": "eur"},
     "protection_juridique": {"name": "Protection juridique", "amount": 200.00, "currency": "eur"},
     "accompagnement_complet": {"name": "Accompagnement complet", "amount": 500.00, "currency": "eur"},
+    "urgent_analyse_dossier": {"name": "Analyse de dossier URGENT 48h", "amount": 250.00, "currency": "eur"},
+    "urgent_preparation_expertise": {"name": "Préparation expertise URGENT 48h", "amount": 400.00, "currency": "eur"},
+    "urgent_accompagnement_mdph": {"name": "Accompagnement MDPH URGENT 48h", "amount": 320.00, "currency": "eur"},
+    "urgent_accompagnement_complet": {"name": "Accompagnement complet URGENT 48h", "amount": 750.00, "currency": "eur"},
 }
 
 # Security
@@ -1625,6 +1629,30 @@ async def get_forum_users(admin: dict = Depends(get_current_admin)):
             user['created_at'] = datetime.fromisoformat(user['created_at'])
     
     return users
+
+# ==================== ADMIN REFERRAL STATS ====================
+
+@api_router.get("/admin/referrals")
+async def get_admin_referrals(admin: dict = Depends(get_current_admin)):
+    """Get all referral codes with usage stats"""
+    codes = await db.referral_codes.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    uses = await db.referral_uses.find({}, {"_id": 0}).sort("created_at", -1).to_list(5000)
+    
+    total_codes = len(codes)
+    active_codes = sum(1 for c in codes if c.get("is_active", True))
+    total_uses = sum(c.get("uses_count", 0) for c in codes)
+    total_discount_given = sum(u.get("discount_applied", 0) for u in uses)
+    
+    return {
+        "codes": codes,
+        "recent_uses": uses[:50],
+        "stats": {
+            "total_codes": total_codes,
+            "active_codes": active_codes,
+            "total_uses": total_uses,
+            "total_discount_given": total_discount_given
+        }
+    }
 
 # ==================== SEED DATA ====================
 

@@ -27,7 +27,11 @@ import {
   Home,
   Star,
   MessageSquare,
-  XCircle
+  XCircle,
+  Gift,
+  Percent,
+  Hash,
+  TrendingUp
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
@@ -39,6 +43,7 @@ export const AdminDashboard = () => {
   const [avis, setAvis] = useState([]);
   const [stats, setStats] = useState({ total: 0, nouveau: 0, en_cours: 0, traite: 0 });
   const [avisStats, setAvisStats] = useState({ total: 0, en_attente: 0, publie: 0, rejete: 0 });
+  const [referralData, setReferralData] = useState({ codes: [], recent_uses: [], stats: { total_codes: 0, active_codes: 0, total_uses: 0, total_discount_given: 0 } });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -66,16 +71,18 @@ export const AdminDashboard = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [contactsRes, statsRes, avisRes, avisStatsRes] = await Promise.all([
+      const [contactsRes, statsRes, avisRes, avisStatsRes, referralsRes] = await Promise.all([
         axios.get(`${API}/admin/contacts`, axiosConfig),
         axios.get(`${API}/admin/stats`, axiosConfig),
         axios.get(`${API}/admin/avis`, axiosConfig),
-        axios.get(`${API}/admin/avis/stats`, axiosConfig)
+        axios.get(`${API}/admin/avis/stats`, axiosConfig),
+        axios.get(`${API}/admin/referrals`, axiosConfig).catch(() => ({ data: { codes: [], recent_uses: [], stats: { total_codes: 0, active_codes: 0, total_uses: 0, total_discount_given: 0 } } }))
       ]);
       setContacts(contactsRes.data);
       setStats(statsRes.data);
       setAvis(avisRes.data);
       setAvisStats(avisStatsRes.data);
+      setReferralData(referralsRes.data);
     } catch (error) {
       console.error('Erreur:', error);
       if (error.response?.status === 401) {
@@ -272,14 +279,18 @@ export const AdminDashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className="grid w-full max-w-lg grid-cols-3">
             <TabsTrigger value="contacts" className="gap-2">
               <Users className="w-4 h-4" />
               Contacts ({stats.total})
             </TabsTrigger>
             <TabsTrigger value="avis" className="gap-2">
               <MessageSquare className="w-4 h-4" />
-              Avis ({avisStats.en_attente} en attente)
+              Avis ({avisStats.en_attente})
+            </TabsTrigger>
+            <TabsTrigger value="referrals" className="gap-2" data-testid="tab-referrals">
+              <Gift className="w-4 h-4" />
+              Parrainage
             </TabsTrigger>
           </TabsList>
 
@@ -560,6 +571,171 @@ export const AdminDashboard = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+          {/* Referrals Tab */}
+          <TabsContent value="referrals" className="space-y-6">
+            {/* Referral Stats */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card data-testid="referral-stat-codes">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
+                    <Hash className="w-6 h-6 text-accent" strokeWidth={1.5} />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{referralData.stats.total_codes}</p>
+                    <p className="text-sm text-muted-foreground">Codes créés</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card data-testid="referral-stat-active">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <CheckCircle className="w-6 h-6 text-green-600" strokeWidth={1.5} />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{referralData.stats.active_codes}</p>
+                    <p className="text-sm text-muted-foreground">Codes actifs</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card data-testid="referral-stat-uses">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <TrendingUp className="w-6 h-6 text-blue-600" strokeWidth={1.5} />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{referralData.stats.total_uses}</p>
+                    <p className="text-sm text-muted-foreground">Utilisations</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card data-testid="referral-stat-discount">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                    <Percent className="w-6 h-6 text-amber-600" strokeWidth={1.5} />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{referralData.stats.total_discount_given}%</p>
+                    <p className="text-sm text-muted-foreground">Réductions totales</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Referral Codes List */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Codes parrainage</span>
+                  <Button variant="outline" size="sm" onClick={fetchData} className="gap-2">
+                    <RefreshCw className="w-4 h-4" />
+                    Actualiser
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : referralData.codes.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Gift className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>Aucun code parrainage généré</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto" data-testid="referral-codes-table">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-border">
+                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Code</th>
+                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Parrain</th>
+                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Email</th>
+                          <th className="text-center py-3 px-4 font-medium text-muted-foreground">Utilisations</th>
+                          <th className="text-center py-3 px-4 font-medium text-muted-foreground">Statut</th>
+                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Créé le</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {referralData.codes.map((code, index) => (
+                          <tr 
+                            key={index} 
+                            className="border-b border-border/50 hover:bg-muted/30 transition-colors"
+                            data-testid={`referral-row-${code.code}`}
+                          >
+                            <td className="py-3 px-4">
+                              <span className="font-mono font-bold text-foreground bg-muted px-2 py-1 rounded">
+                                {code.code}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">{code.referrer_name || '—'}</td>
+                            <td className="py-3 px-4 text-muted-foreground">{code.referrer_email}</td>
+                            <td className="py-3 px-4 text-center">
+                              <Badge variant={code.uses_count > 0 ? "default" : "secondary"}>
+                                {code.uses_count || 0}
+                              </Badge>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              {code.is_active ? (
+                                <Badge className="bg-green-500 text-white gap-1">
+                                  <CheckCircle className="w-3 h-3" />
+                                  Actif
+                                </Badge>
+                              ) : (
+                                <Badge variant="secondary" className="gap-1">
+                                  <XCircle className="w-3 h-3" />
+                                  Inactif
+                                </Badge>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-muted-foreground text-xs">
+                              {code.created_at ? formatDate(code.created_at) : '—'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Recent Uses */}
+            {referralData.recent_uses.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Dernières utilisations</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3" data-testid="referral-uses-list">
+                    {referralData.recent_uses.map((use, index) => (
+                      <div 
+                        key={index} 
+                        className="flex items-center justify-between border-b border-border/50 last:border-0 pb-3 last:pb-0"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
+                            <Gift className="w-4 h-4 text-accent" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">
+                              <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs">{use.referral_code}</span>
+                              {' '} utilisé par {use.referred_name || use.referred_email || 'Anonyme'}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {use.created_at ? formatDate(use.created_at) : '—'}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="text-green-600">
+                          -{use.discount_applied}%
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </main>

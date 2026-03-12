@@ -22,7 +22,9 @@ import {
   PartyPopper,
   Gift,
   Percent,
-  Tag
+  Tag,
+  Zap,
+  Clock
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -247,6 +249,69 @@ export const TarifsPage = () => {
     }
   ];
 
+  const prestationsUrgentes = [
+    {
+      id: "urgent_analyse_dossier",
+      icon: FileSearch,
+      title: "Analyse de dossier",
+      description: "Analyse prioritaire de votre dossier médical et administratif sous 48h.",
+      price: "250",
+      priceStandard: "150",
+      features: [
+        "Traitement prioritaire 48h",
+        "Rapport d'analyse express",
+        "Recommandations personnalisées",
+        "Échange téléphonique immédiat"
+      ],
+      payable: true
+    },
+    {
+      id: "urgent_preparation_expertise",
+      icon: Shield,
+      title: "Préparation expertise",
+      description: "Préparation accélérée pour une expertise médicale imminente.",
+      price: "400",
+      priceStandard: "250",
+      features: [
+        "Traitement prioritaire 48h",
+        "Préparation d'urgence",
+        "Simulation d'entretien rapide",
+        "Disponibilité immédiate"
+      ],
+      payable: true
+    },
+    {
+      id: "urgent_accompagnement_mdph",
+      icon: Users,
+      title: "Accompagnement MDPH",
+      description: "Aide express pour les dossiers MDPH avec échéance proche.",
+      price: "320",
+      priceStandard: "200",
+      features: [
+        "Traitement prioritaire 48h",
+        "Constitution dossier express",
+        "Suivi accéléré",
+        "Interlocuteur dédié"
+      ],
+      payable: true
+    },
+    {
+      id: "urgent_accompagnement_complet",
+      icon: Briefcase,
+      title: "Accompagnement complet",
+      description: "Prise en charge globale et immédiate de votre situation urgente.",
+      price: "750",
+      priceStandard: "500",
+      features: [
+        "Traitement prioritaire 48h",
+        "Analyse complète express",
+        "Stratégie immédiate",
+        "Disponibilité 7j/7"
+      ],
+      payable: true
+    }
+  ];
+
   return (
     <main className="page-transition pt-20">
       {/* Hero Section */}
@@ -368,6 +433,93 @@ export const TarifsPage = () => {
               </Card>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Pass Urgent Section */}
+      <section className="section-padding relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(circle at 25% 50%, white 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="mb-12 text-center">
+            <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-500/30 text-amber-300 px-4 py-2 rounded-full mb-4" data-testid="urgent-badge">
+              <Zap className="w-4 h-4" fill="currentColor" />
+              <span className="text-sm font-semibold tracking-wider uppercase">Traitement Prioritaire 48h</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-semibold text-white mb-4">
+              Pass Urgent
+            </h2>
+            <p className="text-white/60 max-w-2xl mx-auto">
+              Votre situation ne peut pas attendre ? Bénéficiez d'un traitement prioritaire 
+              avec une prise en charge sous 48 heures.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+            {prestationsUrgentes.map((prestation, index) => (
+              <div
+                key={index}
+                className="group relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 flex flex-col hover:bg-white/10 transition-all duration-300 hover:border-amber-500/30"
+                data-testid={`urgent-card-${prestation.id}`}
+              >
+                {/* Urgent Badge */}
+                <div className="absolute -top-3 right-4">
+                  <span className="inline-flex items-center gap-1 bg-amber-500 text-amber-950 text-xs font-bold px-3 py-1 rounded-full shadow-lg shadow-amber-500/20">
+                    <Zap className="w-3 h-3" fill="currentColor" />
+                    48h
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-3 mb-4 mt-1">
+                  <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center">
+                    <prestation.icon className="w-5 h-5 text-amber-400" strokeWidth={1.5} />
+                  </div>
+                  <h3 className="font-semibold text-white text-base">{prestation.title}</h3>
+                </div>
+
+                <p className="text-white/50 text-sm mb-5 flex-grow leading-relaxed">{prestation.description}</p>
+
+                {/* Price */}
+                <div className="mb-5">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-bold text-white">{prestation.price}</span>
+                    <span className="text-white/40 text-sm">€</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-white/30 text-xs line-through">au lieu de {prestation.priceStandard} €</span>
+                  </div>
+                </div>
+
+                {/* Features */}
+                <ul className="space-y-2 mb-6">
+                  {prestation.features.map((feature, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm">
+                      {i === 0 ? (
+                        <Clock className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" strokeWidth={2} />
+                      ) : (
+                        <CheckCircle className="w-3.5 h-3.5 text-white/40 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+                      )}
+                      <span className={i === 0 ? "text-amber-300 font-medium" : "text-white/60"}>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button 
+                  className="w-full rounded-xl gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold border-0 mt-auto"
+                  onClick={() => openPaymentModal(prestation)}
+                  data-testid={`pay-button-${prestation.id}`}
+                >
+                  <Zap className="w-4 h-4" fill="currentColor" />
+                  Payer {prestation.price} €
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-center text-white/30 text-sm mt-8">
+            Les réductions fidélité (-15%) et parrainage (-10%) s'appliquent aussi sur les Pass Urgent.
+          </p>
         </div>
       </section>
 
