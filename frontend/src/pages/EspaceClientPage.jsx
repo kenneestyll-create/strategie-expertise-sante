@@ -18,7 +18,10 @@ import {
   ArrowRight,
   FileText,
   Calendar,
-  MessageSquare
+  MessageSquare,
+  Bell,
+  BellDot,
+  X
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -128,6 +131,9 @@ const ClientDashboard = ({ token, clientName, logout }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedCase, setSelectedCase] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifs, setShowNotifs] = useState(false);
 
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -136,16 +142,35 @@ const ClientDashboard = ({ token, clientName, logout }) => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [casesRes, profileRes] = await Promise.all([
+      const [casesRes, profileRes, notifsRes] = await Promise.all([
         axios.get(`${API}/client/cases`, { headers }),
-        axios.get(`${API}/client/profile`, { headers })
+        axios.get(`${API}/client/profile`, { headers }),
+        axios.get(`${API}/client/notifications`, { headers }).catch(() => ({ data: { notifications: [], unread_count: 0 } }))
       ]);
       setCases(casesRes.data);
       setProfile(profileRes.data);
+      setNotifications(notifsRes.data.notifications);
+      setUnreadCount(notifsRes.data.unread_count);
     } catch (err) {
       if (err.response?.status === 401) { logout(); return; }
       toast.error("Erreur de chargement");
     } finally { setLoading(false); }
+  };
+
+  const markAllRead = async () => {
+    try {
+      await axios.patch(`${API}/client/notifications/read-all`, {}, { headers });
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      setUnreadCount(0);
+    } catch {}
+  };
+
+  const markRead = async (notifId) => {
+    try {
+      await axios.patch(`${API}/client/notifications/${notifId}/read`, {}, { headers });
+      setNotifications(prev => prev.map(n => n.id === notifId ? { ...n, read: true } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch {}
   };
 
   const getStatusConfig = (status) => {
@@ -168,9 +193,66 @@ const ClientDashboard = ({ token, clientName, logout }) => {
             <p className="text-sm text-primary-foreground/60">Espace client</p>
             <p className="font-semibold">Bonjour, {clientName}</p>
           </div>
-          <Button variant="ghost" size="sm" onClick={logout} className="text-primary-foreground hover:bg-primary-foreground/10 gap-2" data-testid="client-logout">
-            <LogOut className="w-4 h-4" /> Déconnexion
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Notifications Bell */}
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => { setShowNotifs(!showNotifs); if (!showNotifs && unreadCount > 0) markAllRead(); }}
+                className="text-primary-foreground hover:bg-primary-foreground/10 relative"
+                data-testid="notifications-bell"
+              >
+                {unreadCount > 0 ? <BellDot className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent text-accent-foreground text-xs font-bold rounded-full flex items-center justify-center" data-testid="notif-badge">
+                    {unreadCount}
+                  </span>
+                )}
+              </Button>
+
+              {/* Notification Panel */}
+              {showNotifs && (
+                <div className="absolute right-0 top-12 w-80 sm:w-96 bg-background text-foreground border border-border rounded-xl shadow-2xl z-50 overflow-hidden" data-testid="notifications-panel">
+                  <div className="flex items-center justify-between p-4 border-b border-border">
+                    <h3 className="font-semibold text-sm">Notifications</h3>
+                    <Button variant="ghost" size="icon" onClick={() => setShowNotifs(false)} className="w-6 h-6">
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="p-6 text-center text-muted-foreground text-sm">
+                        <Bell className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                        Aucune notification
+                      </div>
+                    ) : (
+                      notifications.map((n) => (
+                        <div
+                          key={n.id}
+                          className={`p-3 border-b border-border/50 last:border-0 cursor-pointer hover:bg-muted/50 transition-colors ${!n.read ? 'bg-accent/5' : ''}`}
+                          onClick={() => { markRead(n.id); if (n.case_id) { setShowNotifs(false); const c = cases.find(x => x.id === n.case_id); if (c) setSelectedCase(c); }}}
+                          data-testid={`notif-item-${n.id}`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${!n.read ? 'bg-accent' : 'bg-transparent'}`} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium">{n.title}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>
+                              <p className="text-xs text-muted-foreground/60 mt-1">{n.created_at ? formatDate(n.created_at) : ''}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+            <Button variant="ghost" size="sm" onClick={logout} className="text-primary-foreground hover:bg-primary-foreground/10 gap-2" data-testid="client-logout">
+              <LogOut className="w-4 h-4" /> Déconnexion
+            </Button>
+          </div>
         </div>
       </div>
 

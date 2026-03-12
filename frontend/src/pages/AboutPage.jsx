@@ -69,7 +69,7 @@ export const AboutPage = () => {
                 médicales interminables, et les combats contre les assurances.
               </p>
               <p className="text-muted-foreground">
-                Pendant plus de quatre ans, j'ai dû apprendre à naviguer dans un système complexe, 
+                Pendant plus de sept ans, j'ai dû apprendre à naviguer dans un système complexe, 
                 souvent opaque, parfois injuste. J'ai fait des erreurs, j'ai perdu du temps, 
                 mais j'ai aussi compris comment il fonctionne.
               </p>
@@ -93,7 +93,7 @@ export const AboutPage = () => {
           <div className="text-center mb-12">
             <span className="text-sm font-medium text-accent uppercase tracking-wider">Chronologie</span>
             <h2 className="text-3xl sm:text-4xl font-semibold mt-2">
-              4 ans de combat
+              7 ans de combat
             </h2>
           </div>
 

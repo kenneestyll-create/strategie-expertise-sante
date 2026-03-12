@@ -1848,6 +1848,30 @@ async def get_client_case(case_id: str, client: dict = Depends(get_current_clien
         raise HTTPException(status_code=404, detail="Dossier non trouvé")
     return case
 
+@api_router.get("/client/notifications")
+async def get_client_notifications(client: dict = Depends(get_current_client)):
+    notifs = await db.client_notifications.find(
+        {"client_id": client["sub"]}, {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    unread = sum(1 for n in notifs if not n.get("read"))
+    return {"notifications": notifs, "unread_count": unread}
+
+@api_router.patch("/client/notifications/{notif_id}/read")
+async def mark_notification_read(notif_id: str, client: dict = Depends(get_current_client)):
+    await db.client_notifications.update_one(
+        {"id": notif_id, "client_id": client["sub"]},
+        {"$set": {"read": True}}
+    )
+    return {"success": True}
+
+@api_router.patch("/client/notifications/read-all")
+async def mark_all_notifications_read(client: dict = Depends(get_current_client)):
+    await db.client_notifications.update_many(
+        {"client_id": client["sub"], "read": False},
+        {"$set": {"read": True}}
+    )
+    return {"success": True}
+
 # Admin client management
 @api_router.get("/admin/clients")
 async def get_admin_clients(admin: dict = Depends(get_current_admin)):
@@ -1857,16 +1881,35 @@ async def get_admin_clients(admin: dict = Depends(get_current_admin)):
     return clients
 
 @api_router.post("/admin/clients/{client_id}/cases")
-async def create_client_case(client_id: str, title: str, description: str, admin: dict = Depends(get_current_admin)):
+async def create_client_case(client_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
     client_exists = await db.client_users.find_one({"id": client_id}, {"_id": 0})
     if not client_exists:
         raise HTTPException(status_code=404, detail="Client non trouvé")
     
-    case = ClientCase(client_id=client_id, title=title, description=description)
+    case = ClientCase(
+        client_id=client_id,
+        title=body.get("title", ""),
+        description=body.get("description", "")
+    )
     doc = case.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
     doc['updated_at'] = doc['updated_at'].isoformat()
     await db.client_cases.insert_one(doc)
+    
+    # Create notification for client
+    notif = {
+        "id": str(uuid.uuid4()),
+        "client_id": client_id,
+        "type": "case_created",
+        "title": "Nouveau dossier créé",
+        "message": f"Votre dossier \"{case.title}\" a été créé par votre accompagnant.",
+        "case_id": case.id,
+        "read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.client_notifications.insert_one(notif)
+    
     return {"success": True, "case_id": case.id}
 
 @api_router.patch("/admin/cases/{case_id}")
@@ -1874,10 +1917,21 @@ async def update_client_case(case_id: str, request: Request, admin: dict = Depen
     body = await request.json()
     update_data = {"updated_at": datetime.now(timezone.utc).isoformat()}
     
+    # Get case to find client_id for notification
+    case = await db.client_cases.find_one({"id": case_id}, {"_id": 0})
+    if not case:
+        raise HTTPException(status_code=404, detail="Dossier non trouvé")
+    
+    notification_message = ""
+    
     if "status" in body:
         update_data["status"] = body["status"]
+        status_labels = {"en_cours": "en cours", "en_attente": "en attente", "termine": "terminé"}
+        notification_message = f"Le statut de votre dossier \"{case.get('title', '')}\" est passé à : {status_labels.get(body['status'], body['status'])}."
+    
     if "notes" in body:
         update_data["notes"] = body["notes"]
+    
     if "update_message" in body:
         new_update = {
             "message": body["update_message"],
@@ -1885,10 +1939,24 @@ async def update_client_case(case_id: str, request: Request, admin: dict = Depen
             "author": "Administrateur"
         }
         await db.client_cases.update_one({"id": case_id}, {"$push": {"updates": new_update}})
+        notification_message = f"Nouvelle mise à jour sur votre dossier \"{case.get('title', '')}\" : {body['update_message']}"
     
-    result = await db.client_cases.update_one({"id": case_id}, {"$set": update_data})
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Dossier non trouvé")
+    await db.client_cases.update_one({"id": case_id}, {"$set": update_data})
+    
+    # Create notification for client
+    if notification_message and case.get("client_id"):
+        notif = {
+            "id": str(uuid.uuid4()),
+            "client_id": case["client_id"],
+            "type": "case_updated",
+            "title": "Dossier mis à jour",
+            "message": notification_message,
+            "case_id": case_id,
+            "read": False,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.client_notifications.insert_one(notif)
+    
     return {"success": True}
 
 # ==================== SIMULATOR ROUTES ====================

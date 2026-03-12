@@ -231,7 +231,7 @@ export const HomePage = () => {
                 />
               </div>
               <div className="absolute -bottom-4 -right-4 bg-foreground text-primary-foreground p-4 rounded-xl shadow-lg">
-                <p className="text-2xl font-bold">+4 ans</p>
+                <p className="text-2xl font-bold">+7 ans</p>
                 <p className="text-sm text-primary-foreground/70">d'expérience terrain</p>
               </div>
             </div>

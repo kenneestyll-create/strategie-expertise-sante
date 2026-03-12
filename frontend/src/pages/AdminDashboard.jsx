@@ -34,7 +34,8 @@ import {
   TrendingUp,
   Send,
   FolderOpen,
-  Video
+  Video,
+  User
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
@@ -291,7 +292,7 @@ export const AdminDashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-2xl grid-cols-5">
+          <TabsList className="grid w-full max-w-3xl grid-cols-6">
             <TabsTrigger value="contacts" className="gap-1 text-xs sm:text-sm">
               <Users className="w-3 h-3 sm:w-4 sm:h-4" />
               Contacts
@@ -307,6 +308,10 @@ export const AdminDashboard = () => {
             <TabsTrigger value="bookings" className="gap-1 text-xs sm:text-sm" data-testid="tab-bookings">
               <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
               RDV
+            </TabsTrigger>
+            <TabsTrigger value="clients" className="gap-1 text-xs sm:text-sm" data-testid="tab-clients">
+              <FolderOpen className="w-3 h-3 sm:w-4 sm:h-4" />
+              Clients
             </TabsTrigger>
             <TabsTrigger value="relance" className="gap-1 text-xs sm:text-sm" data-testid="tab-relance">
               <Send className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -815,6 +820,80 @@ export const AdminDashboard = () => {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Clients Tab */}
+          <TabsContent value="clients" className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <Card><CardContent className="p-4 flex items-center gap-3">
+                <Users className="w-8 h-8 text-accent" strokeWidth={1.5} />
+                <div><p className="text-2xl font-bold">{clients.length}</p><p className="text-xs text-muted-foreground">Clients inscrits</p></div>
+              </CardContent></Card>
+              <Card><CardContent className="p-4 flex items-center gap-3">
+                <FolderOpen className="w-8 h-8 text-blue-500" strokeWidth={1.5} />
+                <div><p className="text-2xl font-bold">{clients.reduce((s, c) => s + (c.cases_count || 0), 0)}</p><p className="text-xs text-muted-foreground">Dossiers total</p></div>
+              </CardContent></Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Gestion des clients</span>
+                  <Button variant="outline" size="sm" onClick={fetchData} className="gap-2">
+                    <RefreshCw className="w-4 h-4" /> Actualiser
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {clients.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>Aucun client inscrit</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4" data-testid="clients-list">
+                    {clients.map((client) => (
+                      <div key={client.id} className="border border-border rounded-lg p-4" data-testid={`client-row-${client.id}`}>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-accent/10 rounded-full flex items-center justify-center">
+                              <User className="w-5 h-5 text-accent" strokeWidth={1.5} />
+                            </div>
+                            <div>
+                              <p className="font-semibold">{client.name}</p>
+                              <p className="text-sm text-muted-foreground">{client.email}</p>
+                            </div>
+                          </div>
+                          <Badge variant="secondary">{client.cases_count || 0} dossier(s)</Badge>
+                        </div>
+                        
+                        {/* Quick actions */}
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1 text-xs"
+                            onClick={async () => {
+                              const title = prompt("Titre du dossier :");
+                              if (!title) return;
+                              const description = prompt("Description :") || "";
+                              try {
+                                await axios.post(`${API}/admin/clients/${client.id}/cases`, { title, description }, axiosConfig);
+                                toast.success("Dossier créé + notification envoyée au client");
+                                fetchData();
+                              } catch { toast.error("Erreur"); }
+                            }}
+                            data-testid={`create-case-${client.id}`}
+                          >
+                            <FolderOpen className="w-3 h-3" /> Créer un dossier
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </CardContent>
