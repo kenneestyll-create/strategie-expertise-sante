@@ -7,7 +7,7 @@ Application web de conseil basée sur une expérience vécue de maladie professi
 - **Frontend**: React 19 + Tailwind CSS + shadcn/ui
 - **Backend**: FastAPI + Motor (MongoDB async)
 - **Database**: MongoDB
-- **Auth**: JWT (Admin + Forum users séparés)
+- **Auth**: JWT (Admin + Forum users + Clients séparés)
 - **Email**: Resend (à configurer)
 - **IA**: Claude Sonnet 4.5 via Emergent LLM Key
 - **Paiements**: Stripe (mode test)
@@ -25,54 +25,56 @@ Application web de conseil basée sur une expérience vécue de maladie professi
 - Système d'avis avec validation admin
 
 ### Phase 3 - Communauté (Mar 12, 2026)
-- **Forum d'entraide** (/forum) - 6 catégories, inscription email/anonyme, likes, signalements
-- **Chatbot combiné** - FAQ + Claude Sonnet 4.5 IA
+- Forum d'entraide (/forum) - 6 catégories, inscription email/anonyme, likes, signalements
+- Chatbot combiné - FAQ + Claude Sonnet 4.5 IA
 
 ### Phase 4 - Paiements & Légal (Mar 12, 2026)
-- Stripe checkout pour 5 prestations sur /tarifs
-- Pages Mentions Légales & CGU avec tabs (mentions, CGU, confidentialité)
+- Stripe checkout pour 5 prestations + 4 prestations urgentes sur /tarifs
+- Pages Mentions Légales & CGU avec tabs
 
 ### Phase 5 - Fonctionnalités avancées (Mar 12, 2026)
-- **Compteur de visiteurs** sur la page d'accueil (incrémentation automatique)
-- **Régimes spéciaux** (SNCF, RATP) sections sur Home + Services pages
-- **Système de parrainage** (/parrainage) - génération de codes, 10% réduction filleul
-- **Réduction fidélité** 15% dès la 2ème commande (détection automatique par email)
-- **Réductions intégrées au paiement** - Modal avec code parrainage + détection fidélité
-- **Visionneuse PDF** — Décision du Tribunal de Chartres N°23/00331 du 17/10/2025 intégrée sur page "Mon parcours" avec téléchargement
-- **Fix z-index** grain texture (9999→1) pour chatbot cliquable
+- Compteur de visiteurs sur la page d'accueil
+- Régimes spéciaux (SNCF, RATP) sections sur Home + Services
+- Système de parrainage (/parrainage) - 10% réduction filleul
+- Réduction fidélité 15% dès la 2ème commande
+- Visionneuse PDF — Décision Tribunal de Chartres N°23/00331 du 17/10/2025
+- Fix z-index grain texture
 
 ### Phase 6 - Pass Urgent & Admin Parrainage (Mar 12, 2026)
-- **Pass Urgent** sur /tarifs — 4 forfaits prioritaires 48h avec design dark navy/ambre distinctif:
-  - Analyse de dossier urgente: 250€
-  - Préparation expertise urgente: 400€
-  - Accompagnement MDPH urgent: 320€
-  - Accompagnement complet urgent: 750€
-- **Tableau de bord parrainage admin** — Nouvel onglet dans /admin avec:
-  - Statistiques: codes créés, codes actifs, utilisations, réductions totales
-  - Table des codes parrainage avec parrain, email, utilisations, statut, date
-  - Liste des dernières utilisations avec code, filleul et réduction appliquée
+- Pass Urgent sur /tarifs — 4 forfaits prioritaires 48h (250€, 400€, 320€, 750€)
+- Tableau de bord parrainage admin
+
+### Phase 7 - Fonctionnalités majeures (Mar 12, 2026)
+- **Agenda en ligne** (/agenda) — Calendrier interactif, créneaux 30min, réservation téléphone/visio
+- **Simulateur de droits** (/simulateur) — Questionnaire 5 étapes avec arbre décisionnel, recommandations personnalisées
+- **Espace client** (/espace-client) — Inscription/connexion, suivi de dossiers avec historique, timeline des mises à jour
+- **Bibliothèque de ressources** — 6 guides PDF téléchargeables sur /ressources (AT/MP, MDPH, expertise, recours, IPP, assurance)
+- **Système de relance** — Tracking paniers abandonnés, admin peut envoyer relances email
+- **Admin étendu** — 5 onglets : Contacts, Avis, Parrainage, RDV, Relance
 
 ## Admin Credentials
 - **Admin site**: admin@accompagn-sante.fr / Admin2024!
 - **Forum**: Inscription utilisateur séparée
+- **Espace client**: Inscription utilisateur séparée
 
 ## Tarifs
-- Analyse dossier: 150€+ | **Urgent 48h: 250€**
-- Préparation expertise: 250€+ | **Urgent 48h: 400€**
-- Accompagnement MDPH: 200€+ | **Urgent 48h: 320€**
+- Analyse dossier: 150€+ | Urgent 48h: 250€
+- Préparation expertise: 250€+ | Urgent 48h: 400€
+- Accompagnement MDPH: 200€+ | Urgent 48h: 320€
 - Protection juridique: 200€+
-- Accompagnement complet: 500€+ (sur devis) | **Urgent 48h: 750€**
+- Accompagnement complet: 500€+ | Urgent 48h: 750€
 
 ## Pages & Routes
 - / (Home), /a-propos, /accompagnements, /expertise-medicale
 - /accident-travail-maladie-professionnelle, /mdph, /protection-juridique
 - /tarifs, /seminaires, /entreprises, /partenaires
 - /avis, /ressources, /contact, /mentions-legales
-- /parrainage (NEW)
+- /parrainage, /agenda, /simulateur, /espace-client
 - /forum, /forum/inscription, /forum/connexion, /forum/categorie/:slug, /forum/sujet/:topicId, /forum/nouveau
 - /admin/login, /admin
 
 ## Next Tasks
-- Configurer clé API Resend pour notifications email
+- Configurer clé API Resend pour notifications email et relances
 - Configurer Stripe clés live pour production
 - Finaliser contenu Mentions Légales / CGU (adresse, nom responsable, etc.)
+- Créer les vrais fichiers PDF des guides téléchargeables
