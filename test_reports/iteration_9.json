@@ -1,0 +1,63 @@
+{
+  "summary": "Complete frontend testing of IPP and AAH financial calculators. Both calculators fully functional with all form elements working correctly. Navigation links in Services dropdown and mobile menu properly configured and navigating to correct pages.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "IPP Calculator: Page loads at /calculatrice-ipp with hero, disclaimer, calculator card",
+    "IPP Calculator: Taux slider works (1-100% range), displays current value",
+    "IPP Calculator: Salary input appears when taux >= 10%, hidden when taux < 10%",
+    "IPP Calculator: Calculate button triggers calculation",
+    "IPP Calculator: taux < 10% shows capital forfaitaire (e.g., 2,222 € for taux=5%)",
+    "IPP Calculator: taux >= 10% shows rente viagère with annual (1,875 €) and monthly (156.25 €) amounts for taux=15%",
+    "IPP Calculator: CTA section with links to agenda and contact",
+    "AAH Calculator: Page loads at /calculatrice-aah with hero, disclaimer, calculator card",
+    "AAH Calculator: Taux slider works (0-100% range), displays current value",
+    "AAH Calculator: Family situation toggle (seul/couple) works with visual selection state",
+    "AAH Calculator: Children selector (0-5 enfants) works",
+    "AAH Calculator: Revenus input accepts numeric values",
+    "AAH Calculator: taux < 50% shows ineligibility message",
+    "AAH Calculator: taux >= 50% with no revenue shows max AAH (971.37 €/month, 11,656.44 €/year)",
+    "AAH Calculator: High revenue exceeding plafond shows non-eligible message with threshold info",
+    "AAH Calculator: CTA section with links to agenda and contact",
+    "Navigation: Services dropdown contains 'Calculatrice IPP' link",
+    "Navigation: Services dropdown contains 'Calculatrice AAH' link",
+    "Navigation: Clicking 'Calculatrice IPP' navigates to /calculatrice-ipp",
+    "Navigation: Clicking 'Calculatrice AAH' navigates to /calculatrice-aah",
+    "Mobile Navigation: Menu shows 'Calculatrice IPP' link",
+    "Mobile Navigation: Menu shows 'Calculatrice AAH' link",
+    "Mobile Navigation: IPP link navigates correctly",
+    "Mobile Navigation: AAH link navigates correctly"
+  ],
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Both calculator pages well-implemented with proper data-testid attributes",
+    "Client-side calculations follow French official barèmes (AT/MP for IPP, AAH 2024-2025 rates)",
+    "Good UX: conditional salary input visibility for IPP, visual feedback on family situation toggle",
+    "Legal disclaimers properly displayed with amber/warning styling",
+    "Info cards provide helpful context for different rate scenarios",
+    "All content properly in French"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend only testing)",
+    "frontend": "100% (24/24 tests passed)"
+  },
+  "seed_data_creation": "None required - calculators are client-side only",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "mocked_apis": {
+    "value": {
+      "has_mocked_apis": false,
+      "mocked_apis_list": []
+    }
+  },
+  "context_for_next_testing_agent": "IPP and AAH calculators tested and working. IPP uses barème AT/MP for capital forfaitaire (taux < 10%) and rente viagère (taux >= 10%). AAH uses 2024-2025 rates (max 971.37 €/month) with plafond calculations based on family situation and children. Both calculators are client-side only with no backend API calls."
+}

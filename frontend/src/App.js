@@ -24,6 +24,8 @@ import { ReferralPage } from "@/pages/ReferralPage";
 import { AgendaPage } from "@/pages/AgendaPage";
 import { SimulateurPage } from "@/pages/SimulateurPage";
 import { EspaceClientPage } from "@/pages/EspaceClientPage";
+import { CalculatriceIPPPage } from "@/pages/CalculatriceIPPPage";
+import { CalculatriceAAHPage } from "@/pages/CalculatriceAAHPage";
 
 // Forum Pages
 import { ForumPage } from "@/pages/ForumPage";
@@ -68,6 +70,8 @@ function App() {
               <Route path="/agenda" element={<><Header /><AgendaPage /><Footer /></>} />
               <Route path="/simulateur" element={<><Header /><SimulateurPage /><Footer /></>} />
               <Route path="/espace-client" element={<><Header /><EspaceClientPage /><Footer /></>} />
+              <Route path="/calculatrice-ipp" element={<><Header /><CalculatriceIPPPage /><Footer /></>} />
+              <Route path="/calculatrice-aah" element={<><Header /><CalculatriceAAHPage /><Footer /></>} />
               
               {/* Forum Routes */}
               <Route path="/forum" element={<><Header /><ForumPage /><Footer /></>} />
