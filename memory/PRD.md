@@ -64,8 +64,15 @@ Application web de conseil basée sur une expérience vécue de maladie professi
 - Backend : `/api/paypal/calculate` (calcul remises) + `/api/paypal/record` (enregistrement transaction)
 - Réductions fidélité 15% et parrainage 10% appliquées aussi sur PayPal
 
+### Phase 10 - Calculatrices & Corrections (Mar 12, 2026)
+- **Calculatrice IPP** (/calculatrice-ipp) — Estimation indemnisation selon barème AT/MP, capital forfaitaire (taux <10%), rente viagère (taux >=10%)
+- **Calculatrice AAH** (/calculatrice-aah) — Estimation AAH mensuelle selon taux invalidité, situation familiale, enfants, revenus. Barème 2024-2025 (max 971,37€)
+- **Système de z-index centralisé** — Variables CSS --z-header, --z-dropdown, --z-modal, --z-toast, --z-chatbot dans index.css
+- **Relance automatique** — Tâche de fond (toutes les 30min) pour envoi auto d'emails de relance paniers abandonnés (activé quand clé Resend configurée)
+- **Placeholders Resend** — Variables RESEND_API_KEY, SENDER_EMAIL, NOTIFICATION_EMAIL ajoutées dans backend/.env
+
 ## Admin Credentials
-- **Admin site**: admin@accompagn-sante.fr / Admin2024!
+- **Admin site**: admin@strategie-expertise-sante.fr / Admin2024!
 - **Forum**: Inscription utilisateur séparée
 - **Espace client**: Inscription utilisateur séparée
 
@@ -82,11 +89,12 @@ Application web de conseil basée sur une expérience vécue de maladie professi
 - /tarifs, /seminaires, /entreprises, /partenaires
 - /avis, /ressources, /contact, /mentions-legales
 - /parrainage, /agenda, /simulateur, /espace-client
+- /calculatrice-ipp, /calculatrice-aah
 - /forum, /forum/inscription, /forum/connexion, /forum/categorie/:slug, /forum/sujet/:topicId, /forum/nouveau
 - /admin/login, /admin
 
 ## Next Tasks
-- Configurer clé API Resend pour notifications email et relances
-- Configurer Stripe clés live pour production
+- Configurer clé API Resend pour notifications email et relances automatiques
+- Configurer Stripe et PayPal clés live pour production
 - Finaliser contenu Mentions Légales / CGU (adresse, nom responsable, etc.)
 - Créer les vrais fichiers PDF des guides téléchargeables

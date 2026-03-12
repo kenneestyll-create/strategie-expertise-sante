@@ -93,7 +93,8 @@ export const ChatBot = () => {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-[9999] w-14 h-14 bg-accent hover:bg-accent/90 text-accent-foreground rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-105"
+          className="fixed bottom-6 right-6 w-14 h-14 bg-accent hover:bg-accent/90 text-accent-foreground rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-105"
+          style={{ zIndex: 'var(--z-chatbot)' }}
           data-testid="chatbot-button"
           aria-label="Ouvrir le chat"
         >
@@ -103,7 +104,7 @@ export const ChatBot = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-[9999] w-[380px] max-w-[calc(100vw-2rem)] h-[550px] max-h-[calc(100vh-6rem)] flex flex-col bg-background border border-border rounded-2xl shadow-2xl overflow-hidden">
+        <div className="fixed bottom-6 right-6 w-[380px] max-w-[calc(100vw-2rem)] h-[550px] max-h-[calc(100vh-6rem)] flex flex-col bg-background border border-border rounded-2xl shadow-2xl overflow-hidden" style={{ zIndex: 'var(--z-chatbot)' }}>
           {/* Header */}
           <div className="flex items-center justify-between p-4 bg-foreground text-primary-foreground">
             <div className="flex items-center gap-3">

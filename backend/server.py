@@ -2250,6 +2250,48 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Background task for automatic abandoned cart reminders
+async def auto_relance_task():
+    """Periodically sends reminder emails for abandoned checkouts (every 30 min)."""
+    while True:
+        await asyncio.sleep(1800)
+        if not RESEND_AVAILABLE or not os.environ.get('RESEND_API_KEY'):
+            continue
+        try:
+            cutoff = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
+            unsent = await db.abandoned_checkouts.find(
+                {"relance_sent": False, "created_at": {"$lte": cutoff}},
+                {"_id": 0}
+            ).to_list(50)
+            for item in unsent:
+                try:
+                    resend.Emails.send({
+                        "from": SENDER_EMAIL,
+                        "to": item["email"],
+                        "subject": "Stratégie & Expertise Santé - Finalisez votre démarche",
+                        "html": f"""
+                        <h2>Bonjour {item.get('name', '')},</h2>
+                        <p>Vous aviez commencé à réserver notre prestation <strong>{item.get('package_name', '')}</strong>.</p>
+                        <p>N'hésitez pas à finaliser votre inscription ou à nous contacter si vous avez des questions.</p>
+                        <p>Premier échange gratuit et sans engagement.</p>
+                        <p>Cordialement,<br>Stratégie & Expertise Santé</p>
+                        """
+                    })
+                    await db.abandoned_checkouts.update_one(
+                        {"id": item["id"]},
+                        {"$set": {"relance_sent": True, "relance_sent_at": datetime.now(timezone.utc).isoformat()}}
+                    )
+                    logger.info(f"Auto-relance sent to {item['email']}")
+                except Exception as e:
+                    logger.error(f"Auto-relance error for {item.get('email')}: {e}")
+        except Exception as e:
+            logger.error(f"Auto-relance task error: {e}")
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(auto_relance_task())
+    logger.info("Auto-relance background task started")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()

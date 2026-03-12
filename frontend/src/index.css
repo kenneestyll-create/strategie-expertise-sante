@@ -35,6 +35,13 @@
         --chart-4: 43 74% 66%;
         --chart-5: 27 87% 67%;
         --radius: 0.75rem;
+
+        /* Z-index layers */
+        --z-header: 50;
+        --z-dropdown: 100;
+        --z-modal: 200;
+        --z-toast: 300;
+        --z-chatbot: 400;
     }
 }
 
@@ -136,4 +143,12 @@ html {
     background: linear-gradient(135deg, 
         hsla(43, 33%, 97%, 0.92) 0%, 
         hsla(43, 33%, 97%, 0.75) 100%);
+}
+
+/* Z-index layer overrides for portals */
+[data-radix-popper-content-wrapper] {
+    z-index: var(--z-dropdown) !important;
+}
+[data-sonner-toaster] {
+    z-index: var(--z-toast) !important;
 }
