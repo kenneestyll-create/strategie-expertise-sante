@@ -13,6 +13,7 @@ import uuid
 from datetime import datetime, timezone, timedelta
 import jwt
 import bcrypt
+import httpx
 
 try:
     import resend
@@ -52,6 +53,12 @@ EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
 
 # Stripe configuration
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', '')
+
+# PayPal configuration
+PAYPAL_CLIENT_ID = os.environ.get('PAYPAL_CLIENT_ID', '')
+PAYPAL_SECRET = os.environ.get('PAYPAL_SECRET', '')
+PAYPAL_MODE = os.environ.get('PAYPAL_MODE', 'sandbox')
+PAYPAL_BASE_URL = "https://api-m.sandbox.paypal.com" if PAYPAL_MODE == "sandbox" else "https://api-m.paypal.com"
 
 # Payment packages - FIXED prices defined on backend
 PAYMENT_PACKAGES = {
@@ -1172,6 +1179,120 @@ async def stripe_webhook(request: Request):
     except Exception as e:
         logger.error(f"Webhook error: {str(e)}")
         raise HTTPException(status_code=400, detail="Webhook error")
+
+# ==================== PAYPAL ROUTES ====================
+
+@api_router.post("/paypal/calculate")
+async def calculate_paypal_amount(request: Request):
+    """Calculate the final amount with discounts for PayPal"""
+    body = await request.json()
+    package_id = body.get("package_id")
+    
+    if package_id not in PAYMENT_PACKAGES:
+        raise HTTPException(status_code=400, detail="Forfait invalide")
+    
+    package = PAYMENT_PACKAGES[package_id]
+    base_amount = package["amount"]
+    discount_percent = 0
+    discount_type = ""
+    
+    customer_email = body.get("customer_email", "")
+    referral_code = body.get("referral_code")
+    
+    # Loyalty discount
+    if customer_email:
+        client_doc = await db.client_history.find_one({"email": customer_email.lower()}, {"_id": 0})
+        if client_doc and client_doc.get("orders_count", 0) >= 1:
+            discount_percent = 15
+            discount_type = "fidélité"
+    
+    # Referral discount
+    if discount_percent == 0 and referral_code:
+        referral = await db.referral_codes.find_one(
+            {"code": referral_code.upper(), "is_active": True}, {"_id": 0}
+        )
+        if referral:
+            discount_percent = 10
+            discount_type = "parrainage"
+    
+    final_amount = round(base_amount * (1 - discount_percent / 100), 2)
+    
+    return {
+        "package_name": package["name"],
+        "base_amount": base_amount,
+        "discount_percent": discount_percent,
+        "discount_type": discount_type,
+        "final_amount": final_amount
+    }
+
+@api_router.post("/paypal/record")
+async def record_paypal_payment(request: Request):
+    """Record a completed PayPal payment"""
+    body = await request.json()
+    order_id = body.get("order_id", "")
+    package_id = body.get("package_id", "")
+    customer_email = body.get("customer_email", "")
+    customer_name = body.get("customer_name", "")
+    amount = body.get("amount", 0)
+    referral_code = body.get("referral_code")
+    
+    package = PAYMENT_PACKAGES.get(package_id, {})
+    
+    # Store transaction
+    transaction = PaymentTransaction(
+        session_id=order_id,
+        package_id=package_id,
+        package_name=package.get("name", package_id),
+        amount=amount,
+        currency="eur",
+        email=customer_email,
+        customer_name=customer_name,
+        status="completed",
+        payment_status="paid",
+        metadata={"payment_method": "paypal"}
+    )
+    doc = transaction.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['updated_at'] = doc['updated_at'].isoformat()
+    await db.payment_transactions.insert_one(doc)
+    
+    # Record client order for loyalty tracking
+    if customer_email:
+        await db.client_history.update_one(
+            {"email": customer_email.lower()},
+            {
+                "$inc": {"orders_count": 1},
+                "$set": {
+                    "last_order_at": datetime.now(timezone.utc).isoformat(),
+                    "name": customer_name
+                },
+                "$setOnInsert": {
+                    "id": str(uuid.uuid4()),
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+            },
+            upsert=True
+        )
+    
+    # Handle referral use
+    if referral_code:
+        referral = await db.referral_codes.find_one({"code": referral_code.upper(), "is_active": True}, {"_id": 0})
+        if referral:
+            referral_use = ReferralUse(
+                referral_code=referral_code.upper(),
+                referred_email=customer_email,
+                referred_name=customer_name,
+                discount_applied=10.0
+            )
+            doc_ref = referral_use.model_dump()
+            doc_ref['created_at'] = doc_ref['created_at'].isoformat()
+            await db.referral_uses.insert_one(doc_ref)
+            await db.referral_codes.update_one(
+                {"code": referral_code.upper()},
+                {"$inc": {"uses_count": 1}}
+            )
+    
+    return {"success": True, "order_id": order_id}
 
 # ==================== FORUM PUBLIC ROUTES ====================
 

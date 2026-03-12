@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -24,9 +24,11 @@ import {
   Percent,
   Tag,
   Zap,
-  Clock
+  Clock,
+  Wallet
 } from 'lucide-react';
 import axios from 'axios';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -41,6 +43,8 @@ export const TarifsPage = () => {
   const [referralValid, setReferralValid] = useState(null);
   const [loyaltyDiscount, setLoyaltyDiscount] = useState(0);
   const [checkingDiscount, setCheckingDiscount] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('stripe'); // 'stripe' or 'paypal'
+  const [paypalReady, setPaypalReady] = useState(false);
 
   useEffect(() => {
     const paymentStatus = searchParams.get('payment');
@@ -137,6 +141,8 @@ export const TarifsPage = () => {
     setReferralValid(null);
     setLoyaltyDiscount(0);
     setCustomerInfo({ email: '', name: '', referralCode: '' });
+    setPaymentMethod('stripe');
+    setPaypalReady(false);
     setShowPaymentModal(true);
   };
 
@@ -703,33 +709,119 @@ export const TarifsPage = () => {
                 )}
               </div>
             )}
+            {/* Payment Method Choice */}
+            <div className="space-y-2">
+              <Label>Mode de paiement</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('stripe')}
+                  className={`flex items-center gap-2 p-3 rounded-lg border text-sm font-medium transition-all
+                    ${paymentMethod === 'stripe' ? 'border-accent bg-accent/10 text-accent' : 'border-border hover:border-accent/50'}`}
+                  data-testid="payment-method-stripe"
+                >
+                  <CreditCard className="w-4 h-4" /> Carte bancaire
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('paypal')}
+                  className={`flex items-center gap-2 p-3 rounded-lg border text-sm font-medium transition-all
+                    ${paymentMethod === 'paypal' ? 'border-[#0070ba] bg-[#0070ba]/10 text-[#0070ba]' : 'border-border hover:border-[#0070ba]/50'}`}
+                  data-testid="payment-method-paypal"
+                >
+                  <Wallet className="w-4 h-4" /> PayPal
+                </button>
+              </div>
+            </div>
             <p className="text-xs text-muted-foreground">
-              Vous serez redirigé vers notre plateforme de paiement sécurisée (Stripe).
+              {paymentMethod === 'stripe'
+                ? 'Vous serez redirigé vers notre plateforme de paiement sécurisée (Stripe).'
+                : 'Payez directement via votre compte PayPal.'}
             </p>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => handleModalClose(false)}>
-              Annuler
-            </Button>
-            <Button 
-              onClick={handlePayment} 
-              disabled={loading}
-              className="gap-2"
-              data-testid="confirm-payment-button"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Redirection...
-                </>
-              ) : (
-                <>
-                  <CreditCard className="w-4 h-4" />
-                  Payer {getDiscountedPrice(selectedPackage?.price) || selectedPackage?.price} €
-                </>
-              )}
-            </Button>
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
+            {paymentMethod === 'stripe' ? (
+              <div className="flex gap-2 w-full justify-end">
+                <Button variant="outline" onClick={() => handleModalClose(false)}>
+                  Annuler
+                </Button>
+                <Button 
+                  onClick={handlePayment} 
+                  disabled={loading || !customerInfo.email}
+                  className="gap-2"
+                  data-testid="confirm-payment-button"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Redirection...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="w-4 h-4" />
+                      Payer {getDiscountedPrice(selectedPackage?.price) || selectedPackage?.price} €
+                    </>
+                  )}
+                </Button>
+              </div>
+            ) : (
+              <div className="w-full space-y-3" data-testid="paypal-buttons-container">
+                {!customerInfo.email ? (
+                  <p className="text-sm text-center text-muted-foreground">Entrez votre email pour activer PayPal.</p>
+                ) : (
+                  <PayPalScriptProvider options={{ clientId: process.env.REACT_APP_PAYPAL_CLIENT_ID || 'sb', currency: 'EUR' }}>
+                    <PayPalButtons
+                      style={{ layout: 'horizontal', color: 'blue', shape: 'rect', label: 'pay', height: 45 }}
+                      createOrder={async (data, actions) => {
+                        try {
+                          const res = await axios.post(`${API}/paypal/calculate`, {
+                            package_id: selectedPackage.id,
+                            customer_email: customerInfo.email,
+                            customer_name: customerInfo.name,
+                            referral_code: referralValid ? customerInfo.referralCode : null
+                          });
+                          const amt = res.data.final_amount;
+                          return actions.order.create({
+                            purchase_units: [{
+                              amount: { currency_code: 'EUR', value: amt.toFixed(2) },
+                              description: res.data.package_name
+                            }]
+                          });
+                        } catch (err) {
+                          toast.error("Erreur lors du calcul du montant");
+                          throw err;
+                        }
+                      }}
+                      onApprove={async (data, actions) => {
+                        try {
+                          const details = await actions.order.capture();
+                          await axios.post(`${API}/paypal/record`, {
+                            order_id: details.id,
+                            package_id: selectedPackage.id,
+                            customer_email: customerInfo.email,
+                            customer_name: customerInfo.name,
+                            amount: parseFloat(getDiscountedPrice(selectedPackage?.price) || selectedPackage?.price),
+                            referral_code: referralValid ? customerInfo.referralCode : null
+                          });
+                          setShowPaymentModal(false);
+                          setPaymentDetails({ amount: getDiscountedPrice(selectedPackage?.price) || selectedPackage?.price, metadata: { package_name: selectedPackage?.title } });
+                          setShowSuccessModal(true);
+                          toast.success("Paiement PayPal réussi !");
+                        } catch (err) {
+                          toast.error("Erreur lors de la finalisation du paiement PayPal");
+                        }
+                      }}
+                      onError={() => toast.error("Erreur PayPal")}
+                      onCancel={() => toast.info("Paiement PayPal annulé")}
+                    />
+                  </PayPalScriptProvider>
+                )}
+                <Button variant="outline" className="w-full" onClick={() => handleModalClose(false)}>
+                  Annuler
+                </Button>
+              </div>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
