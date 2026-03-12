@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Calendar, FileText, Scale, Heart, Award } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { ArrowRight, Calendar, FileText, Scale, Heart, Award, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const AboutPage = () => {
+  const [pdfError, setPdfError] = useState(false);
   const timeline = [
     {
       year: "Année 1",
@@ -153,6 +156,50 @@ export const AboutPage = () => {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Document Juridique Section - PDF Viewer */}
+      <section className="section-padding bg-secondary" data-testid="pdf-viewer-section">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <span className="text-sm font-medium text-accent uppercase tracking-wider">Document officiel</span>
+            <h2 className="text-3xl sm:text-4xl font-semibold mt-2 mb-4">
+              Décision du Tribunal de Chartres
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Ce document témoigne de mon parcours juridique et de la reconnaissance obtenue 
+              après des années de combat.
+            </p>
+          </div>
+
+          <Card className="border-border overflow-hidden">
+            <CardContent className="p-0">
+              {/* PDF Placeholder - will be replaced when user uploads their PDF */}
+              <div className="bg-muted/50 p-12 text-center" data-testid="pdf-placeholder">
+                <FileText className="w-16 h-16 text-accent mx-auto mb-4" strokeWidth={1} />
+                <h3 className="font-semibold text-lg mb-2">Décision du Tribunal de Chartres</h3>
+                <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
+                  Le document PDF sera affiché ici une fois intégré. 
+                  Il sera consultable directement dans votre navigateur.
+                </p>
+                <div className="flex items-center justify-center gap-3">
+                  <Button 
+                    variant="outline" 
+                    className="rounded-lg gap-2"
+                    disabled
+                    data-testid="pdf-download-button"
+                  >
+                    <Download className="w-4 h-4" />
+                    Télécharger le document
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-4">
+                  Document en cours d'intégration
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 

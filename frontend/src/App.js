@@ -20,6 +20,7 @@ import { ContactPage } from "@/pages/ContactPage";
 import { MentionsLegalesPage } from "@/pages/MentionsLegalesPage";
 import { AdminLoginPage } from "@/pages/AdminLoginPage";
 import { AdminDashboard } from "@/pages/AdminDashboard";
+import { ReferralPage } from "@/pages/ReferralPage";
 
 // Forum Pages
 import { ForumPage } from "@/pages/ForumPage";
@@ -60,6 +61,7 @@ function App() {
               <Route path="/ressources" element={<><Header /><ResourcesPage /><Footer /></>} />
               <Route path="/contact" element={<><Header /><ContactPage /><Footer /></>} />
               <Route path="/mentions-legales" element={<><Header /><MentionsLegalesPage /><Footer /></>} />
+              <Route path="/parrainage" element={<><Header /><ReferralPage /><Footer /></>} />
               
               {/* Forum Routes */}
               <Route path="/forum" element={<><Header /><ForumPage /><Footer /></>} />

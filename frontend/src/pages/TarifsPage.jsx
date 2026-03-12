@@ -19,7 +19,10 @@ import {
   Building2,
   CreditCard,
   Loader2,
-  PartyPopper
+  PartyPopper,
+  Gift,
+  Percent,
+  Tag
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -32,10 +35,12 @@ export const TarifsPage = () => {
   const [loading, setLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [paymentDetails, setPaymentDetails] = useState(null);
-  const [customerInfo, setCustomerInfo] = useState({ email: '', name: '' });
+  const [customerInfo, setCustomerInfo] = useState({ email: '', name: '', referralCode: '' });
+  const [referralValid, setReferralValid] = useState(null);
+  const [loyaltyDiscount, setLoyaltyDiscount] = useState(0);
+  const [checkingDiscount, setCheckingDiscount] = useState(false);
 
   useEffect(() => {
-    // Check for payment success
     const paymentStatus = searchParams.get('payment');
     const sessionId = searchParams.get('session_id');
     
@@ -58,6 +63,49 @@ export const TarifsPage = () => {
     }
   };
 
+  // Check loyalty discount when email changes
+  const checkLoyaltyDiscount = async (email) => {
+    if (!email || !email.includes('@')) return;
+    setCheckingDiscount(true);
+    try {
+      const response = await axios.get(`${API}/client/discount/${encodeURIComponent(email)}`);
+      setLoyaltyDiscount(response.data.loyalty_discount);
+    } catch (error) {
+      setLoyaltyDiscount(0);
+    } finally {
+      setCheckingDiscount(false);
+    }
+  };
+
+  // Validate referral code
+  const validateReferral = async (code) => {
+    if (!code || code.length < 3) {
+      setReferralValid(null);
+      return;
+    }
+    try {
+      const response = await axios.get(`${API}/referral/validate/${code}`);
+      setReferralValid(response.data.valid);
+      if (response.data.valid) {
+        toast.success("Code parrainage valide ! -10%");
+      }
+    } catch (error) {
+      setReferralValid(false);
+    }
+  };
+
+  const getActiveDiscount = () => {
+    if (loyaltyDiscount > 0) return { percent: 15, type: 'fidélité' };
+    if (referralValid) return { percent: 10, type: 'parrainage' };
+    return { percent: 0, type: '' };
+  };
+
+  const getDiscountedPrice = (basePrice) => {
+    const discount = getActiveDiscount();
+    if (discount.percent === 0) return null;
+    return (parseFloat(basePrice) * (1 - discount.percent / 100)).toFixed(2);
+  };
+
   const handlePayment = async () => {
     if (!customerInfo.email) {
       toast.error("Veuillez entrer votre email");
@@ -70,10 +118,10 @@ export const TarifsPage = () => {
         package_id: selectedPackage.id,
         origin_url: window.location.origin,
         customer_email: customerInfo.email,
-        customer_name: customerInfo.name
+        customer_name: customerInfo.name,
+        referral_code: referralValid ? customerInfo.referralCode : null
       });
       
-      // Redirect to Stripe checkout
       window.location.href = response.data.url;
     } catch (error) {
       console.error('Payment error:', error);
@@ -84,6 +132,9 @@ export const TarifsPage = () => {
 
   const openPaymentModal = (pkg) => {
     setSelectedPackage(pkg);
+    setReferralValid(null);
+    setLoyaltyDiscount(0);
+    setCustomerInfo({ email: '', name: '', referralCode: '' });
     setShowPaymentModal(true);
   };
 
@@ -213,6 +264,26 @@ export const TarifsPage = () => {
             <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
               <CreditCard className="w-4 h-4 text-accent" />
               <span>Paiement sécurisé par carte bancaire</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Discount Banner */}
+      <section className="py-4 bg-accent/10 border-b border-accent/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <Percent className="w-4 h-4 text-accent" />
+              <span><strong>-15% fidélité</strong> dès votre 2ème prestation</span>
+            </div>
+            <span className="hidden sm:block text-muted-foreground">|</span>
+            <div className="flex items-center gap-2">
+              <Gift className="w-4 h-4 text-accent" />
+              <span><strong>-10% parrainage</strong></span>
+              <Link to="/parrainage" className="text-accent underline hover:no-underline ml-1">
+                Obtenir un code
+              </Link>
             </div>
           </div>
         </div>
@@ -379,8 +450,21 @@ export const TarifsPage = () => {
                 <>
                   <span className="font-semibold text-foreground">{selectedPackage.title}</span>
                   <span className="block text-2xl font-bold text-foreground mt-2">
-                    {selectedPackage.price} €
+                    {getDiscountedPrice(selectedPackage.price) ? (
+                      <>
+                        <span className="line-through text-muted-foreground text-lg mr-2">{selectedPackage.price} €</span>
+                        {getDiscountedPrice(selectedPackage.price)} €
+                      </>
+                    ) : (
+                      <>{selectedPackage.price} €</>
+                    )}
                   </span>
+                  {getActiveDiscount().percent > 0 && (
+                    <span className="inline-flex items-center gap-1 mt-1 text-sm text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                      <Tag className="w-3 h-3" />
+                      -{getActiveDiscount().percent}% {getActiveDiscount().type}
+                    </span>
+                  )}
                 </>
               )}
             </DialogDescription>
@@ -393,11 +477,20 @@ export const TarifsPage = () => {
                 id="payment-email"
                 type="email"
                 value={customerInfo.email}
-                onChange={(e) => setCustomerInfo(prev => ({ ...prev, email: e.target.value }))}
+                onChange={(e) => {
+                  setCustomerInfo(prev => ({ ...prev, email: e.target.value }));
+                  checkLoyaltyDiscount(e.target.value);
+                }}
                 placeholder="votre@email.fr"
                 required
                 data-testid="payment-email-input"
               />
+              {loyaltyDiscount > 0 && (
+                <p className="text-xs text-green-600 flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" />
+                  Client fidèle ! -15% appliqué automatiquement
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="payment-name">Nom complet</Label>
@@ -409,6 +502,43 @@ export const TarifsPage = () => {
                 data-testid="payment-name-input"
               />
             </div>
+            {loyaltyDiscount === 0 && (
+              <div className="space-y-2">
+                <Label htmlFor="payment-referral" className="flex items-center gap-1">
+                  <Gift className="w-3 h-3 text-accent" />
+                  Code parrainage (optionnel)
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="payment-referral"
+                    value={customerInfo.referralCode}
+                    onChange={(e) => setCustomerInfo(prev => ({ ...prev, referralCode: e.target.value.toUpperCase() }))}
+                    placeholder="EX: ABC12345"
+                    className="flex-1"
+                    data-testid="payment-referral-input"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => validateReferral(customerInfo.referralCode)}
+                    disabled={!customerInfo.referralCode}
+                    data-testid="validate-referral-button"
+                  >
+                    Valider
+                  </Button>
+                </div>
+                {referralValid === true && (
+                  <p className="text-xs text-green-600 flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" />
+                    Code valide ! -10% appliqué
+                  </p>
+                )}
+                {referralValid === false && (
+                  <p className="text-xs text-destructive">Code invalide ou expiré</p>
+                )}
+              </div>
+            )}
             <p className="text-xs text-muted-foreground">
               Vous serez redirigé vers notre plateforme de paiement sécurisée (Stripe).
             </p>
@@ -432,7 +562,7 @@ export const TarifsPage = () => {
               ) : (
                 <>
                   <CreditCard className="w-4 h-4" />
-                  Payer {selectedPackage?.price} €
+                  Payer {getDiscountedPrice(selectedPackage?.price) || selectedPackage?.price} €
                 </>
               )}
             </Button>

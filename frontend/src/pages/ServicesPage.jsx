@@ -9,7 +9,9 @@ import {
   BookOpen, 
   CheckCircle,
   Clock,
-  MessageCircle 
+  MessageCircle,
+  Train,
+  Bus
 } from 'lucide-react';
 
 export const ServicesPage = () => {
@@ -181,6 +183,81 @@ export const ServicesPage = () => {
                 <p className="text-sm text-muted-foreground">{item.description}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Régimes Spéciaux Section */}
+      <section id="regimes-speciaux" className="section-padding bg-foreground text-primary-foreground">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <span className="text-sm font-medium text-accent uppercase tracking-wider">Spécialisation</span>
+              <h2 className="text-3xl sm:text-4xl font-semibold mt-2 mb-6">
+                Régimes spéciaux
+              </h2>
+              <p className="text-primary-foreground/70 mb-6">
+                Au-delà du régime général, j'accompagne également les agents relevant de régimes 
+                spéciaux, qui ont des spécificités propres en matière de reconnaissance des 
+                maladies professionnelles et d'accidents du travail.
+              </p>
+              <p className="text-primary-foreground/70 mb-8">
+                Les démarches, les interlocuteurs et les droits peuvent différer significativement. 
+                Mon expérience me permet de vous guider dans ces procédures particulières.
+              </p>
+            </div>
+            <div className="space-y-4">
+              <div className="bg-primary-foreground/10 p-6 rounded-xl border border-primary-foreground/10" data-testid="regime-sncf">
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="w-12 h-12 bg-accent rounded-xl flex items-center justify-center">
+                    <Train className="w-6 h-6 text-accent-foreground" strokeWidth={1.5} />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">SNCF</h3>
+                    <p className="text-sm text-primary-foreground/60">Cheminots et agents SNCF</p>
+                  </div>
+                </div>
+                <ul className="space-y-2 ml-16">
+                  <li className="flex items-start gap-2 text-sm text-primary-foreground/70">
+                    <CheckCircle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+                    Spécificités du régime spécial SNCF
+                  </li>
+                  <li className="flex items-start gap-2 text-sm text-primary-foreground/70">
+                    <CheckCircle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+                    Reconnaissance des maladies professionnelles
+                  </li>
+                  <li className="flex items-start gap-2 text-sm text-primary-foreground/70">
+                    <CheckCircle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+                    Accompagnement des expertises
+                  </li>
+                </ul>
+              </div>
+              <div className="bg-primary-foreground/10 p-6 rounded-xl border border-primary-foreground/10" data-testid="regime-ratp">
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="w-12 h-12 bg-accent rounded-xl flex items-center justify-center">
+                    <Bus className="w-6 h-6 text-accent-foreground" strokeWidth={1.5} />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">RATP</h3>
+                    <p className="text-sm text-primary-foreground/60">Agents RATP</p>
+                  </div>
+                </div>
+                <ul className="space-y-2 ml-16">
+                  <li className="flex items-start gap-2 text-sm text-primary-foreground/70">
+                    <CheckCircle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+                    Procédures propres au régime RATP
+                  </li>
+                  <li className="flex items-start gap-2 text-sm text-primary-foreground/70">
+                    <CheckCircle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+                    Droits spécifiques des agents
+                  </li>
+                  <li className="flex items-start gap-2 text-sm text-primary-foreground/70">
+                    <CheckCircle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+                    Aide à la constitution du dossier
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </section>

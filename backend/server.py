@@ -853,7 +853,7 @@ async def get_payment_packages():
 
 @api_router.post("/payments/checkout")
 async def create_checkout_session(request_data: CreateCheckoutRequest, request: Request):
-    """Create a Stripe checkout session"""
+    """Create a Stripe checkout session with discount logic"""
     if not STRIPE_API_KEY:
         raise HTTPException(status_code=500, detail="Stripe non configuré")
     
@@ -862,6 +862,45 @@ async def create_checkout_session(request_data: CreateCheckoutRequest, request: 
         raise HTTPException(status_code=400, detail="Forfait invalide")
     
     package = PAYMENT_PACKAGES[request_data.package_id]
+    base_amount = package["amount"]
+    discount_percent = 0
+    discount_type = ""
+    
+    # 1) Loyalty discount: 15% from 2nd order
+    if request_data.customer_email:
+        client = await db.client_history.find_one(
+            {"email": request_data.customer_email.lower()}, {"_id": 0}
+        )
+        if client and client.get("orders_count", 0) >= 1:
+            discount_percent = 15
+            discount_type = "fidélité"
+    
+    # 2) Referral discount: 10% (only if no loyalty discount already applied)
+    if discount_percent == 0 and request_data.referral_code:
+        referral = await db.referral_codes.find_one(
+            {"code": request_data.referral_code.upper(), "is_active": True}, {"_id": 0}
+        )
+        if referral:
+            discount_percent = 10
+            discount_type = "parrainage"
+            # Record referral use
+            referral_use = ReferralUse(
+                referral_code=request_data.referral_code.upper(),
+                referred_email=request_data.customer_email or "",
+                referred_name=request_data.customer_name,
+                discount_applied=10.0
+            )
+            doc_ref = referral_use.model_dump()
+            doc_ref['created_at'] = doc_ref['created_at'].isoformat()
+            await db.referral_uses.insert_one(doc_ref)
+            # Increment referral uses count
+            await db.referral_codes.update_one(
+                {"code": request_data.referral_code.upper()},
+                {"$inc": {"uses_count": 1}}
+            )
+    
+    # Calculate final amount
+    final_amount = round(base_amount * (1 - discount_percent / 100), 2)
     
     # Build URLs from provided origin
     origin_url = request_data.origin_url.rstrip('/')
@@ -878,11 +917,14 @@ async def create_checkout_session(request_data: CreateCheckoutRequest, request: 
         "package_id": request_data.package_id,
         "package_name": package["name"],
         "customer_email": request_data.customer_email or "",
-        "customer_name": request_data.customer_name or ""
+        "customer_name": request_data.customer_name or "",
+        "discount_percent": str(discount_percent),
+        "discount_type": discount_type,
+        "original_amount": str(base_amount)
     }
     
     checkout_request = CheckoutSessionRequest(
-        amount=package["amount"],
+        amount=final_amount,
         currency=package["currency"],
         success_url=success_url,
         cancel_url=cancel_url,
@@ -892,12 +934,30 @@ async def create_checkout_session(request_data: CreateCheckoutRequest, request: 
     try:
         session = await stripe_checkout.create_checkout_session(checkout_request)
         
+        # Record client order for loyalty tracking
+        if request_data.customer_email:
+            await db.client_history.update_one(
+                {"email": request_data.customer_email.lower()},
+                {
+                    "$inc": {"orders_count": 1},
+                    "$set": {
+                        "last_order_at": datetime.now(timezone.utc).isoformat(),
+                        "name": request_data.customer_name
+                    },
+                    "$setOnInsert": {
+                        "id": str(uuid.uuid4()),
+                        "created_at": datetime.now(timezone.utc).isoformat()
+                    }
+                },
+                upsert=True
+            )
+        
         # Create payment transaction record
         transaction = PaymentTransaction(
             session_id=session.session_id,
             package_id=request_data.package_id,
             package_name=package["name"],
-            amount=package["amount"],
+            amount=final_amount,
             currency=package["currency"],
             email=request_data.customer_email,
             customer_name=request_data.customer_name,
@@ -911,7 +971,14 @@ async def create_checkout_session(request_data: CreateCheckoutRequest, request: 
         doc['updated_at'] = doc['updated_at'].isoformat()
         await db.payment_transactions.insert_one(doc)
         
-        return {"url": session.url, "session_id": session.session_id}
+        return {
+            "url": session.url,
+            "session_id": session.session_id,
+            "discount_applied": discount_percent,
+            "discount_type": discount_type,
+            "original_amount": base_amount,
+            "final_amount": final_amount
+        }
         
     except Exception as e:
         logger.error(f"Stripe checkout error: {str(e)}")
