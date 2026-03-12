@@ -70,6 +70,7 @@ Application web de conseil basée sur une expérience vécue de maladie professi
 - **Système de z-index centralisé** — Variables CSS --z-header, --z-dropdown, --z-modal, --z-toast, --z-chatbot dans index.css
 - **Relance automatique** — Tâche de fond (toutes les 30min) pour envoi auto d'emails de relance paniers abandonnés (activé quand clé Resend configurée)
 - **Placeholders Resend** — Variables RESEND_API_KEY, SENDER_EMAIL, NOTIFICATION_EMAIL ajoutées dans backend/.env
+- **Partage d'estimation** — Boutons WhatsApp, SMS, Email et "Copier le lien" sur les résultats des deux calculatrices. Liens uniques avec paramètres URL pour auto-calcul à l'ouverture.
 
 ## Admin Credentials
 - **Admin site**: admin@strategie-expertise-sante.fr / Admin2024!
