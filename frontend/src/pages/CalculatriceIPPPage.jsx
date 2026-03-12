@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
+import axios from 'axios';
 import {
   Calculator,
   AlertTriangle,
@@ -19,8 +20,11 @@ import {
   MessageSquare,
   Phone,
   Copy,
-  Check
+  Check,
+  Eye
 } from 'lucide-react';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 // Barème AT/MP - capital forfaitaire pour taux < 10% (valeurs 2024 indicatives)
 const CAPITAL_BAREME = {
@@ -73,6 +77,11 @@ export const CalculatriceIPPPage = () => {
   const [result, setResult] = useState(null);
   const [calculated, setCalculated] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [weeklyCount, setWeeklyCount] = useState(0);
+
+  useEffect(() => {
+    axios.get(`${API}/calculator/count`).then(r => setWeeklyCount(r.data.count)).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const t = searchParams.get('t');
@@ -94,6 +103,9 @@ export const CalculatriceIPPPage = () => {
     const res = calculateIPP(taux, salaire);
     setResult(res);
     setCalculated(true);
+    axios.post(`${API}/calculator/track`, { type: 'ipp' }).then(() => {
+      setWeeklyCount(prev => prev + 1);
+    }).catch(() => {});
   };
 
   const getShareUrl = () => {
@@ -309,6 +321,16 @@ export const CalculatriceIPPPage = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Weekly counter */}
+          {weeklyCount > 0 && (
+            <div className="flex items-center justify-center gap-2 mt-6 py-3 px-5 bg-accent/5 border border-accent/15 rounded-full w-fit mx-auto" data-testid="ipp-weekly-counter">
+              <Eye className="w-4 h-4 text-accent" />
+              <span className="text-sm font-medium text-muted-foreground">
+                <strong className="text-foreground">{weeklyCount}</strong> personne{weeklyCount > 1 ? 's' : ''} {weeklyCount > 1 ? 'ont' : 'a'} estimé leurs droits cette semaine
+              </span>
+            </div>
+          )}
 
           {/* Info Cards */}
           <div className="grid sm:grid-cols-2 gap-4 mt-8">

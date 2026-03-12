@@ -2102,6 +2102,24 @@ async def get_simulator_stats(admin: dict = Depends(get_current_admin)):
     results = await db.simulator_results.find({}, {"_id": 0}).sort("created_at", -1).to_list(50)
     return {"total": total, "recent": results}
 
+# ==================== CALCULATOR COUNTER ROUTES ====================
+
+@api_router.post("/calculator/track")
+async def track_calculator_usage(request: Request):
+    body = await request.json()
+    calc_type = body.get("type", "unknown")
+    await db.calculator_usage.insert_one({
+        "type": calc_type,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    return {"success": True}
+
+@api_router.get("/calculator/count")
+async def get_calculator_weekly_count():
+    week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+    count = await db.calculator_usage.count_documents({"created_at": {"$gte": week_ago}})
+    return {"count": count}
+
 # ==================== ABANDONED CHECKOUT / RELANCE ROUTES ====================
 
 @api_router.post("/relance/track")
