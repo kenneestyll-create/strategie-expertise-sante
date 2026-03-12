@@ -6,6 +6,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { HomePage } from "@/pages/HomePage";
 import { AboutPage } from "@/pages/AboutPage";
 import { ServicesPage } from "@/pages/ServicesPage";
+import { ExpertiseMedicalePage } from "@/pages/ExpertiseMedicalePage";
+import { AccidentTravailPage } from "@/pages/AccidentTravailPage";
+import { MDPHPage } from "@/pages/MDPHPage";
 import { ResourcesPage } from "@/pages/ResourcesPage";
 import { ContactPage } from "@/pages/ContactPage";
 import { AdminLoginPage } from "@/pages/AdminLoginPage";
@@ -27,6 +30,9 @@ function App() {
             <Route path="/" element={<><Header /><HomePage /><Footer /></>} />
             <Route path="/a-propos" element={<><Header /><AboutPage /><Footer /></>} />
             <Route path="/accompagnements" element={<><Header /><ServicesPage /><Footer /></>} />
+            <Route path="/expertise-medicale" element={<><Header /><ExpertiseMedicalePage /><Footer /></>} />
+            <Route path="/accident-travail-maladie-professionnelle" element={<><Header /><AccidentTravailPage /><Footer /></>} />
+            <Route path="/mdph" element={<><Header /><MDPHPage /><Footer /></>} />
             <Route path="/ressources" element={<><Header /><ResourcesPage /><Footer /></>} />
             <Route path="/contact" element={<><Header /><ContactPage /><Footer /></>} />
             

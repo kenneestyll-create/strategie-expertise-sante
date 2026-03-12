@@ -11,6 +11,9 @@ export const Header = () => {
     { name: 'Accueil', href: '/' },
     { name: 'À propos', href: '/a-propos' },
     { name: 'Accompagnements', href: '/accompagnements' },
+    { name: 'Expertise médicale', href: '/expertise-medicale' },
+    { name: 'AT/MP', href: '/accident-travail-maladie-professionnelle' },
+    { name: 'MDPH', href: '/mdph' },
     { name: 'Ressources', href: '/ressources' },
     { name: 'Contact', href: '/contact' },
   ];
