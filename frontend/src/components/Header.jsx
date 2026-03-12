@@ -34,6 +34,7 @@ export const Header = () => {
   ];
 
   const secondaryNavigation = [
+    { name: 'Forum', href: '/forum' },
     { name: 'Avis', href: '/avis' },
     { name: 'Ressources', href: '/ressources' },
     { name: 'Contact', href: '/contact' },
@@ -52,6 +53,7 @@ export const Header = () => {
     { name: 'Séminaires', href: '/seminaires' },
     { name: 'Entreprises', href: '/entreprises' },
     { name: 'Partenaires', href: '/partenaires' },
+    { name: 'Forum', href: '/forum' },
     { name: 'Avis', href: '/avis' },
     { name: 'Ressources', href: '/ressources' },
     { name: 'Contact', href: '/contact' },

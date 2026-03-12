@@ -15,6 +15,9 @@ class AccompagnSanteAPITester:
         self.base_url = f"{base_url}/api"
         self.token = None
         self.admin_name = None
+        self.forum_token = None
+        self.forum_user_id = None
+        self.forum_pseudo = None
         self.tests_run = 0
         self.tests_passed = 0
         self.test_results = []
@@ -200,6 +203,133 @@ class AccompagnSanteAPITester:
         
         return self.run_test("Update Contact", "PATCH", f"admin/contacts/{self.test_contact_id}", 200, update_data)
 
+    # ==================== FORUM TESTS ====================
+
+    def test_get_forum_categories(self):
+        """Test getting forum categories"""
+        success, response = self.run_test("Get Forum Categories", "GET", "forum/categories", 200)
+        if success and isinstance(response, list) and len(response) == 6:
+            categories = [cat.get('slug') for cat in response]
+            expected_categories = ['accident-travail', 'maladie-professionnelle', 'expertise-medicale', 'invalidite', 'mdph', 'protection-juridique']
+            if all(cat in categories for cat in expected_categories):
+                print(f"   ✅ All 6 categories found: {categories}")
+            else:
+                print(f"   ⚠️ Category mismatch. Expected: {expected_categories}, Found: {categories}")
+        return success
+
+    def test_forum_register_email(self):
+        """Test forum user registration with email"""
+        timestamp = datetime.now().strftime("%H%M%S")
+        register_data = {
+            "email": f"testforum{timestamp}@example.com",
+            "password": "TestPassword123!",
+            "pseudo": f"TestUser{timestamp}",
+            "is_anonymous": False
+        }
+        
+        success, response = self.run_test("Forum Register Email", "POST", "forum/register", 200, register_data)
+        if success and response.get("access_token"):
+            self.forum_token = response.get("access_token")
+            self.forum_user_id = response.get("user_id")
+            self.forum_pseudo = response.get("pseudo")
+            print(f"   Forum user registered: {self.forum_pseudo} (ID: {self.forum_user_id})")
+        return success
+
+    def test_forum_register_anonymous(self):
+        """Test forum anonymous registration"""
+        timestamp = datetime.now().strftime("%H%M%S")
+        register_data = {
+            "pseudo": f"AnonUser{timestamp}",
+            "is_anonymous": True
+        }
+        
+        success, response = self.run_test("Forum Register Anonymous", "POST", "forum/register", 200, register_data)
+        return success
+
+    def test_forum_login(self):
+        """Test forum login (skip if no email user registered)"""
+        if not hasattr(self, 'forum_test_email'):
+            print("❌ Skipped - No email user to test login")
+            self.log_test_result("Forum Login", False, "No email user available")
+            return False
+            
+        login_data = {
+            "email": self.forum_test_email,
+            "password": "TestPassword123!"
+        }
+        
+        success, response = self.run_test("Forum Login", "POST", "forum/login", 200, login_data)
+        return success
+
+    def test_get_forum_topics(self):
+        """Test getting forum topics"""
+        success, response = self.run_test("Get Forum Topics", "GET", "forum/topics", 200)
+        if success and 'topics' in response:
+            print(f"   Found {len(response['topics'])} topics")
+        return success
+
+    def test_create_forum_topic(self):
+        """Test creating a forum topic"""
+        if not self.forum_token:
+            print("❌ Skipped - No forum token available")
+            self.log_test_result("Create Forum Topic", False, "No forum token available")
+            return False
+            
+        topic_data = {
+            "category_id": "accident-travail",
+            "title": "Test Topic from API",
+            "content": "This is a test topic created during API testing."
+        }
+        
+        # Add forum token to headers
+        headers = {'Authorization': f'Bearer {self.forum_token}'}
+        success, response = self.run_test("Create Forum Topic", "POST", "forum/topics", 200, topic_data, headers)
+        if success and response.get("topic_id"):
+            self.test_topic_id = response.get("topic_id")
+            print(f"   Topic created with ID: {self.test_topic_id}")
+        return success
+
+    def test_like_forum_topic(self):
+        """Test liking a forum topic"""
+        if not self.forum_token or not hasattr(self, 'test_topic_id'):
+            print("❌ Skipped - No forum token or topic ID available")
+            self.log_test_result("Like Forum Topic", False, "No forum token or topic ID available")
+            return False
+            
+        headers = {'Authorization': f'Bearer {self.forum_token}'}
+        success, response = self.run_test("Like Forum Topic", "POST", f"forum/topics/{self.test_topic_id}/like", 200, {}, headers)
+        return success
+
+    # ==================== CHATBOT TESTS ====================
+
+    def test_chatbot_faq(self):
+        """Test chatbot with FAQ keyword"""
+        chat_data = {
+            "message": "expertise médicale",
+            "session_id": "test-session-123"
+        }
+        
+        success, response = self.run_test("Chatbot FAQ", "POST", "chatbot", 200, chat_data)
+        if success and response.get("is_faq") == True:
+            print(f"   ✅ FAQ response detected")
+        elif success:
+            print(f"   ⚠️ Response received but not marked as FAQ: {response.get('is_faq')}")
+        return success
+
+    def test_chatbot_ai(self):
+        """Test chatbot with non-FAQ question for AI response"""
+        chat_data = {
+            "message": "What is the weather today?",
+            "session_id": "test-session-456"
+        }
+        
+        success, response = self.run_test("Chatbot AI", "POST", "chatbot", 200, chat_data)
+        if success and response.get("is_faq") == False:
+            print(f"   ✅ AI response detected")
+        elif success:
+            print(f"   ⚠️ Response received but marked as FAQ: {response.get('is_faq')}")
+        return success
+
     def run_all_tests(self):
         """Run complete test suite"""
         print("=" * 60)
@@ -233,6 +363,20 @@ class AccompagnSanteAPITester:
         self.test_admin_get_contacts()
         self.test_admin_get_contact_by_id()
         self.test_admin_update_contact()
+        
+        # Forum endpoints
+        print("\n💬 FORUM ENDPOINTS")
+        self.test_get_forum_categories()
+        self.test_forum_register_email()
+        self.test_forum_register_anonymous()
+        self.test_get_forum_topics()
+        self.test_create_forum_topic()
+        self.test_like_forum_topic()
+        
+        # Chatbot endpoints
+        print("\n🤖 CHATBOT ENDPOINTS")
+        self.test_chatbot_faq()
+        self.test_chatbot_ai()
         
         # Final results
         print("\n" + "=" * 60)
