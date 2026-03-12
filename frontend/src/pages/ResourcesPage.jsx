@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowRight, BookOpen, AlertCircle, FileText, Shield, HelpCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowRight, BookOpen, AlertCircle, FileText, Shield, HelpCircle, Download, Eye } from 'lucide-react';
+import { toast } from 'sonner';
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -273,6 +275,100 @@ export const ResourcesPage = () => {
               ))}
             </Tabs>
           )}
+        </div>
+      </section>
+
+      {/* Downloadable Guides Library */}
+      <section className="section-padding" id="bibliotheque">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-12">
+            <span className="text-sm font-medium text-accent uppercase tracking-wider">Bibliothèque</span>
+            <h2 className="text-3xl sm:text-4xl font-semibold mt-2 mb-4">
+              Guides PDF téléchargeables
+            </h2>
+            <p className="text-muted-foreground max-w-2xl">
+              Des guides pratiques gratuits pour vous accompagner dans vos démarches. 
+              Téléchargez-les et consultez-les à votre rythme.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              {
+                id: 'guide_mp',
+                title: "Guide : Déclarer une maladie professionnelle",
+                description: "Toutes les étapes pour faire reconnaître votre maladie professionnelle auprès de la CPAM, avec les formulaires nécessaires et les délais à respecter.",
+                category: "AT/MP",
+                pages: "12 pages"
+              },
+              {
+                id: 'guide_expertise',
+                title: "Guide : Se préparer à une expertise médicale",
+                description: "Conseils pratiques et liste de contrôle pour aborder sereinement votre expertise médicale et faire valoir vos droits.",
+                category: "Expertises",
+                pages: "8 pages"
+              },
+              {
+                id: 'guide_mdph',
+                title: "Guide : Constituer un dossier MDPH",
+                description: "Comment remplir le formulaire MDPH, quels documents joindre et comment maximiser vos chances d'obtenir une réponse favorable.",
+                category: "MDPH",
+                pages: "15 pages"
+              },
+              {
+                id: 'guide_recours',
+                title: "Guide : Contester un refus",
+                description: "Vos droits face à un refus de la CPAM ou de votre assurance. Les différentes voies de recours et les délais à respecter.",
+                category: "Recours",
+                pages: "10 pages"
+              },
+              {
+                id: 'guide_ipp',
+                title: "Guide : Comprendre le taux d'IPP",
+                description: "Tout savoir sur l'Incapacité Permanente Partielle : comment le taux est fixé, comment le contester, et son impact sur votre indemnisation.",
+                category: "AT/MP",
+                pages: "8 pages"
+              },
+              {
+                id: 'guide_assurance',
+                title: "Guide : Activer sa protection juridique",
+                description: "Comment identifier et activer votre protection juridique pour financer vos démarches et frais d'avocat.",
+                category: "Assurances",
+                pages: "6 pages"
+              }
+            ].map((guide) => (
+              <Card key={guide.id} className="border-border flex flex-col" data-testid={`library-guide-${guide.id}`}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center mb-3">
+                      <FileText className="w-6 h-6 text-accent" strokeWidth={1.5} />
+                    </div>
+                    <Badge variant="secondary">{guide.category}</Badge>
+                  </div>
+                  <CardTitle className="text-base leading-tight">{guide.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-1 flex flex-col">
+                  <p className="text-sm text-muted-foreground flex-1">{guide.description}</p>
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+                    <span className="text-xs text-muted-foreground">PDF — {guide.pages}</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5 rounded-lg"
+                      onClick={() => {
+                        axios.post(`${API}/resources/download`, { resource_id: guide.id, resource_title: guide.title }).catch(() => {});
+                        toast.info("Ce guide sera bientôt disponible au téléchargement.");
+                      }}
+                      data-testid={`download-${guide.id}`}
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Télécharger
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
 

@@ -140,6 +140,18 @@ export const TarifsPage = () => {
     setShowPaymentModal(true);
   };
 
+  const handleModalClose = (open) => {
+    if (!open && selectedPackage && customerInfo.email && !loading) {
+      // Track abandoned checkout
+      axios.post(`${API}/relance/track`, {
+        email: customerInfo.email,
+        name: customerInfo.name,
+        package_id: selectedPackage.id
+      }).catch(() => {});
+    }
+    setShowPaymentModal(open);
+  };
+
   const prestationsParticuliers = [
     {
       id: "analyse_dossier",
@@ -593,7 +605,7 @@ export const TarifsPage = () => {
       </section>
 
       {/* Payment Modal */}
-      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+      <Dialog open={showPaymentModal} onOpenChange={handleModalClose}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Paiement sécurisé</DialogTitle>
@@ -697,7 +709,7 @@ export const TarifsPage = () => {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPaymentModal(false)}>
+            <Button variant="outline" onClick={() => handleModalClose(false)}>
               Annuler
             </Button>
             <Button 

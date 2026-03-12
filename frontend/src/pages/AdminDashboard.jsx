@@ -31,7 +31,10 @@ import {
   Gift,
   Percent,
   Hash,
-  TrendingUp
+  TrendingUp,
+  Send,
+  FolderOpen,
+  Video
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
@@ -44,6 +47,9 @@ export const AdminDashboard = () => {
   const [stats, setStats] = useState({ total: 0, nouveau: 0, en_cours: 0, traite: 0 });
   const [avisStats, setAvisStats] = useState({ total: 0, en_attente: 0, publie: 0, rejete: 0 });
   const [referralData, setReferralData] = useState({ codes: [], recent_uses: [], stats: { total_codes: 0, active_codes: 0, total_uses: 0, total_discount_given: 0 } });
+  const [bookings, setBookings] = useState([]);
+  const [relanceData, setRelanceData] = useState({ items: [], stats: { total: 0, not_sent: 0, sent: 0 } });
+  const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -71,18 +77,24 @@ export const AdminDashboard = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [contactsRes, statsRes, avisRes, avisStatsRes, referralsRes] = await Promise.all([
+      const [contactsRes, statsRes, avisRes, avisStatsRes, referralsRes, bookingsRes, relanceRes, clientsRes] = await Promise.all([
         axios.get(`${API}/admin/contacts`, axiosConfig),
         axios.get(`${API}/admin/stats`, axiosConfig),
         axios.get(`${API}/admin/avis`, axiosConfig),
         axios.get(`${API}/admin/avis/stats`, axiosConfig),
-        axios.get(`${API}/admin/referrals`, axiosConfig).catch(() => ({ data: { codes: [], recent_uses: [], stats: { total_codes: 0, active_codes: 0, total_uses: 0, total_discount_given: 0 } } }))
+        axios.get(`${API}/admin/referrals`, axiosConfig).catch(() => ({ data: { codes: [], recent_uses: [], stats: { total_codes: 0, active_codes: 0, total_uses: 0, total_discount_given: 0 } } })),
+        axios.get(`${API}/admin/bookings`, axiosConfig).catch(() => ({ data: [] })),
+        axios.get(`${API}/admin/relance`, axiosConfig).catch(() => ({ data: { items: [], stats: { total: 0, not_sent: 0, sent: 0 } } })),
+        axios.get(`${API}/admin/clients`, axiosConfig).catch(() => ({ data: [] }))
       ]);
       setContacts(contactsRes.data);
       setStats(statsRes.data);
       setAvis(avisRes.data);
       setAvisStats(avisStatsRes.data);
       setReferralData(referralsRes.data);
+      setBookings(bookingsRes.data);
+      setRelanceData(relanceRes.data);
+      setClients(clientsRes.data);
     } catch (error) {
       console.error('Erreur:', error);
       if (error.response?.status === 401) {
@@ -279,18 +291,26 @@ export const AdminDashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-lg grid-cols-3">
-            <TabsTrigger value="contacts" className="gap-2">
-              <Users className="w-4 h-4" />
-              Contacts ({stats.total})
+          <TabsList className="grid w-full max-w-2xl grid-cols-5">
+            <TabsTrigger value="contacts" className="gap-1 text-xs sm:text-sm">
+              <Users className="w-3 h-3 sm:w-4 sm:h-4" />
+              Contacts
             </TabsTrigger>
-            <TabsTrigger value="avis" className="gap-2">
-              <MessageSquare className="w-4 h-4" />
-              Avis ({avisStats.en_attente})
+            <TabsTrigger value="avis" className="gap-1 text-xs sm:text-sm">
+              <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
+              Avis
             </TabsTrigger>
-            <TabsTrigger value="referrals" className="gap-2" data-testid="tab-referrals">
-              <Gift className="w-4 h-4" />
+            <TabsTrigger value="referrals" className="gap-1 text-xs sm:text-sm" data-testid="tab-referrals">
+              <Gift className="w-3 h-3 sm:w-4 sm:h-4" />
               Parrainage
+            </TabsTrigger>
+            <TabsTrigger value="bookings" className="gap-1 text-xs sm:text-sm" data-testid="tab-bookings">
+              <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+              RDV
+            </TabsTrigger>
+            <TabsTrigger value="relance" className="gap-1 text-xs sm:text-sm" data-testid="tab-relance">
+              <Send className="w-3 h-3 sm:w-4 sm:h-4" />
+              Relance
             </TabsTrigger>
           </TabsList>
 
@@ -736,6 +756,137 @@ export const AdminDashboard = () => {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+          {/* Bookings Tab */}
+          <TabsContent value="bookings" className="space-y-6">
+            <div className="grid grid-cols-3 gap-4">
+              <Card><CardContent className="p-4 flex items-center gap-3">
+                <Calendar className="w-8 h-8 text-accent" strokeWidth={1.5} />
+                <div><p className="text-2xl font-bold">{bookings.length}</p><p className="text-xs text-muted-foreground">Total RDV</p></div>
+              </CardContent></Card>
+              <Card><CardContent className="p-4 flex items-center gap-3">
+                <CheckCircle className="w-8 h-8 text-green-500" strokeWidth={1.5} />
+                <div><p className="text-2xl font-bold">{bookings.filter(b => b.status === 'confirme').length}</p><p className="text-xs text-muted-foreground">Confirmés</p></div>
+              </CardContent></Card>
+              <Card><CardContent className="p-4 flex items-center gap-3">
+                <Clock className="w-8 h-8 text-blue-500" strokeWidth={1.5} />
+                <div><p className="text-2xl font-bold">{bookings.filter(b => b.status === 'termine').length}</p><p className="text-xs text-muted-foreground">Terminés</p></div>
+              </CardContent></Card>
+            </div>
+
+            <Card>
+              <CardHeader><CardTitle>Rendez-vous</CardTitle></CardHeader>
+              <CardContent>
+                {bookings.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>Aucun rendez-vous</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto" data-testid="bookings-table">
+                    <table className="w-full text-sm">
+                      <thead><tr className="border-b border-border">
+                        <th className="text-left py-3 px-3 font-medium text-muted-foreground">Date</th>
+                        <th className="text-left py-3 px-3 font-medium text-muted-foreground">Heure</th>
+                        <th className="text-left py-3 px-3 font-medium text-muted-foreground">Type</th>
+                        <th className="text-left py-3 px-3 font-medium text-muted-foreground">Client</th>
+                        <th className="text-left py-3 px-3 font-medium text-muted-foreground">Email</th>
+                        <th className="text-center py-3 px-3 font-medium text-muted-foreground">Statut</th>
+                      </tr></thead>
+                      <tbody>
+                        {bookings.map((b, i) => (
+                          <tr key={i} className="border-b border-border/50 hover:bg-muted/30">
+                            <td className="py-3 px-3 font-medium">{b.date}</td>
+                            <td className="py-3 px-3">{b.time_slot}</td>
+                            <td className="py-3 px-3">
+                              <span className="flex items-center gap-1">
+                                {b.booking_type === 'visio' ? <Video className="w-3 h-3" /> : <Phone className="w-3 h-3" />}
+                                {b.booking_type === 'visio' ? 'Visio' : 'Tél.'}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3">{b.name}</td>
+                            <td className="py-3 px-3 text-muted-foreground">{b.email}</td>
+                            <td className="py-3 px-3 text-center">
+                              <Badge className={b.status === 'confirme' ? 'bg-green-500 text-white' : b.status === 'annule' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}>
+                                {b.status === 'confirme' ? 'Confirmé' : b.status === 'annule' ? 'Annulé' : 'Terminé'}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Relance Tab */}
+          <TabsContent value="relance" className="space-y-6">
+            <div className="grid grid-cols-3 gap-4">
+              <Card><CardContent className="p-4 flex items-center gap-3">
+                <Mail className="w-8 h-8 text-accent" strokeWidth={1.5} />
+                <div><p className="text-2xl font-bold">{relanceData.stats.total}</p><p className="text-xs text-muted-foreground">Paniers abandonnés</p></div>
+              </CardContent></Card>
+              <Card><CardContent className="p-4 flex items-center gap-3">
+                <AlertCircle className="w-8 h-8 text-amber-500" strokeWidth={1.5} />
+                <div><p className="text-2xl font-bold">{relanceData.stats.not_sent}</p><p className="text-xs text-muted-foreground">Non relancés</p></div>
+              </CardContent></Card>
+              <Card><CardContent className="p-4 flex items-center gap-3">
+                <Send className="w-8 h-8 text-green-500" strokeWidth={1.5} />
+                <div><p className="text-2xl font-bold">{relanceData.stats.sent}</p><p className="text-xs text-muted-foreground">Relancés</p></div>
+              </CardContent></Card>
+            </div>
+
+            <Card>
+              <CardHeader><CardTitle>Paniers abandonnés</CardTitle></CardHeader>
+              <CardContent>
+                {relanceData.items.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Mail className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>Aucun panier abandonné</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3" data-testid="relance-list">
+                    {relanceData.items.map((item, i) => (
+                      <div key={i} className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/30">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Mail className="w-4 h-4 text-accent" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{item.name || item.email}</p>
+                            <p className="text-xs text-muted-foreground">{item.package_name} — {item.amount}€</p>
+                            <p className="text-xs text-muted-foreground">{item.created_at ? formatDate(item.created_at) : ''}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 ml-4">
+                          {item.relance_sent ? (
+                            <Badge className="bg-green-100 text-green-800 gap-1"><CheckCircle className="w-3 h-3" />Relancé</Badge>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="gap-1"
+                              onClick={async () => {
+                                try {
+                                  const res = await axios.post(`${API}/admin/relance/send/${item.id}`, {}, axiosConfig);
+                                  toast.success(res.data.message);
+                                  fetchData();
+                                } catch { toast.error("Erreur"); }
+                              }}
+                              data-testid={`send-relance-${i}`}
+                            >
+                              <Send className="w-3 h-3" />Relancer
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </main>

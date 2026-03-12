@@ -55,6 +55,21 @@ export const Footer = () => {
                   Parrainage
                 </Link>
               </li>
+              <li>
+                <Link to="/agenda" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                  Agenda
+                </Link>
+              </li>
+              <li>
+                <Link to="/simulateur" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                  Simulateur
+                </Link>
+              </li>
+              <li>
+                <Link to="/espace-client" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                  Espace client
+                </Link>
+              </li>
             </ul>
           </div>
 

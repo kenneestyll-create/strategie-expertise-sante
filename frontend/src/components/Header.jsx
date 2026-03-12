@@ -31,12 +31,14 @@ export const Header = () => {
     { name: 'Séminaires', href: '/seminaires' },
     { name: 'Entreprises', href: '/entreprises' },
     { name: 'Partenaires', href: '/partenaires' },
+    { name: 'Simulateur', href: '/simulateur' },
   ];
 
   const secondaryNavigation = [
     { name: 'Forum', href: '/forum' },
     { name: 'Avis', href: '/avis' },
     { name: 'Ressources', href: '/ressources' },
+    { name: 'Agenda', href: '/agenda' },
     { name: 'Contact', href: '/contact' },
   ];
 
@@ -56,6 +58,9 @@ export const Header = () => {
     { name: 'Forum', href: '/forum' },
     { name: 'Avis', href: '/avis' },
     { name: 'Ressources', href: '/ressources' },
+    { name: 'Simulateur', href: '/simulateur' },
+    { name: 'Agenda', href: '/agenda' },
+    { name: 'Espace client', href: '/espace-client' },
     { name: 'Contact', href: '/contact' },
   ];
 
@@ -173,9 +178,18 @@ export const Header = () => {
             ))}
           </div>
 
-          {/* CTA Button - Desktop */}
-          <div className="hidden lg:block">
-            <Link to="/contact">
+          {/* CTA Buttons - Desktop */}
+          <div className="hidden lg:flex items-center gap-2">
+            <Link to="/espace-client">
+              <Button 
+                variant="outline"
+                className="rounded-full px-4 text-sm"
+                data-testid="header-client-button"
+              >
+                Espace client
+              </Button>
+            </Link>
+            <Link to="/agenda">
               <Button 
                 className="btn-scale rounded-full px-6"
                 data-testid="header-cta-button"

@@ -330,6 +330,88 @@ class ClientHistory(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     last_order_at: Optional[datetime] = None
 
+# ==================== BOOKING MODELS ====================
+
+class Booking(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    email: str
+    phone: Optional[str] = None
+    booking_type: str = "telephone"  # telephone, visio
+    date: str  # YYYY-MM-DD
+    time_slot: str  # HH:MM
+    message: Optional[str] = None
+    status: str = "confirme"  # confirme, annule, termine
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class BookingCreate(BaseModel):
+    name: str
+    email: EmailStr
+    phone: Optional[str] = None
+    booking_type: str = "telephone"
+    date: str
+    time_slot: str
+    message: Optional[str] = None
+
+# ==================== CLIENT PORTAL MODELS ====================
+
+class ClientUser(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    email: str
+    password_hash: str
+    name: str
+    phone: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ClientRegister(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+    phone: Optional[str] = None
+
+class ClientLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class ClientCase(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    client_id: str
+    title: str
+    description: str
+    status: str = "en_cours"  # en_cours, en_attente, termine
+    notes: Optional[str] = None
+    updates: List[dict] = []
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# ==================== SIMULATOR MODEL ====================
+
+class SimulatorResult(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    answers: dict
+    profile: str
+    recommendations: List[str] = []
+    email: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# ==================== ABANDONED CHECKOUT MODEL ====================
+
+class AbandonedCheckout(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    email: str
+    name: Optional[str] = None
+    package_id: str
+    package_name: str
+    amount: float
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    relance_sent: bool = False
+    relance_sent_at: Optional[str] = None
+
 # ==================== AUTH HELPERS ====================
 
 def hash_password(password: str) -> str:
@@ -397,6 +479,28 @@ async def get_optional_forum_user(credentials: HTTPAuthorizationCredentials = De
         return payload
     except:
         return None
+
+def create_client_token(client_id: str, email: str, name: str) -> str:
+    payload = {
+        "sub": client_id,
+        "email": email,
+        "name": name,
+        "is_client": True,
+        "exp": datetime.now(timezone.utc) + timedelta(hours=FORUM_JWT_EXPIRATION_HOURS)
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+async def get_current_client(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    try:
+        payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        client_id = payload.get("sub")
+        if client_id is None or not payload.get("is_client"):
+            raise HTTPException(status_code=401, detail="Token invalide")
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expiré")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Token invalide")
 
 # ==================== EMAIL HELPER ====================
 
@@ -1653,6 +1757,249 @@ async def get_admin_referrals(admin: dict = Depends(get_current_admin)):
             "total_discount_given": total_discount_given
         }
     }
+
+# ==================== BOOKING ROUTES ====================
+
+AVAILABLE_SLOTS = ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"]
+
+@api_router.get("/bookings/slots/{date}")
+async def get_available_slots(date: str):
+    """Get available time slots for a given date"""
+    booked = await db.bookings.find(
+        {"date": date, "status": {"$ne": "annule"}}, {"_id": 0, "time_slot": 1}
+    ).to_list(100)
+    booked_slots = {b["time_slot"] for b in booked}
+    available = [s for s in AVAILABLE_SLOTS if s not in booked_slots]
+    return {"date": date, "slots": available}
+
+@api_router.post("/bookings")
+async def create_booking(data: BookingCreate):
+    """Create a new booking"""
+    existing = await db.bookings.find_one(
+        {"date": data.date, "time_slot": data.time_slot, "status": {"$ne": "annule"}}, {"_id": 0}
+    )
+    if existing:
+        raise HTTPException(status_code=409, detail="Ce créneau n'est plus disponible")
+    
+    booking = Booking(**data.model_dump())
+    doc = booking.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.bookings.insert_one(doc)
+    return {"success": True, "booking_id": booking.id, "message": "Rendez-vous confirmé"}
+
+@api_router.get("/admin/bookings")
+async def get_admin_bookings(admin: dict = Depends(get_current_admin)):
+    bookings = await db.bookings.find({}, {"_id": 0}).sort("date", -1).to_list(500)
+    return bookings
+
+@api_router.patch("/admin/bookings/{booking_id}")
+async def update_booking_status(booking_id: str, status: str, admin: dict = Depends(get_current_admin)):
+    result = await db.bookings.update_one({"id": booking_id}, {"$set": {"status": status}})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Rendez-vous non trouvé")
+    return {"success": True}
+
+# ==================== CLIENT PORTAL ROUTES ====================
+
+@api_router.post("/client/register")
+async def register_client(data: ClientRegister):
+    existing = await db.client_users.find_one({"email": data.email.lower()}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=409, detail="Un compte existe déjà avec cet email")
+    
+    client = ClientUser(
+        email=data.email.lower(),
+        password_hash=hash_password(data.password),
+        name=data.name,
+        phone=data.phone
+    )
+    doc = client.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.client_users.insert_one(doc)
+    
+    token = create_client_token(client.id, client.email, client.name)
+    return {"access_token": token, "token_type": "bearer", "client_name": client.name, "client_id": client.id}
+
+@api_router.post("/client/login")
+async def login_client(data: ClientLogin):
+    client = await db.client_users.find_one({"email": data.email.lower()}, {"_id": 0})
+    if not client or not verify_password(data.password, client["password_hash"]):
+        raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")
+    
+    token = create_client_token(client["id"], client["email"], client["name"])
+    return {"access_token": token, "token_type": "bearer", "client_name": client["name"], "client_id": client["id"]}
+
+@api_router.get("/client/profile")
+async def get_client_profile(client: dict = Depends(get_current_client)):
+    user = await db.client_users.find_one({"id": client["sub"]}, {"_id": 0, "password_hash": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Client non trouvé")
+    return user
+
+@api_router.get("/client/cases")
+async def get_client_cases(client: dict = Depends(get_current_client)):
+    cases = await db.client_cases.find({"client_id": client["sub"]}, {"_id": 0}).sort("updated_at", -1).to_list(100)
+    return cases
+
+@api_router.get("/client/cases/{case_id}")
+async def get_client_case(case_id: str, client: dict = Depends(get_current_client)):
+    case = await db.client_cases.find_one({"id": case_id, "client_id": client["sub"]}, {"_id": 0})
+    if not case:
+        raise HTTPException(status_code=404, detail="Dossier non trouvé")
+    return case
+
+# Admin client management
+@api_router.get("/admin/clients")
+async def get_admin_clients(admin: dict = Depends(get_current_admin)):
+    clients = await db.client_users.find({}, {"_id": 0, "password_hash": 0}).sort("created_at", -1).to_list(500)
+    for c in clients:
+        c["cases_count"] = await db.client_cases.count_documents({"client_id": c["id"]})
+    return clients
+
+@api_router.post("/admin/clients/{client_id}/cases")
+async def create_client_case(client_id: str, title: str, description: str, admin: dict = Depends(get_current_admin)):
+    client_exists = await db.client_users.find_one({"id": client_id}, {"_id": 0})
+    if not client_exists:
+        raise HTTPException(status_code=404, detail="Client non trouvé")
+    
+    case = ClientCase(client_id=client_id, title=title, description=description)
+    doc = case.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['updated_at'] = doc['updated_at'].isoformat()
+    await db.client_cases.insert_one(doc)
+    return {"success": True, "case_id": case.id}
+
+@api_router.patch("/admin/cases/{case_id}")
+async def update_client_case(case_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    update_data = {"updated_at": datetime.now(timezone.utc).isoformat()}
+    
+    if "status" in body:
+        update_data["status"] = body["status"]
+    if "notes" in body:
+        update_data["notes"] = body["notes"]
+    if "update_message" in body:
+        new_update = {
+            "message": body["update_message"],
+            "date": datetime.now(timezone.utc).isoformat(),
+            "author": "Administrateur"
+        }
+        await db.client_cases.update_one({"id": case_id}, {"$push": {"updates": new_update}})
+    
+    result = await db.client_cases.update_one({"id": case_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Dossier non trouvé")
+    return {"success": True}
+
+# ==================== SIMULATOR ROUTES ====================
+
+@api_router.post("/simulator/result")
+async def save_simulator_result(request: Request):
+    body = await request.json()
+    result = SimulatorResult(
+        answers=body.get("answers", {}),
+        profile=body.get("profile", ""),
+        recommendations=body.get("recommendations", []),
+        email=body.get("email")
+    )
+    doc = result.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.simulator_results.insert_one(doc)
+    return {"success": True, "id": result.id}
+
+@api_router.get("/admin/simulator/stats")
+async def get_simulator_stats(admin: dict = Depends(get_current_admin)):
+    total = await db.simulator_results.count_documents({})
+    results = await db.simulator_results.find({}, {"_id": 0}).sort("created_at", -1).to_list(50)
+    return {"total": total, "recent": results}
+
+# ==================== ABANDONED CHECKOUT / RELANCE ROUTES ====================
+
+@api_router.post("/relance/track")
+async def track_abandoned_checkout(request: Request):
+    body = await request.json()
+    if not body.get("email"):
+        raise HTTPException(status_code=400, detail="Email requis")
+    
+    pkg_id = body.get("package_id", "")
+    pkg = PAYMENT_PACKAGES.get(pkg_id, {})
+    
+    abandoned = AbandonedCheckout(
+        email=body["email"],
+        name=body.get("name", ""),
+        package_id=pkg_id,
+        package_name=pkg.get("name", pkg_id),
+        amount=pkg.get("amount", 0)
+    )
+    doc = abandoned.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.abandoned_checkouts.insert_one(doc)
+    return {"success": True}
+
+@api_router.get("/admin/relance")
+async def get_abandoned_checkouts(admin: dict = Depends(get_current_admin)):
+    abandoned = await db.abandoned_checkouts.find({}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    stats = {
+        "total": len(abandoned),
+        "not_sent": sum(1 for a in abandoned if not a.get("relance_sent")),
+        "sent": sum(1 for a in abandoned if a.get("relance_sent"))
+    }
+    return {"items": abandoned, "stats": stats}
+
+@api_router.post("/admin/relance/send/{item_id}")
+async def send_relance_email(item_id: str, admin: dict = Depends(get_current_admin)):
+    item = await db.abandoned_checkouts.find_one({"id": item_id}, {"_id": 0})
+    if not item:
+        raise HTTPException(status_code=404, detail="Élément non trouvé")
+    
+    # Try to send email via Resend if configured
+    email_sent = False
+    if RESEND_AVAILABLE and resend.api_key and resend.api_key != '':
+        try:
+            resend.Emails.send({
+                "from": SENDER_EMAIL,
+                "to": item["email"],
+                "subject": "Accompagn'Santé - Finalisez votre démarche",
+                "html": f"""
+                <h2>Bonjour {item.get('name', '')},</h2>
+                <p>Vous aviez commencé à réserver notre prestation <strong>{item.get('package_name', '')}</strong>.</p>
+                <p>N'hésitez pas à finaliser votre inscription ou à nous contacter si vous avez des questions.</p>
+                <p>Premier échange gratuit et sans engagement.</p>
+                <p>Cordialement,<br>Accompagn'Santé</p>
+                """
+            })
+            email_sent = True
+        except Exception as e:
+            logger.error(f"Resend error: {e}")
+    
+    await db.abandoned_checkouts.update_one(
+        {"id": item_id},
+        {"$set": {"relance_sent": True, "relance_sent_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"success": True, "email_sent": email_sent, "message": "Relance envoyée" if email_sent else "Relance marquée (email non configuré)"}
+
+# ==================== RESOURCES / LIBRARY ROUTES ====================
+
+@api_router.post("/resources/download")
+async def track_resource_download(request: Request):
+    body = await request.json()
+    await db.resource_downloads.insert_one({
+        "resource_id": body.get("resource_id", ""),
+        "resource_title": body.get("resource_title", ""),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    return {"success": True}
+
+@api_router.get("/admin/resources/stats")
+async def get_resource_stats(admin: dict = Depends(get_current_admin)):
+    pipeline = [
+        {"$group": {"_id": "$resource_id", "title": {"$first": "$resource_title"}, "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}}
+    ]
+    stats = await db.resource_downloads.aggregate(pipeline).to_list(100)
+    total = await db.resource_downloads.count_documents({})
+    return {"total_downloads": total, "by_resource": stats}
 
 # ==================== SEED DATA ====================
 
