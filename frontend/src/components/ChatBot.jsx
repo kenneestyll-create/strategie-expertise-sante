@@ -23,7 +23,7 @@ export const ChatBot = () => {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: "Bonjour ! Je suis l'assistant virtuel d'Accompagn'Santé. Comment puis-je vous aider aujourd'hui ?\n\nVous pouvez me poser des questions sur :\n- Les expertises médicales\n- La MDPH et vos droits\n- Les accidents du travail\n- La protection juridique\n- Nos tarifs et services"
+      content: "Bonjour ! Je suis l'assistant virtuel de Stratégie & Expertise Santé. Comment puis-je vous aider aujourd'hui ?\n\nVous pouvez me poser des questions sur :\n- Les expertises médicales\n- La MDPH et vos droits\n- Les accidents du travail\n- La protection juridique\n- Nos tarifs et services"
     }
   ]);
   const [input, setInput] = useState('');
@@ -111,7 +111,7 @@ export const ChatBot = () => {
                 <Bot className="w-5 h-5 text-accent-foreground" />
               </div>
               <div>
-                <h3 className="font-semibold text-sm">Assistant Accompagn'Santé</h3>
+                <h3 className="font-semibold text-sm">Assistant Stratégie & Expertise Santé</h3>
                 <p className="text-xs text-primary-foreground/70">En ligne</p>
               </div>
             </div>

@@ -101,7 +101,7 @@ export const ForumRegisterPage = () => {
             <div className="flex items-center justify-center gap-2 mb-4">
               <Heart className="w-8 h-8 text-accent" strokeWidth={1.5} />
               <span className="font-semibold text-xl" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Forum Accompagn'Santé
+                Forum Stratégie & Expertise Santé
               </span>
             </div>
             <CardTitle className="text-2xl">Inscription</CardTitle>

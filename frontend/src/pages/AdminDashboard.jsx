@@ -261,7 +261,7 @@ export const AdminDashboard = () => {
               <Link to="/" className="flex items-center gap-2">
                 <Heart className="w-6 h-6 text-accent" strokeWidth={1.5} />
                 <span className="font-semibold" style={{ fontFamily: "'Playfair Display', serif" }}>
-                  Accompagn'Santé
+                  Stratégie & Expertise Santé
                 </span>
               </Link>
               <span className="text-primary-foreground/50 hidden sm:inline">|</span>

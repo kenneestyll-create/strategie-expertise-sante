@@ -14,7 +14,7 @@ export const MentionsLegalesPage = () => {
             Mentions légales & CGU
           </h1>
           <p className="text-lg text-muted-foreground">
-            Retrouvez ici toutes les informations légales concernant le site Accompagn'Santé 
+            Retrouvez ici toutes les informations légales concernant le site Stratégie & Expertise Santé 
             ainsi que nos conditions générales d'utilisation.
           </p>
         </div>
@@ -47,14 +47,14 @@ export const MentionsLegalesPage = () => {
                 </CardHeader>
                 <CardContent className="space-y-4 text-muted-foreground">
                   <p>
-                    <strong className="text-foreground">Accompagn'Santé</strong><br />
+                    <strong className="text-foreground">Stratégie & Expertise Santé</strong><br />
                     Service d'accompagnement et de conseil<br />
                     [Adresse à compléter]<br />
                     [Code postal - Ville]
                   </p>
                   <p>
                     <strong className="text-foreground">Contact :</strong><br />
-                    Email : contact@accompagn-sante.fr<br />
+                    Email : contact@strategie-expertise-sante.fr<br />
                     Téléphone : [Numéro à compléter]
                   </p>
                   <p>
@@ -84,7 +84,7 @@ export const MentionsLegalesPage = () => {
                 <CardContent className="text-muted-foreground space-y-4">
                   <p>
                     L'ensemble du contenu de ce site (textes, images, vidéos, logos, graphismes) 
-                    est la propriété exclusive d'Accompagn'Santé, sauf mention contraire.
+                    est la propriété exclusive de Stratégie & Expertise Santé, sauf mention contraire.
                   </p>
                   <p>
                     Toute reproduction, représentation, modification, publication ou adaptation 
@@ -104,7 +104,7 @@ export const MentionsLegalesPage = () => {
                     constituent en aucun cas des conseils médicaux ou juridiques.
                   </p>
                   <p>
-                    Accompagn'Santé ne peut être tenu responsable des décisions prises sur la 
+                    Stratégie & Expertise Santé ne peut être tenu responsable des décisions prises sur la 
                     base des informations contenues sur ce site. Pour toute question médicale 
                     ou juridique, veuillez consulter les professionnels compétents.
                   </p>
@@ -121,7 +121,7 @@ export const MentionsLegalesPage = () => {
                 <CardContent className="text-muted-foreground space-y-4">
                   <p>
                     Les présentes Conditions Générales d'Utilisation (CGU) ont pour objet de 
-                    définir les modalités d'accès et d'utilisation du site Accompagn'Santé 
+                    définir les modalités d'accès et d'utilisation du site Stratégie & Expertise Santé 
                     et des services proposés.
                   </p>
                   <p>
@@ -135,7 +135,7 @@ export const MentionsLegalesPage = () => {
                   <CardTitle>Article 2 - Services proposés</CardTitle>
                 </CardHeader>
                 <CardContent className="text-muted-foreground space-y-4">
-                  <p>Accompagn'Santé propose les services suivants :</p>
+                  <p>Stratégie & Expertise Santé propose les services suivants :</p>
                   <ul className="list-disc pl-6 space-y-2">
                     <li>Accompagnement et conseil dans les démarches liées aux maladies professionnelles et accidents du travail</li>
                     <li>Préparation aux expertises médicales</li>
@@ -232,7 +232,7 @@ export const MentionsLegalesPage = () => {
                 </CardHeader>
                 <CardContent className="text-muted-foreground space-y-4">
                   <p>
-                    Dans le cadre de l'utilisation du site, Accompagn'Santé est amené à collecter 
+                    Dans le cadre de l'utilisation du site, Stratégie & Expertise Santé est amené à collecter 
                     les données personnelles suivantes :
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
@@ -293,7 +293,7 @@ export const MentionsLegalesPage = () => {
                     <li><strong className="text-foreground">Droit d'opposition :</strong> vous opposer au traitement de vos données</li>
                   </ul>
                   <p className="mt-4">
-                    Pour exercer ces droits, contactez-nous à : contact@accompagn-sante.fr
+                    Pour exercer ces droits, contactez-nous à : contact@strategie-expertise-sante.fr
                   </p>
                 </CardContent>
               </Card>
@@ -320,7 +320,7 @@ export const MentionsLegalesPage = () => {
                 </CardHeader>
                 <CardContent className="text-muted-foreground space-y-4">
                   <p>
-                    Accompagn'Santé met en œuvre des mesures techniques et organisationnelles 
+                    Stratégie & Expertise Santé met en œuvre des mesures techniques et organisationnelles 
                     appropriées pour protéger vos données personnelles contre tout accès non 
                     autorisé, modification, divulgation ou destruction.
                   </p>

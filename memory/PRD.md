@@ -1,4 +1,4 @@
-# PRD - Accompagn'Santé
+# PRD - Stratégie & Expertise Santé
 
 ## Problem Statement Original
 Application web de conseil basée sur une expérience vécue de maladie professionnelle (AT/MP) et de litiges assurantiels. Application entièrement en français.

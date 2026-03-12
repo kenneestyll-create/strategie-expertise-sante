@@ -67,8 +67,8 @@ export const ContactPage = () => {
     {
       icon: Mail,
       title: "Email",
-      value: "contact@accompagn-sante.fr",
-      link: "mailto:contact@accompagn-sante.fr"
+      value: "contact@strategie-expertise-sante.fr",
+      link: "mailto:contact@strategie-expertise-sante.fr"
     },
     {
       icon: Phone,

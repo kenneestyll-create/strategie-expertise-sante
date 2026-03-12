@@ -71,7 +71,7 @@ security = HTTPBearer()
 security_optional = HTTPBearer(auto_error=False)
 
 # Create the main app
-app = FastAPI(title="Accompagn'Santé API")
+app = FastAPI(title="Stratégie & Expertise Santé API")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -668,7 +668,7 @@ async def get_ai_response(message: str, session_id: str) -> str:
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
             session_id=session_id,
-            system_message="""Tu es l'assistant virtuel d'Accompagn'Santé, un service français d'accompagnement pour les personnes confrontées à des maladies professionnelles, accidents du travail, expertises médicales et litiges avec les assurances.
+            system_message="""Tu es l'assistant virtuel de Stratégie & Expertise Santé, un service français d'accompagnement pour les personnes confrontées à des maladies professionnelles, accidents du travail, expertises médicales et litiges avec les assurances.
 
 Ton rôle est d'aider les visiteurs à comprendre leurs droits et les orienter vers les bonnes ressources.
 
@@ -757,7 +757,7 @@ FORUM_CATEGORIES = [
 
 @api_router.get("/")
 async def root():
-    return {"message": "Bienvenue sur l'API Accompagn'Santé"}
+    return {"message": "Bienvenue sur l'API Stratégie & Expertise Santé"}
 
 @api_router.get("/health")
 async def health_check():
@@ -2027,13 +2027,13 @@ async def send_relance_email(item_id: str, admin: dict = Depends(get_current_adm
             resend.Emails.send({
                 "from": SENDER_EMAIL,
                 "to": item["email"],
-                "subject": "Accompagn'Santé - Finalisez votre démarche",
+                "subject": "Stratégie & Expertise Santé - Finalisez votre démarche",
                 "html": f"""
                 <h2>Bonjour {item.get('name', '')},</h2>
                 <p>Vous aviez commencé à réserver notre prestation <strong>{item.get('package_name', '')}</strong>.</p>
                 <p>N'hésitez pas à finaliser votre inscription ou à nous contacter si vous avez des questions.</p>
                 <p>Premier échange gratuit et sans engagement.</p>
-                <p>Cordialement,<br>Accompagn'Santé</p>
+                <p>Cordialement,<br>Stratégie & Expertise Santé</p>
                 """
             })
             email_sent = True

@@ -25,7 +25,7 @@ export const AboutPage = () => {
     {
       year: "Année 4+",
       title: "La reconnaissance et le partage",
-      description: "Obtention progressive de mes droits. Décision de mettre cette expérience au service des autres. Naissance d'Accompagn'Santé."
+      description: "Obtention progressive de mes droits. Décision de mettre cette expérience au service des autres. Naissance de Stratégie & Expertise Santé."
     }
   ];
 
@@ -237,7 +237,7 @@ export const AboutPage = () => {
             "Je ne promets pas de tout résoudre. Je promets de vous écouter, de vous expliquer, 
             et de vous accompagner dans ce parcours difficile. Ensemble, nous sommes plus forts."
           </blockquote>
-          <p className="text-muted-foreground">— Fondateur d'Accompagn'Santé</p>
+          <p className="text-muted-foreground">— Fondateur de Stratégie & Expertise Santé</p>
         </div>
       </section>
 

@@ -58,7 +58,7 @@ export const AdminLoginPage = () => {
             <div className="flex items-center justify-center gap-2 mb-4">
               <Heart className="w-8 h-8 text-accent" strokeWidth={1.5} />
               <span className="font-semibold text-xl" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Accompagn'Santé
+                Stratégie & Expertise Santé
               </span>
             </div>
             <CardTitle className="text-2xl">Administration</CardTitle>
@@ -75,7 +75,7 @@ export const AdminLoginPage = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@accompagn-sante.fr"
+                  placeholder="admin@strategie-expertise-sante.fr"
                   required
                   data-testid="admin-email-input"
                 />

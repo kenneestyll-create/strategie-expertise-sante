@@ -79,7 +79,7 @@ export const Header = () => {
           >
             <Heart className="w-6 h-6 text-accent" strokeWidth={1.5} />
             <span className="font-semibold text-lg tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Accompagn'Santé
+              Stratégie & Expertise Santé
             </span>
           </Link>
 

@@ -13,7 +13,7 @@ export const Footer = () => {
             <Link to="/" className="flex items-center gap-2 mb-4">
               <Heart className="w-6 h-6 text-accent" strokeWidth={1.5} />
               <span className="font-semibold text-lg" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Accompagn'Santé
+                Stratégie & Expertise Santé
               </span>
             </Link>
             <p className="text-primary-foreground/70 text-sm leading-relaxed max-w-md">
@@ -81,11 +81,11 @@ export const Footer = () => {
             <ul className="space-y-3">
               <li>
                 <a 
-                  href="mailto:contact@accompagn-sante.fr" 
+                  href="mailto:contact@strategie-expertise-sante.fr" 
                   className="flex items-center gap-2 text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
                 >
                   <Mail className="w-4 h-4" strokeWidth={1.5} />
-                  contact@accompagn-sante.fr
+                  contact@strategie-expertise-sante.fr
                 </a>
               </li>
               <li>
@@ -105,7 +105,7 @@ export const Footer = () => {
         <div className="mt-12 pt-8 border-t border-primary-foreground/10">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-primary-foreground/50">
-              © {currentYear} Accompagn'Santé. Tous droits réservés.
+              © {currentYear} Stratégie & Expertise Santé. Tous droits réservés.
             </p>
             <div className="flex items-center gap-6">
               <Link 

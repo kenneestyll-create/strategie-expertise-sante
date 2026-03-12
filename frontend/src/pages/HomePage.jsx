@@ -110,10 +110,10 @@ export const HomePage = () => {
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
           <div className="max-w-3xl">
-            {/* Badge innovant */}
-            <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-2 rounded-full mb-6">
-              <Sparkles className="w-4 h-4" />
-              <span className="text-sm font-medium">Service pionnier en France</span>
+            {/* Badge pionnier - mis en valeur */}
+            <div className="inline-flex items-center gap-2.5 bg-foreground text-primary-foreground px-5 py-2.5 rounded-full mb-6 shadow-lg" data-testid="pioneer-badge">
+              <Sparkles className="w-5 h-5 text-accent" />
+              <span className="text-sm font-bold uppercase tracking-wider">Service pionnier en France</span>
             </div>
             
             <h1 
@@ -122,6 +122,9 @@ export const HomePage = () => {
             >
               Vous n'êtes plus seul face à la maladie professionnelle
             </h1>
+            <p className="text-base sm:text-lg font-medium text-foreground/80 mb-3 max-w-2xl" data-testid="hero-tagline">
+              Conseil stratégique en expertise médicale, invalidité et démarches médico-administratives.
+            </p>
             <p className="text-base sm:text-lg text-muted-foreground mb-8 max-w-2xl">
               Un service innovant dédié à l'accompagnement des personnes confrontées à des démarches 
               complexes liées au handicap, aux expertises médicales et aux procédures d'assurance.
@@ -254,7 +257,7 @@ export const HomePage = () => {
                 beaucoup abandonnent leurs droits.
               </p>
               <p className="text-muted-foreground mb-8">
-                <strong>Accompagn'Santé</strong> est né de cette réalité vécue. Mon rôle : vous aider à comprendre 
+                <strong>Stratégie & Expertise Santé</strong> est né de cette réalité vécue. Mon rôle : vous aider à comprendre 
                 chaque étape, à préparer vos dossiers et à défendre vos intérêts face aux organismes et assureurs.
               </p>
               <div className="space-y-3">
