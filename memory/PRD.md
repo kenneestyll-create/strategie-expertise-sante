@@ -52,6 +52,12 @@ Application web de conseil basée sur une expérience vécue de maladie professi
 - **Système de relance** — Tracking paniers abandonnés, admin peut envoyer relances email
 - **Admin étendu** — 5 onglets : Contacts, Avis, Parrainage, RDV, Relance
 
+### Phase 8 - Notifications & Corrections (Mar 12, 2026)
+- **Correction durée d'expérience** : 4 ans → 7 ans sur toutes les pages (Home, À propos)
+- **Système de notifications client** : Cloche avec badge non lus dans l'espace client, panneau déroulant, lecture individuelle/groupée
+- **Notifications automatiques** : création de dossier → notif, mise à jour statut → notif, nouveau message → notif
+- **Admin étendu à 6 onglets** : ajout onglet "Clients" avec liste des clients inscrits, compteur de dossiers, bouton "Créer un dossier"
+
 ## Admin Credentials
 - **Admin site**: admin@accompagn-sante.fr / Admin2024!
 - **Forum**: Inscription utilisateur séparée
