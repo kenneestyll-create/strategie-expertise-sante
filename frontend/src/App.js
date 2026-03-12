@@ -17,6 +17,7 @@ import { PartenairesPage } from "@/pages/PartenairesPage";
 import { AvisPage } from "@/pages/AvisPage";
 import { ResourcesPage } from "@/pages/ResourcesPage";
 import { ContactPage } from "@/pages/ContactPage";
+import { MentionsLegalesPage } from "@/pages/MentionsLegalesPage";
 import { AdminLoginPage } from "@/pages/AdminLoginPage";
 import { AdminDashboard } from "@/pages/AdminDashboard";
 
@@ -58,6 +59,7 @@ function App() {
               <Route path="/avis" element={<><Header /><AvisPage /><Footer /></>} />
               <Route path="/ressources" element={<><Header /><ResourcesPage /><Footer /></>} />
               <Route path="/contact" element={<><Header /><ContactPage /><Footer /></>} />
+              <Route path="/mentions-legales" element={<><Header /><MentionsLegalesPage /><Footer /></>} />
               
               {/* Forum Routes */}
               <Route path="/forum" element={<><Header /><ForumPage /><Footer /></>} />

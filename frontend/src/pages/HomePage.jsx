@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { 
   ArrowRight, 
   FileSearch, 
@@ -14,10 +16,37 @@ import {
   Stethoscope,
   Scale,
   Building2,
-  Star
+  Star,
+  Train,
+  Bus,
+  Eye
 } from 'lucide-react';
+import axios from 'axios';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export const HomePage = () => {
+  const [visitorCount, setVisitorCount] = useState(0);
+
+  useEffect(() => {
+    // Increment visitor count on page load
+    const incrementVisitor = async () => {
+      try {
+        const response = await axios.post(`${API}/visitors/increment`);
+        setVisitorCount(response.data.count);
+      } catch (error) {
+        // Fallback to get count if increment fails
+        try {
+          const response = await axios.get(`${API}/visitors/count`);
+          setVisitorCount(response.data.count);
+        } catch (e) {
+          console.error('Error fetching visitor count');
+        }
+      }
+    };
+    incrementVisitor();
+  }, []);
+
   const services = [
     {
       icon: FileSearch,
@@ -60,6 +89,11 @@ export const HomePage = () => {
     { icon: Scale, title: "Avocats spécialisés" },
     { icon: FileSearch, title: "Experts en assurance" },
     { icon: Building2, title: "Associations de victimes" }
+  ];
+
+  const regimesSpeciaux = [
+    { icon: Train, name: "SNCF", description: "Cheminots et agents SNCF" },
+    { icon: Bus, name: "RATP", description: "Agents RATP" }
   ];
 
   return (
@@ -114,6 +148,44 @@ export const HomePage = () => {
                 </Button>
               </Link>
             </div>
+
+            {/* Visitor Counter */}
+            {visitorCount > 0 && (
+              <div className="mt-8 inline-flex items-center gap-2 text-sm text-muted-foreground bg-background/80 backdrop-blur-sm px-4 py-2 rounded-full">
+                <Eye className="w-4 h-4 text-accent" />
+                <span><strong className="text-foreground">{visitorCount.toLocaleString('fr-FR')}</strong> visiteurs nous ont fait confiance</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Régimes Spéciaux Section */}
+      <section className="py-8 bg-foreground text-primary-foreground">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
+            <p className="text-sm font-medium text-primary-foreground/70">
+              Accompagnement spécialisé régimes spéciaux :
+            </p>
+            <div className="flex items-center gap-6">
+              {regimesSpeciaux.map((regime, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
+                    <regime.icon className="w-5 h-5 text-accent-foreground" strokeWidth={1.5} />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">{regime.name}</p>
+                    <p className="text-xs text-primary-foreground/60">{regime.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Link to="/accompagnements#regimes-speciaux">
+              <Button variant="secondary" size="sm" className="rounded-full gap-1">
+                En savoir plus
+                <ArrowRight className="w-3 h-3" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

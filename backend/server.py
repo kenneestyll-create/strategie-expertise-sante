@@ -23,6 +23,10 @@ except ImportError:
 # Import Emergent LLM
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 
+# Import Stripe
+from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+from fastapi import Request
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
@@ -45,6 +49,18 @@ FORUM_JWT_EXPIRATION_HOURS = 168  # 7 days for forum users
 
 # Emergent LLM Key
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
+
+# Stripe configuration
+STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', '')
+
+# Payment packages - FIXED prices defined on backend
+PAYMENT_PACKAGES = {
+    "analyse_dossier": {"name": "Analyse de dossier", "amount": 150.00, "currency": "eur"},
+    "preparation_expertise": {"name": "Préparation expertise médicale", "amount": 250.00, "currency": "eur"},
+    "accompagnement_mdph": {"name": "Accompagnement MDPH", "amount": 200.00, "currency": "eur"},
+    "protection_juridique": {"name": "Protection juridique", "amount": 200.00, "currency": "eur"},
+    "accompagnement_complet": {"name": "Accompagnement complet", "amount": 500.00, "currency": "eur"},
+}
 
 # Security
 security = HTTPBearer()
@@ -245,6 +261,70 @@ class ChatResponse(BaseModel):
     response: str
     is_faq: bool
     session_id: str
+
+# ==================== PAYMENT MODELS ====================
+
+class PaymentTransaction(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    session_id: str
+    package_id: str
+    package_name: str
+    amount: float
+    currency: str
+    email: Optional[str] = None
+    customer_name: Optional[str] = None
+    status: str = "pending"  # pending, paid, failed, expired
+    payment_status: str = "initiated"
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    metadata: Optional[dict] = None
+
+class CreateCheckoutRequest(BaseModel):
+    package_id: str
+    origin_url: str
+    customer_email: Optional[str] = None
+    customer_name: Optional[str] = None
+    referral_code: Optional[str] = None  # Code parrainage
+
+# ==================== VISITOR & REFERRAL MODELS ====================
+
+class VisitorCount(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = "visitor_counter"
+    count: int = 0
+    last_updated: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ReferralCode(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    code: str
+    owner_email: str
+    owner_name: Optional[str] = None
+    uses_count: int = 0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    is_active: bool = True
+
+class ReferralUse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    referral_code: str
+    referred_email: str
+    referred_name: Optional[str] = None
+    discount_applied: float = 10.0  # 10%
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CreateReferralRequest(BaseModel):
+    email: EmailStr
+    name: Optional[str] = None
+
+class ClientHistory(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    email: str
+    orders_count: int = 0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    last_order_at: Optional[datetime] = None
 
 # ==================== AUTH HELPERS ====================
 
@@ -629,6 +709,112 @@ async def create_avis(input_data: AvisCreate):
         "id": avis_obj.id
     }
 
+# ==================== VISITOR COUNTER ROUTES ====================
+
+@api_router.get("/visitors/count")
+async def get_visitor_count():
+    """Get current visitor count"""
+    counter = await db.visitor_counter.find_one({"id": "visitor_counter"}, {"_id": 0})
+    if not counter:
+        return {"count": 0}
+    return {"count": counter.get("count", 0)}
+
+@api_router.post("/visitors/increment")
+async def increment_visitor_count():
+    """Increment visitor count"""
+    result = await db.visitor_counter.find_one_and_update(
+        {"id": "visitor_counter"},
+        {
+            "$inc": {"count": 1},
+            "$set": {"last_updated": datetime.now(timezone.utc).isoformat()}
+        },
+        upsert=True,
+        return_document=True
+    )
+    # Exclude _id from response
+    count = result.get("count", 1) if result else 1
+    return {"count": count}
+
+# ==================== REFERRAL & DISCOUNT ROUTES ====================
+
+@api_router.post("/referral/create")
+async def create_referral_code(request: CreateReferralRequest):
+    """Create a referral code for a client"""
+    # Check if client already has a code
+    existing = await db.referral_codes.find_one({"owner_email": request.email}, {"_id": 0})
+    if existing:
+        return {"code": existing["code"], "message": "Code existant récupéré"}
+    
+    # Generate unique code
+    import random
+    import string
+    code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+    
+    referral = ReferralCode(
+        code=code,
+        owner_email=request.email,
+        owner_name=request.name
+    )
+    
+    doc = referral.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.referral_codes.insert_one(doc)
+    
+    return {
+        "success": True,
+        "code": code,
+        "message": "Votre code parrainage a été créé. Partagez-le pour offrir 10% de réduction !"
+    }
+
+@api_router.get("/referral/validate/{code}")
+async def validate_referral_code(code: str):
+    """Validate a referral code"""
+    referral = await db.referral_codes.find_one({"code": code.upper(), "is_active": True}, {"_id": 0})
+    if not referral:
+        return {"valid": False, "message": "Code invalide ou expiré"}
+    
+    return {
+        "valid": True,
+        "discount": 10,
+        "message": "Code valide ! 10% de réduction appliquée."
+    }
+
+@api_router.get("/client/discount/{email}")
+async def get_client_discount(email: str):
+    """Get applicable discount for a client (loyalty + referral)"""
+    # Check order history for loyalty discount
+    client = await db.client_history.find_one({"email": email.lower()}, {"_id": 0})
+    orders_count = client.get("orders_count", 0) if client else 0
+    
+    # Loyalty discount: 15% from 2nd order
+    loyalty_discount = 15 if orders_count >= 1 else 0
+    
+    return {
+        "orders_count": orders_count,
+        "loyalty_discount": loyalty_discount,
+        "message": f"{'15% de fidélité appliqués !' if loyalty_discount else 'Première commande'}"
+    }
+
+@api_router.post("/client/record-order")
+async def record_client_order(email: str, name: Optional[str] = None):
+    """Record a client order for loyalty tracking"""
+    await db.client_history.update_one(
+        {"email": email.lower()},
+        {
+            "$inc": {"orders_count": 1},
+            "$set": {
+                "last_order_at": datetime.now(timezone.utc).isoformat(),
+                "name": name
+            },
+            "$setOnInsert": {
+                "id": str(uuid.uuid4()),
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+        },
+        upsert=True
+    )
+    return {"success": True}
+
 # ==================== CHATBOT ROUTES ====================
 
 @api_router.post("/chatbot", response_model=ChatResponse)
@@ -654,6 +840,163 @@ async def chatbot_message(chat_input: ChatMessage):
         is_faq=False,
         session_id=session_id
     )
+
+# ==================== PAYMENT ROUTES ====================
+
+@api_router.get("/payments/packages")
+async def get_payment_packages():
+    """Get available payment packages"""
+    return [
+        {"id": k, "name": v["name"], "amount": v["amount"], "currency": v["currency"]}
+        for k, v in PAYMENT_PACKAGES.items()
+    ]
+
+@api_router.post("/payments/checkout")
+async def create_checkout_session(request_data: CreateCheckoutRequest, request: Request):
+    """Create a Stripe checkout session"""
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe non configuré")
+    
+    # Validate package
+    if request_data.package_id not in PAYMENT_PACKAGES:
+        raise HTTPException(status_code=400, detail="Forfait invalide")
+    
+    package = PAYMENT_PACKAGES[request_data.package_id]
+    
+    # Build URLs from provided origin
+    origin_url = request_data.origin_url.rstrip('/')
+    success_url = f"{origin_url}/tarifs?payment=success&session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{origin_url}/tarifs?payment=cancelled"
+    
+    # Initialize Stripe
+    host_url = str(request.base_url).rstrip('/')
+    webhook_url = f"{host_url}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    
+    # Create checkout session
+    metadata = {
+        "package_id": request_data.package_id,
+        "package_name": package["name"],
+        "customer_email": request_data.customer_email or "",
+        "customer_name": request_data.customer_name or ""
+    }
+    
+    checkout_request = CheckoutSessionRequest(
+        amount=package["amount"],
+        currency=package["currency"],
+        success_url=success_url,
+        cancel_url=cancel_url,
+        metadata=metadata
+    )
+    
+    try:
+        session = await stripe_checkout.create_checkout_session(checkout_request)
+        
+        # Create payment transaction record
+        transaction = PaymentTransaction(
+            session_id=session.session_id,
+            package_id=request_data.package_id,
+            package_name=package["name"],
+            amount=package["amount"],
+            currency=package["currency"],
+            email=request_data.customer_email,
+            customer_name=request_data.customer_name,
+            status="pending",
+            payment_status="initiated",
+            metadata=metadata
+        )
+        
+        doc = transaction.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        doc['updated_at'] = doc['updated_at'].isoformat()
+        await db.payment_transactions.insert_one(doc)
+        
+        return {"url": session.url, "session_id": session.session_id}
+        
+    except Exception as e:
+        logger.error(f"Stripe checkout error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erreur lors de la création du paiement")
+
+@api_router.get("/payments/status/{session_id}")
+async def get_payment_status(session_id: str, request: Request):
+    """Get payment status and update transaction"""
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe non configuré")
+    
+    # Check if already processed
+    transaction = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
+    if transaction and transaction.get("payment_status") == "paid":
+        return {
+            "status": "complete",
+            "payment_status": "paid",
+            "package_name": transaction.get("package_name"),
+            "amount": transaction.get("amount"),
+            "currency": transaction.get("currency")
+        }
+    
+    # Initialize Stripe and check status
+    host_url = str(request.base_url).rstrip('/')
+    webhook_url = f"{host_url}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    
+    try:
+        status = await stripe_checkout.get_checkout_status(session_id)
+        
+        # Update transaction
+        new_status = "paid" if status.payment_status == "paid" else status.status
+        await db.payment_transactions.update_one(
+            {"session_id": session_id},
+            {"$set": {
+                "status": status.status,
+                "payment_status": status.payment_status,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        return {
+            "status": status.status,
+            "payment_status": status.payment_status,
+            "amount": status.amount_total / 100,  # Convert from cents
+            "currency": status.currency,
+            "metadata": status.metadata
+        }
+        
+    except Exception as e:
+        logger.error(f"Payment status error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erreur lors de la vérification du paiement")
+
+@api_router.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhooks"""
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe non configuré")
+    
+    body = await request.body()
+    sig_header = request.headers.get("Stripe-Signature")
+    
+    host_url = str(request.base_url).rstrip('/')
+    webhook_url = f"{host_url}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    
+    try:
+        webhook_response = await stripe_checkout.handle_webhook(body, sig_header)
+        
+        # Update transaction based on webhook event
+        if webhook_response.session_id:
+            await db.payment_transactions.update_one(
+                {"session_id": webhook_response.session_id},
+                {"$set": {
+                    "status": webhook_response.event_type,
+                    "payment_status": webhook_response.payment_status,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+        
+        return {"received": True}
+        
+    except Exception as e:
+        logger.error(f"Webhook error: {str(e)}")
+        raise HTTPException(status_code=400, detail="Webhook error")
 
 # ==================== FORUM PUBLIC ROUTES ====================
 

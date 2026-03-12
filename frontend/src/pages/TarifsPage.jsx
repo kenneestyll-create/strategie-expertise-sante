@@ -1,7 +1,12 @@
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 import { 
   ArrowRight, 
   FileSearch, 
@@ -11,12 +16,80 @@ import {
   CheckCircle,
   Star,
   GraduationCap,
-  Building2
+  Building2,
+  CreditCard,
+  Loader2,
+  PartyPopper
 } from 'lucide-react';
+import axios from 'axios';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export const TarifsPage = () => {
+  const [searchParams] = useSearchParams();
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState(null);
+  const [customerInfo, setCustomerInfo] = useState({ email: '', name: '' });
+
+  useEffect(() => {
+    // Check for payment success
+    const paymentStatus = searchParams.get('payment');
+    const sessionId = searchParams.get('session_id');
+    
+    if (paymentStatus === 'success' && sessionId) {
+      checkPaymentStatus(sessionId);
+    } else if (paymentStatus === 'cancelled') {
+      toast.error("Paiement annulé");
+    }
+  }, [searchParams]);
+
+  const checkPaymentStatus = async (sessionId) => {
+    try {
+      const response = await axios.get(`${API}/payments/status/${sessionId}`);
+      if (response.data.payment_status === 'paid') {
+        setPaymentDetails(response.data);
+        setShowSuccessModal(true);
+      }
+    } catch (error) {
+      console.error('Error checking payment:', error);
+    }
+  };
+
+  const handlePayment = async () => {
+    if (!customerInfo.email) {
+      toast.error("Veuillez entrer votre email");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API}/payments/checkout`, {
+        package_id: selectedPackage.id,
+        origin_url: window.location.origin,
+        customer_email: customerInfo.email,
+        customer_name: customerInfo.name
+      });
+      
+      // Redirect to Stripe checkout
+      window.location.href = response.data.url;
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast.error("Erreur lors de l'initialisation du paiement");
+      setLoading(false);
+    }
+  };
+
+  const openPaymentModal = (pkg) => {
+    setSelectedPackage(pkg);
+    setShowPaymentModal(true);
+  };
+
   const prestationsParticuliers = [
     {
+      id: "analyse_dossier",
       icon: FileSearch,
       title: "Analyse de dossier",
       description: "Étude personnalisée du dossier médical et administratif. Identification des points forts, des faiblesses et des éléments manquants.",
@@ -27,11 +100,13 @@ export const TarifsPage = () => {
         "Rapport d'analyse détaillé",
         "Recommandations personnalisées",
         "Échange téléphonique de restitution"
-      ]
+      ],
+      payable: true
     },
     {
+      id: "preparation_expertise",
       icon: Shield,
-      title: "Préparation à expertise médicale",
+      title: "Préparation expertise médicale",
       description: "Accompagnement pour aborder sereinement une expertise médicale. Préparation du dossier et conseils stratégiques.",
       price: "250",
       priceNote: "à partir de",
@@ -41,9 +116,11 @@ export const TarifsPage = () => {
         "Simulation d'entretien",
         "Liste des documents à apporter"
       ],
-      popular: true
+      popular: true,
+      payable: true
     },
     {
+      id: "accompagnement_mdph",
       icon: Users,
       title: "Accompagnement MDPH",
       description: "Aide à la compréhension et structuration du dossier MDPH. Orientation vers les droits possibles.",
@@ -54,9 +131,26 @@ export const TarifsPage = () => {
         "Aide au formulaire",
         "Conseils sur les pièces justificatives",
         "Suivi de la demande"
-      ]
+      ],
+      payable: true
     },
     {
+      id: "protection_juridique",
+      icon: Shield,
+      title: "Protection juridique",
+      description: "Accompagnement dans l'activation et le suivi de votre protection juridique.",
+      price: "200",
+      priceNote: "à partir de",
+      features: [
+        "Identification de vos garanties",
+        "Aide à la déclaration du litige",
+        "Suivi des échanges assureur",
+        "Orientation vers avocat spécialisé"
+      ],
+      payable: true
+    },
+    {
+      id: "accompagnement_complet",
       icon: Briefcase,
       title: "Accompagnement complet",
       description: "Suivi global dans les démarches administratives et médicales. Accompagnement personnalisé sur la durée.",
@@ -68,7 +162,8 @@ export const TarifsPage = () => {
         "Stratégie personnalisée",
         "Suivi des démarches",
         "Disponibilité continue"
-      ]
+      ],
+      payable: true
     }
   ];
 
@@ -113,9 +208,12 @@ export const TarifsPage = () => {
             </h1>
             <p className="text-lg text-muted-foreground">
               Des tarifs transparents pour un accompagnement de qualité. 
-              Chaque situation étant unique, un devis personnalisé peut être établi 
-              après un premier échange gratuit.
+              Paiement sécurisé en ligne ou premier échange gratuit pour un devis personnalisé.
             </p>
+            <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
+              <CreditCard className="w-4 h-4 text-accent" />
+              <span>Paiement sécurisé par carte bancaire</span>
+            </div>
           </div>
         </div>
       </section>
@@ -130,11 +228,11 @@ export const TarifsPage = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {prestationsParticuliers.map((prestation, index) => (
               <Card 
                 key={index} 
-                className={`relative border-border ${prestation.popular ? 'ring-2 ring-accent' : ''}`}
+                className={`relative border-border flex flex-col ${prestation.popular ? 'ring-2 ring-accent' : ''}`}
                 data-testid={`tarif-card-${index}`}
               >
                 {prestation.popular && (
@@ -152,7 +250,7 @@ export const TarifsPage = () => {
                         <prestation.icon className="w-6 h-6 text-accent" strokeWidth={1.5} />
                       </div>
                       <div>
-                        <CardTitle className="text-xl">{prestation.title}</CardTitle>
+                        <CardTitle className="text-lg">{prestation.title}</CardTitle>
                         {prestation.badge && (
                           <Badge variant="secondary" className="mt-1">{prestation.badge}</Badge>
                         )}
@@ -161,7 +259,7 @@ export const TarifsPage = () => {
                   </div>
                   <CardDescription className="mt-3">{prestation.description}</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-1">
                   <div className="mb-6">
                     <p className="text-sm text-muted-foreground">{prestation.priceNote}</p>
                     <p className="text-4xl font-bold text-foreground">
@@ -178,10 +276,21 @@ export const TarifsPage = () => {
                     ))}
                   </ul>
                 </CardContent>
-                <CardFooter>
-                  <Link to="/contact" className="w-full">
-                    <Button className="w-full rounded-lg" variant={prestation.popular ? "default" : "outline"}>
-                      Demander un devis
+                <CardFooter className="flex gap-2">
+                  {prestation.payable && (
+                    <Button 
+                      className="flex-1 rounded-lg gap-2" 
+                      variant={prestation.popular ? "default" : "outline"}
+                      onClick={() => openPaymentModal(prestation)}
+                      data-testid={`pay-button-${prestation.id}`}
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      Payer en ligne
+                    </Button>
+                  )}
+                  <Link to="/contact" className={prestation.payable ? "" : "w-full"}>
+                    <Button className="rounded-lg w-full" variant="outline">
+                      Devis
                     </Button>
                   </Link>
                 </CardFooter>
@@ -259,6 +368,112 @@ export const TarifsPage = () => {
           </Link>
         </div>
       </section>
+
+      {/* Payment Modal */}
+      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Paiement sécurisé</DialogTitle>
+            <DialogDescription>
+              {selectedPackage && (
+                <>
+                  <span className="font-semibold text-foreground">{selectedPackage.title}</span>
+                  <span className="block text-2xl font-bold text-foreground mt-2">
+                    {selectedPackage.price} €
+                  </span>
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="payment-email">Email *</Label>
+              <Input
+                id="payment-email"
+                type="email"
+                value={customerInfo.email}
+                onChange={(e) => setCustomerInfo(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="votre@email.fr"
+                required
+                data-testid="payment-email-input"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="payment-name">Nom complet</Label>
+              <Input
+                id="payment-name"
+                value={customerInfo.name}
+                onChange={(e) => setCustomerInfo(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Prénom Nom"
+                data-testid="payment-name-input"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Vous serez redirigé vers notre plateforme de paiement sécurisée (Stripe).
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPaymentModal(false)}>
+              Annuler
+            </Button>
+            <Button 
+              onClick={handlePayment} 
+              disabled={loading}
+              className="gap-2"
+              data-testid="confirm-payment-button"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Redirection...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-4 h-4" />
+                  Payer {selectedPackage?.price} €
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Modal */}
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="max-w-md text-center">
+          <div className="py-6">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <PartyPopper className="w-8 h-8 text-green-600" />
+            </div>
+            <DialogHeader>
+              <DialogTitle className="text-2xl">Paiement réussi !</DialogTitle>
+              <DialogDescription className="mt-4 space-y-2">
+                <p>Merci pour votre confiance.</p>
+                {paymentDetails && (
+                  <p className="text-foreground font-medium">
+                    {paymentDetails.metadata?.package_name || 'Votre prestation'} - {paymentDetails.amount} €
+                  </p>
+                )}
+                <p className="text-sm">
+                  Vous recevrez un email de confirmation. Je vous contacterai très prochainement 
+                  pour organiser notre premier échange.
+                </p>
+              </DialogDescription>
+            </DialogHeader>
+            <Button 
+              className="mt-6 rounded-full"
+              onClick={() => {
+                setShowSuccessModal(false);
+                window.history.replaceState({}, '', '/tarifs');
+              }}
+            >
+              Fermer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 };
