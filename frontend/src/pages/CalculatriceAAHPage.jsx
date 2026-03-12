@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,13 @@ import {
   Info,
   CalendarPlus,
   Users,
-  Heart
+  Heart,
+  Share2,
+  Mail,
+  MessageSquare,
+  Phone,
+  Copy,
+  Check
 } from 'lucide-react';
 
 // AAH 2024-2025 : montant max = 971,37 €/mois
@@ -78,17 +84,72 @@ const calculateAAH = (tauxInvalidite, situationFamiliale, revenus, enfants) => {
 };
 
 export const CalculatriceAAHPage = () => {
+  const [searchParams] = useSearchParams();
   const [tauxInvalidite, setTauxInvalidite] = useState(80);
   const [situationFamiliale, setSituationFamiliale] = useState('seul');
   const [revenus, setRevenus] = useState(0);
   const [enfants, setEnfants] = useState(0);
   const [result, setResult] = useState(null);
   const [calculated, setCalculated] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const t = searchParams.get('t');
+    if (t) {
+      const parsedT = parseInt(t, 10);
+      const sf = searchParams.get('sf') || 'seul';
+      const r = parseInt(searchParams.get('r') || '0', 10);
+      const e = parseInt(searchParams.get('e') || '0', 10);
+      if (parsedT >= 0 && parsedT <= 100) {
+        setTauxInvalidite(parsedT);
+        setSituationFamiliale(sf);
+        setRevenus(r);
+        setEnfants(e);
+        const res = calculateAAH(parsedT, sf, r, e);
+        setResult(res);
+        setCalculated(true);
+      }
+    }
+  }, [searchParams]);
 
   const handleCalculate = () => {
     const res = calculateAAH(tauxInvalidite, situationFamiliale, revenus, enfants);
     setResult(res);
     setCalculated(true);
+  };
+
+  const getShareUrl = () => {
+    const base = `${window.location.origin}/calculatrice-aah`;
+    const params = new URLSearchParams({ t: tauxInvalidite, sf: situationFamiliale, r: revenus, e: enfants });
+    return `${base}?${params.toString()}`;
+  };
+
+  const getShareText = () => {
+    if (!result) return '';
+    if (result.eligible) {
+      return `Calculatrice AAH - Taux ${tauxInvalidite}% : AAH estimée à ${result.montant.toLocaleString('fr-FR')} €/mois. Estimez la vôtre :`;
+    }
+    return `Calculatrice AAH - Vérifiez votre éligibilité à l'AAH :`;
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(getShareUrl());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleWhatsApp = () => {
+    window.open(`https://wa.me/?text=${encodeURIComponent(getShareText() + ' ' + getShareUrl())}`, '_blank');
+  };
+
+  const handleSMS = () => {
+    window.open(`sms:?body=${encodeURIComponent(getShareText() + ' ' + getShareUrl())}`, '_blank');
+  };
+
+  const handleEmail = () => {
+    const subject = encodeURIComponent('Mon estimation AAH - Stratégie & Expertise Santé');
+    const body = encodeURIComponent(getShareText() + '\n\n' + getShareUrl());
+    window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
   };
 
   return (
@@ -266,6 +327,44 @@ export const CalculatriceAAHPage = () => {
                       )}
                     </div>
                   )}
+
+                  {/* Share buttons */}
+                  <div className="pt-4 border-t border-border/50">
+                    <p className="text-sm font-medium text-muted-foreground flex items-center gap-2 mb-3">
+                      <Share2 className="w-4 h-4" /> Partager mon estimation
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={handleWhatsApp}
+                        className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
+                        data-testid="aah-share-whatsapp"
+                      >
+                        <MessageSquare className="w-4 h-4" /> WhatsApp
+                      </button>
+                      <button
+                        onClick={handleSMS}
+                        className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 transition-colors"
+                        data-testid="aah-share-sms"
+                      >
+                        <Phone className="w-4 h-4" /> SMS
+                      </button>
+                      <button
+                        onClick={handleEmail}
+                        className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
+                        data-testid="aah-share-email"
+                      >
+                        <Mail className="w-4 h-4" /> Email
+                      </button>
+                      <button
+                        onClick={handleCopyLink}
+                        className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-muted hover:bg-muted/80 transition-colors"
+                        data-testid="aah-share-copy"
+                      >
+                        {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                        {copied ? 'Copié !' : 'Copier le lien'}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </CardContent>
