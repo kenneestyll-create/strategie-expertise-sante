@@ -41,16 +41,27 @@ Application web de conseil basée sur une expérience vécue de maladie professi
 - **Visionneuse PDF** — Décision du Tribunal de Chartres N°23/00331 du 17/10/2025 intégrée sur page "Mon parcours" avec téléchargement
 - **Fix z-index** grain texture (9999→1) pour chatbot cliquable
 
+### Phase 6 - Pass Urgent & Admin Parrainage (Mar 12, 2026)
+- **Pass Urgent** sur /tarifs — 4 forfaits prioritaires 48h avec design dark navy/ambre distinctif:
+  - Analyse de dossier urgente: 250€
+  - Préparation expertise urgente: 400€
+  - Accompagnement MDPH urgent: 320€
+  - Accompagnement complet urgent: 750€
+- **Tableau de bord parrainage admin** — Nouvel onglet dans /admin avec:
+  - Statistiques: codes créés, codes actifs, utilisations, réductions totales
+  - Table des codes parrainage avec parrain, email, utilisations, statut, date
+  - Liste des dernières utilisations avec code, filleul et réduction appliquée
+
 ## Admin Credentials
 - **Admin site**: admin@accompagn-sante.fr / Admin2024!
 - **Forum**: Inscription utilisateur séparée
 
 ## Tarifs
-- Analyse dossier: 150€+
-- Préparation expertise: 250€+
-- Accompagnement MDPH: 200€+
+- Analyse dossier: 150€+ | **Urgent 48h: 250€**
+- Préparation expertise: 250€+ | **Urgent 48h: 400€**
+- Accompagnement MDPH: 200€+ | **Urgent 48h: 320€**
 - Protection juridique: 200€+
-- Accompagnement complet: 500€+ (sur devis)
+- Accompagnement complet: 500€+ (sur devis) | **Urgent 48h: 750€**
 
 ## Pages & Routes
 - / (Home), /a-propos, /accompagnements, /expertise-medicale
