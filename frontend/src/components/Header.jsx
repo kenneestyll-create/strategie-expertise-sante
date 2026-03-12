@@ -17,6 +17,7 @@ export const Header = () => {
     { name: 'Accueil', href: '/' },
     { name: 'À propos', href: '/a-propos' },
     { name: 'Accompagnements', href: '/accompagnements' },
+    { name: 'Protection juridique', href: '/protection-juridique' },
   ];
 
   const expertiseItems = [
@@ -26,9 +27,9 @@ export const Header = () => {
   ];
 
   const servicesItems = [
+    { name: 'Tarifs', href: '/tarifs' },
     { name: 'Séminaires', href: '/seminaires' },
     { name: 'Entreprises', href: '/entreprises' },
-    { name: 'Tarifs', href: '/tarifs' },
     { name: 'Partenaires', href: '/partenaires' },
   ];
 
@@ -43,12 +44,13 @@ export const Header = () => {
     { name: 'Accueil', href: '/' },
     { name: 'À propos', href: '/a-propos' },
     { name: 'Accompagnements', href: '/accompagnements' },
+    { name: 'Protection juridique', href: '/protection-juridique' },
     { name: 'Expertise médicale', href: '/expertise-medicale' },
     { name: 'AT / MP', href: '/accident-travail-maladie-professionnelle' },
     { name: 'MDPH', href: '/mdph' },
+    { name: 'Tarifs', href: '/tarifs' },
     { name: 'Séminaires', href: '/seminaires' },
     { name: 'Entreprises', href: '/entreprises' },
-    { name: 'Tarifs', href: '/tarifs' },
     { name: 'Partenaires', href: '/partenaires' },
     { name: 'Avis', href: '/avis' },
     { name: 'Ressources', href: '/ressources' },

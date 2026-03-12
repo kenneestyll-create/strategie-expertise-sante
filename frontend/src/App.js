@@ -12,6 +12,7 @@ import { MDPHPage } from "@/pages/MDPHPage";
 import { SeminairesPage } from "@/pages/SeminairesPage";
 import { EntreprisesPage } from "@/pages/EntreprisesPage";
 import { TarifsPage } from "@/pages/TarifsPage";
+import { ProtectionJuridiquePage } from "@/pages/ProtectionJuridiquePage";
 import { PartenairesPage } from "@/pages/PartenairesPage";
 import { AvisPage } from "@/pages/AvisPage";
 import { ResourcesPage } from "@/pages/ResourcesPage";
@@ -40,6 +41,7 @@ function App() {
             <Route path="/mdph" element={<><Header /><MDPHPage /><Footer /></>} />
             <Route path="/seminaires" element={<><Header /><SeminairesPage /><Footer /></>} />
             <Route path="/entreprises" element={<><Header /><EntreprisesPage /><Footer /></>} />
+            <Route path="/protection-juridique" element={<><Header /><ProtectionJuridiquePage /><Footer /></>} />
             <Route path="/tarifs" element={<><Header /><TarifsPage /><Footer /></>} />
             <Route path="/partenaires" element={<><Header /><PartenairesPage /><Footer /></>} />
             <Route path="/avis" element={<><Header /><AvisPage /><Footer /></>} />
