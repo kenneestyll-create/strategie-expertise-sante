@@ -2120,6 +2120,57 @@ async def get_calculator_weekly_count():
     count = await db.calculator_usage.count_documents({"created_at": {"$gte": week_ago}})
     return {"count": count}
 
+# ==================== URGENT ALERT ROUTES ====================
+
+@api_router.post("/alerte-urgente")
+async def create_urgent_alert(request: Request):
+    body = await request.json()
+    if not body.get("nom") or not body.get("telephone"):
+        raise HTTPException(status_code=400, detail="Nom et téléphone requis")
+    alert = {
+        "id": str(uuid.uuid4()),
+        "nom": body["nom"],
+        "telephone": body["telephone"],
+        "email": body.get("email", ""),
+        "message": body.get("message", ""),
+        "formule": body.get("formule", "2h"),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "status": "nouveau",
+        "traite": False
+    }
+    await db.urgent_alerts.insert_one(alert)
+    # Try to send notification email
+    if RESEND_AVAILABLE and os.environ.get('RESEND_API_KEY') and NOTIFICATION_EMAIL:
+        try:
+            prix = "80€" if alert["formule"] == "30min" else "50€"
+            await asyncio.to_thread(resend.Emails.send, {
+                "from": SENDER_EMAIL,
+                "to": [NOTIFICATION_EMAIL],
+                "subject": f"ALERTE URGENTE - {alert['nom']} ({prix})",
+                "html": f"""
+                <h2 style="color:red;">Demande urgente !</h2>
+                <p><strong>Formule:</strong> Réponse sous {alert['formule']} — {prix}</p>
+                <p><strong>Nom:</strong> {alert['nom']}</p>
+                <p><strong>Téléphone:</strong> {alert['telephone']}</p>
+                <p><strong>Email:</strong> {alert.get('email', 'Non renseigné')}</p>
+                <p><strong>Message:</strong> {alert.get('message', 'Aucun')}</p>
+                """
+            })
+        except Exception as e:
+            logger.error(f"Urgent alert email error: {e}")
+    return {"success": True, "id": alert["id"]}
+
+@api_router.get("/admin/alertes-urgentes")
+async def get_urgent_alerts(admin: dict = Depends(get_current_admin)):
+    alerts = await db.urgent_alerts.find({}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return {"items": alerts, "total": len(alerts), "non_traite": sum(1 for a in alerts if not a.get("traite"))}
+
+@api_router.put("/admin/alertes-urgentes/{alert_id}")
+async def update_urgent_alert(alert_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    await db.urgent_alerts.update_one({"id": alert_id}, {"$set": {"traite": body.get("traite", True), "status": body.get("status", "traité")}})
+    return {"success": True}
+
 # ==================== ABANDONED CHECKOUT / RELANCE ROUTES ====================
 
 @api_router.post("/relance/track")

@@ -35,7 +35,8 @@ import {
   Send,
   FolderOpen,
   Video,
-  User
+  User,
+  Zap
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
@@ -51,6 +52,7 @@ export const AdminDashboard = () => {
   const [bookings, setBookings] = useState([]);
   const [relanceData, setRelanceData] = useState({ items: [], stats: { total: 0, not_sent: 0, sent: 0 } });
   const [clients, setClients] = useState([]);
+  const [urgentAlerts, setUrgentAlerts] = useState({ items: [], total: 0, non_traite: 0 });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -78,7 +80,7 @@ export const AdminDashboard = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [contactsRes, statsRes, avisRes, avisStatsRes, referralsRes, bookingsRes, relanceRes, clientsRes] = await Promise.all([
+      const [contactsRes, statsRes, avisRes, avisStatsRes, referralsRes, bookingsRes, relanceRes, clientsRes, alertesRes] = await Promise.all([
         axios.get(`${API}/admin/contacts`, axiosConfig),
         axios.get(`${API}/admin/stats`, axiosConfig),
         axios.get(`${API}/admin/avis`, axiosConfig),
@@ -86,7 +88,8 @@ export const AdminDashboard = () => {
         axios.get(`${API}/admin/referrals`, axiosConfig).catch(() => ({ data: { codes: [], recent_uses: [], stats: { total_codes: 0, active_codes: 0, total_uses: 0, total_discount_given: 0 } } })),
         axios.get(`${API}/admin/bookings`, axiosConfig).catch(() => ({ data: [] })),
         axios.get(`${API}/admin/relance`, axiosConfig).catch(() => ({ data: { items: [], stats: { total: 0, not_sent: 0, sent: 0 } } })),
-        axios.get(`${API}/admin/clients`, axiosConfig).catch(() => ({ data: [] }))
+        axios.get(`${API}/admin/clients`, axiosConfig).catch(() => ({ data: [] })),
+        axios.get(`${API}/admin/alertes-urgentes`, axiosConfig).catch(() => ({ data: { items: [], total: 0, non_traite: 0 } }))
       ]);
       setContacts(contactsRes.data);
       setStats(statsRes.data);
@@ -96,6 +99,7 @@ export const AdminDashboard = () => {
       setBookings(bookingsRes.data);
       setRelanceData(relanceRes.data);
       setClients(clientsRes.data);
+      setUrgentAlerts(alertesRes.data);
     } catch (error) {
       console.error('Erreur:', error);
       if (error.response?.status === 401) {
@@ -292,7 +296,7 @@ export const AdminDashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-3xl grid-cols-6">
+          <TabsList className="grid w-full max-w-4xl grid-cols-7">
             <TabsTrigger value="contacts" className="gap-1 text-xs sm:text-sm">
               <Users className="w-3 h-3 sm:w-4 sm:h-4" />
               Contacts
@@ -316,6 +320,13 @@ export const AdminDashboard = () => {
             <TabsTrigger value="relance" className="gap-1 text-xs sm:text-sm" data-testid="tab-relance">
               <Send className="w-3 h-3 sm:w-4 sm:h-4" />
               Relance
+            </TabsTrigger>
+            <TabsTrigger value="alertes" className="gap-1 text-xs sm:text-sm relative" data-testid="tab-alertes">
+              <Zap className="w-3 h-3 sm:w-4 sm:h-4" />
+              Alertes
+              {urgentAlerts.non_traite > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">{urgentAlerts.non_traite}</span>
+              )}
             </TabsTrigger>
           </TabsList>
 
@@ -957,6 +968,68 @@ export const AdminDashboard = () => {
                               data-testid={`send-relance-${i}`}
                             >
                               <Send className="w-3 h-3" />Relancer
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Urgent Alerts Tab */}
+          <TabsContent value="alertes" className="space-y-6" data-testid="alertes-tab-content">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+              <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{urgentAlerts.total}</p><p className="text-xs text-muted-foreground">Total alertes</p></CardContent></Card>
+              <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-red-600">{urgentAlerts.non_traite}</p><p className="text-xs text-muted-foreground">Non traitées</p></CardContent></Card>
+              <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-green-600">{urgentAlerts.total - urgentAlerts.non_traite}</p><p className="text-xs text-muted-foreground">Traitées</p></CardContent></Card>
+            </div>
+            <Card>
+              <CardHeader><CardTitle className="flex items-center gap-2"><Zap className="w-5 h-5 text-red-600" />Demandes urgentes</CardTitle></CardHeader>
+              <CardContent>
+                {urgentAlerts.items?.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">Aucune demande urgente</p>
+                ) : (
+                  <div className="space-y-3">
+                    {urgentAlerts.items?.map((alert) => (
+                      <div key={alert.id} className={`p-4 rounded-lg border ${alert.traite ? 'bg-muted/30 border-border' : 'bg-red-50 border-red-200'}`} data-testid={`alert-item-${alert.id}`}>
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 space-y-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-semibold">{alert.nom}</span>
+                              <Badge variant={alert.formule === '30min' ? 'destructive' : 'secondary'}>
+                                {alert.formule === '30min' ? '30min — 80€' : '2h — 50€'}
+                              </Badge>
+                              {alert.traite ? (
+                                <Badge variant="outline" className="text-green-600 border-green-300">Traité</Badge>
+                              ) : (
+                                <Badge variant="destructive">Nouveau</Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{alert.telephone}</span>
+                              {alert.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{alert.email}</span>}
+                            </div>
+                            {alert.message && <p className="text-sm mt-1">{alert.message}</p>}
+                            <p className="text-xs text-muted-foreground">{new Date(alert.created_at).toLocaleString('fr-FR')}</p>
+                          </div>
+                          {!alert.traite && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="gap-1 text-green-600 border-green-300 hover:bg-green-50"
+                              onClick={async () => {
+                                try {
+                                  await axios.put(`${API}/admin/alertes-urgentes/${alert.id}`, { traite: true }, axiosConfig);
+                                  toast.success('Alerte marquée comme traitée');
+                                  fetchData();
+                                } catch { toast.error('Erreur'); }
+                              }}
+                              data-testid={`mark-treated-${alert.id}`}
+                            >
+                              <CheckCircle className="w-3 h-3" /> Traiter
                             </Button>
                           )}
                         </div>
