@@ -58,6 +58,12 @@ Application web de conseil basée sur une expérience vécue de maladie professi
 - **Notifications automatiques** : création de dossier → notif, mise à jour statut → notif, nouveau message → notif
 - **Admin étendu à 6 onglets** : ajout onglet "Clients" avec liste des clients inscrits, compteur de dossiers, bouton "Créer un dossier"
 
+### Phase 9 - PayPal (Mar 12, 2026)
+- **PayPal Sandbox** intégré en plus de Stripe
+- Modal de paiement : choix entre "Carte bancaire" (Stripe) et "PayPal"
+- Backend : `/api/paypal/calculate` (calcul remises) + `/api/paypal/record` (enregistrement transaction)
+- Réductions fidélité 15% et parrainage 10% appliquées aussi sur PayPal
+
 ## Admin Credentials
 - **Admin site**: admin@accompagn-sante.fr / Admin2024!
 - **Forum**: Inscription utilisateur séparée
