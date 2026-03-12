@@ -72,6 +72,7 @@ Application web de conseil basée sur une expérience vécue de maladie professi
 - **Placeholders Resend** — Variables RESEND_API_KEY, SENDER_EMAIL, NOTIFICATION_EMAIL ajoutées dans backend/.env
 - **Partage d'estimation** — Boutons WhatsApp, SMS, Email et "Copier le lien" sur les résultats des deux calculatrices. Liens uniques avec paramètres URL pour auto-calcul à l'ouverture.
 - **Compteur hebdomadaire** — "X personnes ont estimé leurs droits cette semaine" affiché sous chaque calculatrice, incrémenté à chaque calcul (backend collection calculator_usage)
+- **Alerte urgente** — Bouton flottant rouge "Alerte urgente" visible sur toutes les pages (bottom-left). Modal avec 2 formules : "Sous 2h — 50€" et "Sous 30min — 80€". Formulaire rapide (nom, téléphone, email, message). Confirmation visuelle après envoi. Onglet admin "Alertes" avec badge, stats et gestion (marquer comme traité).
 
 ## Admin Credentials
 - **Admin site**: admin@strategie-expertise-sante.fr / Admin2024!
