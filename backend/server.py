@@ -2093,7 +2093,38 @@ async def save_simulator_result(request: Request):
     )
     doc = result.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
+    doc['droits'] = body.get("droits", [])
+    doc['demarches'] = body.get("demarches", [])
+    doc['delais'] = body.get("delais", [])
+    doc['prestation'] = body.get("prestation", "")
     await db.simulator_results.insert_one(doc)
+
+    # HubSpot CRM sync (when configured)
+    hubspot_portal = os.environ.get('HUBSPOT_PORTAL_ID')
+    hubspot_token = os.environ.get('HUBSPOT_ACCESS_TOKEN')
+    if hubspot_portal and hubspot_token and body.get("email"):
+        try:
+            import httpx
+            async with httpx.AsyncClient() as client:
+                await client.post(
+                    f"https://api.hubapi.com/crm/v3/objects/contacts",
+                    headers={"Authorization": f"Bearer {hubspot_token}", "Content-Type": "application/json"},
+                    json={
+                        "properties": {
+                            "email": body["email"],
+                            "firstname": body.get("nom", ""),
+                            "lastname": "",
+                            "company": "Simulateur Diagnostic",
+                            "lifecyclestage": "lead",
+                            "hs_lead_status": "NEW",
+                            "notes_last_updated": f"Profil: {body.get('profile', '')}. Recommandations: {'; '.join(body.get('recommendations', []))}"
+                        }
+                    }
+                )
+            logger.info(f"HubSpot contact created for {body['email']}")
+        except Exception as e:
+            logger.error(f"HubSpot sync error: {e}")
+
     return {"success": True, "id": result.id}
 
 @api_router.get("/admin/simulator/stats")
