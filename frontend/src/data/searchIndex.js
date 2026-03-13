@@ -141,9 +141,11 @@ export function searchContent(query) {
     // Bonus for matching ALL terms
     if (allMatch && terms.length > 1) score += 15;
 
-    // Category boost: tools and pages rank higher
-    if (entry.category === 'Outils') score += 5;
-    if (entry.category === 'Pages') score += 2;
+    // Category boost only when there's at least one real match
+    if (score > 0) {
+      if (entry.category === 'Outils') score += 5;
+      if (entry.category === 'Pages') score += 2;
+    }
 
     return { ...entry, score };
   })

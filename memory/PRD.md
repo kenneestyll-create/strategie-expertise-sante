@@ -79,6 +79,7 @@ Application web de conseil basée sur une expérience vécue de maladie professi
   3. IPP : définition complète, mécanismes d'indemnisation, 10 exemples concrets (3% à 100%)
   4. Annuaire MDPH interactif : 101 départements avec recherche, fiche complète (adresse, tél, email, site)
   5. Aides MDPH : 3 CMI, 6 types PCH (aide humaine/technique/logement/véhicule/animalière/charges), AAH, RQTH
+- **Moteur de recherche global** — Barre de recherche dans le header (Ctrl+K), connecte tous les contenus : 20 tableaux MP, 5 TMS, 10 exemples IPP, 101 MDPH, aides, pages, guides, outils. Résultats catégorisés avec navigation directe.
 
 ## Admin Credentials
 - **Admin site**: admin@strategie-expertise-sante.fr / Admin2024!
