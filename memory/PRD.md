@@ -23,9 +23,9 @@ Web application in French providing advice and support for occupational diseases
 - Abandoned cart tracking (emails pending Resend key)
 
 ## Bug Fixes (March 13, 2026)
-- Fixed header overflow: Removed redundant nav items, compacted layout
-- Differentiated CTA buttons: "Nous contacter" (homepage→contact) vs "Réserver un appel" (header→agenda)
-- Fixed MDPH search: Exact match on department number, fallback to name/address search
+- **Header overflow (v2)**: Regrouped nav items — Accompagnements & Protection juridique moved into Expertises dropdown, font reduced to text-xs, logo to text-sm. CTA button now has 352px margin from right edge.
+- **CTA differentiation**: "Nous contacter" (homepage→contact) vs "Réserver un appel" (header→agenda)
+- **MDPH search (v2)**: Regex extraction (/\d+[a-b]?/i) handles "MDA 28", "MDPH 75", "département 59" etc. Returns exact single department.
 
 ## Pending / Blocked
 - P1: Resend API key needed for abandoned cart emails
