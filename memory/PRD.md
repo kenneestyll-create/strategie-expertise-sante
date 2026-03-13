@@ -73,6 +73,12 @@ Application web de conseil basée sur une expérience vécue de maladie professi
 - **Partage d'estimation** — Boutons WhatsApp, SMS, Email et "Copier le lien" sur les résultats des deux calculatrices. Liens uniques avec paramètres URL pour auto-calcul à l'ouverture.
 - **Compteur hebdomadaire** — "X personnes ont estimé leurs droits cette semaine" affiché sous chaque calculatrice, incrémenté à chaque calcul (backend collection calculator_usage)
 - **Alerte urgente** — Bouton flottant rouge "Alerte urgente" visible sur toutes les pages (bottom-left). Modal avec 2 formules : "Sous 2h — 50€" et "Sous 30min — 80€". Formulaire rapide (nom, téléphone, email, message). Confirmation visuelle après envoi. Onglet admin "Alertes" avec badge, stats et gestion (marquer comme traité).
+- **Encyclopédie Ressources** — 5 onglets encyclopédiques dans la page Ressources :
+  1. Tableau officiel des 20 principales maladies professionnelles + zoom TMS (5 localisations)
+  2. Reconnaissance hors tableau : voies Alinéa 3/4, conditions CRRMP, procédure 4 étapes
+  3. IPP : définition complète, mécanismes d'indemnisation, 10 exemples concrets (3% à 100%)
+  4. Annuaire MDPH interactif : 101 départements avec recherche, fiche complète (adresse, tél, email, site)
+  5. Aides MDPH : 3 CMI, 6 types PCH (aide humaine/technique/logement/véhicule/animalière/charges), AAH, RQTH
 
 ## Admin Credentials
 - **Admin site**: admin@strategie-expertise-sante.fr / Admin2024!
