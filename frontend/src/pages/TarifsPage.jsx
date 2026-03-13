@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -7,25 +7,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { 
-  ArrowRight, 
-  FileSearch, 
-  Shield, 
-  Users, 
-  Briefcase,
-  CheckCircle,
-  Star,
-  GraduationCap,
-  Building2,
-  CreditCard,
-  Loader2,
-  PartyPopper,
-  Gift,
-  Percent,
-  Tag,
-  Zap,
-  Clock,
-  Wallet
+import {
+  ArrowRight, FileSearch, Shield, Users, Briefcase,
+  CheckCircle, Star, GraduationCap, Building2, CreditCard,
+  Loader2, PartyPopper, Gift, Percent, Tag, Zap, Clock,
+  Wallet, Brain, FileText, Sparkles, ChevronRight
 } from 'lucide-react';
 import axios from 'axios';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
@@ -43,13 +29,11 @@ export const TarifsPage = () => {
   const [referralValid, setReferralValid] = useState(null);
   const [loyaltyDiscount, setLoyaltyDiscount] = useState(0);
   const [checkingDiscount, setCheckingDiscount] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('stripe'); // 'stripe' or 'paypal'
-  const [paypalReady, setPaypalReady] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('stripe');
 
   useEffect(() => {
     const paymentStatus = searchParams.get('payment');
     const sessionId = searchParams.get('session_id');
-    
     if (paymentStatus === 'success' && sessionId) {
       checkPaymentStatus(sessionId);
     } else if (paymentStatus === 'cancelled') {
@@ -69,7 +53,6 @@ export const TarifsPage = () => {
     }
   };
 
-  // Check loyalty discount when email changes
   const checkLoyaltyDiscount = async (email) => {
     if (!email || !email.includes('@')) return;
     setCheckingDiscount(true);
@@ -83,21 +66,13 @@ export const TarifsPage = () => {
     }
   };
 
-  // Validate referral code
   const validateReferral = async (code) => {
-    if (!code || code.length < 3) {
-      setReferralValid(null);
-      return;
-    }
+    if (!code || code.length < 3) { setReferralValid(null); return; }
     try {
       const response = await axios.get(`${API}/referral/validate/${code}`);
       setReferralValid(response.data.valid);
-      if (response.data.valid) {
-        toast.success("Code parrainage valide ! -10%");
-      }
-    } catch (error) {
-      setReferralValid(false);
-    }
+      if (response.data.valid) toast.success("Code parrainage valide ! -10%");
+    } catch (error) { setReferralValid(false); }
   };
 
   const getActiveDiscount = () => {
@@ -113,11 +88,7 @@ export const TarifsPage = () => {
   };
 
   const handlePayment = async () => {
-    if (!customerInfo.email) {
-      toast.error("Veuillez entrer votre email");
-      return;
-    }
-
+    if (!customerInfo.email) { toast.error("Veuillez entrer votre email"); return; }
     setLoading(true);
     try {
       const response = await axios.post(`${API}/payments/checkout`, {
@@ -127,10 +98,8 @@ export const TarifsPage = () => {
         customer_name: customerInfo.name,
         referral_code: referralValid ? customerInfo.referralCode : null
       });
-      
       window.location.href = response.data.url;
     } catch (error) {
-      console.error('Payment error:', error);
       toast.error("Erreur lors de l'initialisation du paiement");
       setLoading(false);
     }
@@ -142,13 +111,11 @@ export const TarifsPage = () => {
     setLoyaltyDiscount(0);
     setCustomerInfo({ email: '', name: '', referralCode: '' });
     setPaymentMethod('stripe');
-    setPaypalReady(false);
     setShowPaymentModal(true);
   };
 
   const handleModalClose = (open) => {
     if (!open && selectedPackage && customerInfo.email && !loading) {
-      // Track abandoned checkout
       axios.post(`${API}/relance/track`, {
         email: customerInfo.email,
         name: customerInfo.name,
@@ -158,433 +125,307 @@ export const TarifsPage = () => {
     setShowPaymentModal(open);
   };
 
-  const prestationsParticuliers = [
-    {
-      id: "analyse_dossier",
-      icon: FileSearch,
-      title: "Analyse de dossier",
-      description: "Étude personnalisée du dossier médical et administratif. Identification des points forts, des faiblesses et des éléments manquants.",
-      price: "150",
-      priceNote: "à partir de",
-      features: [
-        "Lecture complète du dossier",
-        "Rapport d'analyse détaillé",
-        "Recommandations personnalisées",
-        "Échange téléphonique de restitution"
-      ],
-      payable: true
-    },
-    {
-      id: "preparation_expertise",
-      icon: Shield,
-      title: "Préparation expertise médicale",
-      description: "Accompagnement pour aborder sereinement une expertise médicale. Préparation du dossier et conseils stratégiques.",
-      price: "250",
-      priceNote: "à partir de",
-      features: [
-        "Analyse du dossier médical",
-        "Préparation des arguments",
-        "Simulation d'entretien",
-        "Liste des documents à apporter"
-      ],
-      popular: true,
-      payable: true
-    },
-    {
-      id: "accompagnement_mdph",
-      icon: Users,
-      title: "Accompagnement MDPH",
-      description: "Aide à la compréhension et structuration du dossier MDPH. Orientation vers les droits possibles.",
-      price: "200",
-      priceNote: "à partir de",
-      features: [
-        "Analyse de votre situation",
-        "Aide au formulaire",
-        "Conseils sur les pièces justificatives",
-        "Suivi de la demande"
-      ],
-      payable: true
-    },
-    {
-      id: "protection_juridique",
-      icon: Shield,
-      title: "Protection juridique",
-      description: "Accompagnement dans l'activation et le suivi de votre protection juridique.",
-      price: "200",
-      priceNote: "à partir de",
-      features: [
-        "Identification de vos garanties",
-        "Aide à la déclaration du litige",
-        "Suivi des échanges assureur",
-        "Orientation vers avocat spécialisé"
-      ],
-      payable: true
-    },
-    {
-      id: "accompagnement_complet",
-      icon: Briefcase,
-      title: "Accompagnement complet",
-      description: "Suivi global dans les démarches administratives et médicales. Accompagnement personnalisé sur la durée.",
-      price: "500",
-      priceNote: "à partir de",
-      badge: "Sur devis",
-      features: [
-        "Analyse complète de la situation",
-        "Stratégie personnalisée",
-        "Suivi des démarches",
-        "Disponibilité continue"
-      ],
-      payable: true
-    }
-  ];
-
-  const prestationsPro = [
-    {
-      icon: GraduationCap,
-      title: "Séminaires et formations",
-      description: "Sessions d'information et de formation pour particuliers, associations, professionnels de santé et entreprises.",
-      price: "Sur devis",
-      priceNote: "selon format et public",
-      features: [
-        "En présentiel ou visioconférence",
-        "Conférences ou ateliers",
-        "Programme personnalisé",
-        "Supports pédagogiques"
-      ]
-    },
-    {
-      icon: Building2,
-      title: "Conseil aux entreprises",
-      description: "Accompagnement des structures sur les enjeux liés aux AT/MP, au handicap et à la gestion des situations sensibles.",
-      price: "Sur devis",
-      priceNote: "",
-      features: [
-        "Sessions d'information RH",
-        "Conférences de sensibilisation",
-        "Analyse de situations spécifiques",
-        "Accompagnement sur-mesure"
-      ]
-    }
+  const prestations = [
+    { id: "analyse_dossier", icon: FileSearch, title: "Analyse de dossier", description: "Étude personnalisée du dossier médical et administratif. Identification des points forts, faiblesses et éléments manquants.", price: "150", features: ["Lecture complète du dossier", "Rapport d'analyse détaillé", "Recommandations personnalisées", "Échange téléphonique de restitution"] },
+    { id: "preparation_expertise", icon: Shield, title: "Préparation expertise médicale", description: "Accompagnement pour aborder sereinement une expertise médicale.", price: "250", popular: true, features: ["Analyse du dossier médical", "Préparation des arguments", "Simulation d'entretien", "Documents à apporter"] },
+    { id: "accompagnement_mdph", icon: Users, title: "Accompagnement MDPH", description: "Aide à la compréhension et structuration du dossier MDPH.", price: "200", features: ["Analyse de votre situation", "Aide au formulaire", "Conseils pièces justificatives", "Suivi de la demande"] },
+    { id: "protection_juridique", icon: Shield, title: "Protection juridique", description: "Accompagnement dans l'activation de votre protection juridique.", price: "200", features: ["Identification de vos garanties", "Aide à la déclaration du litige", "Suivi échanges assureur", "Orientation avocat spécialisé"] },
+    { id: "accompagnement_complet", icon: Briefcase, title: "Accompagnement complet", description: "Suivi global des démarches administratives et médicales.", price: "500", badge: "Sur devis", features: ["Analyse complète de la situation", "Stratégie personnalisée", "Suivi des démarches", "Disponibilité continue"] },
   ];
 
   const prestationsUrgentes = [
-    {
-      id: "urgent_analyse_dossier",
-      icon: FileSearch,
-      title: "Analyse de dossier",
-      description: "Analyse prioritaire de votre dossier médical et administratif sous 48h.",
-      price: "250",
-      priceStandard: "150",
-      features: [
-        "Traitement prioritaire 48h",
-        "Rapport d'analyse express",
-        "Recommandations personnalisées",
-        "Échange téléphonique immédiat"
-      ],
-      payable: true
-    },
-    {
-      id: "urgent_preparation_expertise",
-      icon: Shield,
-      title: "Préparation expertise",
-      description: "Préparation accélérée pour une expertise médicale imminente.",
-      price: "400",
-      priceStandard: "250",
-      features: [
-        "Traitement prioritaire 48h",
-        "Préparation d'urgence",
-        "Simulation d'entretien rapide",
-        "Disponibilité immédiate"
-      ],
-      payable: true
-    },
-    {
-      id: "urgent_accompagnement_mdph",
-      icon: Users,
-      title: "Accompagnement MDPH",
-      description: "Aide express pour les dossiers MDPH avec échéance proche.",
-      price: "320",
-      priceStandard: "200",
-      features: [
-        "Traitement prioritaire 48h",
-        "Constitution dossier express",
-        "Suivi accéléré",
-        "Interlocuteur dédié"
-      ],
-      payable: true
-    },
-    {
-      id: "urgent_accompagnement_complet",
-      icon: Briefcase,
-      title: "Accompagnement complet",
-      description: "Prise en charge globale et immédiate de votre situation urgente.",
-      price: "750",
-      priceStandard: "500",
-      features: [
-        "Traitement prioritaire 48h",
-        "Analyse complète express",
-        "Stratégie immédiate",
-        "Disponibilité 7j/7"
-      ],
-      payable: true
-    }
+    { id: "urgent_analyse_dossier", icon: FileSearch, title: "Analyse de dossier", price: "250", priceStandard: "150", features: ["Traitement prioritaire 48h", "Rapport d'analyse express", "Recommandations personnalisées", "Échange téléphonique immédiat"] },
+    { id: "urgent_preparation_expertise", icon: Shield, title: "Préparation expertise", price: "400", priceStandard: "250", features: ["Traitement prioritaire 48h", "Préparation d'urgence", "Simulation d'entretien rapide", "Disponibilité immédiate"] },
+    { id: "urgent_accompagnement_mdph", icon: Users, title: "Accompagnement MDPH", price: "320", priceStandard: "200", features: ["Traitement prioritaire 48h", "Constitution dossier express", "Suivi accéléré", "Interlocuteur dédié"] },
+    { id: "urgent_accompagnement_complet", icon: Briefcase, title: "Accompagnement complet", price: "750", priceStandard: "500", features: ["Traitement prioritaire 48h", "Analyse complète express", "Stratégie immédiate", "Disponibilité 7j/7"] },
   ];
 
   return (
     <main className="page-transition pt-20">
-      {/* Hero Section */}
+      {/* Hero */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-3xl">
-            <span className="text-sm font-medium text-accent uppercase tracking-wider">Tarifs</span>
+            <span className="text-sm font-medium text-accent uppercase tracking-wider">Votre parcours</span>
             <h1 className="text-4xl sm:text-5xl font-semibold mt-2 mb-6" data-testid="tarifs-title">
-              Des prestations adaptées à vos besoins
+              Un accompagnement progressif, adapté à vos besoins
             </h1>
             <p className="text-lg text-muted-foreground">
-              Des tarifs transparents pour un accompagnement de qualité. 
-              Paiement sécurisé en ligne ou premier échange gratuit pour un devis personnalisé.
+              Chaque situation est unique. Suivez les étapes pour trouver l'accompagnement qui vous correspond,
+              du diagnostic gratuit à la prise en charge complète.
             </p>
-            <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
-              <CreditCard className="w-4 h-4 text-accent" />
-              <span>Paiement sécurisé par carte bancaire</span>
-            </div>
           </div>
         </div>
       </section>
 
       {/* Discount Banner */}
-      <section className="py-4 bg-accent/10 border-b border-accent/20">
+      <section className="py-3 bg-accent/10 border-b border-accent/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm">
             <div className="flex items-center gap-2">
               <Percent className="w-4 h-4 text-accent" />
-              <span><strong>-15% fidélité</strong> dès votre 2ème prestation</span>
+              <span><strong>-15% fidélité</strong> dès la 2ème prestation</span>
             </div>
             <span className="hidden sm:block text-muted-foreground">|</span>
             <div className="flex items-center gap-2">
               <Gift className="w-4 h-4 text-accent" />
               <span><strong>-10% parrainage</strong></span>
-              <Link to="/parrainage" className="text-accent underline hover:no-underline ml-1">
-                Obtenir un code
-              </Link>
+              <Link to="/parrainage" className="text-accent underline hover:no-underline ml-1">Obtenir un code</Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Prestations Particuliers */}
+      {/* ==================== ÉTAPE 1 : StratégiIA Gratuite ==================== */}
       <section className="section-padding">
         <div className="max-w-7xl mx-auto">
-          <div className="mb-12">
-            <h2 className="text-3xl font-semibold mb-4">Accompagnement des particuliers</h2>
-            <p className="text-muted-foreground max-w-2xl">
-              Des services pensés pour vous accompagner à chaque étape de vos démarches.
-            </p>
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 rounded-full bg-accent text-accent-foreground flex items-center justify-center font-bold text-lg">1</div>
+            <div>
+              <h2 className="text-2xl font-semibold">Comprenez votre situation</h2>
+              <p className="text-muted-foreground text-sm">Analyse IA gratuite pour un premier diagnostic</p>
+            </div>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {prestationsParticuliers.map((prestation, index) => (
-              <Card 
-                key={index} 
-                className={`relative border-border flex flex-col ${prestation.popular ? 'ring-2 ring-accent' : ''}`}
-                data-testid={`tarif-card-${index}`}
-              >
-                {prestation.popular && (
-                  <div className="absolute -top-3 left-6">
-                    <Badge className="bg-accent text-accent-foreground gap-1">
-                      <Star className="w-3 h-3" fill="currentColor" />
-                      Plus demandé
+          <Card className="border-accent/30 bg-accent/5 overflow-hidden" data-testid="step-1-card">
+            <CardContent className="p-6 sm:p-8">
+              <div className="grid sm:grid-cols-[1fr,auto] gap-6 items-center">
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Brain className="w-6 h-6 text-accent" />
+                    <h3 className="text-xl font-semibold">Analyse StratégiIA</h3>
+                    <Badge className="bg-green-100 text-green-700 border-green-200">Gratuit</Badge>
+                  </div>
+                  <p className="text-muted-foreground mb-4">
+                    Décrivez votre situation en quelques lignes. Notre IA croise jurisprudences, barèmes officiels
+                    et cas similaires pour vous donner un premier diagnostic : droits identifiés, démarche prioritaire
+                    et estimation de vos chances.
+                  </p>
+                  <ul className="space-y-2 text-sm">
+                    {["Synthèse de votre situation", "Droits principaux identifiés", "Première démarche à effectuer", "Score de pertinence"].map((f, i) => (
+                      <li key={i} className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-accent" />{f}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="text-center sm:text-right">
+                  <p className="text-4xl font-bold text-accent mb-2">Gratuit</p>
+                  <p className="text-xs text-muted-foreground mb-4">Sans engagement</p>
+                  <Button className="rounded-full gap-2" data-testid="step-1-cta">
+                    <Brain className="w-4 h-4" />
+                    Lancer l'analyse gratuite
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2">Le bouton StratégiIA est dans le menu</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-center my-6">
+            <div className="flex flex-col items-center text-muted-foreground">
+              <ChevronRight className="w-5 h-5 rotate-90" />
+              <span className="text-xs mt-1">Besoin d'aller plus loin ?</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ==================== ÉTAPE 2 : Dossier Express ==================== */}
+      <section className="section-padding bg-secondary pt-2">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 rounded-full bg-amber-500 text-amber-950 flex items-center justify-center font-bold text-lg">2</div>
+            <div>
+              <h2 className="text-2xl font-semibold">Analysez votre dossier en profondeur</h2>
+              <p className="text-muted-foreground text-sm">Rapport PDF complet livré par email sous 2h</p>
+            </div>
+          </div>
+
+          <Card className="border-amber-500/30 overflow-hidden" data-testid="step-2-card">
+            <CardContent className="p-6 sm:p-8">
+              <div className="grid sm:grid-cols-[1fr,auto] gap-6 items-center">
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <FileText className="w-6 h-6 text-amber-500" />
+                    <h3 className="text-xl font-semibold">Dossier Express</h3>
+                    <Badge className="bg-amber-100 text-amber-700 border-amber-200">
+                      <Zap className="w-3 h-3 mr-1" fill="currentColor" />
+                      Sous 2h
                     </Badge>
                   </div>
+                  <p className="text-muted-foreground mb-4">
+                    Uploadez vos documents, StratégiIA les analyse automatiquement et génère un rapport
+                    PDF complet : cadre juridique, droits identifiés, stratégie recommandée, prochaines étapes.
+                  </p>
+                  <ul className="grid sm:grid-cols-2 gap-2 text-sm">
+                    {["Analyse complète de vos documents", "Cadre juridique applicable", "Stratégie recommandée détaillée", "Score de chances de succès", "Points de vigilance identifiés", "5 actions prioritaires"].map((f, i) => (
+                      <li key={i} className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-amber-500" />{f}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="text-center sm:text-right">
+                  <p className="text-4xl font-bold text-foreground mb-1">97 <span className="text-lg font-normal text-muted-foreground">€</span></p>
+                  <p className="text-xs text-muted-foreground mb-4">Paiement unique</p>
+                  <Link to="/dossier-express">
+                    <Button className="rounded-full gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold" data-testid="step-2-cta">
+                      <FileText className="w-4 h-4" />
+                      Commander mon rapport
+                    </Button>
+                  </Link>
+                  <p className="text-xs text-muted-foreground mt-2">Rapport PDF envoyé par email</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-center my-6">
+            <div className="flex flex-col items-center text-muted-foreground">
+              <ChevronRight className="w-5 h-5 rotate-90" />
+              <span className="text-xs mt-1">Besoin d'un accompagnement humain ?</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ==================== ÉTAPE 3 : Prestations personnalisées ==================== */}
+      <section className="section-padding pt-2">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 rounded-full bg-accent text-accent-foreground flex items-center justify-center font-bold text-lg">3</div>
+            <div>
+              <h2 className="text-2xl font-semibold">Faites-vous accompagner par un expert</h2>
+              <p className="text-muted-foreground text-sm">Prestations personnalisées avec suivi humain</p>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {prestations.map((p, i) => (
+              <Card key={i} className={`relative border-border flex flex-col ${p.popular ? 'ring-2 ring-accent' : ''}`} data-testid={`tarif-card-${i}`}>
+                {p.popular && (
+                  <div className="absolute -top-3 left-6">
+                    <Badge className="bg-accent text-accent-foreground gap-1"><Star className="w-3 h-3" fill="currentColor" />Plus demandé</Badge>
+                  </div>
                 )}
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center">
-                        <prestation.icon className="w-6 h-6 text-accent" strokeWidth={1.5} />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">{prestation.title}</CardTitle>
-                        {prestation.badge && (
-                          <Badge variant="secondary" className="mt-1">{prestation.badge}</Badge>
-                        )}
-                      </div>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center">
+                      <p.icon className="w-5 h-5 text-accent" strokeWidth={1.5} />
+                    </div>
+                    <div>
+                      <CardTitle className="text-base">{p.title}</CardTitle>
+                      {p.badge && <Badge variant="secondary" className="mt-1 text-xs">{p.badge}</Badge>}
                     </div>
                   </div>
-                  <CardDescription className="mt-3">{prestation.description}</CardDescription>
+                  <CardDescription className="mt-2 text-xs">{p.description}</CardDescription>
                 </CardHeader>
-                <CardContent className="flex-1">
-                  <div className="mb-6">
-                    <p className="text-sm text-muted-foreground">{prestation.priceNote}</p>
-                    <p className="text-4xl font-bold text-foreground">
-                      {prestation.price}
-                      {prestation.price !== "Sur devis" && <span className="text-lg font-normal text-muted-foreground"> €</span>}
-                    </p>
+                <CardContent className="flex-1 pb-3">
+                  <div className="mb-4">
+                    <p className="text-xs text-muted-foreground">à partir de</p>
+                    <p className="text-3xl font-bold">{p.price}<span className="text-base font-normal text-muted-foreground"> €</span></p>
                   </div>
-                  <ul className="space-y-3">
-                    {prestation.features.map((feature, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm">
-                        <CheckCircle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-                        <span>{feature}</span>
-                      </li>
+                  <ul className="space-y-2">
+                    {p.features.map((f, j) => (
+                      <li key={j} className="flex items-start gap-2 text-xs"><CheckCircle className="w-3.5 h-3.5 text-accent flex-shrink-0 mt-0.5" strokeWidth={1.5} />{f}</li>
                     ))}
                   </ul>
                 </CardContent>
-                <CardFooter className="flex gap-2">
-                  {prestation.payable && (
-                    <Button 
-                      className="flex-1 rounded-lg gap-2" 
-                      variant={prestation.popular ? "default" : "outline"}
-                      onClick={() => openPaymentModal(prestation)}
-                      data-testid={`pay-button-${prestation.id}`}
-                    >
-                      <CreditCard className="w-4 h-4" />
-                      Payer en ligne
-                    </Button>
-                  )}
-                  <Link to="/contact" className={prestation.payable ? "" : "w-full"}>
-                    <Button className="rounded-lg w-full" variant="outline">
-                      Devis
-                    </Button>
-                  </Link>
+                <CardFooter className="flex gap-2 pt-0">
+                  <Button className="flex-1 rounded-lg gap-1.5 text-xs" variant={p.popular ? "default" : "outline"} onClick={() => openPaymentModal(p)} data-testid={`pay-button-${p.id}`}>
+                    <CreditCard className="w-3.5 h-3.5" />Payer en ligne
+                  </Button>
+                  <Link to="/contact"><Button className="rounded-lg text-xs" variant="outline">Devis</Button></Link>
                 </CardFooter>
               </Card>
             ))}
           </div>
+
+          <div className="flex justify-center my-8">
+            <div className="flex flex-col items-center text-muted-foreground">
+              <ChevronRight className="w-5 h-5 rotate-90" />
+              <span className="text-xs mt-1">Situation urgente ?</span>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Pass Urgent Section */}
-      <section className="section-padding relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>
-        {/* Subtle background pattern */}
+      {/* ==================== ÉTAPE 4 : Pass Urgent ==================== */}
+      <section className="section-padding relative overflow-hidden pt-10" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>
         <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(circle at 25% 50%, white 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
-        
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="mb-12 text-center">
-            <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-500/30 text-amber-300 px-4 py-2 rounded-full mb-4" data-testid="urgent-badge">
-              <Zap className="w-4 h-4" fill="currentColor" />
-              <span className="text-sm font-semibold tracking-wider uppercase">Traitement Prioritaire 48h</span>
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 rounded-full bg-amber-500 text-amber-950 flex items-center justify-center font-bold text-lg">4</div>
+            <div>
+              <h2 className="text-2xl font-semibold text-white">Votre situation ne peut pas attendre</h2>
+              <p className="text-white/50 text-sm">Traitement prioritaire sous 48 heures</p>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-semibold text-white mb-4">
-              Pass Urgent
-            </h2>
-            <p className="text-white/60 max-w-2xl mx-auto">
-              Votre situation ne peut pas attendre ? Bénéficiez d'un traitement prioritaire 
-              avec une prise en charge sous 48 heures.
-            </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
-            {prestationsUrgentes.map((prestation, index) => (
-              <div
-                key={index}
-                className="group relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 flex flex-col hover:bg-white/10 transition-all duration-300 hover:border-amber-500/30"
-                data-testid={`urgent-card-${prestation.id}`}
-              >
-                {/* Urgent Badge */}
+            {prestationsUrgentes.map((p, i) => (
+              <div key={i} className="group relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5 flex flex-col hover:bg-white/10 transition-all duration-300 hover:border-amber-500/30" data-testid={`urgent-card-${p.id}`}>
                 <div className="absolute -top-3 right-4">
                   <span className="inline-flex items-center gap-1 bg-amber-500 text-amber-950 text-xs font-bold px-3 py-1 rounded-full shadow-lg shadow-amber-500/20">
-                    <Zap className="w-3 h-3" fill="currentColor" />
-                    48h
+                    <Zap className="w-3 h-3" fill="currentColor" />48h
                   </span>
                 </div>
-
-                <div className="flex items-center gap-3 mb-4 mt-1">
-                  <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center">
-                    <prestation.icon className="w-5 h-5 text-amber-400" strokeWidth={1.5} />
+                <div className="flex items-center gap-3 mb-3 mt-1">
+                  <div className="w-9 h-9 bg-amber-500/10 rounded-xl flex items-center justify-center">
+                    <p.icon className="w-4 h-4 text-amber-400" strokeWidth={1.5} />
                   </div>
-                  <h3 className="font-semibold text-white text-base">{prestation.title}</h3>
+                  <h3 className="font-semibold text-white text-sm">{p.title}</h3>
                 </div>
-
-                <p className="text-white/50 text-sm mb-5 flex-grow leading-relaxed">{prestation.description}</p>
-
-                {/* Price */}
-                <div className="mb-5">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-white">{prestation.price}</span>
-                    <span className="text-white/40 text-sm">€</span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-white/30 text-xs line-through">au lieu de {prestation.priceStandard} €</span>
-                  </div>
+                <div className="mb-4">
+                  <span className="text-2xl font-bold text-white">{p.price}</span>
+                  <span className="text-white/40 text-sm"> €</span>
+                  <span className="block text-white/30 text-xs line-through mt-0.5">au lieu de {p.priceStandard} €</span>
                 </div>
-
-                {/* Features */}
-                <ul className="space-y-2 mb-6">
-                  {prestation.features.map((feature, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm">
-                      {i === 0 ? (
-                        <Clock className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" strokeWidth={2} />
-                      ) : (
-                        <CheckCircle className="w-3.5 h-3.5 text-white/40 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-                      )}
-                      <span className={i === 0 ? "text-amber-300 font-medium" : "text-white/60"}>{feature}</span>
+                <ul className="space-y-1.5 mb-5 flex-grow">
+                  {p.features.map((f, j) => (
+                    <li key={j} className="flex items-start gap-2 text-xs">
+                      {j === 0 ? <Clock className="w-3 h-3 text-amber-400 flex-shrink-0 mt-0.5" strokeWidth={2} /> : <CheckCircle className="w-3 h-3 text-white/40 flex-shrink-0 mt-0.5" strokeWidth={1.5} />}
+                      <span className={j === 0 ? "text-amber-300 font-medium" : "text-white/60"}>{f}</span>
                     </li>
                   ))}
                 </ul>
-
-                <Button 
-                  className="w-full rounded-xl gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold border-0 mt-auto"
-                  onClick={() => openPaymentModal(prestation)}
-                  data-testid={`pay-button-${prestation.id}`}
-                >
-                  <Zap className="w-4 h-4" fill="currentColor" />
-                  Payer {prestation.price} €
+                <Button className="w-full rounded-xl gap-1.5 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold text-xs border-0 mt-auto" onClick={() => openPaymentModal(p)} data-testid={`pay-button-${p.id}`}>
+                  <Zap className="w-3.5 h-3.5" fill="currentColor" />Payer {p.price} €
                 </Button>
               </div>
             ))}
           </div>
-
-          <p className="text-center text-white/30 text-sm mt-8">
-            Les réductions fidélité (-15%) et parrainage (-10%) s'appliquent aussi sur les Pass Urgent.
-          </p>
+          <p className="text-center text-white/30 text-xs mt-6">Les réductions fidélité (-15%) et parrainage (-10%) s'appliquent aussi sur les Pass Urgent.</p>
         </div>
       </section>
 
       {/* Prestations Pro */}
       <section className="section-padding bg-card">
         <div className="max-w-7xl mx-auto">
-          <div className="mb-12">
-            <h2 className="text-3xl font-semibold mb-4">Séminaires et conseil aux entreprises</h2>
-            <p className="text-muted-foreground max-w-2xl">
-              Des interventions sur-mesure pour les organisations et les professionnels.
-            </p>
-          </div>
-
+          <h2 className="text-2xl font-semibold mb-2">Séminaires et conseil aux entreprises</h2>
+          <p className="text-muted-foreground max-w-2xl mb-8 text-sm">Des interventions sur-mesure pour les organisations et professionnels.</p>
           <div className="grid md:grid-cols-2 gap-6">
-            {prestationsPro.map((prestation, index) => (
-              <Card key={index} className="border-border" data-testid={`tarif-pro-${index}`}>
+            {[
+              { icon: GraduationCap, title: "Séminaires et formations", description: "Sessions d'information et de formation pour particuliers, associations, professionnels de santé et entreprises.", features: ["En présentiel ou visioconférence", "Programme personnalisé", "Supports pédagogiques"] },
+              { icon: Building2, title: "Conseil aux entreprises", description: "Accompagnement des structures sur les enjeux liés aux AT/MP, handicap et gestion des situations sensibles.", features: ["Sessions d'information RH", "Conférences de sensibilisation", "Accompagnement sur-mesure"] }
+            ].map((p, i) => (
+              <Card key={i} className="border-border" data-testid={`tarif-pro-${i}`}>
                 <CardHeader>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center">
-                      <prestation.icon className="w-6 h-6 text-accent" strokeWidth={1.5} />
+                    <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center">
+                      <p.icon className="w-5 h-5 text-accent" strokeWidth={1.5} />
                     </div>
-                    <CardTitle className="text-xl">{prestation.title}</CardTitle>
+                    <CardTitle className="text-lg">{p.title}</CardTitle>
                   </div>
-                  <CardDescription className="mt-3">{prestation.description}</CardDescription>
+                  <CardDescription className="mt-2 text-xs">{p.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="mb-6">
-                    {prestation.priceNote && (
-                      <p className="text-sm text-muted-foreground">{prestation.priceNote}</p>
-                    )}
-                    <p className="text-3xl font-bold text-foreground">{prestation.price}</p>
-                  </div>
-                  <ul className="space-y-3">
-                    {prestation.features.map((feature, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm">
-                        <CheckCircle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-                        <span>{feature}</span>
-                      </li>
+                  <p className="text-2xl font-bold mb-4">Sur devis</p>
+                  <ul className="space-y-2">
+                    {p.features.map((f, j) => (
+                      <li key={j} className="flex items-center gap-2 text-sm"><CheckCircle className="w-4 h-4 text-accent flex-shrink-0" strokeWidth={1.5} />{f}</li>
                     ))}
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Link to="/contact" className="w-full">
-                    <Button className="w-full rounded-lg" variant="outline">
-                      Nous contacter
-                    </Button>
-                  </Link>
+                  <Link to="/contact" className="w-full"><Button className="w-full rounded-lg" variant="outline">Nous contacter</Button></Link>
                 </CardFooter>
               </Card>
             ))}
@@ -592,19 +433,17 @@ export const TarifsPage = () => {
         </div>
       </section>
 
-      {/* Note Section */}
+      {/* CTA */}
       <section className="section-padding">
         <div className="max-w-3xl mx-auto text-center">
-          <h3 className="text-2xl font-semibold mb-4">Premier échange gratuit</h3>
-          <p className="text-muted-foreground mb-8">
-            Chaque situation est unique. Avant tout engagement, je vous propose un premier 
-            échange téléphonique gratuit de 20 minutes pour comprendre votre situation 
-            et voir comment je peux vous accompagner.
+          <h3 className="text-2xl font-semibold mb-3">Premier échange gratuit</h3>
+          <p className="text-muted-foreground mb-6 text-sm">
+            Chaque situation est unique. Avant tout engagement, je vous propose un premier
+            échange téléphonique gratuit de 20 minutes.
           </p>
           <Link to="/contact">
             <Button size="lg" className="rounded-full px-8 gap-2" data-testid="tarifs-cta">
-              Prendre rendez-vous
-              <ArrowRight className="w-4 h-4" />
+              Nous contacter <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
         </div>
@@ -621,18 +460,12 @@ export const TarifsPage = () => {
                   <span className="font-semibold text-foreground">{selectedPackage.title}</span>
                   <span className="block text-2xl font-bold text-foreground mt-2">
                     {getDiscountedPrice(selectedPackage.price) ? (
-                      <>
-                        <span className="line-through text-muted-foreground text-lg mr-2">{selectedPackage.price} €</span>
-                        {getDiscountedPrice(selectedPackage.price)} €
-                      </>
-                    ) : (
-                      <>{selectedPackage.price} €</>
-                    )}
+                      <><span className="line-through text-muted-foreground text-lg mr-2">{selectedPackage.price} €</span>{getDiscountedPrice(selectedPackage.price)} €</>
+                    ) : <>{selectedPackage.price} €</>}
                   </span>
                   {getActiveDiscount().percent > 0 && (
                     <span className="inline-flex items-center gap-1 mt-1 text-sm text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                      <Tag className="w-3 h-3" />
-                      -{getActiveDiscount().percent}% {getActiveDiscount().type}
+                      <Tag className="w-3 h-3" />-{getActiveDiscount().percent}% {getActiveDiscount().type}
                     </span>
                   )}
                 </>
@@ -643,126 +476,39 @@ export const TarifsPage = () => {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="payment-email">Email *</Label>
-              <Input
-                id="payment-email"
-                type="email"
-                value={customerInfo.email}
-                onChange={(e) => {
-                  setCustomerInfo(prev => ({ ...prev, email: e.target.value }));
-                  checkLoyaltyDiscount(e.target.value);
-                }}
-                placeholder="votre@email.fr"
-                required
-                data-testid="payment-email-input"
-              />
-              {loyaltyDiscount > 0 && (
-                <p className="text-xs text-green-600 flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3" />
-                  Client fidèle ! -15% appliqué automatiquement
-                </p>
-              )}
+              <Input id="payment-email" type="email" value={customerInfo.email} onChange={(e) => { setCustomerInfo(prev => ({ ...prev, email: e.target.value })); checkLoyaltyDiscount(e.target.value); }} placeholder="votre@email.fr" data-testid="payment-email-input" />
+              {loyaltyDiscount > 0 && <p className="text-xs text-green-600 flex items-center gap-1"><CheckCircle className="w-3 h-3" />Client fidèle ! -15% appliqué</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="payment-name">Nom complet</Label>
-              <Input
-                id="payment-name"
-                value={customerInfo.name}
-                onChange={(e) => setCustomerInfo(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="Prénom Nom"
-                data-testid="payment-name-input"
-              />
+              <Input id="payment-name" value={customerInfo.name} onChange={(e) => setCustomerInfo(prev => ({ ...prev, name: e.target.value }))} placeholder="Prénom Nom" data-testid="payment-name-input" />
             </div>
             {loyaltyDiscount === 0 && (
               <div className="space-y-2">
-                <Label htmlFor="payment-referral" className="flex items-center gap-1">
-                  <Gift className="w-3 h-3 text-accent" />
-                  Code parrainage (optionnel)
-                </Label>
+                <Label htmlFor="payment-referral" className="flex items-center gap-1"><Gift className="w-3 h-3 text-accent" />Code parrainage (optionnel)</Label>
                 <div className="flex gap-2">
-                  <Input
-                    id="payment-referral"
-                    value={customerInfo.referralCode}
-                    onChange={(e) => setCustomerInfo(prev => ({ ...prev, referralCode: e.target.value.toUpperCase() }))}
-                    placeholder="EX: ABC12345"
-                    className="flex-1"
-                    data-testid="payment-referral-input"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => validateReferral(customerInfo.referralCode)}
-                    disabled={!customerInfo.referralCode}
-                    data-testid="validate-referral-button"
-                  >
-                    Valider
-                  </Button>
+                  <Input id="payment-referral" value={customerInfo.referralCode} onChange={(e) => setCustomerInfo(prev => ({ ...prev, referralCode: e.target.value.toUpperCase() }))} placeholder="EX: ABC12345" className="flex-1" data-testid="payment-referral-input" />
+                  <Button type="button" variant="outline" size="sm" onClick={() => validateReferral(customerInfo.referralCode)} disabled={!customerInfo.referralCode} data-testid="validate-referral-button">Valider</Button>
                 </div>
-                {referralValid === true && (
-                  <p className="text-xs text-green-600 flex items-center gap-1">
-                    <CheckCircle className="w-3 h-3" />
-                    Code valide ! -10% appliqué
-                  </p>
-                )}
-                {referralValid === false && (
-                  <p className="text-xs text-destructive">Code invalide ou expiré</p>
-                )}
+                {referralValid === true && <p className="text-xs text-green-600 flex items-center gap-1"><CheckCircle className="w-3 h-3" />Code valide ! -10%</p>}
+                {referralValid === false && <p className="text-xs text-destructive">Code invalide ou expiré</p>}
               </div>
             )}
-            {/* Payment Method Choice */}
             <div className="space-y-2">
               <Label>Mode de paiement</Label>
               <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('stripe')}
-                  className={`flex items-center gap-2 p-3 rounded-lg border text-sm font-medium transition-all
-                    ${paymentMethod === 'stripe' ? 'border-accent bg-accent/10 text-accent' : 'border-border hover:border-accent/50'}`}
-                  data-testid="payment-method-stripe"
-                >
-                  <CreditCard className="w-4 h-4" /> Carte bancaire
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('paypal')}
-                  className={`flex items-center gap-2 p-3 rounded-lg border text-sm font-medium transition-all
-                    ${paymentMethod === 'paypal' ? 'border-[#0070ba] bg-[#0070ba]/10 text-[#0070ba]' : 'border-border hover:border-[#0070ba]/50'}`}
-                  data-testid="payment-method-paypal"
-                >
-                  <Wallet className="w-4 h-4" /> PayPal
-                </button>
+                <button type="button" onClick={() => setPaymentMethod('stripe')} className={`flex items-center gap-2 p-3 rounded-lg border text-sm font-medium transition-all ${paymentMethod === 'stripe' ? 'border-accent bg-accent/10 text-accent' : 'border-border hover:border-accent/50'}`} data-testid="payment-method-stripe"><CreditCard className="w-4 h-4" /> Carte bancaire</button>
+                <button type="button" onClick={() => setPaymentMethod('paypal')} className={`flex items-center gap-2 p-3 rounded-lg border text-sm font-medium transition-all ${paymentMethod === 'paypal' ? 'border-[#0070ba] bg-[#0070ba]/10 text-[#0070ba]' : 'border-border hover:border-[#0070ba]/50'}`} data-testid="payment-method-paypal"><Wallet className="w-4 h-4" /> PayPal</button>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {paymentMethod === 'stripe'
-                ? 'Vous serez redirigé vers notre plateforme de paiement sécurisée (Stripe).'
-                : 'Payez directement via votre compte PayPal.'}
-            </p>
           </div>
 
           <DialogFooter className="flex-col gap-2 sm:flex-col">
             {paymentMethod === 'stripe' ? (
               <div className="flex gap-2 w-full justify-end">
-                <Button variant="outline" onClick={() => handleModalClose(false)}>
-                  Annuler
-                </Button>
-                <Button 
-                  onClick={handlePayment} 
-                  disabled={loading || !customerInfo.email}
-                  className="gap-2"
-                  data-testid="confirm-payment-button"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Redirection...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="w-4 h-4" />
-                      Payer {getDiscountedPrice(selectedPackage?.price) || selectedPackage?.price} €
-                    </>
-                  )}
+                <Button variant="outline" onClick={() => handleModalClose(false)}>Annuler</Button>
+                <Button onClick={handlePayment} disabled={loading || !customerInfo.email} className="gap-2" data-testid="confirm-payment-button">
+                  {loading ? <><Loader2 className="w-4 h-4 animate-spin" />Redirection...</> : <><CreditCard className="w-4 h-4" />Payer {getDiscountedPrice(selectedPackage?.price) || selectedPackage?.price} €</>}
                 </Button>
               </div>
             ) : (
@@ -774,52 +520,23 @@ export const TarifsPage = () => {
                     <PayPalButtons
                       style={{ layout: 'horizontal', color: 'blue', shape: 'rect', label: 'pay', height: 45 }}
                       createOrder={async (data, actions) => {
-                        try {
-                          const res = await axios.post(`${API}/paypal/calculate`, {
-                            package_id: selectedPackage.id,
-                            customer_email: customerInfo.email,
-                            customer_name: customerInfo.name,
-                            referral_code: referralValid ? customerInfo.referralCode : null
-                          });
-                          const amt = res.data.final_amount;
-                          return actions.order.create({
-                            purchase_units: [{
-                              amount: { currency_code: 'EUR', value: amt.toFixed(2) },
-                              description: res.data.package_name
-                            }]
-                          });
-                        } catch (err) {
-                          toast.error("Erreur lors du calcul du montant");
-                          throw err;
-                        }
+                        const res = await axios.post(`${API}/paypal/calculate`, { package_id: selectedPackage.id, customer_email: customerInfo.email, customer_name: customerInfo.name, referral_code: referralValid ? customerInfo.referralCode : null });
+                        return actions.order.create({ purchase_units: [{ amount: { currency_code: 'EUR', value: res.data.final_amount.toFixed(2) }, description: res.data.package_name }] });
                       }}
                       onApprove={async (data, actions) => {
-                        try {
-                          const details = await actions.order.capture();
-                          await axios.post(`${API}/paypal/record`, {
-                            order_id: details.id,
-                            package_id: selectedPackage.id,
-                            customer_email: customerInfo.email,
-                            customer_name: customerInfo.name,
-                            amount: parseFloat(getDiscountedPrice(selectedPackage?.price) || selectedPackage?.price),
-                            referral_code: referralValid ? customerInfo.referralCode : null
-                          });
-                          setShowPaymentModal(false);
-                          setPaymentDetails({ amount: getDiscountedPrice(selectedPackage?.price) || selectedPackage?.price, metadata: { package_name: selectedPackage?.title } });
-                          setShowSuccessModal(true);
-                          toast.success("Paiement PayPal réussi !");
-                        } catch (err) {
-                          toast.error("Erreur lors de la finalisation du paiement PayPal");
-                        }
+                        const details = await actions.order.capture();
+                        await axios.post(`${API}/paypal/record`, { order_id: details.id, package_id: selectedPackage.id, customer_email: customerInfo.email, customer_name: customerInfo.name, amount: parseFloat(getDiscountedPrice(selectedPackage?.price) || selectedPackage?.price), referral_code: referralValid ? customerInfo.referralCode : null });
+                        setShowPaymentModal(false);
+                        setPaymentDetails({ amount: getDiscountedPrice(selectedPackage?.price) || selectedPackage?.price, metadata: { package_name: selectedPackage?.title } });
+                        setShowSuccessModal(true);
+                        toast.success("Paiement PayPal réussi !");
                       }}
                       onError={() => toast.error("Erreur PayPal")}
-                      onCancel={() => toast.info("Paiement PayPal annulé")}
+                      onCancel={() => toast.info("Paiement annulé")}
                     />
                   </PayPalScriptProvider>
                 )}
-                <Button variant="outline" className="w-full" onClick={() => handleModalClose(false)}>
-                  Annuler
-                </Button>
+                <Button variant="outline" className="w-full" onClick={() => handleModalClose(false)}>Annuler</Button>
               </div>
             )}
           </DialogFooter>
@@ -837,26 +554,11 @@ export const TarifsPage = () => {
               <DialogTitle className="text-2xl">Paiement réussi !</DialogTitle>
               <DialogDescription className="mt-4 space-y-2">
                 <p>Merci pour votre confiance.</p>
-                {paymentDetails && (
-                  <p className="text-foreground font-medium">
-                    {paymentDetails.metadata?.package_name || 'Votre prestation'} - {paymentDetails.amount} €
-                  </p>
-                )}
-                <p className="text-sm">
-                  Vous recevrez un email de confirmation. Je vous contacterai très prochainement 
-                  pour organiser notre premier échange.
-                </p>
+                {paymentDetails && <p className="text-foreground font-medium">{paymentDetails.metadata?.package_name || 'Votre prestation'} - {paymentDetails.amount} €</p>}
+                <p className="text-sm">Vous recevrez un email de confirmation. Je vous contacterai très prochainement.</p>
               </DialogDescription>
             </DialogHeader>
-            <Button 
-              className="mt-6 rounded-full"
-              onClick={() => {
-                setShowSuccessModal(false);
-                window.history.replaceState({}, '', '/tarifs');
-              }}
-            >
-              Fermer
-            </Button>
+            <Button className="mt-6 rounded-full" onClick={() => { setShowSuccessModal(false); window.history.replaceState({}, '', '/tarifs'); }}>Fermer</Button>
           </div>
         </DialogContent>
       </Dialog>

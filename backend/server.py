@@ -14,6 +14,7 @@ from datetime import datetime, timezone, timedelta
 import jwt
 import bcrypt
 import httpx
+import base64
 
 try:
     import resend
@@ -62,6 +63,7 @@ PAYPAL_BASE_URL = "https://api-m.sandbox.paypal.com" if PAYPAL_MODE == "sandbox"
 
 # Payment packages - FIXED prices defined on backend
 PAYMENT_PACKAGES = {
+    "dossier_express": {"name": "Dossier Express StratégiIA", "amount": 97.00, "currency": "eur"},
     "analyse_dossier": {"name": "Analyse de dossier", "amount": 150.00, "currency": "eur"},
     "preparation_expertise": {"name": "Préparation expertise médicale", "amount": 250.00, "currency": "eur"},
     "accompagnement_mdph": {"name": "Accompagnement MDPH", "amount": 200.00, "currency": "eur"},
@@ -2200,6 +2202,336 @@ STRATEGIIA_PREMIUM_PROMPT = """Analyse COMPLÈTE demandée. Fournis un rapport d
 (3 actions concrètes à réaliser dans les prochains jours)
 
 Sois exhaustif et précis (600-800 mots)."""
+
+# ==================== DOSSIER EXPRESS ====================
+
+DOSSIER_EXPRESS_PROMPT = """Tu es un expert en droit de la sécurité sociale, accidents du travail, maladies professionnelles et handicap (MDPH).
+On te fournit les documents et la description d'un dossier client. Rédige un RAPPORT D'ANALYSE COMPLET et PROFESSIONNEL.
+
+Structure ton rapport ainsi :
+
+# RAPPORT D'ANALYSE - DOSSIER EXPRESS
+## Stratégie & Expertise Santé
+
+### 1. SYNTHÈSE DU DOSSIER
+(Résumé factuel de la situation en 5-6 lignes)
+
+### 2. ANALYSE DES DOCUMENTS
+(Analyse détaillée de chaque document fourni, points forts et faiblesses)
+
+### 3. CADRE JURIDIQUE APPLICABLE
+(Textes de loi, articles du Code de la Sécurité Sociale, jurisprudences pertinentes)
+
+### 4. DROITS IDENTIFIÉS
+(Liste exhaustive des droits avec explications claires)
+
+### 5. POINTS DE VIGILANCE
+(Faiblesses du dossier, pièces manquantes, risques identifiés)
+
+### 6. STRATÉGIE RECOMMANDÉE
+(Plan d'action en étapes numérotées avec justification et délais)
+
+### 7. ESTIMATION DES CHANCES DE SUCCÈS
+(Score sur 100 avec explication des facteurs)
+
+### 8. PROCHAINES ÉTAPES IMMÉDIATES
+(5 actions concrètes prioritaires à réaliser)
+
+### 9. CONCLUSION ET RECOMMANDATIONS
+(Synthèse finale et orientation vers un accompagnement personnalisé si nécessaire)
+
+Sois exhaustif, précis et professionnel (1000-1500 mots).
+Rappelle que ce rapport est un outil d'aide à la décision et ne constitue pas un avis juridique.
+Mentionne que pour un accompagnement personnalisé, le client peut contacter Stratégie & Expertise Santé."""
+
+@api_router.post("/dossier-express/submit")
+async def dossier_express_submit(request: Request):
+    """Submit a Dossier Express after payment - triggers AI analysis + PDF + email."""
+    body = await request.json()
+    session_id = body.get("session_id", "")
+    email = body.get("email", "")
+    name = body.get("name", "")
+    situation = body.get("situation", "")
+    type_dossier = body.get("type_dossier", "")
+    regime = body.get("regime", "")
+    documents_text = body.get("documents_text", "")
+
+    if not email or not situation:
+        raise HTTPException(status_code=400, detail="Email et description requis")
+
+    # Create dossier record
+    dossier_id = str(uuid.uuid4())
+    dossier = {
+        "id": dossier_id,
+        "session_id": session_id,
+        "email": email,
+        "name": name,
+        "situation": situation,
+        "type_dossier": type_dossier,
+        "regime": regime,
+        "documents_text": documents_text[:10000],
+        "status": "processing",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.dossier_express.insert_one(dossier)
+
+    # Trigger async analysis
+    asyncio.create_task(_process_dossier_express(dossier_id, email, name, situation, type_dossier, regime, documents_text))
+
+    return {"success": True, "dossier_id": dossier_id, "message": "Votre dossier est en cours d'analyse. Vous recevrez le rapport par email sous 2 heures."}
+
+
+async def _process_dossier_express(dossier_id: str, email: str, name: str, situation: str, type_dossier: str, regime: str, documents_text: str):
+    """Background task: AI analysis → PDF generation → email delivery."""
+    try:
+        if not EMERGENT_LLM_KEY:
+            logger.error("Dossier Express: EMERGENT_LLM_KEY not available")
+            await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"status": "error", "error": "Service IA non disponible"}})
+            return
+
+        # Fetch similar cases
+        similar_cases = []
+        if type_dossier:
+            similar_cases = await db.cas_anonymises.find(
+                {"type_dossier": type_dossier}, {"_id": 0}
+            ).sort("score_pertinence", -1).to_list(5)
+
+        case_context = ""
+        if similar_cases:
+            case_context = "\n\nCAS SIMILAIRES DANS LA BASE :\n"
+            for c in similar_cases:
+                case_context += f"- Type: {c.get('type_dossier')}, Régime: {c.get('regime')}, Stratégie: {c.get('strategie')}, Résultat: {c.get('resultat')}\n"
+
+        user_msg = f"""DOSSIER EXPRESS - Analyse complète demandée
+
+Client : {name}
+Type de dossier : {type_dossier}
+Régime : {regime}
+
+DESCRIPTION DE LA SITUATION :
+{situation}
+
+CONTENU DES DOCUMENTS FOURNIS :
+{documents_text[:8000] if documents_text else "(Aucun document textuel fourni)"}
+{case_context}
+
+{DOSSIER_EXPRESS_PROMPT}"""
+
+        # Call Claude for analysis
+        session_id_llm = f"dossier_{dossier_id[:8]}"
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=session_id_llm,
+            system_message=STRATEGIIA_SYSTEM_PROMPT
+        ).with_model("anthropic", "claude-sonnet-4-5-20250929")
+
+        analysis = await chat.send_message(UserMessage(text=user_msg))
+
+        # Generate PDF
+        pdf_bytes = _generate_dossier_pdf(name, email, type_dossier, regime, analysis)
+
+        # Send email with PDF attachment
+        email_sent = False
+        if RESEND_AVAILABLE and resend.api_key:
+            try:
+                pdf_b64 = base64.b64encode(pdf_bytes).decode("utf-8")
+                resend.Emails.send({
+                    "from": SENDER_EMAIL,
+                    "to": [email],
+                    "subject": "Votre Rapport Dossier Express - Stratégie & Expertise Santé",
+                    "html": f"""
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <h1 style="color: #1a1a2e;">Votre Rapport Dossier Express</h1>
+                        <p>Bonjour {name or 'Madame, Monsieur'},</p>
+                        <p>Merci pour votre confiance. Veuillez trouver ci-joint votre rapport d'analyse complet réalisé par notre outil StratégiIA.</p>
+                        <p>Ce rapport contient :</p>
+                        <ul>
+                            <li>L'analyse détaillée de votre situation</li>
+                            <li>Le cadre juridique applicable</li>
+                            <li>Vos droits identifiés</li>
+                            <li>La stratégie recommandée</li>
+                            <li>Les prochaines étapes à suivre</li>
+                        </ul>
+                        <p>Pour un accompagnement personnalisé, n'hésitez pas à nous contacter :</p>
+                        <p><a href="https://expertise-health.preview.emergentagent.com/contact" style="color: #0f3460;">Prendre rendez-vous</a></p>
+                        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                        <p style="font-size: 12px; color: #666;">Ce rapport est un outil d'aide à la décision et ne constitue pas un avis juridique.<br>Stratégie & Expertise Santé</p>
+                    </div>
+                    """,
+                    "attachments": [{"filename": f"Rapport_Dossier_Express_{dossier_id[:8]}.pdf", "content": list(pdf_bytes)}]
+                })
+                email_sent = True
+                logger.info(f"Dossier Express {dossier_id}: email sent to {email}")
+            except Exception as e:
+                logger.error(f"Dossier Express email error: {e}")
+
+        # Update status
+        await db.dossier_express.update_one(
+            {"id": dossier_id},
+            {"$set": {
+                "status": "completed",
+                "analysis": analysis[:5000],
+                "email_sent": email_sent,
+                "completed_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+
+    except Exception as e:
+        logger.error(f"Dossier Express processing error: {e}")
+        await db.dossier_express.update_one(
+            {"id": dossier_id},
+            {"$set": {"status": "error", "error": str(e)}}
+        )
+
+
+def _generate_dossier_pdf(name: str, email: str, type_dossier: str, regime: str, analysis: str) -> bytes:
+    """Generate a professional PDF report from the AI analysis."""
+    from fpdf import FPDF
+    import textwrap
+
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=25)
+    pdf.add_page()
+
+    # Header
+    pdf.set_fill_color(26, 26, 46)
+    pdf.rect(0, 0, 210, 45, 'F')
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_font("Helvetica", "B", 22)
+    pdf.set_y(10)
+    pdf.cell(0, 10, "Strategie & Expertise Sante", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", "", 12)
+    pdf.cell(0, 8, "Rapport Dossier Express", align="C", new_x="LMARGIN", new_y="NEXT")
+
+    # Client info box
+    pdf.set_y(55)
+    pdf.set_text_color(50, 50, 50)
+    pdf.set_fill_color(245, 245, 250)
+    pdf.rect(15, 52, 180, 28, 'F')
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_x(20)
+    pdf.cell(0, 7, f"Client : {name or 'Non renseigne'}", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", "", 10)
+    pdf.set_x(20)
+    pdf.cell(0, 6, f"Email : {email}", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_x(20)
+    pdf.cell(0, 6, f"Type : {type_dossier or 'Non precise'}  |  Regime : {regime or 'Non precise'}  |  Date : {datetime.now().strftime('%d/%m/%Y')}", new_x="LMARGIN", new_y="NEXT")
+
+    pdf.ln(8)
+
+    # Parse and render analysis content
+    lines = analysis.split('\n')
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            pdf.ln(3)
+            continue
+
+        if stripped.startswith('# '):
+            pdf.set_font("Helvetica", "B", 16)
+            pdf.set_text_color(26, 26, 46)
+            pdf.ln(5)
+            pdf.multi_cell(0, 8, stripped[2:].encode('latin-1', 'replace').decode('latin-1'))
+        elif stripped.startswith('## '):
+            pdf.set_font("Helvetica", "B", 14)
+            pdf.set_text_color(26, 26, 46)
+            pdf.ln(4)
+            pdf.multi_cell(0, 7, stripped[3:].encode('latin-1', 'replace').decode('latin-1'))
+        elif stripped.startswith('### '):
+            pdf.set_font("Helvetica", "B", 12)
+            pdf.set_text_color(15, 52, 96)
+            pdf.ln(3)
+            pdf.multi_cell(0, 7, stripped[4:].encode('latin-1', 'replace').decode('latin-1'))
+        elif stripped.startswith('- ') or stripped.startswith('* '):
+            pdf.set_font("Helvetica", "", 10)
+            pdf.set_text_color(50, 50, 50)
+            text = stripped[2:].encode('latin-1', 'replace').decode('latin-1')
+            pdf.set_x(20)
+            pdf.multi_cell(170, 6, f"  {text}")
+        elif stripped.startswith('**') and stripped.endswith('**'):
+            pdf.set_font("Helvetica", "B", 10)
+            pdf.set_text_color(50, 50, 50)
+            text = stripped.strip('*').encode('latin-1', 'replace').decode('latin-1')
+            pdf.multi_cell(0, 6, text)
+        else:
+            pdf.set_font("Helvetica", "", 10)
+            pdf.set_text_color(50, 50, 50)
+            text = stripped.encode('latin-1', 'replace').decode('latin-1')
+            pdf.multi_cell(0, 6, text)
+
+    # Footer disclaimer
+    pdf.ln(10)
+    pdf.set_draw_color(200, 200, 200)
+    pdf.line(15, pdf.get_y(), 195, pdf.get_y())
+    pdf.ln(5)
+    pdf.set_font("Helvetica", "I", 8)
+    pdf.set_text_color(130, 130, 130)
+    pdf.multi_cell(0, 5, "Ce rapport est un outil d'aide a la decision et ne constitue pas un avis juridique. Pour un accompagnement personnalise, contactez Strategie & Expertise Sante.")
+
+    return pdf.output()
+
+
+@api_router.post("/dossier-express/checkout")
+async def dossier_express_checkout(request: Request):
+    """Create Stripe checkout for Dossier Express (97 EUR)."""
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe non configure")
+
+    body = await request.json()
+    origin_url = body.get("origin_url", "").rstrip('/')
+    email = body.get("email", "")
+    name = body.get("name", "")
+
+    success_url = f"{origin_url}/dossier-express?payment=success&session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{origin_url}/dossier-express?payment=cancelled"
+
+    host_url = str(request.base_url).rstrip('/')
+    webhook_url = f"{host_url}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+
+    checkout_request = CheckoutSessionRequest(
+        amount=97.00,
+        currency="eur",
+        success_url=success_url,
+        cancel_url=cancel_url,
+        metadata={
+            "package_id": "dossier_express",
+            "package_name": "Dossier Express StratégiIA",
+            "customer_email": email,
+            "customer_name": name
+        }
+    )
+
+    try:
+        session = await stripe_checkout.create_checkout_session(checkout_request)
+        return {"success": True, "url": session.url, "session_id": session.session_id}
+    except Exception as e:
+        logger.error(f"Dossier Express checkout error: {e}")
+        raise HTTPException(status_code=500, detail="Erreur de paiement")
+
+
+@api_router.get("/dossier-express/status/{dossier_id}")
+async def dossier_express_status(dossier_id: str):
+    """Check the status of a Dossier Express analysis."""
+    dossier = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0, "documents_text": 0})
+    if not dossier:
+        raise HTTPException(status_code=404, detail="Dossier non trouve")
+    return dossier
+
+
+@api_router.get("/admin/dossier-express")
+async def admin_dossier_express(admin: dict = Depends(get_current_admin)):
+    """Admin: list all Dossier Express submissions."""
+    dossiers = await db.dossier_express.find({}, {"_id": 0, "documents_text": 0, "analysis": 0}).sort("created_at", -1).to_list(100)
+    stats = {
+        "total": len(dossiers),
+        "completed": sum(1 for d in dossiers if d.get("status") == "completed"),
+        "processing": sum(1 for d in dossiers if d.get("status") == "processing"),
+        "errors": sum(1 for d in dossiers if d.get("status") == "error"),
+    }
+    return {"items": dossiers, "stats": stats}
+
+
 
 @api_router.post("/strategiia/analyze")
 async def strategiia_analyze(request: Request):

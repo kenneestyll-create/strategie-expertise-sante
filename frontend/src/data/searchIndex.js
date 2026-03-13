@@ -28,6 +28,7 @@ const PAGES = [
   { title: "Espace client", description: "Accéder à votre espace personnel sécurisé", category: "Pages", href: "/espace-client", keywords: ["espace client", "connexion", "dossier", "suivi", "portail"] },
   { title: "Simulateur de droits", description: "Simulez vos droits en quelques questions", category: "Pages", href: "/simulateur", keywords: ["simulateur", "droits", "éligibilité", "test", "questionnaire"] },
   { title: "Mentions légales", description: "Informations légales du site", category: "Pages", href: "/mentions-legales", keywords: ["mentions", "légales", "RGPD", "données"] },
+  { title: "Dossier Express", description: "Analyse complète de votre dossier par IA avec rapport PDF sous 2h - 97€", category: "Pages", href: "/dossier-express", keywords: ["dossier", "express", "analyse", "rapport", "PDF", "IA", "stratégiia", "97", "rapide"] },
   { title: "CGU", description: "Conditions générales d'utilisation", category: "Pages", href: "/cgu", keywords: ["CGU", "conditions", "générales", "utilisation"] },
 ];
 
