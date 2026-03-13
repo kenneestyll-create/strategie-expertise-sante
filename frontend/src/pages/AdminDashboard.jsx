@@ -36,7 +36,9 @@ import {
   FolderOpen,
   Video,
   User,
-  Zap
+  Zap,
+  Brain,
+  Plus
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
@@ -53,6 +55,9 @@ export const AdminDashboard = () => {
   const [relanceData, setRelanceData] = useState({ items: [], stats: { total: 0, not_sent: 0, sent: 0 } });
   const [clients, setClients] = useState([]);
   const [urgentAlerts, setUrgentAlerts] = useState({ items: [], total: 0, non_traite: 0 });
+  const [strategiiaData, setStrategiiaData] = useState({ total_analyses: 0, premium: 0, total_cases: 0, recent: [] });
+  const [casAnonymises, setCasAnonymises] = useState({ items: [], total: 0 });
+  const [newCas, setNewCas] = useState({ type_dossier: '', regime: '', duree: '', strategie: '', resultat: '', score_pertinence: 0, notes: '' });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -80,7 +85,7 @@ export const AdminDashboard = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [contactsRes, statsRes, avisRes, avisStatsRes, referralsRes, bookingsRes, relanceRes, clientsRes, alertesRes] = await Promise.all([
+      const [contactsRes, statsRes, avisRes, avisStatsRes, referralsRes, bookingsRes, relanceRes, clientsRes, alertesRes, strategiiaRes, casRes] = await Promise.all([
         axios.get(`${API}/admin/contacts`, axiosConfig),
         axios.get(`${API}/admin/stats`, axiosConfig),
         axios.get(`${API}/admin/avis`, axiosConfig),
@@ -89,7 +94,9 @@ export const AdminDashboard = () => {
         axios.get(`${API}/admin/bookings`, axiosConfig).catch(() => ({ data: [] })),
         axios.get(`${API}/admin/relance`, axiosConfig).catch(() => ({ data: { items: [], stats: { total: 0, not_sent: 0, sent: 0 } } })),
         axios.get(`${API}/admin/clients`, axiosConfig).catch(() => ({ data: [] })),
-        axios.get(`${API}/admin/alertes-urgentes`, axiosConfig).catch(() => ({ data: { items: [], total: 0, non_traite: 0 } }))
+        axios.get(`${API}/admin/alertes-urgentes`, axiosConfig).catch(() => ({ data: { items: [], total: 0, non_traite: 0 } })),
+        axios.get(`${API}/admin/strategiia/stats`, axiosConfig).catch(() => ({ data: { total_analyses: 0, premium: 0, total_cases: 0, recent: [] } })),
+        axios.get(`${API}/admin/cas-anonymises`, axiosConfig).catch(() => ({ data: { items: [], total: 0 } }))
       ]);
       setContacts(contactsRes.data);
       setStats(statsRes.data);
@@ -100,6 +107,8 @@ export const AdminDashboard = () => {
       setRelanceData(relanceRes.data);
       setClients(clientsRes.data);
       setUrgentAlerts(alertesRes.data);
+      setStrategiiaData(strategiiaRes.data);
+      setCasAnonymises(casRes.data);
     } catch (error) {
       console.error('Erreur:', error);
       if (error.response?.status === 401) {
@@ -296,7 +305,7 @@ export const AdminDashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-4xl grid-cols-7">
+          <TabsList className="grid w-full max-w-5xl grid-cols-8">
             <TabsTrigger value="contacts" className="gap-1 text-xs sm:text-sm">
               <Users className="w-3 h-3 sm:w-4 sm:h-4" />
               Contacts
@@ -327,6 +336,10 @@ export const AdminDashboard = () => {
               {urgentAlerts.non_traite > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">{urgentAlerts.non_traite}</span>
               )}
+            </TabsTrigger>
+            <TabsTrigger value="strategiia" className="gap-1 text-xs sm:text-sm" data-testid="tab-strategiia">
+              <Brain className="w-3 h-3 sm:w-4 sm:h-4" />
+              StratégiIA
             </TabsTrigger>
           </TabsList>
 
@@ -1033,6 +1046,94 @@ export const AdminDashboard = () => {
                             </Button>
                           )}
                         </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* StratégiIA Tab */}
+          <TabsContent value="strategiia" className="space-y-6" data-testid="strategiia-tab-content">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{strategiiaData.total_analyses}</p><p className="text-xs text-muted-foreground">Analyses totales</p></CardContent></Card>
+              <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-accent">{strategiiaData.premium}</p><p className="text-xs text-muted-foreground">Analyses premium</p></CardContent></Card>
+              <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{casAnonymises.total}</p><p className="text-xs text-muted-foreground">Cas anonymisés</p></CardContent></Card>
+              <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-green-600">{strategiiaData.premium * 29}€</p><p className="text-xs text-muted-foreground">Revenus estimés</p></CardContent></Card>
+            </div>
+
+            {/* Add anonymized case form */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Plus className="w-5 h-5 text-accent" />Ajouter un cas anonymisé (Phase 2)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+                  <Select value={newCas.type_dossier} onValueChange={v => setNewCas(p => ({...p, type_dossier: v}))}>
+                    <SelectTrigger data-testid="cas-type-select"><SelectValue placeholder="Type de dossier" /></SelectTrigger>
+                    <SelectContent>
+                      {['AT','MP','MDPH','Assurance','Expertise','Faute inexcusable','Recours','Autre'].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <Select value={newCas.regime} onValueChange={v => setNewCas(p => ({...p, regime: v}))}>
+                    <SelectTrigger data-testid="cas-regime-select"><SelectValue placeholder="Régime" /></SelectTrigger>
+                    <SelectContent>
+                      {['Général','MSA','Fonction publique','Indépendant','Autre'].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <Input placeholder="Durée (ex: 18 mois)" value={newCas.duree} onChange={e => setNewCas(p => ({...p, duree: e.target.value}))} data-testid="cas-duree-input" />
+                  <Input placeholder="Stratégie utilisée" value={newCas.strategie} onChange={e => setNewCas(p => ({...p, strategie: e.target.value}))} data-testid="cas-strategie-input" />
+                  <Select value={newCas.resultat} onValueChange={v => setNewCas(p => ({...p, resultat: v}))}>
+                    <SelectTrigger data-testid="cas-resultat-select"><SelectValue placeholder="Résultat obtenu" /></SelectTrigger>
+                    <SelectContent>
+                      {['Favorable','Partiellement favorable','Défavorable','En cours'].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <Input type="number" min={0} max={100} placeholder="Score pertinence (0-100)" value={newCas.score_pertinence || ''} onChange={e => setNewCas(p => ({...p, score_pertinence: parseInt(e.target.value) || 0}))} data-testid="cas-score-input" />
+                </div>
+                <Input placeholder="Notes supplémentaires" value={newCas.notes} onChange={e => setNewCas(p => ({...p, notes: e.target.value}))} className="mb-3" data-testid="cas-notes-input" />
+                <Button
+                  onClick={async () => {
+                    if (!newCas.type_dossier || !newCas.resultat) { toast.error('Type et résultat requis'); return; }
+                    try {
+                      await axios.post(`${API}/admin/cas-anonymises`, newCas, axiosConfig);
+                      toast.success('Cas ajouté');
+                      setNewCas({ type_dossier: '', regime: '', duree: '', strategie: '', resultat: '', score_pertinence: 0, notes: '' });
+                      fetchData();
+                    } catch { toast.error('Erreur'); }
+                  }}
+                  className="gap-2 rounded-lg"
+                  data-testid="cas-add-button"
+                >
+                  <Plus className="w-4 h-4" /> Ajouter le cas
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Cases list */}
+            <Card>
+              <CardHeader><CardTitle className="flex items-center gap-2"><Brain className="w-5 h-5 text-accent" />Base de cas anonymisés ({casAnonymises.total})</CardTitle></CardHeader>
+              <CardContent>
+                {casAnonymises.items?.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">Aucun cas anonymisé. Ajoutez vos premiers cas pour enrichir l'IA.</p>
+                ) : (
+                  <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                    {casAnonymises.items?.map(c => (
+                      <div key={c.id} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/20" data-testid={`cas-item-${c.id}`}>
+                        <Badge variant="secondary">{c.type_dossier}</Badge>
+                        <span className="text-sm flex-1">{c.regime} — {c.duree} — {c.strategie}</span>
+                        <Badge variant={c.resultat === 'Favorable' ? 'default' : c.resultat === 'Défavorable' ? 'destructive' : 'outline'} className={c.resultat === 'Favorable' ? 'bg-green-100 text-green-700 border-green-200' : ''}>
+                          {c.resultat}
+                        </Badge>
+                        <span className="text-xs font-mono text-muted-foreground">{c.score_pertinence}/100</span>
+                        <Button size="sm" variant="ghost" className="text-destructive h-8 w-8 p-0"
+                          onClick={async () => {
+                            try { await axios.delete(`${API}/admin/cas-anonymises/${c.id}`, axiosConfig); toast.success('Cas supprimé'); fetchData(); }
+                            catch { toast.error('Erreur'); }
+                          }}
+                          data-testid={`cas-delete-${c.id}`}
+                        ><Trash2 className="w-3.5 h-3.5" /></Button>
                       </div>
                     ))}
                   </div>

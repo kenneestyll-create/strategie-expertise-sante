@@ -2133,6 +2133,211 @@ async def get_simulator_stats(admin: dict = Depends(get_current_admin)):
     results = await db.simulator_results.find({}, {"_id": 0}).sort("created_at", -1).to_list(50)
     return {"total": total, "recent": results}
 
+# ==================== STRATEGIIA ROUTES ====================
+
+STRATEGIIA_SYSTEM_PROMPT = """Tu es StratégiIA, l'outil d'analyse stratégique exclusif de Stratégie & Expertise Santé.
+
+Tu analyses les dossiers de victimes d'accidents du travail, maladies professionnelles, litiges assurantiels et demandes MDPH en t'appuyant sur :
+
+1. JURISPRUDENCES DE RÉFÉRENCE :
+- Cass. soc. 2019 : L'employeur doit prouver qu'il a pris les mesures de prévention (obligation de sécurité de résultat → obligation de moyens renforcée depuis 2015)
+- Cass. 2e civ. 2020 : Le taux d'IPP doit tenir compte de l'incidence professionnelle réelle
+- CE 2018 : La MDPH doit motiver ses décisions de refus et répondre sous 4 mois
+- Cass. 2e civ. 2021 : La faute inexcusable peut être reconnue même en cas de respect partiel des normes
+- Cass. 2e civ. 2022 : Le silence de la CPAM au-delà du délai vaut acceptation implicite
+- TA/CAA multiples : Le CRRMP doit examiner le lien direct et essentiel avec le travail habituel
+
+2. STATISTIQUES CNAM (données publiques) :
+- ~650 000 AT/an, ~50 000 MP/an reconnues
+- TMS (Tableau 57) = 87% des MP reconnues
+- Taux moyen d'IPP AT : 9%, MP : 14%
+- Délai moyen instruction CPAM : 3-4 mois
+- Taux de contestation aboutissant : ~35% en CRA, ~45% au tribunal
+- Faute inexcusable reconnue dans ~60% des cas portés en justice
+
+3. BARÈMES IPP OFFICIELS :
+- Taux < 10% : capital forfaitaire (barème annexe Code SS)
+- Taux ≥ 10% : rente = salaire × taux utile (moitié jusqu'à 50%, totalité au-delà)
+- Barème indicatif d'invalidité AT/MP (annexe à l'art. R434-32 du Code SS)
+
+RÈGLES :
+- Réponds TOUJOURS en français
+- Structure ta réponse en sections claires : Analyse de la situation, Jurisprudences applicables, Stratégie recommandée, Chances de succès estimées, Prochaines étapes
+- Donne un score de pertinence sur 100 basé sur la similarité avec des cas similaires
+- Sois précis et factuel, cite les textes et jurisprudences pertinents
+- Rappelle TOUJOURS que c'est un outil d'aide à la décision et non un conseil juridique
+- Si des cas anonymisés similaires existent dans la base, mentionne les statistiques de résultats"""
+
+STRATEGIIA_BASIC_PROMPT = """Analyse BASIQUE demandée. Fournis :
+1. Une synthèse courte de la situation (3-4 lignes)
+2. Les principaux droits identifiés (liste à puces, max 4)
+3. La première démarche prioritaire à effectuer
+4. Un score de pertinence approximatif sur 100
+
+Reste concis (max 300 mots). Mentionne qu'un rapport complet est disponible pour une analyse approfondie."""
+
+STRATEGIIA_PREMIUM_PROMPT = """Analyse COMPLÈTE demandée. Fournis un rapport détaillé structuré :
+
+## Analyse de votre situation
+(Résumé détaillé en 5-6 lignes)
+
+## Jurisprudences applicables
+(2-3 jurisprudences pertinentes avec références et ce qu'elles impliquent)
+
+## Vos droits identifiés
+(Liste exhaustive avec explications)
+
+## Stratégie recommandée
+(Plan d'action en étapes numérotées avec justification)
+
+## Estimation des chances de succès
+(Score sur 100 avec explication des facteurs pris en compte)
+
+## Délais importants
+(Dates limites et échéances à respecter)
+
+## Prochaines étapes immédiates
+(3 actions concrètes à réaliser dans les prochains jours)
+
+Sois exhaustif et précis (600-800 mots)."""
+
+@api_router.post("/strategiia/analyze")
+async def strategiia_analyze(request: Request):
+    body = await request.json()
+    situation = body.get("situation", "")
+    type_dossier = body.get("type_dossier", "")
+    regime = body.get("regime", "")
+    is_premium = body.get("premium", False)
+
+    if not situation.strip():
+        raise HTTPException(status_code=400, detail="Description de la situation requise")
+
+    if not EMERGENT_LLM_KEY:
+        raise HTTPException(status_code=503, detail="Service IA non disponible")
+
+    # Fetch similar anonymized cases
+    similar_cases = []
+    if type_dossier:
+        similar_cases = await db.cas_anonymises.find(
+            {"type_dossier": type_dossier}, {"_id": 0}
+        ).sort("score_pertinence", -1).to_list(5)
+
+    case_context = ""
+    if similar_cases:
+        case_context = "\n\nCAS SIMILAIRES ANONYMISÉS DANS LA BASE :\n"
+        for c in similar_cases:
+            case_context += f"- Type: {c.get('type_dossier')}, Régime: {c.get('regime')}, Durée: {c.get('duree')}, Stratégie: {c.get('strategie')}, Résultat: {c.get('resultat')}, Score: {c.get('score_pertinence', 'N/A')}/100\n"
+
+    analysis_prompt = STRATEGIIA_PREMIUM_PROMPT if is_premium else STRATEGIIA_BASIC_PROMPT
+
+    user_msg = f"""Type de dossier : {type_dossier}
+Régime : {regime}
+Description de la situation : {situation}
+{case_context}
+
+{analysis_prompt}"""
+
+    try:
+        session_id = f"strategiia_{str(uuid.uuid4())[:8]}"
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=session_id,
+            system_message=STRATEGIIA_SYSTEM_PROMPT
+        ).with_model("anthropic", "claude-sonnet-4-5-20250929")
+
+        response = await chat.send_message(UserMessage(text=user_msg))
+
+        # Save analysis
+        analysis_doc = {
+            "id": str(uuid.uuid4()),
+            "type_dossier": type_dossier,
+            "regime": regime,
+            "situation": situation[:500],
+            "is_premium": is_premium,
+            "email": body.get("email", ""),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.strategiia_analyses.insert_one(analysis_doc)
+
+        return {"success": True, "analysis": response, "cases_found": len(similar_cases)}
+
+    except Exception as e:
+        logger.error(f"StratégiIA error: {e}")
+        raise HTTPException(status_code=500, detail="Erreur lors de l'analyse IA")
+
+@api_router.post("/strategiia/checkout")
+async def strategiia_checkout(request: Request):
+    """Create Stripe checkout for premium StratégiIA report (29€)"""
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe non configuré")
+
+    body = await request.json()
+    origin_url = body.get("origin_url", "").rstrip('/')
+    email = body.get("email", "")
+    analysis_context = body.get("context", "")
+
+    success_url = f"{origin_url}/simulateur?strategiia=success&session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{origin_url}/simulateur?strategiia=cancelled"
+
+    host_url = str(request.base_url).rstrip('/')
+    webhook_url = f"{host_url}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+
+    checkout_request = CheckoutSessionRequest(
+        amount=29.00,
+        currency="eur",
+        success_url=success_url,
+        cancel_url=cancel_url,
+        metadata={
+            "product": "strategiia_premium",
+            "customer_email": email,
+            "context": analysis_context[:200]
+        }
+    )
+
+    try:
+        session = await stripe_checkout.create_checkout_session(checkout_request)
+        return {"url": session.url, "session_id": session.session_id}
+    except Exception as e:
+        logger.error(f"StratégiIA checkout error: {e}")
+        raise HTTPException(status_code=500, detail="Erreur de paiement")
+
+# Admin: anonymized cases CRUD
+@api_router.get("/admin/cas-anonymises")
+async def get_cas_anonymises(admin: dict = Depends(get_current_admin)):
+    cases = await db.cas_anonymises.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return {"items": cases, "total": len(cases)}
+
+@api_router.post("/admin/cas-anonymises")
+async def create_cas_anonymise(request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    cas = {
+        "id": str(uuid.uuid4()),
+        "type_dossier": body.get("type_dossier", ""),
+        "regime": body.get("regime", ""),
+        "duree": body.get("duree", ""),
+        "strategie": body.get("strategie", ""),
+        "resultat": body.get("resultat", ""),
+        "score_pertinence": body.get("score_pertinence", 0),
+        "notes": body.get("notes", ""),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.cas_anonymises.insert_one(cas)
+    return {"success": True, "id": cas["id"]}
+
+@api_router.delete("/admin/cas-anonymises/{case_id}")
+async def delete_cas_anonymise(case_id: str, admin: dict = Depends(get_current_admin)):
+    await db.cas_anonymises.delete_one({"id": case_id})
+    return {"success": True}
+
+@api_router.get("/admin/strategiia/stats")
+async def get_strategiia_stats(admin: dict = Depends(get_current_admin)):
+    total_analyses = await db.strategiia_analyses.count_documents({})
+    premium = await db.strategiia_analyses.count_documents({"is_premium": True})
+    total_cases = await db.cas_anonymises.count_documents({})
+    recent = await db.strategiia_analyses.find({}, {"_id": 0}).sort("created_at", -1).to_list(20)
+    return {"total_analyses": total_analyses, "premium": premium, "total_cases": total_cases, "recent": recent}
+
 # ==================== CALCULATOR COUNTER ROUTES ====================
 
 @api_router.post("/calculator/track")
