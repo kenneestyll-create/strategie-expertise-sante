@@ -2448,6 +2448,7 @@ async def send_relance_email(item_id: str, admin: dict = Depends(get_current_adm
     
     # Try to send email via Resend if configured
     email_sent = False
+    error_detail = ""
     if RESEND_AVAILABLE and resend.api_key and resend.api_key != '':
         try:
             resend.Emails.send({
@@ -2465,13 +2466,21 @@ async def send_relance_email(item_id: str, admin: dict = Depends(get_current_adm
             email_sent = True
         except Exception as e:
             logger.error(f"Resend error: {e}")
+            error_detail = str(e)
     
     await db.abandoned_checkouts.update_one(
         {"id": item_id},
         {"$set": {"relance_sent": True, "relance_sent_at": datetime.now(timezone.utc).isoformat()}}
     )
     
-    return {"success": True, "email_sent": email_sent, "message": "Relance envoyée" if email_sent else "Relance marquée (email non configuré)"}
+    if email_sent:
+        msg = "Email de relance envoyé avec succès"
+    elif error_detail:
+        msg = f"Relance marquée mais email échoué : {error_detail}"
+    else:
+        msg = "Relance marquée (email non configuré)"
+    
+    return {"success": True, "email_sent": email_sent, "message": msg}
 
 # ==================== RESOURCES / LIBRARY ROUTES ====================
 
@@ -2494,6 +2503,40 @@ async def get_resource_stats(admin: dict = Depends(get_current_admin)):
     stats = await db.resource_downloads.aggregate(pipeline).to_list(100)
     total = await db.resource_downloads.count_documents({})
     return {"total_downloads": total, "by_resource": stats}
+
+@api_router.get("/admin/email/status")
+async def get_email_status(admin: dict = Depends(get_current_admin)):
+    """Diagnostic endpoint to check Resend email configuration status."""
+    key = os.environ.get('RESEND_API_KEY', '')
+    has_key = bool(key and key.strip())
+    return {
+        "resend_installed": RESEND_AVAILABLE,
+        "api_key_configured": has_key,
+        "api_key_preview": f"{key[:8]}...{key[-4:]}" if has_key and len(key) > 12 else ("set" if has_key else "missing"),
+        "sender_email": SENDER_EMAIL,
+        "notification_email": NOTIFICATION_EMAIL or "(non configuré)",
+    }
+
+@api_router.post("/admin/email/test")
+async def test_email(request: Request, admin: dict = Depends(get_current_admin)):
+    """Send a test email to verify Resend configuration."""
+    body = await request.json()
+    to_email = body.get("email", "")
+    if not to_email:
+        raise HTTPException(status_code=400, detail="Email destinataire requis")
+    if not RESEND_AVAILABLE or not resend.api_key:
+        return {"success": False, "message": "Resend non configuré"}
+    try:
+        result = await asyncio.to_thread(resend.Emails.send, {
+            "from": SENDER_EMAIL,
+            "to": [to_email],
+            "subject": "Stratégie & Expertise Santé - Test email",
+            "html": "<h2>Test réussi !</h2><p>Votre configuration email Resend fonctionne correctement.</p>"
+        })
+        return {"success": True, "message": "Email de test envoyé", "resend_id": str(result)}
+    except Exception as e:
+        return {"success": False, "message": f"Erreur Resend : {str(e)}"}
+
 
 # ==================== SEED DATA ====================
 
