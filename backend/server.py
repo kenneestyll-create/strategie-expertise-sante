@@ -936,27 +936,58 @@ async def record_client_order(email: str, name: Optional[str] = None):
 
 @api_router.post("/chatbot", response_model=ChatResponse)
 async def chatbot_message(chat_input: ChatMessage):
-    """Handle chatbot messages - first check FAQ, then use AI"""
+    """Handle chatbot messages - first check FAQ, then use AI. Limited to 5 free questions per session."""
     session_id = chat_input.session_id or str(uuid.uuid4())
-    
+
+    # Track and check chatbot quota (5 questions per session)
+    session_doc = await db.chatbot_sessions.find_one({"session_id": session_id}, {"_id": 0})
+    question_count = (session_doc.get("count", 0) if session_doc else 0) + 1
+
+    if question_count > 5:
+        return ChatResponse(
+            response="Vous avez atteint la limite de 5 questions gratuites pour cette session.\n\n"
+                     "Pour aller plus loin dans votre démarche :\n"
+                     "- [Réservez un appel gratuit](/agenda) avec notre expert\n"
+                     "- [Découvrez le Dossier Express](/dossier-express) pour une analyse complète\n"
+                     "- [Consultez nos tarifs](/tarifs) pour un accompagnement personnalisé\n\n"
+                     "Premier échange toujours gratuit et sans engagement.",
+            is_faq=False,
+            session_id=session_id
+        )
+
+    # Update session counter
+    await db.chatbot_sessions.update_one(
+        {"session_id": session_id},
+        {"$set": {"count": question_count, "updated_at": datetime.now(timezone.utc).isoformat()},
+         "$setOnInsert": {"created_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True
+    )
+
     # First, try to find a FAQ response
     faq_response = find_faq_response(chat_input.message)
-    
+
     if faq_response:
         return ChatResponse(
             response=faq_response,
             is_faq=True,
             session_id=session_id
         )
-    
+
     # If no FAQ match, use AI
     ai_response = await get_ai_response(chat_input.message, session_id)
-    
+
     return ChatResponse(
         response=ai_response,
         is_faq=False,
         session_id=session_id
     )
+
+@api_router.get("/chatbot/quota/{session_id}")
+async def chatbot_quota(session_id: str):
+    """Check remaining free chatbot questions for this session."""
+    session_doc = await db.chatbot_sessions.find_one({"session_id": session_id}, {"_id": 0})
+    used = session_doc.get("count", 0) if session_doc else 0
+    return {"remaining": max(0, 5 - used), "limit": 5, "used": min(used, 5)}
 
 # ==================== PAYMENT ROUTES ====================
 
@@ -2540,12 +2571,31 @@ async def strategiia_analyze(request: Request):
     type_dossier = body.get("type_dossier", "")
     regime = body.get("regime", "")
     is_premium = body.get("premium", False)
+    email = body.get("email", "").strip().lower()
 
     if not situation.strip():
         raise HTTPException(status_code=400, detail="Description de la situation requise")
+    if not email:
+        raise HTTPException(status_code=400, detail="Email obligatoire pour utiliser StratégiIA")
 
     if not EMERGENT_LLM_KEY:
         raise HTTPException(status_code=503, detail="Service IA non disponible")
+
+    # Check quota for free analyses (3/month per email) — premium analyses are unlimited
+    if not is_premium:
+        now = datetime.now(timezone.utc)
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+        usage_count = await db.strategiia_analyses.count_documents({
+            "email": email, "is_premium": False,
+            "created_at": {"$gte": month_start}
+        })
+        if usage_count >= 3:
+            return {
+                "success": False,
+                "quota_exceeded": True,
+                "remaining": 0,
+                "message": "Vous avez utilisé vos 3 analyses gratuites ce mois-ci. Passez au Dossier Express pour une analyse complète."
+            }
 
     # Fetch similar anonymized cases
     similar_cases = []
@@ -2586,16 +2636,40 @@ Description de la situation : {situation}
             "regime": regime,
             "situation": situation[:500],
             "is_premium": is_premium,
-            "email": body.get("email", ""),
+            "email": email,
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.strategiia_analyses.insert_one(analysis_doc)
 
-        return {"success": True, "analysis": response, "cases_found": len(similar_cases)}
+        # Compute remaining free analyses this month
+        remaining = 3
+        if not is_premium:
+            now = datetime.now(timezone.utc)
+            month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+            usage_count = await db.strategiia_analyses.count_documents({
+                "email": email, "is_premium": False,
+                "created_at": {"$gte": month_start}
+            })
+            remaining = max(0, 3 - usage_count)
+
+        return {"success": True, "analysis": response, "cases_found": len(similar_cases), "remaining": remaining}
 
     except Exception as e:
         logger.error(f"StratégiIA error: {e}")
         raise HTTPException(status_code=500, detail="Erreur lors de l'analyse IA")
+
+@api_router.get("/strategiia/quota/{email}")
+async def strategiia_quota(email: str):
+    """Check remaining free StratégiIA analyses for this month."""
+    email = email.strip().lower()
+    now = datetime.now(timezone.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+    usage_count = await db.strategiia_analyses.count_documents({
+        "email": email, "is_premium": False,
+        "created_at": {"$gte": month_start}
+    })
+    remaining = max(0, 3 - usage_count)
+    return {"remaining": remaining, "limit": 3, "used": min(usage_count, 3)}
 
 @api_router.post("/strategiia/checkout")
 async def strategiia_checkout(request: Request):
