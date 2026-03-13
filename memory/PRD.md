@@ -9,43 +9,29 @@ Web application in French providing advice and support for occupational diseases
 - **Integrations:** Stripe (test), PayPal (sandbox), Claude Sonnet 4.5 (Emergent LLM Key), Resend (ACTIVE), HubSpot (pending), fpdf2 (PDF gen)
 
 ## Completed Features
-- Core pages: Home, About, Services, Resources, Contact
-- Admin panel with JWT auth
-- Forum, Chatbot, Reviews/Guestbook, Referral system, PDF viewer
+- Core pages, Admin panel, Forum, Chatbot, Reviews, Referral system, PDF viewer
 - IPP & AAH calculators with share & counter
 - Global search (fuse.js), StratégiIA AI analysis (Phase 1)
 - Simulator with PDF report & email capture
-- Urgent alert floating button
-- Interactive MDPH directory, disease tables, guides
-- Z-index management system
-- Stripe & PayPal integration (test/sandbox mode)
-- Abandoned cart tracking + email relance system
-- Resend email integration (ACTIVE)
-- Admin email diagnostic endpoints
+- Urgent alert floating button, MDPH directory, disease tables
+- Stripe & PayPal (test/sandbox), Resend (ACTIVE), Abandoned cart emails
+- Dossier Express (/dossier-express) — 97€ AI analysis + PDF + email
+- Tarifs restructured as 4-step progressive journey
 
-### NEW (March 13, 2026)
-- **Dossier Express** (`/dossier-express`): Full service — landing page, form with upload, Stripe checkout (97€), async AI analysis via Claude, PDF generation (fpdf2), email delivery via Resend
-- **Tarifs restructured** (`/tarifs`): 4-step progressive journey:
-  1. StratégiIA gratuite (first diagnostic)
-  2. Dossier Express 97€ (complete AI report)
-  3. Prestations personnalisées 150-500€ (human expert)
-  4. Pass Urgent (48h priority)
-- Header updated with Dossier Express in Services dropdown
-- Search index updated with Dossier Express entry
-- Backend: 3 new endpoints (checkout, submit, status) + admin endpoint
-
-## DB Collections
-- **dossier_express**: {id, session_id, email, name, situation, type_dossier, regime, documents_text, status, analysis, email_sent, created_at, completed_at}
+### NEW (March 13, 2026 - Quotas)
+- **StrategiIA quota**: 3 free analyses/month per email, mandatory email registration, visible counter badge, quota exceeded redirect to /tarifs + /dossier-express
+- **Chatbot quota**: 5 free questions/session, visible counter badge (X/5), quota exceeded banner with CTAs to /agenda, /dossier-express, /tarifs
+- **Backend**: /strategiia/quota/{email}, /chatbot/quota/{session_id} endpoints
+- **DB collections**: chatbot_sessions {session_id, count, created_at, updated_at}
 
 ## Known Limitations
-- LLM budget exceeded (Current cost: 0.466/Max: 0.4) — user needs to recharge Universal Key balance
+- LLM budget exceeded (needs recharge via Profile → Universal Key → Add Balance)
 - Stripe/PayPal in test/sandbox mode
 - Resend sender: onboarding@resend.dev (test sender only)
 
 ## Pending
-- P0: Recharge Emergent LLM Key balance (Profile → Universal Key → Add Balance)
-- P1: NOTIFICATION_EMAIL for contact notifications
-- P1: Verified sender domain in Resend for production emails
+- P0: Recharge Emergent LLM Key balance
+- P1: NOTIFICATION_EMAIL, verified Resend domain
 - P1: HubSpot Portal ID for CRM
 - P2: Production Stripe/PayPal keys
 
