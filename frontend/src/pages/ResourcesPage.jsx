@@ -26,10 +26,18 @@ const MdphFinder = () => {
   const filtered = useMemo(() => {
     if (!query.trim()) return MDPH_DIRECTORY;
     const q = query.trim().toLowerCase();
-    // If query matches a department code exactly, return only that department
-    const exactDep = MDPH_DIRECTORY.filter(m => m.dep.toLowerCase() === q);
-    if (exactDep.length > 0) return exactDep;
-    // Otherwise search by name and address only (avoid partial dep matches)
+    // Extract number from query (handles "MDA 28", "MDPH 75", "département 13", etc.)
+    const numMatch = q.match(/\d+[a-b]?/i);
+    const depNum = numMatch ? numMatch[0].toUpperCase() : null;
+    // Try exact match on department code (direct or extracted number)
+    if (depNum) {
+      const exactDep = MDPH_DIRECTORY.filter(m => m.dep === depNum || m.dep === depNum.padStart(2, '0'));
+      if (exactDep.length > 0) return exactDep;
+    }
+    // Also try the full query as exact dep match
+    const exactFull = MDPH_DIRECTORY.filter(m => m.dep.toLowerCase() === q);
+    if (exactFull.length > 0) return exactFull;
+    // Fallback: search by name and address only
     return MDPH_DIRECTORY.filter(m =>
       m.nom.toLowerCase().includes(q) ||
       m.adresse.toLowerCase().includes(q)
