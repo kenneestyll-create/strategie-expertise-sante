@@ -86,6 +86,14 @@ Application web de conseil basée sur une expérience vécue de maladie professi
   3. Contenu enrichi : droits potentiels, démarches prioritaires, délais importants, prestation recommandée
   4. Boutons partage WhatsApp/SMS/Email/Copier le lien
   5. HubSpot CRM prêt (placeholders HUBSPOT_PORTAL_ID + HUBSPOT_ACCESS_TOKEN dans .env)
+- **StratégiIA** — Outil IA exclusif d'analyse stratégique de dossiers :
+  - Bouton dans le header sur toutes les pages
+  - Formulaire : type de dossier, régime, description situation, email
+  - Analyse gratuite basique via Claude Sonnet 4.5 (jurisprudences, CNAM, barèmes IPP)
+  - Rapport complet premium à 29€ (Stripe checkout) avec PDF professionnel aux couleurs du site
+  - Disclaimer légal obligatoire sur chaque résultat
+  - Admin : onglet StratégiIA avec stats, CRUD cas anonymisés (Phase 2), score de pertinence
+  - Partage WhatsApp/SMS/Email
 
 ## Admin Credentials
 - **Admin site**: admin@strategie-expertise-sante.fr / Admin2024!
