@@ -25,9 +25,12 @@ const MdphFinder = () => {
 
   const filtered = useMemo(() => {
     if (!query.trim()) return MDPH_DIRECTORY;
-    const q = query.toLowerCase();
+    const q = query.trim().toLowerCase();
+    // If query matches a department code exactly, return only that department
+    const exactDep = MDPH_DIRECTORY.filter(m => m.dep.toLowerCase() === q);
+    if (exactDep.length > 0) return exactDep;
+    // Otherwise search by name and address only (avoid partial dep matches)
     return MDPH_DIRECTORY.filter(m =>
-      m.dep.toLowerCase().includes(q) ||
       m.nom.toLowerCase().includes(q) ||
       m.adresse.toLowerCase().includes(q)
     );

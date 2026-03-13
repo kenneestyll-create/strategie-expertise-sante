@@ -133,10 +133,10 @@ export const HomePage = () => {
               <Link to="/contact">
                 <Button 
                   size="lg" 
-                  className="btn-scale rounded-full px-8 gap-2"
+                  className="btn-scale rounded-full px-8 gap-2 bg-foreground hover:bg-foreground/90 text-primary-foreground"
                   data-testid="hero-cta-primary"
                 >
-                  Prendre rendez-vous
+                  Nous contacter
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
