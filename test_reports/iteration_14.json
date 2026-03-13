@@ -1,0 +1,75 @@
+{
+  "summary": "Complete frontend testing of the new Global Search feature. 15 out of 16 test cases passed. All core functionality works: search trigger visible on all pages (homepage, /ressources, /calculatrice-ipp, /contact), Ctrl+K shortcut opens search, Escape key closes overlay, suggestion chips populate input, clicking results navigates correctly and closes overlay, results are grouped by category with icons. One bug found: gibberish queries show results instead of 'Aucun résultat' message.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "GlobalSearch / searchIndex.js",
+        "issue": "Gibberish queries like 'xyzabc' or 'zzzzqqqqwwww12345' show results instead of 'Aucun résultat' message. Root cause: Category boost (+5 for Outils, +2 for Pages) is applied unconditionally in searchContent() function BEFORE the score > 0 filter, causing items with 0 actual matches to still pass the filter.",
+        "selector": "[data-testid='global-search-results']",
+        "priority": "LOW",
+        "fix_suggestion": "Move category boost inside the if(haystack.includes(term)) block, or apply it only if score > 0 before the final filter"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "Search trigger button visible on homepage (desktop)",
+    "Search trigger button visible on /ressources page",
+    "Search trigger button visible on /calculatrice-ipp page",
+    "Search trigger button visible on /contact page",
+    "Clicking search trigger opens search overlay with input field",
+    "Ctrl+K keyboard shortcut opens search overlay",
+    "Escape key closes search overlay",
+    "Typing 'canal carpien' returns Tableau 57C and TMS 57C results",
+    "Typing 'canal carpien' shows IPP 10% example and Calculatrice IPP",
+    "Typing 'MDPH Paris' returns MDPH Paris (75) result",
+    "Typing 'AAH' returns Calculatrice AAH and AAH allocation result",
+    "Typing 'amiante' returns Tableau 30 results",
+    "Typing 'expertise' returns Expertise médicale page/guide",
+    "Single character shows 'minimum 2 characters' message",
+    "Suggestion chips ('canal carpien', 'MDPH Paris', 'IPP 30%', 'AAH', 'expertise médicale', 'amiante') are visible and work",
+    "Clicking suggestion chip populates search input",
+    "Clicking search result navigates to correct page (/ressources#encyclopedie)",
+    "Clicking search result closes overlay",
+    "Results grouped by category (Maladies professionnelles, Outils, IPP — Exemples, Pages)",
+    "Category headers have icons (SVG elements present)"
+  ],
+  "failed_tests": [
+    "No results message for meaningless queries like 'xyzabc' - shows OUTILS results instead"
+  ],
+  "test_report_links": [
+    "/app/frontend/src/components/GlobalSearch.jsx",
+    "/app/frontend/src/data/searchIndex.js",
+    "/app/frontend/src/components/Header.jsx"
+  ],
+  "action_items": [
+    "Fix searchContent() in /app/frontend/src/data/searchIndex.js - category boost should only apply when there's at least one term match"
+  ],
+  "critical_code_review_comments": [
+    "GlobalSearch.jsx: Well-implemented with proper data-testid attributes, keyboard shortcuts (Ctrl+K, Escape), and clean UX",
+    "searchIndex.js BUG: Lines 145-146 apply category boost unconditionally, causing items with 0 actual matches to pass the score > 0 filter",
+    "Header.jsx: GlobalSearch correctly integrated in desktop nav between links and CTA buttons"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A - Frontend only testing",
+    "frontend": "94% (15/16 test cases passed)"
+  },
+  "test_credentials": "",
+  "seed_data_creation": "",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "mocked_apis": {
+    "note": "No mocked APIs - all search is client-side with static data",
+    "value": {
+      "has_mocked_apis": false,
+      "mocked_apis_list": []
+    }
+  },
+  "context_for_next_testing_agent": "Global search feature tested. ~150 entries in SEARCH_INDEX covering: pages, tools (IPP/AAH calculators), 20 maladies pro, 5 TMS localizations, 10 IPP examples, 101 MDPH departments, MDPH aids, 6 guides. Bug found in searchContent() scoring logic - category boost applied unconditionally. Suggestion chips data-testid format: search-suggestion-{term-with-dashes}. Results data-testid format: search-result-{index}."
+}

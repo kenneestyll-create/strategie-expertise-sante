@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Heart, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { GlobalSearch } from '@/components/GlobalSearch';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -184,6 +185,7 @@ export const Header = () => {
 
           {/* CTA Buttons - Desktop */}
           <div className="hidden lg:flex items-center gap-2">
+            <GlobalSearch />
             <Link to="/espace-client">
               <Button 
                 variant="outline"
