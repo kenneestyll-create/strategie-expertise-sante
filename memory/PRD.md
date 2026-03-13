@@ -80,6 +80,12 @@ Application web de conseil basée sur une expérience vécue de maladie professi
   4. Annuaire MDPH interactif : 101 départements avec recherche, fiche complète (adresse, tél, email, site)
   5. Aides MDPH : 3 CMI, 6 types PCH (aide humaine/technique/logement/véhicule/animalière/charges), AAH, RQTH
 - **Moteur de recherche global** — Barre de recherche dans le header (Ctrl+K), connecte tous les contenus : 20 tableaux MP, 5 TMS, 10 exemples IPP, 101 MDPH, aides, pages, guides, outils. Résultats catégorisés avec navigation directe.
+- **Diagnostic amélioré** — Questionnaire 5 étapes avec :
+  1. Collecte email avant résultats (pour suivi et CRM)
+  2. Rapport PDF personnalisé téléchargeable (jsPDF, couleurs du site, en-tête S&ES)
+  3. Contenu enrichi : droits potentiels, démarches prioritaires, délais importants, prestation recommandée
+  4. Boutons partage WhatsApp/SMS/Email/Copier le lien
+  5. HubSpot CRM prêt (placeholders HUBSPOT_PORTAL_ID + HUBSPOT_ACCESS_TOKEN dans .env)
 
 ## Admin Credentials
 - **Admin site**: admin@strategie-expertise-sante.fr / Admin2024!
