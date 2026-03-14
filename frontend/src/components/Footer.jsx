@@ -10,15 +10,13 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <Link to="/" className="flex items-center gap-2.5 mb-4">
+            <Link to="/" className="flex items-center gap-0 mb-4">
               <img 
-                src="https://customer-assets.emergentagent.com/job_574c0cd2-0ae0-4513-8a36-a076963b0d88/artifacts/p7zult0e_file_0000000060a072468fa84e10f82698d6.png" 
-                alt="Stratégie & Expertise Santé — Logo" 
-                className="w-8 h-8 object-contain"
+                src="/logo.svg" 
+                alt="Stratégie & Expertise Santé — Pionnier en France" 
+                className="h-10 w-auto"
+                style={{ filter: 'brightness(0) invert(1)' }}
               />
-              <span className="font-semibold text-lg" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Stratégie & Expertise Santé
-              </span>
             </Link>
             <p className="text-primary-foreground/70 text-sm leading-relaxed max-w-md">
               Conseil et accompagnement pour les victimes de maladies professionnelles, 

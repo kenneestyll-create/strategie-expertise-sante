@@ -77,17 +77,14 @@ export const Header = () => {
           {/* Logo */}
           <Link 
             to="/" 
-            className="flex items-center gap-2.5 text-foreground hover:opacity-80 transition-opacity"
+            className="flex items-center gap-0 text-foreground hover:opacity-80 transition-opacity"
             data-testid="header-logo"
           >
             <img 
-              src="https://customer-assets.emergentagent.com/job_574c0cd2-0ae0-4513-8a36-a076963b0d88/artifacts/p7zult0e_file_0000000060a072468fa84e10f82698d6.png" 
-              alt="Stratégie & Expertise Santé — Logo" 
-              className="w-8 h-8 flex-shrink-0 object-contain"
+              src="/logo.svg" 
+              alt="Stratégie & Expertise Santé — Pionnier en France" 
+              className="h-9 w-auto flex-shrink-0"
             />
-            <span className="font-semibold text-sm tracking-tight whitespace-nowrap" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Stratégie & Expertise Santé
-            </span>
           </Link>
 
           {/* Desktop Navigation */}
