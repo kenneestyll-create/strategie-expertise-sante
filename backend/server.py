@@ -3067,6 +3067,8 @@ app.add_middleware(GZipMiddleware, minimum_size=500)
 async def add_cache_headers(request: Request, call_next):
     response = await call_next(request)
     path = request.url.path
+    # SEO: Allow indexing by search engines
+    response.headers["X-Robots-Tag"] = "index, follow"
     # Cache static SEO files aggressively
     if path in ("/api/sitemap.xml", "/api/robots.txt"):
         response.headers["Cache-Control"] = "public, max-age=86400"

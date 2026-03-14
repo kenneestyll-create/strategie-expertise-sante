@@ -32,6 +32,7 @@ Web application in French providing advice and support for occupational diseases
 - LLM budget exceeded (needs recharge)
 - Stripe/PayPal in test/sandbox mode
 - Resend sender: onboarding@resend.dev (test sender)
+- **Preview environment**: Emergent proxy overrides `X-Robots-Tag` to `noindex, nofollow` and Cloudflare injects `Content-Signal` into robots.txt — both resolved on custom domain deployment
 
 ## Pending
 - P0: Recharge Emergent LLM Key
