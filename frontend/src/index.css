@@ -152,3 +152,106 @@ html {
 [data-sonner-toaster] {
     z-index: var(--z-toast) !important;
 }
+
+/* ── Scroll-triggered reveal animations ── */
+.reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+.reveal-left {
+    opacity: 0;
+    transform: translateX(-32px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-left.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+.reveal-right {
+    opacity: 0;
+    transform: translateX(32px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-right.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+.reveal-scale {
+    opacity: 0;
+    transform: scale(0.92);
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-scale.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Staggered children — apply .stagger to parent */
+.stagger > .reveal:nth-child(1) { transition-delay: 0ms; }
+.stagger > .reveal:nth-child(2) { transition-delay: 80ms; }
+.stagger > .reveal:nth-child(3) { transition-delay: 160ms; }
+.stagger > .reveal:nth-child(4) { transition-delay: 240ms; }
+.stagger > .reveal:nth-child(5) { transition-delay: 320ms; }
+.stagger > .reveal:nth-child(6) { transition-delay: 400ms; }
+
+/* ── Micro-interaction animations ── */
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+.shimmer {
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2.5s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+.float {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes countPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+}
+.count-pulse {
+    animation: countPulse 2s ease-in-out infinite;
+}
+
+/* Glow effect for urgent elements */
+@keyframes urgentGlow {
+    0%, 100% { box-shadow: 0 0 8px rgba(220, 38, 38, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(220, 38, 38, 0.6); }
+}
+.urgent-glow {
+    animation: urgentGlow 2s ease-in-out infinite;
+}
+
+/* Card hover with glow */
+.card-glow {
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.card-glow:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(185, 78, 72, 0.12);
+    border-color: hsl(var(--accent) / 0.3);
+}
+
+/* Icon bounce on hover */
+.icon-bounce:hover svg {
+    animation: iconBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes iconBounce {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+}
+

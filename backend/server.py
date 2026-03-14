@@ -2564,6 +2564,17 @@ async def admin_dossier_express(admin: dict = Depends(get_current_admin)):
     }
     return {"items": dossiers, "stats": stats}
 
+@api_router.get("/dossier-express/weekly-count")
+async def dossier_express_weekly_count():
+    """Public: returns the number of dossiers treated this week (with a social proof base)."""
+    now = datetime.now(timezone.utc)
+    week_start = (now - timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+    real_count = await db.dossier_express.count_documents({"created_at": {"$gte": week_start}})
+    # Base social proof number + real orders
+    display_count = 12 + real_count
+    return {"count": display_count, "period": "week"}
+
+
 
 
 @api_router.post("/strategiia/analyze")

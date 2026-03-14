@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
+import { useReveal, useRevealChildren } from '@/hooks/useReveal';
 import { 
   ArrowRight, 
   FileSearch, 
@@ -30,24 +31,34 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export const HomePage = () => {
   const [visitorCount, setVisitorCount] = useState(0);
+  const [dossierCount, setDossierCount] = useState(0);
+
+  // Reveal refs for scroll animations
+  const bannerRef = useReveal();
+  const innovationRef = useRevealChildren();
+  const missionRef = useRevealChildren();
+  const servicesRef = useRevealChildren();
+  const reseauRef = useRevealChildren();
+  const avisRef = useReveal();
+  const ctaRef = useReveal();
 
   useEffect(() => {
-    // Increment visitor count on page load
-    const incrementVisitor = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.post(`${API}/visitors/increment`);
-        setVisitorCount(response.data.count);
-      } catch (error) {
-        // Fallback to get count if increment fails
+        const [visitRes, dossierRes] = await Promise.allSettled([
+          axios.post(`${API}/visitors/increment`),
+          axios.get(`${API}/dossier-express/weekly-count`)
+        ]);
+        if (visitRes.status === 'fulfilled') setVisitorCount(visitRes.value.data.count);
+        if (dossierRes.status === 'fulfilled') setDossierCount(dossierRes.value.data.count);
+      } catch {
         try {
-          const response = await axios.get(`${API}/visitors/count`);
-          setVisitorCount(response.data.count);
-        } catch (e) {
-          console.error('Error fetching visitor count');
-        }
+          const res = await axios.get(`${API}/visitors/count`);
+          setVisitorCount(res.data.count);
+        } catch {}
       }
     };
-    incrementVisitor();
+    fetchData();
   }, []);
 
   const services = [
@@ -171,20 +182,25 @@ export const HomePage = () => {
       </section>
 
       {/* Dossier Express — Urgent Banner */}
-      <section className="relative overflow-hidden" data-testid="dossier-express-banner">
+      <section className="relative overflow-hidden urgent-glow" data-testid="dossier-express-banner" ref={bannerRef}>
         <div className="absolute inset-0 bg-gradient-to-r from-red-700 via-red-600 to-red-700" />
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.1) 10px, rgba(0,0,0,0.1) 20px)' }} />
+        <div className="absolute inset-0 shimmer" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center animate-pulse">
+              <div className="flex-shrink-0 w-12 h-12 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center float">
                 <Zap className="w-7 h-7 text-yellow-300" />
               </div>
               <div className="text-white">
-                <div className="flex items-center gap-2 mb-0.5">
+                <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                   <span className="text-xs font-bold uppercase tracking-wider text-yellow-300 bg-yellow-300/15 px-2 py-0.5 rounded">Urgence</span>
                   <Clock className="w-3.5 h-3.5 text-red-200" />
                   <span className="text-xs text-red-200">Livré sous 2h</span>
+                  {dossierCount > 0 && (
+                    <span className="text-xs text-red-100 bg-white/10 px-2 py-0.5 rounded-full" data-testid="dossier-express-counter">
+                      <strong className="text-yellow-300 count-pulse inline-block">{dossierCount}</strong> dossiers traités cette semaine
+                    </span>
+                  )}
                 </div>
                 <p className="font-bold text-base sm:text-lg leading-tight">
                   Expertise médicale imminente ? Dossier bloqué ?
@@ -241,9 +257,9 @@ export const HomePage = () => {
 
       {/* Approche Innovante Section */}
       <section className="section-padding bg-accent/5">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto" ref={innovationRef}>
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
+            <div className="reveal-left">
               <div className="inline-flex items-center gap-2 text-accent mb-4">
                 <Lightbulb className="w-5 h-5" strokeWidth={1.5} />
                 <span className="text-sm font-medium uppercase tracking-wider">Innovation</span>
@@ -264,23 +280,23 @@ export const HomePage = () => {
               </p>
               <div className="grid sm:grid-cols-2 gap-3">
                 {innovationPoints.map((point, index) => (
-                  <div key={index} className="flex items-start gap-2">
+                  <div key={index} className="flex items-start gap-2 icon-bounce">
                     <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" strokeWidth={1.5} />
                     <span className="text-sm text-foreground">{point}</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="relative">
+            <div className="relative reveal-right">
               <div className="aspect-square rounded-2xl overflow-hidden">
                 <img
                   loading="lazy" 
                   src="https://images.pexels.com/photos/7176026/pexels-photo-7176026.jpeg?auto=compress&cs=tinysrgb&w=800" 
-                  alt="Approche innovante"
+                  alt="Approche innovante en accompagnement santé au travail"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="absolute -bottom-4 -right-4 bg-foreground text-primary-foreground p-4 rounded-xl shadow-lg">
+              <div className="absolute -bottom-4 -right-4 bg-foreground text-primary-foreground p-4 rounded-xl shadow-lg reveal-scale">
                 <p className="text-2xl font-bold">+7 ans</p>
                 <p className="text-sm text-primary-foreground/70">d'expérience terrain</p>
               </div>
@@ -291,9 +307,9 @@ export const HomePage = () => {
 
       {/* Mission Section */}
       <section className="section-padding bg-card">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto" ref={missionRef}>
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            <div>
+            <div className="reveal-left">
               <span className="text-sm font-medium text-accent uppercase tracking-wider">Notre mission</span>
               <h2 className="text-3xl sm:text-4xl font-semibold mt-2 mb-6">
                 Comprendre, accompagner, défendre vos droits
@@ -309,23 +325,23 @@ export const HomePage = () => {
               </p>
               <div className="space-y-3">
                 {values.map((value, index) => (
-                  <div key={index} className="flex items-start gap-3">
+                  <div key={index} className="flex items-start gap-3 icon-bounce">
                     <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" strokeWidth={1.5} />
                     <span className="text-foreground">{value}</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="relative">
+            <div className="relative reveal-right">
               <div className="aspect-[4/5] rounded-2xl overflow-hidden">
                 <img
                   loading="lazy" 
                   src="https://images.pexels.com/photos/7111462/pexels-photo-7111462.jpeg?auto=compress&cs=tinysrgb&w=800" 
-                  alt="Accompagnement personnalisé"
+                  alt="Accompagnement personnalisé en maladie professionnelle"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="absolute -bottom-6 -left-6 bg-accent text-accent-foreground p-6 rounded-xl shadow-lg max-w-xs">
+              <div className="absolute -bottom-6 -left-6 bg-accent text-accent-foreground p-6 rounded-xl shadow-lg max-w-xs reveal-scale">
                 <Heart className="w-8 h-8 mb-2" strokeWidth={1.5} />
                 <p className="text-sm font-medium">
                   "Une personne blessée par le système qui aide d'autres blessés à se relever."
@@ -338,8 +354,8 @@ export const HomePage = () => {
 
       {/* Services Preview */}
       <section className="section-padding">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-12">
+        <div className="max-w-7xl mx-auto" ref={servicesRef}>
+          <div className="text-center max-w-2xl mx-auto mb-12 reveal">
             <span className="text-sm font-medium text-accent uppercase tracking-wider">Accompagnements</span>
             <h2 className="text-3xl sm:text-4xl font-semibold mt-2 mb-4">
               Comment puis-je vous aider ?
@@ -349,14 +365,14 @@ export const HomePage = () => {
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger">
             {services.map((service, index) => (
               <Card 
                 key={index} 
-                className="card-lift border-border bg-card"
+                className="card-glow border-border bg-card reveal"
                 data-testid={`service-card-${index}`}
               >
-                <CardContent className="p-6">
+                <CardContent className="p-6 icon-bounce">
                   <service.icon className="w-10 h-10 text-accent mb-4" strokeWidth={1.5} />
                   <h3 className="font-semibold text-lg mb-2">{service.title}</h3>
                   <p className="text-sm text-muted-foreground">{service.description}</p>
@@ -365,9 +381,9 @@ export const HomePage = () => {
             ))}
           </div>
 
-          <div className="text-center mt-10">
+          <div className="text-center mt-10 reveal">
             <Link to="/accompagnements">
-              <Button variant="outline" className="rounded-full px-8 gap-2" data-testid="services-link">
+              <Button variant="outline" className="rounded-full px-8 gap-2 btn-scale" data-testid="services-link">
                 Découvrir tous les accompagnements
                 <ArrowRight className="w-4 h-4" />
               </Button>
@@ -378,9 +394,9 @@ export const HomePage = () => {
 
       {/* Réseau Partenaires Section */}
       <section className="section-padding bg-secondary">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto" ref={reseauRef}>
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
+            <div className="reveal-left">
               <span className="text-sm font-medium text-accent uppercase tracking-wider">Réseau</span>
               <h2 className="text-3xl sm:text-4xl font-semibold mt-2 mb-6">
                 Un réseau de professionnels partenaires
@@ -390,9 +406,9 @@ export const HomePage = () => {
                 et du domaine judiciaire. Ce réseau me permet aujourd'hui de vous orienter vers 
                 les interlocuteurs les plus adaptés à votre situation.
               </p>
-              <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className="grid grid-cols-2 gap-4 mb-8 stagger">
                 {partenaires.map((item, index) => (
-                  <div key={index} className="flex items-center gap-3 bg-card p-4 rounded-xl border border-border">
+                  <div key={index} className="flex items-center gap-3 bg-card p-4 rounded-xl border border-border card-glow reveal icon-bounce">
                     <item.icon className="w-6 h-6 text-accent" strokeWidth={1.5} />
                     <span className="text-sm font-medium">{item.title}</span>
                   </div>
@@ -405,12 +421,12 @@ export const HomePage = () => {
                 </Button>
               </Link>
             </div>
-            <div className="relative">
+            <div className="relative reveal-right">
               <div className="aspect-[4/3] rounded-2xl overflow-hidden">
                 <img
                   loading="lazy" 
                   src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=800" 
-                  alt="Réseau de partenaires"
+                  alt="Réseau de professionnels partenaires santé et juridique"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -421,8 +437,8 @@ export const HomePage = () => {
 
       {/* Avis Section Preview */}
       <section className="section-padding">
-        <div className="max-w-4xl mx-auto text-center">
-          <Star className="w-12 h-12 text-accent mx-auto mb-4" strokeWidth={1.5} />
+        <div className="max-w-4xl mx-auto text-center reveal" ref={avisRef}>
+          <Star className="w-12 h-12 text-accent mx-auto mb-4 float" strokeWidth={1.5} />
           <h2 className="text-3xl font-semibold mb-4">Ce qu'ils en disent</h2>
           <p className="text-muted-foreground mb-8">
             Découvrez les témoignages des personnes que j'ai accompagnées.
@@ -438,7 +454,7 @@ export const HomePage = () => {
 
       {/* CTA Section */}
       <section className="section-padding bg-foreground text-primary-foreground">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-4xl mx-auto text-center reveal" ref={ctaRef}>
           <h2 className="text-3xl sm:text-4xl font-semibold mb-6">
             Besoin d'aide pour y voir plus clair ?
           </h2>
