@@ -106,7 +106,9 @@ export const Footer = () => {
         {/* Disclaimer Legal */}
         <div className="mt-8 pt-6 border-t border-primary-foreground/10">
           <p className="text-xs text-primary-foreground/40 leading-relaxed max-w-4xl" data-testid="footer-disclaimer">
-            Stratégie & Expertise Santé propose un accompagnement informationnel et stratégique. 
+            Stratégie & Expertise Santé propose un accompagnement stratégique et une analyse documentaire. 
+            Ce service ne constitue pas une expertise médicale officielle ni une expertise judiciaire, 
+            lesquelles sont réalisées par des médecins experts et experts judiciaires agréés. 
             Les services proposés ne constituent pas un conseil juridique ni un avis médical. 
             Pour toute décision juridique ou médicale, consultez un professionnel qualifié.
           </p>

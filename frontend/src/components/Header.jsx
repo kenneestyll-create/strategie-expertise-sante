@@ -116,7 +116,7 @@ export const Header = () => {
                   }`}
                   data-testid="nav-expertise-dropdown"
                 >
-                  Expertises
+                  Domaines d'intervention
                   <ChevronDown className="w-4 h-4" />
                 </button>
               </DropdownMenuTrigger>

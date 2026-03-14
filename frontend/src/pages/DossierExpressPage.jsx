@@ -261,7 +261,8 @@ export const DossierExpressPage = () => {
             <div className="flex items-start gap-3" data-testid="dossier-express-disclaimer">
               <AlertTriangle className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
               <p className="text-sm text-amber-900/70 leading-relaxed">
-                <strong className="text-amber-900/90">Information importante :</strong> Le Dossier Express fournit une analyse informative et stratégique basée sur l'intelligence artificielle. 
+                <strong className="text-amber-900/90">Information importante :</strong> Le Dossier Express fournit une analyse documentaire et stratégique basée sur l'intelligence artificielle. 
+                Ce service ne constitue pas une expertise médicale officielle ni une expertise judiciaire. 
                 Il ne constitue pas un conseil juridique ni un avis médical. 
                 Pour toute décision juridique ou médicale, consultez un professionnel qualifié.
               </p>

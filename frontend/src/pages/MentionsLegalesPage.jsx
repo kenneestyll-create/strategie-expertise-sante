@@ -342,9 +342,16 @@ export const MentionsLegalesPage = () => {
               <div className="space-y-3 text-sm text-amber-900/80 leading-relaxed">
                 <p>
                   <strong>Nature des services :</strong> Stratégie & Expertise Santé propose un accompagnement 
-                  informationnel et stratégique destiné à aider les personnes confrontées à des situations complexes 
-                  liées aux maladies professionnelles, accidents du travail, procédures MDPH, expertises médicales 
-                  et litiges assurantiels.
+                  stratégique et une analyse documentaire destinés à aider les personnes confrontées à des situations 
+                  complexes liées aux maladies professionnelles, accidents du travail, procédures MDPH, expertises 
+                  médicales et litiges assurantiels.
+                </p>
+                <p>
+                  <strong>Distinction avec les expertises officielles :</strong> Ce service ne constitue pas une 
+                  expertise médicale officielle ni une expertise judiciaire. Les expertises médicales officielles 
+                  sont réalisées exclusivement par des médecins experts agréés et les expertises judiciaires par 
+                  des experts judiciaires désignés par les tribunaux. Stratégie & Expertise Santé n'intervient 
+                  ni en qualité de médecin expert, ni en qualité d'expert judiciaire.
                 </p>
                 <p>
                   <strong>Absence de conseil juridique et médical :</strong> Les informations, analyses et stratégies 

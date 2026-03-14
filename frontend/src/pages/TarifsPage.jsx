@@ -449,7 +449,8 @@ export const TarifsPage = () => {
           <div className="flex items-start gap-3" data-testid="tarifs-disclaimer">
             <Scale className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
             <p className="text-sm text-amber-900/70 leading-relaxed">
-              <strong className="text-amber-900/90">Information importante :</strong> Stratégie & Expertise Santé propose un accompagnement informationnel et stratégique. 
+              <strong className="text-amber-900/90">Information importante :</strong> Stratégie & Expertise Santé propose un accompagnement stratégique et une analyse documentaire. 
+              Ce service ne constitue pas une expertise médicale officielle ni une expertise judiciaire. 
               Les services proposés ne constituent pas un conseil juridique ni un avis médical. 
               Pour toute décision juridique ou médicale, consultez un professionnel qualifié.
             </p>

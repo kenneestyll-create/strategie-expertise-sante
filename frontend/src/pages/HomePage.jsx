@@ -93,7 +93,7 @@ export const HomePage = () => {
 
   const innovationPoints = [
     "Un accompagnement personnalisé",
-    "Une expertise issue de l'expérience du terrain",
+    "Un accompagnement stratégique issu de l'expérience du terrain",
     "Une approche humaine et pédagogique",
     "Un service encore peu développé en France"
   ];
@@ -457,11 +457,17 @@ export const HomePage = () => {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-start gap-3" data-testid="homepage-disclaimer">
             <Scale className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-            <p className="text-sm text-amber-900/70 leading-relaxed">
-              <strong className="text-amber-900/90">Information importante :</strong> Stratégie & Expertise Santé propose un accompagnement informationnel et stratégique. 
-              Les services proposés ne constituent pas un conseil juridique ni un avis médical. 
-              Pour toute décision juridique ou médicale, consultez un professionnel qualifié.
-            </p>
+            <div className="text-sm text-amber-900/70 leading-relaxed space-y-2">
+              <p>
+                <strong className="text-amber-900/90">Information importante :</strong> Stratégie & Expertise Santé propose un accompagnement stratégique et une analyse documentaire. 
+                Ce service ne constitue pas une expertise médicale officielle ni une expertise judiciaire, 
+                lesquelles sont réalisées par des médecins experts et experts judiciaires agréés.
+              </p>
+              <p>
+                Les services proposés ne constituent pas un conseil juridique ni un avis médical. 
+                Pour toute décision juridique ou médicale, consultez un professionnel qualifié.
+              </p>
+            </div>
           </div>
         </div>
       </section>
