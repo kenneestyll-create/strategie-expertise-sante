@@ -38,6 +38,14 @@ Web application in French providing advice and support for occupational diseases
 - **react-helmet-async**: Dynamic per-page meta tags (description, OG, Twitter, canonical) — no duplicate static tags in index.html
 - **index.html cleanup**: Removed duplicate meta/OG tags, canonical moved to dynamic, Schema.org moved to dynamic injection
 
+### RGPD / Data Consent (Completed — Feb 2026)
+- **DataConsentBox** (`/app/frontend/src/components/DataConsentBox.jsx`): Reusable consent component with confidentiality notice, mandatory checkbox, and link to privacy policy.
+- Integrated on: **StrategiIA**, **Dossier Express**, **Contact**, **Espace Client** (register mode only). Submit buttons disabled without consent.
+- **Politique de confidentialité** (`/politique-confidentialite`): Dedicated RGPD page with 10 sections (responsible, data collected, purpose, legal basis, health data protection, retention, recipients, rights, security, contact).
+- Footer updated with link to privacy policy page.
+- MentionsLégales Confidentialité tab includes banner linking to full privacy policy.
+- Testing: 100% pass rate (iteration_29).
+
 ## Known Limitations
 - LLM budget exceeded (needs recharge)
 - Stripe/PayPal in test/sandbox mode
@@ -45,10 +53,11 @@ Web application in French providing advice and support for occupational diseases
 - **Preview environment**: Emergent proxy overrides `X-Robots-Tag` to `noindex, nofollow` and Cloudflare injects `Content-Signal` into robots.txt — both resolved on custom domain deployment
 
 ## Pending
-- P0: Recharge Emergent LLM Key
+- P1: Recharge Emergent LLM Key (Profile → Universal Key → Add Balance)
 - P1: NOTIFICATION_EMAIL, verified Resend domain
 - P1: HubSpot Portal ID
 - P2: Production Stripe/PayPal keys
+- P3: Legal content finalization (business address, phone, host details)
 
 ## Backlog
 - StratégiIA Phase 2: Admin interface for anonymized case management
