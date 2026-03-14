@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useForumAuth } from '@/context/ForumAuthContext';
 import axios from 'axios';
+import { SEO } from '@/components/SEO';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -69,6 +70,7 @@ export const ForumPage = () => {
 
   return (
     <main className="page-transition pt-20">
+      <SEO title="Forum communautaire" description="Échangez avec d'autres personnes concernées par les maladies professionnelles, AT/MP et MDPH." path="/forum" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">

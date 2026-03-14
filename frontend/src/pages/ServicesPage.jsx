@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SEO } from '@/components/SEO';
 import { 
   ArrowRight, 
   FileSearch, 
@@ -91,6 +92,7 @@ export const ServicesPage = () => {
 
   return (
     <main className="page-transition pt-20">
+      <SEO title="Nos accompagnements" description="Accompagnement personnalisé en maladie professionnelle, accident du travail, MDPH et expertise médicale." path="/accompagnements" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">

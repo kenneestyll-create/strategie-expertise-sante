@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { SEO } from '@/components/SEO';
 import { 
   ArrowRight, 
   Stethoscope, 
@@ -45,6 +46,7 @@ export const ExpertiseMedicalePage = () => {
 
   return (
     <main className="page-transition pt-20">
+      <SEO title="Expertise médicale" description="Préparation et accompagnement pour vos expertises médicales. Analysez votre dossier et préparez vos arguments." path="/expertise-medicale" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">

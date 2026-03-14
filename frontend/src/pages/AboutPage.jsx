@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowRight, Calendar, FileText, Scale, Heart, Award, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { SEO } from '@/components/SEO';
 
 export const AboutPage = () => {
   const [pdfError, setPdfError] = useState(false);
@@ -54,6 +55,7 @@ export const AboutPage = () => {
 
   return (
     <main className="page-transition pt-20">
+      <SEO title="Mon parcours" description="Découvrez le parcours et l'expertise de Stratégie & Expertise Santé en accompagnement des victimes de maladies professionnelles." path="/a-propos" />
       {/* Hero Section */}
       <section className="relative section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">

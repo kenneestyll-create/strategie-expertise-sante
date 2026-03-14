@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SEO } from '@/components/SEO';
 import { 
   ArrowRight, 
   Home, 
@@ -35,6 +36,7 @@ export const MDPHPage = () => {
 
   return (
     <main className="page-transition pt-20">
+      <SEO title="MDPH — Droits et démarches" description="Guide complet MDPH : démarches, droits, AAH, RQTH. Accompagnement personnalisé pour votre dossier handicap." path="/mdph" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">

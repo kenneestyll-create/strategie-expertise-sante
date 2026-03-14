@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { ArrowRight, Mail, Phone, Clock, CheckCircle, Send, Loader2 } from 'lucide-react';
 import axios from 'axios';
+import { SEO } from '@/components/SEO';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -87,6 +88,7 @@ export const ContactPage = () => {
   if (submitted) {
     return (
       <main className="page-transition pt-20 min-h-screen flex items-center">
+      <SEO title="Contact" description="Contactez Stratégie & Expertise Santé pour un premier échange gratuit sur votre dossier maladie professionnelle, AT/MP ou MDPH." path="/contact" />
         <div className="max-w-2xl mx-auto px-4 text-center py-20">
           <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-accent" strokeWidth={1.5} />
@@ -167,7 +169,7 @@ export const ContactPage = () => {
               <div className="hidden lg:block mt-8">
                 <div className="aspect-[4/3] rounded-2xl overflow-hidden">
                   <img 
-                    src="https://images.unsplash.com/photo-1651602855717-9f79c72893cc?auto=format&fit=crop&w=800&q=80" 
+                    src="https://images.unsplash.com/photo-1651602855717-9f79c72893cc?auto=format&fit=crop&w=800&q=60" 
                     alt="Contact"
                     className="w-full h-full object-cover"
                   />

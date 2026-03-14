@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
 import axios from 'axios';
+import { SEO } from '@/components/SEO';
 import {
   Calculator,
   AlertTriangle,
@@ -145,6 +146,7 @@ export const CalculatriceIPPPage = () => {
 
   return (
     <main className="page-transition pt-20">
+      <SEO title="Calculatrice IPP" description="Estimez votre taux d'Incapacité Permanente Partielle (IPP) et le montant de votre indemnisation." path="/calculatrice-ipp" />
       {/* Hero */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">

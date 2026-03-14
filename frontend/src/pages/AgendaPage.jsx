@@ -19,6 +19,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import axios from 'axios';
+import { SEO } from '@/components/SEO';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -105,6 +106,7 @@ export const AgendaPage = () => {
   if (booked) {
     return (
       <main className="page-transition pt-20 min-h-screen flex items-center">
+      <SEO title="Prendre rendez-vous" description="Réservez un créneau pour un échange gratuit avec notre expert en maladie professionnelle et droits sociaux." path="/agenda" />
         <div className="max-w-2xl mx-auto px-4 text-center py-20">
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-green-600" strokeWidth={1.5} />

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SEO } from '@/components/SEO';
 import { 
   ArrowRight, 
   AlertCircle, 
@@ -35,6 +36,7 @@ export const AccidentTravailPage = () => {
 
   return (
     <main className="page-transition pt-20">
+      <SEO title="Accident du travail et maladie professionnelle" description="Conseil expert en accident du travail (AT) et maladie professionnelle (MP). Faites valoir vos droits." path="/accident-travail-maladie-professionnelle" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">

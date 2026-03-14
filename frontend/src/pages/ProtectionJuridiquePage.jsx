@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SEO } from '@/components/SEO';
 import { 
   ArrowRight, 
   Shield, 
@@ -70,6 +71,7 @@ export const ProtectionJuridiquePage = () => {
 
   return (
     <main className="page-transition pt-20">
+      <SEO title="Protection juridique" description="Activez votre protection juridique pour faire valoir vos droits en cas de litige avec un assureur ou employeur." path="/protection-juridique" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">

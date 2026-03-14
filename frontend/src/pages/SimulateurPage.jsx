@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import jsPDF from 'jspdf';
+import { SEO } from '@/components/SEO';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -418,6 +419,7 @@ export const SimulateurPage = () => {
 
   return (
     <main className="page-transition pt-20">
+      <SEO title="Simulateur de droits" description="Simulez gratuitement vos droits en cas de maladie professionnelle, accident du travail ou handicap." path="/simulateur" />
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-3xl">

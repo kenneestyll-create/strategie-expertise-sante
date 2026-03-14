@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import axios from 'axios';
+import { SEO } from '@/components/SEO';
 import {
   Calculator,
   AlertTriangle,
@@ -166,6 +167,7 @@ export const CalculatriceAAHPage = () => {
 
   return (
     <main className="page-transition pt-20">
+      <SEO title="Calculatrice AAH" description="Estimez votre éligibilité et le montant de l'Allocation aux Adultes Handicapés (AAH)." path="/calculatrice-aah" />
       {/* Hero */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">

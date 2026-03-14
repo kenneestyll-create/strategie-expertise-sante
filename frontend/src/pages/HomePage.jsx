@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { SEO } from '@/components/SEO';
 import { 
   ArrowRight, 
   FileSearch, 
@@ -98,12 +99,16 @@ export const HomePage = () => {
 
   return (
     <main className="page-transition">
-      {/* Hero Section */}
+      <SEO
+        title="Accueil"
+        description="Stratégie & Expertise Santé : accompagnement expert en maladie professionnelle, accident du travail, MDPH et protection juridique. Premier échange gratuit."
+        path="/"
+      />
       <section className="relative min-h-screen flex items-center pt-20">
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{ 
-            backgroundImage: `url('https://images.unsplash.com/photo-1598016677484-ad34c3fd766e?auto=format&fit=crop&w=1920&q=80')`,
+            backgroundImage: `url('https://images.unsplash.com/photo-1598016677484-ad34c3fd766e?auto=format&fit=crop&w=1920&q=60')`,
           }}
         />
         <div className="absolute inset-0 hero-overlay" />

@@ -16,6 +16,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import axios from 'axios';
+import { SEO } from '@/components/SEO';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -106,6 +107,7 @@ export const AvisPage = () => {
 
   return (
     <main className="page-transition pt-20">
+      <SEO title="Avis et témoignages" description="Découvrez les témoignages de nos clients accompagnés en maladie professionnelle, AT/MP et MDPH." path="/avis" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">

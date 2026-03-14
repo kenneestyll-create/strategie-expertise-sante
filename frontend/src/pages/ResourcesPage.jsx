@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import { MALADIES_PRO_TABLEAUX, TMS_LOCALISATION, IPP_EXEMPLES } from '@/data/maladiesProfessionnelles';
 import { MDPH_DIRECTORY } from '@/data/mdphDirectory';
+import { SEO } from '@/components/SEO';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -160,6 +161,7 @@ export const ResourcesPage = () => {
 
   return (
     <main className="page-transition pt-20">
+      <SEO title="Ressources et guides" description="Ressources gratuites : annuaire MDPH, tableaux des maladies professionnelles, guides pratiques et outils de calcul." path="/ressources" />
       {/* Hero */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">

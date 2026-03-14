@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
+import { SEO } from '@/components/SEO';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -142,6 +143,7 @@ export const TarifsPage = () => {
 
   return (
     <main className="page-transition pt-20">
+      <SEO title="Tarifs et prestations" description="Découvrez nos tarifs : analyse StratégiIA gratuite, Dossier Express 97€, accompagnement personnalisé 150-500€. Premier échange gratuit." path="/tarifs" />
       {/* Hero */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">

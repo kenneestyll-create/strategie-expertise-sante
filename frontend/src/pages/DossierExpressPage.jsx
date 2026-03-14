@@ -13,6 +13,7 @@ import {
   ChevronRight, Sparkles, CreditCard, X
 } from 'lucide-react';
 import axios from 'axios';
+import { SEO } from '@/components/SEO';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -157,6 +158,7 @@ export const DossierExpressPage = () => {
   if (step === 'landing') {
     return (
       <main className="page-transition pt-20">
+      <SEO title="Dossier Express — Rapport IA sous 2h" description="Uploadez vos documents, StratégiIA les analyse et vous recevez un rapport PDF complet sous 2 heures pour 97€." path="/dossier-express" />
         {/* Hero */}
         <section className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f3460 100%)' }}>
           <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px)', backgroundSize: '24px 24px' }} />

@@ -1,5 +1,7 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import PlainTextResponse, Response
+from fastapi.middleware.gzip import GZipMiddleware
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -2993,8 +2995,85 @@ async def seed_data():
     
     return {"success": True, "message": "Données initiales créées"}
 
+
+# ==================== SEO ENDPOINTS ====================
+
+SITE_URL = "https://expertise-health.preview.emergentagent.com"
+
+SITEMAP_PAGES = [
+    ("/", "1.0", "daily"),
+    ("/a-propos", "0.8", "monthly"),
+    ("/accompagnements", "0.8", "monthly"),
+    ("/expertise-medicale", "0.8", "monthly"),
+    ("/accident-travail-maladie-professionnelle", "0.8", "monthly"),
+    ("/mdph", "0.8", "monthly"),
+    ("/protection-juridique", "0.8", "monthly"),
+    ("/tarifs", "0.9", "weekly"),
+    ("/dossier-express", "0.9", "weekly"),
+    ("/simulateur", "0.7", "monthly"),
+    ("/calculatrice-ipp", "0.7", "monthly"),
+    ("/calculatrice-aah", "0.7", "monthly"),
+    ("/ressources", "0.8", "weekly"),
+    ("/contact", "0.7", "monthly"),
+    ("/agenda", "0.7", "monthly"),
+    ("/forum", "0.6", "daily"),
+    ("/avis", "0.6", "weekly"),
+    ("/seminaires", "0.5", "monthly"),
+    ("/entreprises", "0.5", "monthly"),
+    ("/partenaires", "0.5", "monthly"),
+    ("/parrainage", "0.4", "monthly"),
+    ("/espace-client", "0.3", "monthly"),
+    ("/mentions-legales", "0.2", "yearly"),
+]
+
+@api_router.get("/sitemap.xml")
+async def sitemap_xml():
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    urls = ""
+    for path, priority, freq in SITEMAP_PAGES:
+        urls += f"""  <url>
+    <loc>{SITE_URL}{path}</loc>
+    <lastmod>{today}</lastmod>
+    <changefreq>{freq}</changefreq>
+    <priority>{priority}</priority>
+  </url>\n"""
+    xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{urls}</urlset>"""
+    return Response(content=xml, media_type="application/xml")
+
+
+@api_router.get("/robots.txt")
+async def robots_txt():
+    content = f"""User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/login
+Disallow: /espace-client
+
+Sitemap: {SITE_URL}/api/sitemap.xml
+"""
+    return PlainTextResponse(content=content)
+
+
 # Include the router in the main app
 app.include_router(api_router)
+
+# GZip compression for all responses
+app.add_middleware(GZipMiddleware, minimum_size=500)
+
+# Cache-Control middleware for static-like API responses
+@app.middleware("http")
+async def add_cache_headers(request: Request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    # Cache static SEO files aggressively
+    if path in ("/api/sitemap.xml", "/api/robots.txt"):
+        response.headers["Cache-Control"] = "public, max-age=86400"
+    # Cache GET API responses briefly
+    elif request.method == "GET" and path.startswith("/api/") and "admin" not in path:
+        response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
+    return response
 
 app.add_middleware(
     CORSMiddleware,
