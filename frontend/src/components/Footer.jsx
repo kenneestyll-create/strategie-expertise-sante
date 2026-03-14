@@ -12,7 +12,7 @@ export const Footer = () => {
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center gap-2.5 mb-4">
               <img 
-                src="https://static.prod-images.emergentagent.com/jobs/574c0cd2-0ae0-4513-8a36-a076963b0d88/images/6feb287ef88e3d9d1b52e1e4afa5fbb18a3e813dc8ddb26632f809c4d7b97324.png" 
+                src="https://customer-assets.emergentagent.com/job_574c0cd2-0ae0-4513-8a36-a076963b0d88/artifacts/p7zult0e_file_0000000060a072468fa84e10f82698d6.png" 
                 alt="Stratégie & Expertise Santé — Logo" 
                 className="w-8 h-8 object-contain"
               />
