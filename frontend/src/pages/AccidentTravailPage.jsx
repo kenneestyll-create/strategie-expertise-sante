@@ -93,7 +93,8 @@ export const AccidentTravailPage = () => {
 
             <div className="relative">
               <div className="aspect-[4/3] rounded-2xl overflow-hidden">
-                <img 
+                <img
+                  loading="lazy" 
                   src="https://images.pexels.com/photos/5699456/pexels-photo-5699456.jpeg?auto=compress&cs=tinysrgb&w=800" 
                   alt="Accident du travail"
                   className="w-full h-full object-cover"
@@ -110,7 +111,8 @@ export const AccidentTravailPage = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-start">
             <div className="order-2 lg:order-1">
               <div className="aspect-[4/3] rounded-2xl overflow-hidden">
-                <img 
+                <img
+                  loading="lazy" 
                   src="https://images.pexels.com/photos/7089020/pexels-photo-7089020.jpeg?auto=compress&cs=tinysrgb&w=800" 
                   alt="Maladie professionnelle"
                   className="w-full h-full object-cover"

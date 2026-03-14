@@ -232,7 +232,8 @@ export const HomePage = () => {
             </div>
             <div className="relative">
               <div className="aspect-square rounded-2xl overflow-hidden">
-                <img 
+                <img
+                  loading="lazy" 
                   src="https://images.pexels.com/photos/7176026/pexels-photo-7176026.jpeg?auto=compress&cs=tinysrgb&w=800" 
                   alt="Approche innovante"
                   className="w-full h-full object-cover"
@@ -276,7 +277,8 @@ export const HomePage = () => {
             </div>
             <div className="relative">
               <div className="aspect-[4/5] rounded-2xl overflow-hidden">
-                <img 
+                <img
+                  loading="lazy" 
                   src="https://images.pexels.com/photos/7111462/pexels-photo-7111462.jpeg?auto=compress&cs=tinysrgb&w=800" 
                   alt="Accompagnement personnalisé"
                   className="w-full h-full object-cover"
@@ -364,7 +366,8 @@ export const HomePage = () => {
             </div>
             <div className="relative">
               <div className="aspect-[4/3] rounded-2xl overflow-hidden">
-                <img 
+                <img
+                  loading="lazy" 
                   src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=800" 
                   alt="Réseau de partenaires"
                   className="w-full h-full object-cover"

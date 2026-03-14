@@ -81,7 +81,8 @@ export const SeminairesPage = () => {
             </div>
             <div className="relative">
               <div className="aspect-[4/3] rounded-2xl overflow-hidden">
-                <img 
+                <img
+                  loading="lazy" 
                   src="https://images.pexels.com/photos/7688336/pexels-photo-7688336.jpeg?auto=compress&cs=tinysrgb&w=800" 
                   alt="Formation en salle"
                   className="w-full h-full object-cover"

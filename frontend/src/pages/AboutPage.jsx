@@ -78,7 +78,8 @@ export const AboutPage = () => {
             </div>
             <div className="relative">
               <div className="aspect-square rounded-2xl overflow-hidden">
-                <img 
+                <img
+                  loading="lazy" 
                   src="https://images.pexels.com/photos/18465014/pexels-photo-18465014.jpeg?auto=compress&cs=tinysrgb&w=800" 
                   alt="Parcours personnel"
                   className="w-full h-full object-cover"

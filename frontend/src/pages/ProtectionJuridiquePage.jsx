@@ -102,7 +102,8 @@ export const ProtectionJuridiquePage = () => {
             </div>
             <div className="relative">
               <div className="aspect-[4/3] rounded-2xl overflow-hidden">
-                <img 
+                <img
+                  loading="lazy" 
                   src="https://images.pexels.com/photos/5668858/pexels-photo-5668858.jpeg?auto=compress&cs=tinysrgb&w=800" 
                   alt="Protection juridique"
                   className="w-full h-full object-cover"
@@ -272,7 +273,8 @@ export const ProtectionJuridiquePage = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="relative">
               <div className="aspect-[4/3] rounded-2xl overflow-hidden">
-                <img 
+                <img
+                  loading="lazy" 
                   src="https://images.pexels.com/photos/5668473/pexels-photo-5668473.jpeg?auto=compress&cs=tinysrgb&w=800" 
                   alt="Avocats partenaires"
                   className="w-full h-full object-cover"

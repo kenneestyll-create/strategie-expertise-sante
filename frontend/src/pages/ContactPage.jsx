@@ -168,7 +168,8 @@ export const ContactPage = () => {
               {/* Image */}
               <div className="hidden lg:block mt-8">
                 <div className="aspect-[4/3] rounded-2xl overflow-hidden">
-                  <img 
+                  <img
+                  loading="lazy" 
                     src="https://images.unsplash.com/photo-1651602855717-9f79c72893cc?auto=format&fit=crop&w=800&q=60" 
                     alt="Contact"
                     className="w-full h-full object-cover"

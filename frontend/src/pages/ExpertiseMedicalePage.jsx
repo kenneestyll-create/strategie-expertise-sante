@@ -89,7 +89,8 @@ export const ExpertiseMedicalePage = () => {
             </div>
             <div className="relative">
               <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-muted">
-                <img 
+                <img
+                  loading="lazy" 
                   src="https://images.pexels.com/photos/7089401/pexels-photo-7089401.jpeg?auto=compress&cs=tinysrgb&w=800" 
                   alt="Consultation médicale"
                   className="w-full h-full object-cover"
