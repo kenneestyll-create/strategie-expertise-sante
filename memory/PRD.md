@@ -20,6 +20,8 @@ Web application in French providing advice and support for occupational diseases
 - Chatbot quota (5 free messages)
 - Homepage: urgent red Dossier Express banner after hero section with weekly counter ("X dossiers traités cette semaine")
 - UI/UX animations: scroll-triggered reveals (fade-in, slide-left/right, scale), staggered cards, card-glow hover, shimmer, float, icon-bounce, urgent-glow
+- Animations on: Homepage, Tarifs (progressive reveal), Dossier Express (urgency-driven). No animations on À propos (sober/professional).
+- Visual differentiation: Alerte urgente button (orange, "Question urgente ? Réponse sous 2h") vs Dossier Express banner (red)
 
 ### PageSpeed/SEO Optimization (March 14, 2026)
 - **SEO**: lang="fr", unique titles/descriptions per page (16+ pages), og:tags, twitter:card, canonical URLs
