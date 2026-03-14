@@ -23,7 +23,9 @@ Web application in French providing advice and support for occupational diseases
 - Animations on: Homepage, Tarifs (progressive reveal), Dossier Express (urgency-driven). No animations on À propos (sober/professional).
 - Disclaimer légal global : Footer (toutes pages), Homepage (section dédiée), Tarifs, StrategiIA (avant formulaire), Dossier Express, Mentions Légales (version détaillée complète)
 - Clarification juridique : distinction explicite avec les expertises médicales officielles et judiciaires sur tout le site
-- Header dropdown "Expertises" renommé en "Domaines d'intervention"
+- Repositionnement global : IA présentée comme outil d'aide à l'analyse au service de l'accompagnement humain (pas d'IA comme acteur principal)
+- Phrase de positionnement hero : "Un accompagnement humain renforcé par l'intelligence artificielle"
+- Terminologie : "analyse IA" → "pré-analyse assistée par StratégiIA", "Notre IA" → "notre équipe avec l'aide de StratégiIA"
 - Logo icon URL: https://static.prod-images.emergentagent.com/jobs/574c0cd2-0ae0-4513-8a36-a076963b0d88/images/6feb287ef88e3d9d1b52e1e4afa5fbb18a3e813dc8ddb26632f809c4d7b97324.png
 - Logo full URL: https://static.prod-images.emergentagent.com/jobs/574c0cd2-0ae0-4513-8a36-a076963b0d88/images/b7a0e8feacc213c07dde10cadfe4911a1e660c1cf0aa56c500ce17b3c3ece35d.png
 
