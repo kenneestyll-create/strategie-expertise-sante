@@ -255,6 +255,12 @@ export const StrategiIA = () => {
                       <h3 className="text-lg font-semibold mb-1">Analysez votre dossier gratuitement</h3>
                       <p className="text-sm text-muted-foreground">Décrivez votre situation pour obtenir une analyse IA personnalisée</p>
                     </div>
+                    <div className="p-3 rounded-lg bg-amber-50 border border-amber-200/50" data-testid="strategiia-disclaimer">
+                      <p className="text-[11px] text-amber-800 leading-relaxed">
+                        <strong>Information :</strong> Cet outil fournit une analyse informative et stratégique. 
+                        Il ne constitue pas un conseil juridique ni un avis médical. Consultez un professionnel qualifié pour toute décision.
+                      </p>
+                    </div>
                     <div className="space-y-2">
                       <Label className="font-medium">Type de dossier *</Label>
                       <Select value={typeDossier} onValueChange={setTypeDossier}>

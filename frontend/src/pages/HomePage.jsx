@@ -452,6 +452,20 @@ export const HomePage = () => {
         </div>
       </section>
 
+      {/* Disclaimer Section */}
+      <section className="py-8 bg-amber-50/50 border-y border-amber-200/30">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-start gap-3" data-testid="homepage-disclaimer">
+            <Scale className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+            <p className="text-sm text-amber-900/70 leading-relaxed">
+              <strong className="text-amber-900/90">Information importante :</strong> Stratégie & Expertise Santé propose un accompagnement informationnel et stratégique. 
+              Les services proposés ne constituent pas un conseil juridique ni un avis médical. 
+              Pour toute décision juridique ou médicale, consultez un professionnel qualifié.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="section-padding bg-foreground text-primary-foreground">
         <div className="max-w-4xl mx-auto text-center reveal" ref={ctaRef}>

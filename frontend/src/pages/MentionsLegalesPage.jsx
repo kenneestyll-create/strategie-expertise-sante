@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Shield, Scale } from 'lucide-react';
+import { FileText, Shield, Scale, AlertTriangle } from 'lucide-react';
 
 export const MentionsLegalesPage = () => {
   return (
@@ -331,6 +331,52 @@ export const MentionsLegalesPage = () => {
               </Card>
             </TabsContent>
           </Tabs>
+
+          {/* Disclaimer détaillé */}
+          <Card className="mt-10 border-amber-300 bg-amber-50/50" data-testid="mentions-disclaimer">
+            <CardContent className="p-6 space-y-4">
+              <h3 className="text-lg font-semibold text-amber-900 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5" />
+                Clause de non-responsabilité — Avertissement important
+              </h3>
+              <div className="space-y-3 text-sm text-amber-900/80 leading-relaxed">
+                <p>
+                  <strong>Nature des services :</strong> Stratégie & Expertise Santé propose un accompagnement 
+                  informationnel et stratégique destiné à aider les personnes confrontées à des situations complexes 
+                  liées aux maladies professionnelles, accidents du travail, procédures MDPH, expertises médicales 
+                  et litiges assurantiels.
+                </p>
+                <p>
+                  <strong>Absence de conseil juridique et médical :</strong> Les informations, analyses et stratégies 
+                  fournies par Stratégie & Expertise Santé, y compris celles générées par les outils d'intelligence 
+                  artificielle (StratégiIA, Dossier Express), ont un caractère exclusivement informationnel et 
+                  pédagogique. Elles ne constituent en aucun cas :
+                </p>
+                <ul className="list-disc list-inside space-y-1 pl-2">
+                  <li>Un conseil juridique ou une consultation juridique au sens de la loi</li>
+                  <li>Un avis médical, un diagnostic ou une prescription médicale</li>
+                  <li>Un acte de représentation ou d'assistance devant une juridiction</li>
+                  <li>Un acte relevant de la profession d'avocat, de médecin ou de tout autre professionnel réglementé</li>
+                </ul>
+                <p>
+                  <strong>Recommandation :</strong> Pour toute décision juridique, médicale ou administrative ayant 
+                  des conséquences sur vos droits, votre santé ou votre situation personnelle, nous vous recommandons 
+                  vivement de consulter un professionnel qualifié (avocat, médecin, conseiller juridique agréé).
+                </p>
+                <p>
+                  <strong>Outils d'intelligence artificielle :</strong> Les analyses produites par StratégiIA et 
+                  le Dossier Express utilisent des modèles d'intelligence artificielle. Ces résultats sont indicatifs 
+                  et peuvent contenir des imprécisions. Ils ne sauraient se substituer à l'expertise d'un professionnel 
+                  humain qualifié. L'utilisateur reconnaît utiliser ces outils sous sa propre responsabilité.
+                </p>
+                <p>
+                  <strong>Limitation de responsabilité :</strong> Stratégie & Expertise Santé décline toute 
+                  responsabilité quant aux décisions prises par l'utilisateur sur la base des informations fournies 
+                  par le site, ses outils ou ses services. L'utilisation des services vaut acceptation de cette clause.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Date de mise à jour */}
           <p className="text-center text-sm text-muted-foreground mt-12">

@@ -103,6 +103,15 @@ export const Footer = () => {
           </div>
         </div>
 
+        {/* Disclaimer Legal */}
+        <div className="mt-8 pt-6 border-t border-primary-foreground/10">
+          <p className="text-xs text-primary-foreground/40 leading-relaxed max-w-4xl" data-testid="footer-disclaimer">
+            Stratégie & Expertise Santé propose un accompagnement informationnel et stratégique. 
+            Les services proposés ne constituent pas un conseil juridique ni un avis médical. 
+            Pour toute décision juridique ou médicale, consultez un professionnel qualifié.
+          </p>
+        </div>
+
         {/* Bottom */}
         <div className="mt-12 pt-8 border-t border-primary-foreground/10">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">

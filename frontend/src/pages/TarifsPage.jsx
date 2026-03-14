@@ -11,7 +11,7 @@ import {
   ArrowRight, FileSearch, Shield, Users, Briefcase,
   CheckCircle, Star, GraduationCap, Building2, CreditCard,
   Loader2, PartyPopper, Gift, Percent, Tag, Zap, Clock,
-  Wallet, Brain, FileText, Sparkles, ChevronRight
+  Wallet, Brain, FileText, Sparkles, ChevronRight, Scale
 } from 'lucide-react';
 import axios from 'axios';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
@@ -439,6 +439,20 @@ export const TarifsPage = () => {
                 </CardFooter>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Disclaimer Legal */}
+      <section className="py-6 bg-amber-50/50 border-y border-amber-200/30">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-start gap-3" data-testid="tarifs-disclaimer">
+            <Scale className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+            <p className="text-sm text-amber-900/70 leading-relaxed">
+              <strong className="text-amber-900/90">Information importante :</strong> Stratégie & Expertise Santé propose un accompagnement informationnel et stratégique. 
+              Les services proposés ne constituent pas un conseil juridique ni un avis médical. 
+              Pour toute décision juridique ou médicale, consultez un professionnel qualifié.
+            </p>
           </div>
         </div>
       </section>

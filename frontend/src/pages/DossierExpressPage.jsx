@@ -255,6 +255,20 @@ export const DossierExpressPage = () => {
           </div>
         </section>
 
+        {/* Disclaimer Legal */}
+        <section className="py-6 bg-amber-50/50 border-y border-amber-200/30">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-start gap-3" data-testid="dossier-express-disclaimer">
+              <AlertTriangle className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+              <p className="text-sm text-amber-900/70 leading-relaxed">
+                <strong className="text-amber-900/90">Information importante :</strong> Le Dossier Express fournit une analyse informative et stratégique basée sur l'intelligence artificielle. 
+                Il ne constitue pas un conseil juridique ni un avis médical. 
+                Pour toute décision juridique ou médicale, consultez un professionnel qualifié.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* CTA bottom */}
         <section className="section-padding bg-secondary">
           <div className="max-w-3xl mx-auto text-center reveal" ref={ctaBottomRef}>
