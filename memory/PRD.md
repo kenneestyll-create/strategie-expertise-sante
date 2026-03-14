@@ -20,11 +20,13 @@ Web application in French providing advice and support for occupational diseases
 - StrategiIA + Chatbot quotas with counters
 
 ### PageSpeed/SEO Optimization (March 14, 2026)
-- **SEO**: lang="fr", unique titles/descriptions per page (16+ pages), og:tags, twitter:card, canonical URLs, Schema.org JSON-LD (ProfessionalService)
-- **Sitemap**: /api/sitemap.xml (24 URLs with priority/changefreq)
-- **Robots.txt**: /api/robots.txt with Disallow /admin, Sitemap reference
-- **Performance**: React.lazy code splitting (30+ pages), Suspense loading, GZip compression, image lazy loading (loading="lazy" on all img tags), image quality reduced (q=60)
-- **react-helmet-async**: Dynamic per-page meta tags
+- **SEO**: lang="fr", unique titles/descriptions per page (16+ pages), og:tags, twitter:card, canonical URLs
+- **Schema.org JSON-LD**: 3 schemas (ProfessionalService, FAQPage, WebSite) injected dynamically via useEffect in App.js
+- **Sitemap**: /sitemap.xml (static, 23 URLs with priority/changefreq)
+- **Robots.txt**: /robots.txt (static, with Disallow /admin, Sitemap reference)
+- **Performance**: React.lazy code splitting (30+ pages), Suspense loading, GZip compression, image lazy loading (loading="lazy" on all img tags)
+- **react-helmet-async**: Dynamic per-page meta tags (description, OG, Twitter, canonical) — no duplicate static tags in index.html
+- **index.html cleanup**: Removed duplicate meta/OG tags, canonical moved to dynamic, Schema.org moved to dynamic injection
 
 ## Known Limitations
 - LLM budget exceeded (needs recharge)
