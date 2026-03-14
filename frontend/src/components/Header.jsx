@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Heart, ChevronDown } from 'lucide-react';
+import { Menu, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { GlobalSearch } from '@/components/GlobalSearch';
 import { StrategiIA } from '@/components/StrategiIA';
@@ -77,10 +77,14 @@ export const Header = () => {
           {/* Logo */}
           <Link 
             to="/" 
-            className="flex items-center gap-2 text-foreground hover:opacity-80 transition-opacity"
+            className="flex items-center gap-2.5 text-foreground hover:opacity-80 transition-opacity"
             data-testid="header-logo"
           >
-            <Heart className="w-6 h-6 text-accent flex-shrink-0" strokeWidth={1.5} />
+            <img 
+              src="https://static.prod-images.emergentagent.com/jobs/574c0cd2-0ae0-4513-8a36-a076963b0d88/images/6feb287ef88e3d9d1b52e1e4afa5fbb18a3e813dc8ddb26632f809c4d7b97324.png" 
+              alt="Stratégie & Expertise Santé — Logo" 
+              className="w-8 h-8 flex-shrink-0 object-contain"
+            />
             <span className="font-semibold text-sm tracking-tight whitespace-nowrap" style={{ fontFamily: "'Playfair Display', serif" }}>
               Stratégie & Expertise Santé
             </span>

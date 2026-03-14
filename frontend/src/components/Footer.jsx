@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Heart, Mail, Phone, Gift } from 'lucide-react';
+import { Mail, Phone, Gift } from 'lucide-react';
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -10,8 +10,12 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <Heart className="w-6 h-6 text-accent" strokeWidth={1.5} />
+            <Link to="/" className="flex items-center gap-2.5 mb-4">
+              <img 
+                src="https://static.prod-images.emergentagent.com/jobs/574c0cd2-0ae0-4513-8a36-a076963b0d88/images/6feb287ef88e3d9d1b52e1e4afa5fbb18a3e813dc8ddb26632f809c4d7b97324.png" 
+                alt="Stratégie & Expertise Santé — Logo" 
+                className="w-8 h-8 object-contain"
+              />
               <span className="font-semibold text-lg" style={{ fontFamily: "'Playfair Display', serif" }}>
                 Stratégie & Expertise Santé
               </span>
