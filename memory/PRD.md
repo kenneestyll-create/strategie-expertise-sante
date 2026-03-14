@@ -18,7 +18,8 @@ Web application in French providing advice and support for occupational diseases
 - Dossier Express (/dossier-express) — 97€ AI analysis + PDF + email
 - Tarifs restructured as 4-step progressive journey
 - Chatbot quota (5 free messages)
-- Homepage: urgent red Dossier Express banner after hero section
+- Homepage: urgent red Dossier Express banner after hero section with weekly counter ("X dossiers traités cette semaine")
+- UI/UX animations: scroll-triggered reveals (fade-in, slide-left/right, scale), staggered cards, card-glow hover, shimmer, float, icon-bounce, urgent-glow
 
 ### PageSpeed/SEO Optimization (March 14, 2026)
 - **SEO**: lang="fr", unique titles/descriptions per page (16+ pages), og:tags, twitter:card, canonical URLs
