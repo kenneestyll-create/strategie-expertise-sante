@@ -162,7 +162,7 @@ export const DossierExpressPage = () => {
   if (step === 'landing') {
     return (
       <main className="page-transition pt-20">
-      <SEO title="Dossier Express — Rapport IA sous 2h" description="Uploadez vos documents, StratégiIA les analyse et vous recevez un rapport PDF complet sous 2 heures pour 97€." path="/dossier-express" />
+      <SEO title="Dossier Express — Rapport d'analyse sous 2h" description="Uploadez vos documents, notre équipe les analyse avec l'aide de StratégiIA et vous recevez un rapport PDF complet sous 2 heures pour 97€." path="/dossier-express" />
         {/* Hero */}
         <section className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f3460 100%)' }}>
           <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
@@ -177,7 +177,7 @@ export const DossierExpressPage = () => {
                   Dossier Express
                 </h1>
                 <p className="text-lg text-white/70 mb-8 leading-relaxed max-w-xl">
-                  Uploadez vos documents, notre IA StratégiIA les analyse et vous recevez un <strong className="text-white">rapport PDF complet et personnalisé</strong> directement par email.
+                  Uploadez vos documents, notre équipe les analyse avec l'aide de l'outil StratégiIA et vous recevez un <strong className="text-white">rapport PDF complet et personnalisé</strong> directement par email.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button
@@ -209,7 +209,7 @@ export const DossierExpressPage = () => {
               <div className="space-y-4 stagger">
                 {[
                   { icon: Upload, title: "1. Uploadez vos documents", desc: "Documents médicaux, courriers CPAM, décisions..." },
-                  { icon: Brain, title: "2. StratégiIA analyse votre dossier", desc: "Notre IA croise jurisprudences, barèmes et cas similaires" },
+                  { icon: Brain, title: "2. Analyse assistée par StratégiIA", desc: "Notre outil croise jurisprudences, barèmes et cas similaires pour affiner votre stratégie" },
                   { icon: FileText, title: "3. Recevez votre rapport PDF", desc: "Analyse complète, droits identifiés, stratégie recommandée" },
                   { icon: Mail, title: "4. Livré par email sous 2h", desc: "Rapport professionnel prêt à utiliser" }
                 ].map((s, i) => (
@@ -403,7 +403,7 @@ export const DossierExpressPage = () => {
                   disabled={loading || !form.situation.trim() || !form.email}
                   data-testid="de-submit-button"
                 >
-                  {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi en cours...</> : <><Brain className="w-5 h-5" /> Lancer l'analyse StratégiIA</>}
+                  {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi en cours...</> : <><Brain className="w-5 h-5" /> Soumettre mon dossier</>}
                 </Button>
               ) : (
                 <Button
@@ -438,12 +438,12 @@ export const DossierExpressPage = () => {
             </div>
             <h2 className="text-2xl font-bold mb-3" data-testid="processing-title">Analyse en cours...</h2>
             <p className="text-muted-foreground mb-8">
-              StratégiIA analyse votre dossier. Vous recevrez votre rapport PDF complet par email à <strong>{form.email}</strong>.
+              Votre dossier est en cours de traitement. Notre équipe, assistée par l'outil StratégiIA, prépare votre rapport. Vous le recevrez par email à <strong>{form.email}</strong>.
             </p>
             <div className="space-y-3 text-left max-w-sm mx-auto">
               {[
                 { label: "Réception du dossier", done: true },
-                { label: "Analyse IA en cours", done: false, active: true },
+                { label: "Analyse en cours avec StratégiIA", done: false, active: true },
                 { label: "Génération du rapport PDF", done: false },
                 { label: "Envoi par email", done: false }
               ].map((s, i) => (

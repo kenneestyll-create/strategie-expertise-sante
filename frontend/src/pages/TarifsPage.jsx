@@ -151,7 +151,7 @@ export const TarifsPage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Tarifs et prestations" description="Découvrez nos tarifs : analyse StratégiIA gratuite, Dossier Express 97€, accompagnement personnalisé 150-500€. Premier échange gratuit." path="/tarifs" />
+      <SEO title="Tarifs et prestations" description="Découvrez nos tarifs : pré-analyse gratuite assistée par StratégiIA, Dossier Express 97€, accompagnement personnalisé 150-500€. Premier échange gratuit." path="/tarifs" />
       {/* Hero */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
@@ -193,7 +193,7 @@ export const TarifsPage = () => {
             <div className="w-10 h-10 rounded-full bg-accent text-accent-foreground flex items-center justify-center font-bold text-lg">1</div>
             <div>
               <h2 className="text-2xl font-semibold">Comprenez votre situation</h2>
-              <p className="text-muted-foreground text-sm">Analyse IA gratuite pour un premier diagnostic</p>
+              <p className="text-muted-foreground text-sm">Pré-analyse gratuite assistée par notre outil StratégiIA</p>
             </div>
           </div>
 
@@ -207,7 +207,7 @@ export const TarifsPage = () => {
                     <Badge className="bg-green-100 text-green-700 border-green-200">Gratuit</Badge>
                   </div>
                   <p className="text-muted-foreground mb-4">
-                    Décrivez votre situation en quelques lignes. Notre IA croise jurisprudences, barèmes officiels
+                    Décrivez votre situation en quelques lignes. Notre outil StratégiIA croise jurisprudences, barèmes officiels
                     et cas similaires pour vous donner un premier diagnostic : droits identifiés, démarche prioritaire
                     et estimation de vos chances.
                   </p>
@@ -263,7 +263,7 @@ export const TarifsPage = () => {
                     </Badge>
                   </div>
                   <p className="text-muted-foreground mb-4">
-                    Uploadez vos documents, StratégiIA les analyse automatiquement et génère un rapport
+                    Uploadez vos documents, notre équipe les analyse avec l'aide de StratégiIA et génère un rapport
                     PDF complet : cadre juridique, droits identifiés, stratégie recommandée, prochaines étapes.
                   </p>
                   <ul className="grid sm:grid-cols-2 gap-2 text-sm">

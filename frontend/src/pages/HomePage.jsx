@@ -92,8 +92,8 @@ export const HomePage = () => {
   ];
 
   const innovationPoints = [
-    "Un accompagnement personnalisé",
-    "Un accompagnement stratégique issu de l'expérience du terrain",
+    "Un accompagnement humain personnalisé",
+    "Des outils technologiques au service de votre dossier",
     "Une approche humaine et pédagogique",
     "Un service encore peu développé en France"
   ];
@@ -143,9 +143,13 @@ export const HomePage = () => {
             <p className="text-base sm:text-lg font-medium text-foreground mb-3 max-w-2xl bg-background/70 backdrop-blur-sm inline-block px-4 py-2 rounded-lg" data-testid="hero-tagline">
               Conseil stratégique en expertise médicale, invalidité et démarches médico-administratives.
             </p>
-            <p className="text-base sm:text-lg text-muted-foreground mb-8 max-w-2xl">
+            <p className="text-base sm:text-lg text-muted-foreground mb-4 max-w-2xl">
               Un service innovant dédié à l'accompagnement des personnes confrontées à des démarches 
               complexes liées au handicap, aux expertises médicales et aux procédures d'assurance.
+            </p>
+            <p className="text-sm text-accent font-medium mb-8 max-w-2xl flex items-center gap-2" data-testid="hero-positioning">
+              <Heart className="w-4 h-4 flex-shrink-0" strokeWidth={1.5} />
+              Un accompagnement humain renforcé par l'intelligence artificielle : l'expertise humaine au c&oelig;ur de chaque dossier, l'IA comme outil de précision.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link to="/contact">
@@ -206,7 +210,7 @@ export const HomePage = () => {
                   Expertise médicale imminente ? Dossier bloqué ?
                 </p>
                 <p className="text-sm text-red-100 font-medium">
-                  Obtenez votre analyse complète en 2h — <span className="text-yellow-300 font-bold text-base">97€</span>
+                  Obtenez votre rapport d'analyse complet en 2h, préparé avec l'aide de StratégiIA — <span className="text-yellow-300 font-bold text-base">97€</span>
                 </p>
               </div>
             </div>
@@ -269,14 +273,15 @@ export const HomePage = () => {
               </h2>
               <p className="text-muted-foreground mb-6">
                 Ce service repose sur une approche encore peu développée en France : 
-                <strong> l'accompagnement stratégique et pédagogique</strong> des personnes 
-                confrontées à des procédures médicales, administratives ou assurantielles complexes.
+                <strong> l'accompagnement humain stratégique et pédagogique</strong> des personnes 
+                confrontées à des procédures médicales, administratives ou assurantielles complexes, 
+                renforcé par des outils d'aide à l'analyse comme StratégiIA.
               </p>
               <p className="text-muted-foreground mb-8">
                 L'objectif est de permettre aux personnes concernées de mieux comprendre leur 
-                situation, leurs droits et les étapes importantes de leur parcours. Cette approche 
-                vise à offrir un accompagnement humain, accessible et structuré dans des démarches 
-                souvent difficiles à appréhender.
+                situation, leurs droits et les étapes importantes de leur parcours. L'expertise humaine 
+                reste au c&oelig;ur de chaque dossier, l'intelligence artificielle servant d'outil de précision 
+                pour renforcer la qualité de l'accompagnement.
               </p>
               <div className="grid sm:grid-cols-2 gap-3">
                 {innovationPoints.map((point, index) => (

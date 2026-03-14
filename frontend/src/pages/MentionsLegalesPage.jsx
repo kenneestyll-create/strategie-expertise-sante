@@ -371,10 +371,12 @@ export const MentionsLegalesPage = () => {
                   vivement de consulter un professionnel qualifié (avocat, médecin, conseiller juridique agréé).
                 </p>
                 <p>
-                  <strong>Outils d'intelligence artificielle :</strong> Les analyses produites par StratégiIA et 
-                  le Dossier Express utilisent des modèles d'intelligence artificielle. Ces résultats sont indicatifs 
-                  et peuvent contenir des imprécisions. Ils ne sauraient se substituer à l'expertise d'un professionnel 
-                  humain qualifié. L'utilisateur reconnaît utiliser ces outils sous sa propre responsabilité.
+                  <strong>Outils d'aide à l'analyse :</strong> Les analyses produites avec l'aide de StratégiIA et 
+                  du Dossier Express utilisent des modèles d'intelligence artificielle comme outil d'assistance. 
+                  Ces résultats constituent une pré-analyse qui vient enrichir l'accompagnement humain. Ils sont indicatifs 
+                  et peuvent contenir des imprécisions. L'intelligence artificielle est utilisée comme outil de précision 
+                  au service de l'expertise humaine, et ne se substitue pas à l'accompagnement d'un professionnel 
+                  qualifié. L'utilisateur reconnaît utiliser ces outils sous sa propre responsabilité.
                 </p>
                 <p>
                   <strong>Limitation de responsabilité :</strong> Stratégie & Expertise Santé décline toute 

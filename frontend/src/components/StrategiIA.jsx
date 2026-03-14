@@ -237,7 +237,7 @@ export const StrategiIA = () => {
                       StratégiIA
                       <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-accent/20 text-accent border-0">Exclusif</Badge>
                     </h3>
-                    <p className="text-xs text-primary-foreground/60">Analyse stratégique IA de votre dossier</p>
+                    <p className="text-xs text-primary-foreground/60">Outil d'aide à l'analyse stratégique</p>
                   </div>
                 </div>
                 <button onClick={handleClose} className="p-2 hover:bg-white/10 rounded-lg transition-colors" aria-label="Fermer">
@@ -253,7 +253,7 @@ export const StrategiIA = () => {
                   <div className="space-y-4" data-testid="strategiia-form">
                     <div className="text-center pb-2">
                       <h3 className="text-lg font-semibold mb-1">Analysez votre dossier gratuitement</h3>
-                      <p className="text-sm text-muted-foreground">Décrivez votre situation pour obtenir une analyse IA personnalisée</p>
+                      <p className="text-sm text-muted-foreground">Décrivez votre situation pour obtenir une pré-analyse personnalisée assistée par notre outil StratégiIA</p>
                     </div>
                     <div className="p-3 rounded-lg bg-amber-50 border border-amber-200/50" data-testid="strategiia-disclaimer">
                       <p className="text-[11px] text-amber-800 leading-relaxed">
@@ -303,8 +303,8 @@ export const StrategiIA = () => {
                 {step === 'loading' && (
                   <div className="py-16 text-center" data-testid="strategiia-loading">
                     <Loader2 className="w-10 h-10 text-accent animate-spin mx-auto mb-4" />
-                    <p className="font-semibold">StratégiIA analyse votre dossier...</p>
-                    <p className="text-sm text-muted-foreground mt-2">Comparaison avec les jurisprudences et statistiques en cours</p>
+                    <p className="font-semibold">Votre dossier est en cours d'analyse...</p>
+                    <p className="text-sm text-muted-foreground mt-2">Notre outil StratégiIA prépare votre pré-analyse en croisant jurisprudences et statistiques</p>
                   </div>
                 )}
 
