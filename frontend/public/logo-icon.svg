@@ -9,6 +9,6 @@
   <path d="M22 2 L40 8 L40 26 C40 38 32 44 22 48 C12 44 4 38 4 26 L4 8 Z" fill="#1A1A1A" stroke="url(#goldG)" stroke-width="1.5"/>
   <line x1="22" y1="10" x2="22" y2="42" stroke="#C9A84C" stroke-width="1.2" stroke-linecap="round"/>
   <!-- Calligraphic heraldic initials -->
-  <text x="14" y="30" font-family="'Cormorant Garamond', 'Garamond', 'Palatino', 'Book Antiqua', serif" font-size="14" font-style="italic" font-weight="400" fill="#C9A84C" text-anchor="middle" opacity="0.9">F</text>
-  <text x="30" y="30" font-family="'Cormorant Garamond', 'Garamond', 'Palatino', 'Book Antiqua', serif" font-size="14" font-style="italic" font-weight="400" fill="#C9A84C" text-anchor="middle" opacity="0.9">S</text>
+  <text x="14" y="30" font-family="'Great Vibes', cursive" font-size="15" font-weight="400" fill="#C9A84C" text-anchor="middle" opacity="0.9">F</text>
+  <text x="30" y="30" font-family="'Great Vibes', cursive" font-size="15" font-weight="400" fill="#C9A84C" text-anchor="middle" opacity="0.9">S</text>
 </svg>
