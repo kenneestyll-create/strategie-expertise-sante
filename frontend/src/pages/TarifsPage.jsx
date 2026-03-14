@@ -16,6 +16,7 @@ import {
 import axios from 'axios';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { SEO } from '@/components/SEO';
+import { useReveal, useRevealChildren } from '@/hooks/useReveal';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -31,6 +32,13 @@ export const TarifsPage = () => {
   const [loyaltyDiscount, setLoyaltyDiscount] = useState(0);
   const [checkingDiscount, setCheckingDiscount] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('stripe');
+
+  const step1Ref = useReveal();
+  const step2Ref = useReveal();
+  const step3Ref = useRevealChildren();
+  const step4Ref = useRevealChildren();
+  const proRef = useRevealChildren();
+  const ctaRef = useReveal();
 
   useEffect(() => {
     const paymentStatus = searchParams.get('payment');
@@ -189,7 +197,7 @@ export const TarifsPage = () => {
             </div>
           </div>
 
-          <Card className="border-accent/30 bg-accent/5 overflow-hidden" data-testid="step-1-card">
+          <Card className="border-accent/30 bg-accent/5 overflow-hidden reveal-scale" data-testid="step-1-card" ref={step1Ref}>
             <CardContent className="p-6 sm:p-8">
               <div className="grid sm:grid-cols-[1fr,auto] gap-6 items-center">
                 <div>
@@ -242,7 +250,7 @@ export const TarifsPage = () => {
             </div>
           </div>
 
-          <Card className="border-amber-500/30 overflow-hidden" data-testid="step-2-card">
+          <Card className="border-amber-500/30 overflow-hidden reveal-scale" data-testid="step-2-card" ref={step2Ref}>
             <CardContent className="p-6 sm:p-8">
               <div className="grid sm:grid-cols-[1fr,auto] gap-6 items-center">
                 <div>
@@ -299,9 +307,9 @@ export const TarifsPage = () => {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 stagger" ref={step3Ref}>
             {prestations.map((p, i) => (
-              <Card key={i} className={`relative border-border flex flex-col ${p.popular ? 'ring-2 ring-accent' : ''}`} data-testid={`tarif-card-${i}`}>
+              <Card key={i} className={`relative border-border flex flex-col card-glow reveal ${p.popular ? 'ring-2 ring-accent' : ''}`} data-testid={`tarif-card-${i}`}>
                 {p.popular && (
                   <div className="absolute -top-3 left-6">
                     <Badge className="bg-accent text-accent-foreground gap-1"><Star className="w-3 h-3" fill="currentColor" />Plus demandé</Badge>
@@ -361,9 +369,9 @@ export const TarifsPage = () => {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 stagger" ref={step4Ref}>
             {prestationsUrgentes.map((p, i) => (
-              <div key={i} className="group relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5 flex flex-col hover:bg-white/10 transition-all duration-300 hover:border-amber-500/30" data-testid={`urgent-card-${p.id}`}>
+              <div key={i} className="reveal group relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5 flex flex-col hover:bg-white/10 transition-all duration-300 hover:border-amber-500/30" data-testid={`urgent-card-${p.id}`}>
                 <div className="absolute -top-3 right-4">
                   <span className="inline-flex items-center gap-1 bg-amber-500 text-amber-950 text-xs font-bold px-3 py-1 rounded-full shadow-lg shadow-amber-500/20">
                     <Zap className="w-3 h-3" fill="currentColor" />48h
@@ -403,12 +411,12 @@ export const TarifsPage = () => {
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl font-semibold mb-2">Séminaires et conseil aux entreprises</h2>
           <p className="text-muted-foreground max-w-2xl mb-8 text-sm">Des interventions sur-mesure pour les organisations et professionnels.</p>
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-6 stagger" ref={proRef}>
             {[
               { icon: GraduationCap, title: "Séminaires et formations", description: "Sessions d'information et de formation pour particuliers, associations, professionnels de santé et entreprises.", features: ["En présentiel ou visioconférence", "Programme personnalisé", "Supports pédagogiques"] },
               { icon: Building2, title: "Conseil aux entreprises", description: "Accompagnement des structures sur les enjeux liés aux AT/MP, handicap et gestion des situations sensibles.", features: ["Sessions d'information RH", "Conférences de sensibilisation", "Accompagnement sur-mesure"] }
             ].map((p, i) => (
-              <Card key={i} className="border-border" data-testid={`tarif-pro-${i}`}>
+              <Card key={i} className="border-border card-glow reveal" data-testid={`tarif-pro-${i}`}>
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center">
@@ -437,7 +445,7 @@ export const TarifsPage = () => {
 
       {/* CTA */}
       <section className="section-padding">
-        <div className="max-w-3xl mx-auto text-center">
+        <div className="max-w-3xl mx-auto text-center reveal" ref={ctaRef}>
           <h3 className="text-2xl font-semibold mb-3">Premier échange gratuit</h3>
           <p className="text-muted-foreground mb-6 text-sm">
             Chaque situation est unique. Avant tout engagement, je vous propose un premier

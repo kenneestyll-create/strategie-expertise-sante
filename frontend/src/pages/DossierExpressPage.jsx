@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { SEO } from '@/components/SEO';
+import { useReveal, useRevealChildren } from '@/hooks/useReveal';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -47,6 +48,9 @@ export const DossierExpressPage = () => {
   const [files, setFiles] = useState([]);
   const [dossierId, setDossierId] = useState(null);
   const [pollStatus, setPollStatus] = useState(null);
+
+  const featuresRef = useRevealChildren();
+  const ctaBottomRef = useReveal();
 
   useEffect(() => {
     const payment = searchParams.get('payment');
@@ -202,14 +206,14 @@ export const DossierExpressPage = () => {
               </div>
 
               {/* Steps visual */}
-              <div className="space-y-4">
+              <div className="space-y-4 stagger">
                 {[
                   { icon: Upload, title: "1. Uploadez vos documents", desc: "Documents médicaux, courriers CPAM, décisions..." },
                   { icon: Brain, title: "2. StratégiIA analyse votre dossier", desc: "Notre IA croise jurisprudences, barèmes et cas similaires" },
                   { icon: FileText, title: "3. Recevez votre rapport PDF", desc: "Analyse complète, droits identifiés, stratégie recommandée" },
                   { icon: Mail, title: "4. Livré par email sous 2h", desc: "Rapport professionnel prêt à utiliser" }
                 ].map((s, i) => (
-                  <div key={i} className="flex items-start gap-4 bg-white/5 border border-white/10 rounded-xl p-4 backdrop-blur-sm hover:bg-white/[0.08] transition-colors">
+                  <div key={i} className="reveal flex items-start gap-4 bg-white/5 border border-white/10 rounded-xl p-4 backdrop-blur-sm hover:bg-white/[0.08] transition-all hover:border-amber-500/30 hover:translate-x-1 duration-300">
                     <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
                       <s.icon className="w-5 h-5 text-amber-400" />
                     </div>
@@ -226,9 +230,9 @@ export const DossierExpressPage = () => {
 
         {/* Features */}
         <section className="section-padding">
-          <div className="max-w-7xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-semibold text-center mb-12">Ce que contient votre rapport</h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="max-w-7xl mx-auto" ref={featuresRef}>
+            <h2 className="text-2xl sm:text-3xl font-semibold text-center mb-12 reveal">Ce que contient votre rapport</h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 stagger">
               {[
                 { icon: FileSearch, title: "Analyse de votre situation", desc: "Synthèse factuelle et identification des enjeux clés de votre dossier." },
                 { icon: Shield, title: "Cadre juridique applicable", desc: "Textes de loi, jurisprudences pertinentes et barèmes officiels." },
@@ -237,8 +241,8 @@ export const DossierExpressPage = () => {
                 { icon: Sparkles, title: "Stratégie recommandée", desc: "Plan d'action étape par étape avec délais indicatifs." },
                 { icon: Clock, title: "Prochaines étapes", desc: "5 actions concrètes prioritaires à réaliser immédiatement." }
               ].map((f, i) => (
-                <Card key={i} className="border-border hover:shadow-md transition-shadow" data-testid={`feature-card-${i}`}>
-                  <CardContent className="p-6">
+                <Card key={i} className="card-glow border-border reveal" data-testid={`feature-card-${i}`}>
+                  <CardContent className="p-6 icon-bounce">
                     <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
                       <f.icon className="w-5 h-5 text-accent" />
                     </div>
@@ -253,7 +257,7 @@ export const DossierExpressPage = () => {
 
         {/* CTA bottom */}
         <section className="section-padding bg-secondary">
-          <div className="max-w-3xl mx-auto text-center">
+          <div className="max-w-3xl mx-auto text-center reveal" ref={ctaBottomRef}>
             <h2 className="text-2xl sm:text-3xl font-semibold mb-4">Prêt à analyser votre dossier ?</h2>
             <p className="text-muted-foreground mb-8">
               En quelques minutes, recevez un rapport professionnel complet pour comprendre votre situation et vos options.

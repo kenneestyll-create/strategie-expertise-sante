@@ -57,13 +57,13 @@ export const AlerteUrgente = () => {
           className="fixed bottom-6 left-6 flex items-center gap-2 px-5 py-3 rounded-full shadow-lg text-white font-semibold text-sm transition-all hover:scale-105 animate-pulse hover:animate-none"
           style={{
             zIndex: 'var(--z-chatbot)',
-            background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+            background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
           }}
           data-testid="alerte-urgente-button"
-          aria-label="Alerte urgente"
+          aria-label="Question urgente"
         >
           <Zap className="w-5 h-5" />
-          <span className="hidden sm:inline">Alerte urgente</span>
+          <span className="hidden sm:inline">Question urgente ? Réponse sous 2h</span>
         </button>
       )}
 
@@ -76,14 +76,14 @@ export const AlerteUrgente = () => {
           {/* Panel */}
           <div className="relative w-full max-w-md bg-background border border-border rounded-2xl shadow-2xl overflow-hidden" data-testid="alerte-urgente-modal">
             {/* Header */}
-            <div className="flex items-center justify-between p-5 bg-red-600 text-white">
+            <div className="flex items-center justify-between p-5 bg-orange-500 text-white">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                   <Zap className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-base">Alerte urgente</h3>
-                  <p className="text-xs text-white/80">Bloqué dans vos démarches ?</p>
+                  <h3 className="font-semibold text-base">Question urgente</h3>
+                  <p className="text-xs text-white/80">Réponse garantie sous 2h</p>
                 </div>
               </div>
               <button onClick={handleClose} className="p-2 hover:bg-white/10 rounded-lg transition-colors" aria-label="Fermer">
@@ -118,32 +118,32 @@ export const AlerteUrgente = () => {
                     onClick={() => setFormule('2h')}
                     className={`p-3 rounded-xl border-2 text-left transition-all ${
                       formule === '2h'
-                        ? 'border-red-500 bg-red-50'
-                        : 'border-border hover:border-red-300'
+                        ? 'border-orange-500 bg-orange-50'
+                        : 'border-border hover:border-orange-300'
                     }`}
                     data-testid="formule-2h"
                   >
                     <div className="flex items-center gap-2 mb-1">
-                      <Clock className="w-4 h-4 text-red-600" />
+                      <Clock className="w-4 h-4 text-orange-600" />
                       <span className="text-sm font-semibold">Sous 2h</span>
                     </div>
-                    <span className="text-xl font-bold text-red-600">50€</span>
+                    <span className="text-xl font-bold text-orange-600">50€</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setFormule('30min')}
                     className={`p-3 rounded-xl border-2 text-left transition-all ${
                       formule === '30min'
-                        ? 'border-red-500 bg-red-50'
-                        : 'border-border hover:border-red-300'
+                        ? 'border-orange-500 bg-orange-50'
+                        : 'border-border hover:border-orange-300'
                     }`}
                     data-testid="formule-30min"
                   >
                     <div className="flex items-center gap-2 mb-1">
-                      <Zap className="w-4 h-4 text-red-600" />
+                      <Zap className="w-4 h-4 text-orange-600" />
                       <span className="text-sm font-semibold">Sous 30min</span>
                     </div>
-                    <span className="text-xl font-bold text-red-600">80€</span>
+                    <span className="text-xl font-bold text-orange-600">80€</span>
                   </button>
                 </div>
 
@@ -203,7 +203,7 @@ export const AlerteUrgente = () => {
                 <Button
                   type="submit"
                   disabled={sending}
-                  className="w-full rounded-lg gap-2 bg-red-600 hover:bg-red-700 text-white"
+                  className="w-full rounded-lg gap-2 bg-orange-500 hover:bg-orange-600 text-white"
                   data-testid="alerte-submit-button"
                 >
                   {sending ? (
