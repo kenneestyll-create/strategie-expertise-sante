@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,9 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import {
-  X, Brain, Send, Loader2, FileText, Download, Lock,
-  MessageSquare, Phone, Mail, Share2, Copy, Check,
-  AlertTriangle, CreditCard, ArrowRight, Sparkles, Gauge
+  X, Brain, Loader2, FileText, Download, Lock,
+  MessageSquare, Phone, Mail, Copy, Check,
+  AlertTriangle, CreditCard, ArrowRight, Sparkles, UserPlus
 } from 'lucide-react';
 import axios from 'axios';
 import jsPDF from 'jspdf';
@@ -44,7 +44,6 @@ const generatePremiumPDF = (analysis, formData) => {
   const accent = [185, 78, 72];
   const dark = [47, 44, 40];
   const bg = [249, 247, 242];
-
   doc.setFillColor(...accent);
   doc.rect(0, 0, w, 42, 'F');
   doc.setTextColor(255, 255, 255);
@@ -56,7 +55,6 @@ const generatePremiumPDF = (analysis, formData) => {
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.text(new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }), w - margin, 16, { align: 'right' });
-
   let y = 50;
   doc.setFillColor(...bg);
   doc.roundedRect(margin, y, contentW, 20, 3, 3, 'F');
@@ -68,7 +66,6 @@ const generatePremiumPDF = (analysis, formData) => {
   doc.text(`Type de dossier : ${typeLabel}`, margin + 5, y + 8);
   doc.text(`Régime : ${regimeLabel}`, margin + 5, y + 15);
   y += 28;
-
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9.5);
   for (const line of analysis.split('\n')) {
@@ -95,7 +92,6 @@ const generatePremiumPDF = (analysis, formData) => {
       y += wrapped.length * 4.5 + 1;
     } else { y += 3; }
   }
-
   y += 6;
   if (y > 260) { doc.addPage(); y = 20; }
   doc.setFillColor(255, 243, 205);
@@ -106,7 +102,6 @@ const generatePremiumPDF = (analysis, formData) => {
   doc.text("OUTIL D'AIDE À LA DÉCISION", margin + 4, y + 5);
   doc.setFont('helvetica', 'normal');
   doc.text("Les résultats sont indicatifs et ne constituent pas un conseil juridique.", margin + 4, y + 10);
-
   doc.setFillColor(...dark);
   doc.rect(0, 277, w, 20, 'F');
   doc.setTextColor(255, 255, 255);
@@ -118,42 +113,21 @@ const generatePremiumPDF = (analysis, formData) => {
 
 export const StrategiIA = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [step, setStep] = useState('email'); // email | form | loading | basic | premium | quota_exceeded
+  // Steps: form -> loading -> teaser -> basic -> premium | quota_exceeded
+  const [step, setStep] = useState('form');
   const [typeDossier, setTypeDossier] = useState('');
   const [regime, setRegime] = useState('');
   const [situation, setSituation] = useState('');
   const [email, setEmail] = useState('');
-  const [basicResult, setBasicResult] = useState('');
+  const [fullResult, setFullResult] = useState('');
   const [premiumResult, setPremiumResult] = useState('');
   const [casesFound, setCasesFound] = useState(0);
   const [copied, setCopied] = useState(false);
   const [remaining, setRemaining] = useState(null);
+  const [registerLoading, setRegisterLoading] = useState(false);
 
-  const checkQuota = async (emailToCheck) => {
-    if (!emailToCheck || !emailToCheck.includes('@')) return;
-    try {
-      const { data } = await axios.get(`${API}/strategiia/quota/${encodeURIComponent(emailToCheck)}`);
-      setRemaining(data.remaining);
-      if (data.remaining <= 0) {
-        setStep('quota_exceeded');
-      } else {
-        setStep('form');
-      }
-    } catch {
-      setStep('form');
-      setRemaining(3);
-    }
-  };
-
-  const handleEmailSubmit = () => {
-    if (!email.trim() || !email.includes('@')) {
-      toast.error("Veuillez entrer un email valide");
-      return;
-    }
-    checkQuota(email.trim().toLowerCase());
-  };
-
-  const handleAnalyzeBasic = async () => {
+  // Analyze without email — result gated behind read wall
+  const handleAnalyze = async () => {
     if (!typeDossier || !situation.trim()) {
       toast.error("Veuillez remplir le type de dossier et la description");
       return;
@@ -161,35 +135,40 @@ export const StrategiIA = () => {
     setStep('loading');
     try {
       const { data } = await axios.post(`${API}/strategiia/analyze`, {
-        type_dossier: typeDossier, regime, situation, premium: false, email: email.trim().toLowerCase()
+        type_dossier: typeDossier, regime, situation, premium: false
       });
-      if (data.quota_exceeded) {
-        setRemaining(0);
-        setStep('quota_exceeded');
-        return;
-      }
-      setBasicResult(data.analysis);
+      setFullResult(data.analysis);
       setCasesFound(data.cases_found);
-      setRemaining(data.remaining);
-      setStep('basic');
-    } catch (e) {
+      setStep('teaser');
+    } catch {
       toast.error("Erreur lors de l'analyse. Réessayez.");
       setStep('form');
     }
   };
 
-  const handleUpgradePremium = async () => {
-    setStep('loading');
+  // Register email to unlock full result
+  const handleRegisterEmail = async () => {
+    if (!email.trim() || !email.includes('@')) {
+      toast.error("Veuillez entrer un email valide");
+      return;
+    }
+    setRegisterLoading(true);
     try {
-      const { data } = await axios.post(`${API}/strategiia/analyze`, {
-        type_dossier: typeDossier, regime, situation, premium: true, email
+      const { data } = await axios.post(`${API}/strategiia/register-email`, {
+        email: email.trim().toLowerCase()
       });
-      setPremiumResult(data.analysis);
-      setCasesFound(data.cases_found);
-      setStep('premium');
+      setRemaining(data.remaining);
+      if (data.remaining <= 0) {
+        setStep('quota_exceeded');
+      } else {
+        setStep('basic');
+      }
+      toast.success("Inscription réussie ! Voici votre analyse complète.");
     } catch {
-      toast.error("Erreur lors de l'analyse premium.");
+      // Even if registration fails, show the full result
       setStep('basic');
+    } finally {
+      setRegisterLoading(false);
     }
   };
 
@@ -209,8 +188,8 @@ export const StrategiIA = () => {
     toast.success("Rapport PDF téléchargé !");
   }, [premiumResult, typeDossier, regime]);
 
-  const getShareText = () => `J'ai analysé mon dossier avec StratégiIA sur Stratégie & Expertise Santé. Analysez le vôtre :`;
   const getShareUrl = () => `${window.location.origin}/simulateur`;
+  const getShareText = () => `J'ai analysé mon dossier avec StratégiIA sur Stratégie & Expertise Santé. Analysez le vôtre :`;
   const handleWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(getShareText() + ' ' + getShareUrl())}`, '_blank');
   const handleSMS = () => window.open(`sms:?body=${encodeURIComponent(getShareText() + ' ' + getShareUrl())}`, '_blank');
   const handleShareEmail = () => window.open(`mailto:?subject=${encodeURIComponent('StratégiIA — Analyse de dossier')}&body=${encodeURIComponent(getShareText() + '\n\n' + getShareUrl())}`, '_blank');
@@ -218,22 +197,17 @@ export const StrategiIA = () => {
 
   const handleClose = () => setIsOpen(false);
   const handleReset = () => {
-    setStep(email ? 'form' : 'email');
+    setStep('form');
     setTypeDossier(''); setRegime(''); setSituation('');
-    setBasicResult(''); setPremiumResult('');
-    if (email) checkQuota(email);
+    setFullResult(''); setPremiumResult('');
   };
 
-  // Quota badge component
-  const QuotaBadge = () => {
-    if (remaining === null) return null;
-    const color = remaining > 1 ? 'bg-green-100 text-green-700 border-green-200' : remaining === 1 ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-red-100 text-red-700 border-red-200';
-    return (
-      <Badge className={`${color} text-xs gap-1`} data-testid="strategiia-quota-badge">
-        <Gauge className="w-3 h-3" />
-        {remaining > 0 ? `${remaining} analyse${remaining > 1 ? 's' : ''} gratuite${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}` : 'Quota épuisé'}
-      </Badge>
-    );
+  // Get teaser text — first quarter of the analysis
+  const getTeaserText = () => {
+    if (!fullResult) return '';
+    const lines = fullResult.split('\n');
+    const cutoff = Math.max(Math.ceil(lines.length / 4), 3);
+    return lines.slice(0, cutoff).join('\n');
   };
 
   return (
@@ -266,48 +240,21 @@ export const StrategiIA = () => {
                     <p className="text-xs text-primary-foreground/60">Analyse stratégique IA de votre dossier</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <QuotaBadge />
-                  <button onClick={handleClose} className="p-2 hover:bg-white/10 rounded-lg transition-colors" aria-label="Fermer">
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
+                <button onClick={handleClose} className="p-2 hover:bg-white/10 rounded-lg transition-colors" aria-label="Fermer">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
 
               {/* Content */}
               <div className="overflow-y-auto flex-1 p-5">
 
-                {/* EMAIL STEP */}
-                {step === 'email' && (
-                  <div className="space-y-5" data-testid="strategiia-email-step">
-                    <div className="text-center py-4">
-                      <Brain className="w-12 h-12 text-accent mx-auto mb-3" />
-                      <h3 className="text-lg font-semibold mb-2">Analysez votre dossier gratuitement</h3>
-                      <p className="text-sm text-muted-foreground">3 analyses gratuites par mois. Inscrivez votre email pour commencer.</p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="font-medium">Votre email *</Label>
-                      <Input
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
-                        placeholder="votre@email.fr"
-                        type="email"
-                        data-testid="strategiia-email-input"
-                        onKeyDown={e => e.key === 'Enter' && handleEmailSubmit()}
-                      />
-                    </div>
-                    <Button onClick={handleEmailSubmit} className="w-full rounded-lg gap-2" disabled={!email.includes('@')} data-testid="strategiia-email-submit">
-                      <ArrowRight className="w-4 h-4" /> Continuer
-                    </Button>
-                    <p className="text-[11px] text-muted-foreground text-center">
-                      Votre email nous permet de vous identifier et de sauvegarder vos analyses.
-                    </p>
-                  </div>
-                )}
-
-                {/* FORM STEP */}
+                {/* FORM STEP — no email required */}
                 {step === 'form' && (
                   <div className="space-y-4" data-testid="strategiia-form">
+                    <div className="text-center pb-2">
+                      <h3 className="text-lg font-semibold mb-1">Analysez votre dossier gratuitement</h3>
+                      <p className="text-sm text-muted-foreground">Décrivez votre situation pour obtenir une analyse IA personnalisée</p>
+                    </div>
                     <div className="space-y-2">
                       <Label className="font-medium">Type de dossier *</Label>
                       <Select value={typeDossier} onValueChange={setTypeDossier}>
@@ -335,7 +282,7 @@ export const StrategiIA = () => {
                         data-testid="strategiia-situation-input"
                       />
                     </div>
-                    <Button onClick={handleAnalyzeBasic} className="w-full rounded-lg gap-2" disabled={!typeDossier || !situation.trim()} data-testid="strategiia-analyze-button">
+                    <Button onClick={handleAnalyze} className="w-full rounded-lg gap-2" disabled={!typeDossier || !situation.trim()} data-testid="strategiia-analyze-button">
                       <Brain className="w-4 h-4" /> Analyser mon dossier gratuitement
                     </Button>
                     <p className="text-[11px] text-muted-foreground text-center flex items-center justify-center gap-1">
@@ -354,16 +301,76 @@ export const StrategiIA = () => {
                   </div>
                 )}
 
-                {/* BASIC RESULT */}
+                {/* TEASER STEP — Read wall: 1/4 visible + email registration */}
+                {step === 'teaser' && (
+                  <div className="space-y-0" data-testid="strategiia-teaser">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Sparkles className="w-5 h-5 text-accent" />
+                      <h3 className="font-semibold">Votre analyse est prête</h3>
+                      {casesFound > 0 && <Badge variant="outline" className="text-xs">{casesFound} cas similaire{casesFound > 1 ? 's' : ''}</Badge>}
+                    </div>
+                    {/* Teaser — first quarter visible */}
+                    <div className="relative">
+                      <div className="prose prose-sm max-w-none text-sm leading-relaxed whitespace-pre-wrap bg-muted/30 p-4 rounded-xl border border-border" data-testid="strategiia-teaser-text">
+                        {getTeaserText()}
+                      </div>
+                      {/* Gradient fade overlay */}
+                      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/95 to-transparent rounded-b-xl" />
+                    </div>
+
+                    {/* Read wall */}
+                    <div className="relative -mt-8 pt-6" data-testid="strategiia-readwall">
+                      <Card className="border-accent/40 bg-gradient-to-b from-accent/5 to-accent/10 shadow-lg">
+                        <CardContent className="p-6 space-y-4 text-center">
+                          <div className="w-14 h-14 bg-accent/15 rounded-full flex items-center justify-center mx-auto">
+                            <UserPlus className="w-7 h-7 text-accent" />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-lg" data-testid="readwall-title">Inscrivez-vous gratuitement pour accéder à votre analyse complète</h4>
+                            <p className="text-sm text-muted-foreground mt-1">Votre analyse détaillée vous attend. Entrez votre email pour la débloquer.</p>
+                          </div>
+                          <div className="flex gap-2 max-w-sm mx-auto">
+                            <Input
+                              value={email}
+                              onChange={e => setEmail(e.target.value)}
+                              placeholder="votre@email.fr"
+                              type="email"
+                              className="flex-1"
+                              data-testid="strategiia-readwall-email"
+                              onKeyDown={e => e.key === 'Enter' && handleRegisterEmail()}
+                            />
+                            <Button
+                              onClick={handleRegisterEmail}
+                              disabled={!email.includes('@') || registerLoading}
+                              className="gap-1.5 rounded-lg px-5"
+                              data-testid="strategiia-readwall-submit"
+                            >
+                              {registerLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
+                              Débloquer
+                            </Button>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground">
+                            Gratuit et sans engagement. 3 analyses par mois.
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                )}
+
+                {/* FULL BASIC RESULT — unlocked after email */}
                 {step === 'basic' && (
                   <div className="space-y-4" data-testid="strategiia-basic-result">
                     <div className="flex items-center gap-2 mb-2">
                       <Sparkles className="w-5 h-5 text-accent" />
-                      <h3 className="font-semibold">Analyse gratuite</h3>
+                      <h3 className="font-semibold">Analyse complète</h3>
                       {casesFound > 0 && <Badge variant="outline" className="text-xs">{casesFound} cas similaire{casesFound > 1 ? 's' : ''}</Badge>}
+                      {remaining !== null && remaining > 0 && (
+                        <Badge className="bg-green-100 text-green-700 border-green-200 text-xs">{remaining} restante{remaining > 1 ? 's' : ''}</Badge>
+                      )}
                     </div>
                     <div className="prose prose-sm max-w-none text-sm leading-relaxed whitespace-pre-wrap bg-muted/30 p-4 rounded-xl border border-border" data-testid="strategiia-basic-text">
-                      {basicResult}
+                      {fullResult}
                     </div>
                     <div className="p-3 rounded-lg bg-yellow-50 border border-yellow-200/50">
                       <p className="text-xs text-yellow-700 flex items-start gap-2">

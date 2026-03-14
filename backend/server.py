@@ -2577,14 +2577,12 @@ async def strategiia_analyze(request: Request):
 
     if not situation.strip():
         raise HTTPException(status_code=400, detail="Description de la situation requise")
-    if not email:
-        raise HTTPException(status_code=400, detail="Email obligatoire pour utiliser StratégiIA")
 
     if not EMERGENT_LLM_KEY:
         raise HTTPException(status_code=503, detail="Service IA non disponible")
 
     # Check quota for free analyses (3/month per email) — premium analyses are unlimited
-    if not is_premium:
+    if not is_premium and email:
         now = datetime.now(timezone.utc)
         month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
         usage_count = await db.strategiia_analyses.count_documents({
@@ -2638,14 +2636,14 @@ Description de la situation : {situation}
             "regime": regime,
             "situation": situation[:500],
             "is_premium": is_premium,
-            "email": email,
+            "email": email if email else "",
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.strategiia_analyses.insert_one(analysis_doc)
 
         # Compute remaining free analyses this month
         remaining = 3
-        if not is_premium:
+        if not is_premium and email:
             now = datetime.now(timezone.utc)
             month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
             usage_count = await db.strategiia_analyses.count_documents({
@@ -2672,6 +2670,31 @@ async def strategiia_quota(email: str):
     })
     remaining = max(0, 3 - usage_count)
     return {"remaining": remaining, "limit": 3, "used": min(usage_count, 3)}
+
+@api_router.post("/strategiia/register-email")
+async def strategiia_register_email(request: Request):
+    """Register email after read wall — links anonymous analysis to email and captures lead."""
+    body = await request.json()
+    email = body.get("email", "").strip().lower()
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Email invalide")
+    # Save lead for CRM / follow-up
+    await db.leads.update_one(
+        {"email": email},
+        {"$set": {"email": email, "source": "strategiia_readwall", "updated_at": datetime.now(timezone.utc).isoformat()},
+         "$setOnInsert": {"created_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True
+    )
+    # Check quota
+    now = datetime.now(timezone.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+    usage_count = await db.strategiia_analyses.count_documents({
+        "email": email, "is_premium": False,
+        "created_at": {"$gte": month_start}
+    })
+    remaining = max(0, 3 - usage_count)
+    return {"success": True, "email": email, "remaining": remaining}
+
 
 @api_router.post("/strategiia/checkout")
 async def strategiia_checkout(request: Request):

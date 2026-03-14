@@ -20,7 +20,9 @@ import {
   Star,
   Train,
   Bus,
-  Eye
+  Eye,
+  Zap,
+  Clock
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -164,6 +166,45 @@ export const HomePage = () => {
                 <span><strong className="text-foreground">{visitorCount.toLocaleString('fr-FR')}</strong> visiteurs nous ont fait confiance</span>
               </div>
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* Dossier Express — Urgent Banner */}
+      <section className="relative overflow-hidden" data-testid="dossier-express-banner">
+        <div className="absolute inset-0 bg-gradient-to-r from-red-700 via-red-600 to-red-700" />
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.1) 10px, rgba(0,0,0,0.1) 20px)' }} />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center animate-pulse">
+                <Zap className="w-7 h-7 text-yellow-300" />
+              </div>
+              <div className="text-white">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-xs font-bold uppercase tracking-wider text-yellow-300 bg-yellow-300/15 px-2 py-0.5 rounded">Urgence</span>
+                  <Clock className="w-3.5 h-3.5 text-red-200" />
+                  <span className="text-xs text-red-200">Livré sous 2h</span>
+                </div>
+                <p className="font-bold text-base sm:text-lg leading-tight">
+                  Expertise médicale imminente ? Dossier bloqué ?
+                </p>
+                <p className="text-sm text-red-100 font-medium">
+                  Obtenez votre analyse complète en 2h — <span className="text-yellow-300 font-bold text-base">97€</span>
+                </p>
+              </div>
+            </div>
+            <Link to="/dossier-express" className="flex-shrink-0">
+              <Button
+                size="lg"
+                className="bg-white text-red-700 hover:bg-yellow-50 font-bold rounded-full px-8 gap-2 shadow-xl hover:shadow-2xl transition-all hover:scale-105"
+                data-testid="dossier-express-banner-cta"
+              >
+                <Zap className="w-4 h-4" />
+                Accéder au Dossier Express
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
