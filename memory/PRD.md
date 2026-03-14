@@ -11,13 +11,14 @@ Web application in French providing advice and support for occupational diseases
 ## Completed Features
 - Core pages, Admin panel, Forum, Chatbot (5 free Q), Reviews, Referral system, PDF viewer
 - IPP & AAH calculators with share & counter
-- Global search (fuse.js), StratégiIA (3 free/month per email)
+- Global search (fuse.js), StratégiIA (read wall: 1/4 teaser + email registration to unlock)
 - Simulator with PDF report & email capture
 - Urgent alert, MDPH directory, disease tables
 - Stripe & PayPal (test/sandbox), Resend (ACTIVE), Abandoned cart emails
 - Dossier Express (/dossier-express) — 97€ AI analysis + PDF + email
 - Tarifs restructured as 4-step progressive journey
-- StrategiIA + Chatbot quotas with counters
+- Chatbot quota (5 free messages)
+- Homepage: urgent red Dossier Express banner after hero section
 
 ### PageSpeed/SEO Optimization (March 14, 2026)
 - **SEO**: lang="fr", unique titles/descriptions per page (16+ pages), og:tags, twitter:card, canonical URLs
