@@ -226,6 +226,22 @@ export const MentionsLegalesPage = () => {
 
             {/* Politique de confidentialité */}
             <TabsContent value="confidentialite" className="space-y-6">
+              <Card className="border-accent/30 bg-accent/5">
+                <CardContent className="p-6 flex items-start gap-4">
+                  <Shield className="w-6 h-6 text-accent flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+                  <div>
+                    <h3 className="font-semibold text-lg mb-1">Politique de confidentialité complète (RGPD)</h3>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Consultez notre politique de confidentialité détaillée pour connaître vos droits, 
+                      les données collectées, leur traitement et leur durée de conservation.
+                    </p>
+                    <Link to="/politique-confidentialite" className="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:underline" data-testid="mentions-privacy-link">
+                      Accéder à la politique de confidentialité complète <span aria-hidden="true">&rarr;</span>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card>
                 <CardHeader>
                   <CardTitle>Collecte des données personnelles</CardTitle>

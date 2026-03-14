@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import jsPDF from 'jspdf';
+import { DataConsentBox } from '@/components/DataConsentBox';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -125,6 +126,7 @@ export const StrategiIA = () => {
   const [copied, setCopied] = useState(false);
   const [remaining, setRemaining] = useState(null);
   const [registerLoading, setRegisterLoading] = useState(false);
+  const [consent, setConsent] = useState(false);
 
   // Analyze without email — result gated behind read wall
   const handleAnalyze = async () => {
@@ -200,6 +202,7 @@ export const StrategiIA = () => {
     setStep('form');
     setTypeDossier(''); setRegime(''); setSituation('');
     setFullResult(''); setPremiumResult('');
+    setConsent(false);
   };
 
   // Get teaser text — first quarter of the analysis
@@ -289,7 +292,8 @@ export const StrategiIA = () => {
                         data-testid="strategiia-situation-input"
                       />
                     </div>
-                    <Button onClick={handleAnalyze} className="w-full rounded-lg gap-2" disabled={!typeDossier || !situation.trim()} data-testid="strategiia-analyze-button">
+                    <DataConsentBox checked={consent} onChange={setConsent} />
+                    <Button onClick={handleAnalyze} className="w-full rounded-lg gap-2" disabled={!typeDossier || !situation.trim() || !consent} data-testid="strategiia-analyze-button">
                       <Brain className="w-4 h-4" /> Analyser mon dossier gratuitement
                     </Button>
                     <p className="text-[11px] text-muted-foreground text-center flex items-center justify-center gap-1">

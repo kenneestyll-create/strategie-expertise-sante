@@ -11,7 +11,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { ForumAuthProvider } from "@/context/ForumAuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
-const SITE_URL = "https://sante-strategie.preview.emergentagent.com";
+const SITE_URL = "https://consent-hub-8.preview.emergentagent.com";
 
 const professionalServiceSchema = {
   "@context": "https://schema.org",
@@ -90,6 +90,7 @@ const AvisPage = lazy(() => import("@/pages/AvisPage").then(m => ({ default: m.A
 const ResourcesPage = lazy(() => import("@/pages/ResourcesPage").then(m => ({ default: m.ResourcesPage })));
 const ContactPage = lazy(() => import("@/pages/ContactPage").then(m => ({ default: m.ContactPage })));
 const MentionsLegalesPage = lazy(() => import("@/pages/MentionsLegalesPage").then(m => ({ default: m.MentionsLegalesPage })));
+const PolitiqueConfidentialitePage = lazy(() => import("@/pages/PolitiqueConfidentialitePage"));
 const AdminLoginPage = lazy(() => import("@/pages/AdminLoginPage").then(m => ({ default: m.AdminLoginPage })));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
 const ReferralPage = lazy(() => import("@/pages/ReferralPage").then(m => ({ default: m.ReferralPage })));
@@ -148,6 +149,7 @@ function App() {
                   <Route path="/ressources" element={<><Header /><ResourcesPage /><Footer /></>} />
                   <Route path="/contact" element={<><Header /><ContactPage /><Footer /></>} />
                   <Route path="/mentions-legales" element={<><Header /><MentionsLegalesPage /><Footer /></>} />
+                  <Route path="/politique-confidentialite" element={<><Header /><PolitiqueConfidentialitePage /><Footer /></>} />
                   <Route path="/parrainage" element={<><Header /><ReferralPage /><Footer /></>} />
                   <Route path="/agenda" element={<><Header /><AgendaPage /><Footer /></>} />
                   <Route path="/simulateur" element={<><Header /><SimulateurPage /><Footer /></>} />

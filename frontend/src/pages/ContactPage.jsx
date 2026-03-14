@@ -10,12 +10,14 @@ import { toast } from 'sonner';
 import { ArrowRight, Mail, Phone, Clock, CheckCircle, Send, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { SEO } from '@/components/SEO';
+import { DataConsentBox } from '@/components/DataConsentBox';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export const ContactPage = () => {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [consent, setConsent] = useState(false);
   const [formData, setFormData] = useState({
     nom: '',
     prenom: '',
@@ -291,17 +293,14 @@ export const ContactPage = () => {
                     </div>
 
                     {/* Privacy Notice */}
-                    <p className="text-sm text-muted-foreground">
-                      En soumettant ce formulaire, vous acceptez que vos données soient traitées 
-                      dans le cadre de votre demande. Elles ne seront jamais partagées avec des tiers.
-                    </p>
+                    <DataConsentBox checked={consent} onChange={setConsent} />
 
                     {/* Submit Button */}
                     <Button 
                       type="submit" 
                       size="lg" 
                       className="w-full sm:w-auto rounded-full px-8 gap-2"
-                      disabled={loading}
+                      disabled={loading || !consent}
                       data-testid="submit-button"
                     >
                       {loading ? (

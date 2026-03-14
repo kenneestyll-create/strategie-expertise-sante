@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import Dict, Any
 
 class AccompagnSanteAPITester:
-    def __init__(self, base_url="https://sante-strategie.preview.emergentagent.com"):
+    def __init__(self, base_url="https://consent-hub-8.preview.emergentagent.com"):
         self.base_url = f"{base_url}/api"
         self.token = None
         self.admin_name = None

@@ -128,6 +128,13 @@ export const Footer = () => {
                 Mentions légales & CGU
               </Link>
               <Link 
+                to="/politique-confidentialite" 
+                className="text-xs text-primary-foreground/50 hover:text-primary-foreground/70 transition-colors"
+                data-testid="footer-privacy-link"
+              >
+                Politique de confidentialité
+              </Link>
+              <Link 
                 to="/admin/login" 
                 className="text-xs text-primary-foreground/30 hover:text-primary-foreground/50 transition-colors"
                 data-testid="admin-link"

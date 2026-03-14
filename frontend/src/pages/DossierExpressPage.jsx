@@ -15,6 +15,7 @@ import {
 import axios from 'axios';
 import { SEO } from '@/components/SEO';
 import { useReveal, useRevealChildren } from '@/hooks/useReveal';
+import { DataConsentBox } from '@/components/DataConsentBox';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -40,6 +41,7 @@ export const DossierExpressPage = () => {
   const [searchParams] = useSearchParams();
   const [step, setStep] = useState('landing'); // landing, form, uploading, processing, success
   const [loading, setLoading] = useState(false);
+  const [consent, setConsent] = useState(false);
   const [form, setForm] = useState({
     email: '', name: '', situation: '',
     type_dossier: '', regime: '',
@@ -395,12 +397,14 @@ export const DossierExpressPage = () => {
               </div>
 
               {/* Action */}
+              <DataConsentBox checked={consent} onChange={setConsent} className="mt-4" />
+
               {hasPaid ? (
                 <Button
                   size="lg"
                   className="w-full rounded-xl gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold"
                   onClick={handleSubmitDossier}
-                  disabled={loading || !form.situation.trim() || !form.email}
+                  disabled={loading || !form.situation.trim() || !form.email || !consent}
                   data-testid="de-submit-button"
                 >
                   {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi en cours...</> : <><Brain className="w-5 h-5" /> Soumettre mon dossier</>}
@@ -410,7 +414,7 @@ export const DossierExpressPage = () => {
                   size="lg"
                   className="w-full rounded-xl gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold"
                   onClick={handleCheckout}
-                  disabled={loading || !form.email || !form.name}
+                  disabled={loading || !form.email || !form.name || !consent}
                   data-testid="de-checkout-button"
                 >
                   {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection...</> : <><CreditCard className="w-5 h-5" /> Payer 97 € et lancer l'analyse</>}

@@ -2386,7 +2386,7 @@ CONTENU DES DOCUMENTS FOURNIS :
                             <li>Les prochaines étapes à suivre</li>
                         </ul>
                         <p>Pour un accompagnement personnalisé, n'hésitez pas à nous contacter :</p>
-                        <p><a href="https://sante-strategie.preview.emergentagent.com/contact" style="color: #0f3460;">Prendre rendez-vous</a></p>
+                        <p><a href="https://consent-hub-8.preview.emergentagent.com/contact" style="color: #0f3460;">Prendre rendez-vous</a></p>
                         <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
                         <p style="font-size: 12px; color: #666;">Ce rapport est un outil d'aide à la décision et ne constitue pas un avis juridique.<br>Stratégie & Expertise Santé</p>
                     </div>
@@ -3032,7 +3032,7 @@ async def seed_data():
 
 # ==================== SEO ENDPOINTS ====================
 
-SITE_URL = "https://sante-strategie.preview.emergentagent.com"
+SITE_URL = "https://consent-hub-8.preview.emergentagent.com"
 
 SITEMAP_PAGES = [
     ("/", "1.0", "daily"),

@@ -24,6 +24,7 @@ import {
   X
 } from 'lucide-react';
 import axios from 'axios';
+import { DataConsentBox } from '@/components/DataConsentBox';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -57,6 +58,7 @@ const LoginForm = ({ onLogin }) => {
   const [mode, setMode] = useState('login');
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ email: '', password: '', name: '', phone: '' });
+  const [consent, setConsent] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -106,7 +108,10 @@ const LoginForm = ({ onLogin }) => {
               <Label htmlFor="client-password">Mot de passe *</Label>
               <Input id="client-password" type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} placeholder="Votre mot de passe" required data-testid="client-password-input" />
             </div>
-            <Button type="submit" className="w-full rounded-lg gap-2" disabled={loading} data-testid="client-submit-button">
+            {mode === 'register' && (
+              <DataConsentBox checked={consent} onChange={setConsent} />
+            )}
+            <Button type="submit" className="w-full rounded-lg gap-2" disabled={loading || (mode === 'register' && !consent)} data-testid="client-submit-button">
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               {mode === 'login' ? 'Se connecter' : 'Créer mon compte'}
             </Button>
