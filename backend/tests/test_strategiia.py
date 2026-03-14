@@ -96,7 +96,7 @@ class TestStrategiiaCheckout:
     def test_checkout_creates_stripe_session(self):
         """Test that checkout returns a Stripe URL"""
         response = requests.post(f"{BASE_URL}/api/strategiia/checkout", json={
-            "origin_url": "https://expertise-health.preview.emergentagent.com",
+            "origin_url": "https://sante-strategie.preview.emergentagent.com",
             "email": "buyer@test.com",
             "context": "AT - Accident du travail test"
         })

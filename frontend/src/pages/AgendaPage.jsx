@@ -111,7 +111,7 @@ export const AgendaPage = () => {
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-green-600" strokeWidth={1.5} />
           </div>
-          <h1 className="text-3xl font-semibold mb-4" data-testid="booking-success-title">Rendez-vous confirmé !</h1>
+          <h2 className="text-3xl font-semibold mb-4" data-testid="booking-success-title">Rendez-vous confirmé !</h2>
           <p className="text-muted-foreground mb-2">
             <strong>{form.booking_type === 'telephone' ? 'Appel téléphonique' : 'Visioconférence'}</strong>
           </p>

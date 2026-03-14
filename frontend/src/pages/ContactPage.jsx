@@ -93,9 +93,9 @@ export const ContactPage = () => {
           <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-accent" strokeWidth={1.5} />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-semibold mb-4" data-testid="contact-success-title">
+          <h2 className="text-3xl sm:text-4xl font-semibold mb-4" data-testid="contact-success-title">
             Message envoyé !
-          </h1>
+          </h2>
           <p className="text-muted-foreground mb-8">
             Merci pour votre message. Je vous recontacterai dans les plus brefs délais, 
             généralement sous 24 à 48 heures.

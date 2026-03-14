@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/login
+Disallow: /espace-client
+
+Sitemap: https://sante-strategie.preview.emergentagent.com/sitemap.xml

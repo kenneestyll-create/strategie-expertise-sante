@@ -1,5 +1,5 @@
 import "@/App.css";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/sonner";
@@ -10,6 +10,69 @@ import { AlerteUrgente } from "@/components/AlerteUrgente";
 import { AuthProvider } from "@/context/AuthContext";
 import { ForumAuthProvider } from "@/context/ForumAuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+
+const SITE_URL = "https://sante-strategie.preview.emergentagent.com";
+
+const professionalServiceSchema = {
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "Stratégie & Expertise Santé",
+  "description": "Conseil et accompagnement expert en maladie professionnelle, accident du travail, MDPH, expertise médicale et protection juridique.",
+  "url": SITE_URL,
+  "areaServed": { "@type": "Country", "name": "France" },
+  "serviceType": ["Conseil en santé au travail", "Accompagnement MDPH", "Expertise médicale", "Protection juridique", "Analyse de dossier AT/MP"],
+  "priceRange": "€€",
+  "knowsAbout": ["Maladie professionnelle", "Accident du travail", "MDPH", "IPP", "AAH", "Expertise médicale", "Protection juridique", "Faute inexcusable"],
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Prestations",
+    "itemListElement": [
+      { "@type": "Offer", "name": "Analyse StratégiIA", "price": "0", "priceCurrency": "EUR", "description": "Analyse IA gratuite de votre situation" },
+      { "@type": "Offer", "name": "Dossier Express", "price": "97", "priceCurrency": "EUR", "description": "Rapport PDF complet livré sous 2h" },
+      { "@type": "Offer", "name": "Analyse de dossier", "price": "150", "priceCurrency": "EUR", "description": "Étude personnalisée du dossier médical et administratif" },
+      { "@type": "Offer", "name": "Accompagnement complet", "price": "500", "priceCurrency": "EUR", "description": "Suivi global des démarches" }
+    ]
+  }
+};
+
+const faqPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Comment faire reconnaître une maladie professionnelle ?",
+      "acceptedAnswer": { "@type": "Answer", "text": "La reconnaissance d'une maladie professionnelle passe par une déclaration auprès de la CPAM avec un certificat médical initial. La maladie doit figurer dans un tableau de maladies professionnelles ou être reconnue par le CRRMP." }
+    },
+    {
+      "@type": "Question",
+      "name": "Qu'est-ce que le taux d'IPP ?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Le taux d'Incapacité Permanente Partielle (IPP) évalue les séquelles définitives d'un accident du travail ou d'une maladie professionnelle. Il détermine le montant de l'indemnisation versée par la CPAM." }
+    },
+    {
+      "@type": "Question",
+      "name": "Comment constituer un dossier MDPH ?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Le dossier MDPH nécessite le formulaire Cerfa, un certificat médical récent, des justificatifs d'identité et de domicile, ainsi que tout document médical pertinent. Un accompagnement professionnel peut optimiser vos chances." }
+    },
+    {
+      "@type": "Question",
+      "name": "Combien coûte un accompagnement en maladie professionnelle ?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Les tarifs varient de l'analyse IA gratuite au Dossier Express à 97€, jusqu'à l'accompagnement complet à 500€. Le premier échange est toujours gratuit et sans engagement." }
+    }
+  ]
+};
+
+const webSiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Stratégie & Expertise Santé",
+  "url": SITE_URL,
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": `${SITE_URL}/ressources?q={search_term_string}`,
+    "query-input": "required name=search_term_string"
+  }
+};
 
 // Lazy-loaded pages
 const HomePage = lazy(() => import("@/pages/HomePage").then(m => ({ default: m.HomePage })));
@@ -50,6 +113,18 @@ const PageLoader = () => (
 );
 
 function App() {
+  useEffect(() => {
+    const schemas = [professionalServiceSchema, faqPageSchema, webSiteSchema];
+    const scriptElements = schemas.map(schema => {
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.textContent = JSON.stringify(schema);
+      document.head.appendChild(script);
+      return script;
+    });
+    return () => scriptElements.forEach(s => s.remove());
+  }, []);
+
   return (
     <HelmetProvider>
       <div className="App grain-texture">

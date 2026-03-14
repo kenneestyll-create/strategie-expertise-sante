@@ -284,7 +284,7 @@ export const DossierExpressPage = () => {
             <button onClick={() => setStep('landing')} className="text-sm text-muted-foreground hover:text-foreground mb-6 flex items-center gap-1">
               <ChevronRight className="w-4 h-4 rotate-180" /> Retour
             </button>
-            <h1 className="text-3xl font-bold mb-2" data-testid="form-title">Votre Dossier Express</h1>
+            <h2 className="text-3xl font-bold mb-2" data-testid="form-title">Votre Dossier Express</h2>
             <p className="text-muted-foreground mb-8">Remplissez les informations ci-dessous pour lancer l'analyse.</p>
 
             <div className="space-y-6">
@@ -417,7 +417,7 @@ export const DossierExpressPage = () => {
             <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
               <Brain className="w-10 h-10 text-amber-500" />
             </div>
-            <h1 className="text-2xl font-bold mb-3" data-testid="processing-title">Analyse en cours...</h1>
+            <h2 className="text-2xl font-bold mb-3" data-testid="processing-title">Analyse en cours...</h2>
             <p className="text-muted-foreground mb-8">
               StratégiIA analyse votre dossier. Vous recevrez votre rapport PDF complet par email à <strong>{form.email}</strong>.
             </p>
@@ -452,7 +452,7 @@ export const DossierExpressPage = () => {
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle className="w-10 h-10 text-green-600" />
             </div>
-            <h1 className="text-2xl font-bold mb-3" data-testid="success-title">Rapport envoyé !</h1>
+            <h2 className="text-2xl font-bold mb-3" data-testid="success-title">Rapport envoyé !</h2>
             <p className="text-muted-foreground mb-6">
               Votre rapport Dossier Express a été envoyé à <strong>{form.email || pollStatus?.email}</strong>.
               Vérifiez votre boîte de réception (et vos spams).
