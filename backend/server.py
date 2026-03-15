@@ -2216,6 +2216,118 @@ async def get_client_profile(client: dict = Depends(get_current_client)):
         raise HTTPException(status_code=404, detail="Client non trouvé")
     return user
 
+
+@api_router.get("/client/progress")
+async def get_client_progress(client: dict = Depends(get_current_client)):
+    """Compute dossier progress for the client dashboard."""
+    cid = client["sub"]
+    email = client.get("email", "")
+
+    # 1. Registration (always done)
+    registration = {"id": "inscription", "label": "Inscription", "status": "completed", "detail": "Compte créé"}
+
+    # 2. Documents
+    docs = await db.client_documents.find({"client_id": cid}, {"_id": 0, "status": 1, "category": 1}).to_list(500)
+    total_docs = len(docs)
+    validated_docs = sum(1 for d in docs if d.get("status") == "valide")
+    illisible_docs = sum(1 for d in docs if d.get("status") == "illisible")
+    min_required = 3
+
+    if total_docs == 0:
+        doc_step = {"id": "documents", "label": "Documents collectés", "status": "not_started",
+                     "detail": f"Aucun document — {min_required} recommandés", "count": 0, "required": min_required}
+    elif illisible_docs > 0:
+        doc_step = {"id": "documents", "label": "Documents collectés", "status": "action_required",
+                     "detail": f"{total_docs} uploadés, {illisible_docs} illisible(s) à renvoyer", "count": total_docs, "required": min_required}
+    elif validated_docs >= min_required:
+        doc_step = {"id": "documents", "label": "Documents collectés", "status": "completed",
+                     "detail": f"{validated_docs}/{total_docs} validés", "count": total_docs, "required": min_required}
+    else:
+        doc_step = {"id": "documents", "label": "Documents collectés", "status": "in_progress",
+                     "detail": f"{total_docs} uploadés ({validated_docs} validés)", "count": total_docs, "required": min_required}
+
+    # 3. StrategiIA analysis
+    strat_analyses = await db.strategiia_analyses.count_documents({"email": email})
+    if strat_analyses > 0:
+        strat_step = {"id": "strategiia", "label": "Analyse StratégiIA", "status": "completed",
+                       "detail": f"{strat_analyses} analyse(s) réalisée(s)"}
+    elif total_docs >= 1:
+        strat_step = {"id": "strategiia", "label": "Analyse StratégiIA", "status": "action_required",
+                       "detail": "Documents prêts — lancez votre analyse IA"}
+    else:
+        strat_step = {"id": "strategiia", "label": "Analyse StratégiIA", "status": "not_started",
+                       "detail": "Uploadez vos documents puis lancez l'analyse"}
+
+    # 4. Dossier Express
+    dossiers = await db.dossier_express.count_documents({"email": email})
+    if dossiers > 0:
+        dossier_step = {"id": "dossier_express", "label": "Dossier Express", "status": "completed",
+                         "detail": f"{dossiers} dossier(s) traité(s)"}
+    else:
+        dossier_step = {"id": "dossier_express", "label": "Dossier Express", "status": "not_started",
+                         "detail": "Analyse approfondie de votre dossier par IA"}
+
+    # 5. Premium analysis
+    premiums = await db.premium_analyses.find({"email": email}, {"_id": 0, "status": 1, "type": 1}).to_list(20)
+    premium_done = sum(1 for p in premiums if p.get("status") == "termine")
+    premium_pending = sum(1 for p in premiums if p.get("status") in ("en_attente", "en_cours"))
+    if premium_done > 0:
+        premium_step = {"id": "analyse_premium", "label": "Analyse Premium Expert", "status": "completed",
+                         "detail": f"{premium_done} analyse(s) finalisée(s)"}
+    elif premium_pending > 0:
+        premium_step = {"id": "analyse_premium", "label": "Analyse Premium Expert", "status": "in_progress",
+                         "detail": f"{premium_pending} en cours de traitement par l'expert"}
+    else:
+        premium_step = {"id": "analyse_premium", "label": "Analyse Premium Expert", "status": "not_started",
+                         "detail": "Relecture et enrichissement par un expert humain"}
+
+    # 6. Finalization
+    cases = await db.client_cases.find({"client_id": cid}, {"_id": 0, "status": 1}).to_list(50)
+    completed_cases = sum(1 for c in cases if c.get("status") == "termine")
+    if completed_cases > 0:
+        final_step = {"id": "finalisation", "label": "Dossier finalisé", "status": "completed",
+                       "detail": f"{completed_cases} dossier(s) clôturé(s)"}
+    elif premium_done > 0 or dossiers > 0:
+        final_step = {"id": "finalisation", "label": "Dossier finalisé", "status": "in_progress",
+                       "detail": "Suivi en cours — résultats bientôt disponibles"}
+    else:
+        final_step = {"id": "finalisation", "label": "Dossier finalisé", "status": "not_started",
+                       "detail": "Dernière étape après analyse et relecture"}
+
+    steps = [registration, doc_step, strat_step, dossier_step, premium_step, final_step]
+
+    # Overall progress
+    weights = {"completed": 1.0, "in_progress": 0.5, "action_required": 0.3, "not_started": 0}
+    total_weight = sum(weights.get(s["status"], 0) for s in steps)
+    progress_pct = round((total_weight / len(steps)) * 100)
+
+    # Next action
+    next_action = None
+    for s in steps:
+        if s["status"] in ("action_required", "not_started", "in_progress"):
+            next_action = {"step_id": s["id"], "label": s["label"], "detail": s["detail"], "status": s["status"]}
+            break
+
+    # Counts for pie chart
+    counts = {"completed": 0, "in_progress": 0, "action_required": 0, "not_started": 0}
+    for s in steps:
+        counts[s["status"]] = counts.get(s["status"], 0) + 1
+
+    return {
+        "progress_pct": progress_pct,
+        "steps": steps,
+        "next_action": next_action,
+        "counts": counts,
+        "summary": {
+            "total_documents": total_docs,
+            "validated_documents": validated_docs,
+            "analyses_ia": strat_analyses,
+            "dossiers_express": dossiers,
+            "analyses_premium": len(premiums),
+        }
+    }
+
+
 @api_router.get("/client/cases")
 async def get_client_cases(client: dict = Depends(get_current_client)):
     cases = await db.client_cases.find({"client_id": client["sub"]}, {"_id": 0}).sort("updated_at", -1).to_list(100)
