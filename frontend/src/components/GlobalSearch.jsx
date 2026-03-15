@@ -49,8 +49,26 @@ export const GlobalSearch = () => {
 
   const handleSelect = useCallback((entry) => {
     setOpen(false);
-    navigate(entry.href);
-  }, [navigate]);
+    const searchQuery = query.trim();
+    // Navigate with search highlight parameter and anchor
+    const anchor = entry.anchor || '';
+    const url = anchor
+      ? `${entry.href}${entry.href.includes('?') ? '&' : '?'}highlight=${encodeURIComponent(searchQuery)}#${anchor}`
+      : `${entry.href}${entry.href.includes('?') ? '&' : '?'}highlight=${encodeURIComponent(searchQuery)}`;
+    navigate(url);
+  }, [navigate, query]);
+
+  // Highlight matching terms in text
+  const highlightMatch = useCallback((text) => {
+    if (!query || query.length < 2) return text;
+    const terms = query.toLowerCase().trim().split(/\s+/).filter(t => t.length >= 2);
+    if (terms.length === 0) return text;
+    const regex = new RegExp(`(${terms.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+    const parts = text.split(regex);
+    return parts.map((part, i) =>
+      regex.test(part) ? <mark key={i} className="bg-accent/20 text-accent-foreground rounded-sm px-0.5">{part}</mark> : part
+    );
+  }, [query]);
 
   // Group results by category
   const grouped = results.reduce((acc, r) => {
@@ -155,9 +173,9 @@ export const GlobalSearch = () => {
                         >
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium truncate group-hover:text-accent transition-colors">
-                              {item.title}
+                              {highlightMatch(item.title)}
                             </p>
-                            <p className="text-xs text-muted-foreground truncate mt-0.5">{item.description}</p>
+                            <p className="text-xs text-muted-foreground truncate mt-0.5">{highlightMatch(item.description)}</p>
                           </div>
                           <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1" />
                         </button>

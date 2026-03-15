@@ -2,10 +2,11 @@ import { MALADIES_PRO_TABLEAUX, TMS_LOCALISATION, IPP_EXEMPLES } from './maladie
 import { MDPH_DIRECTORY } from './mdphDirectory';
 
 /*
-  Each entry: { title, description, category, href, keywords[] }
+  Each entry: { title, description, category, href, keywords[], anchor? }
   - category groups results visually
   - keywords are used for matching (lowercased at search time)
   - href is where the user navigates on click
+  - anchor (optional) is an element id to scroll to on the target page
 */
 
 const PAGES = [
@@ -30,6 +31,8 @@ const PAGES = [
   { title: "Mentions légales", description: "Informations légales du site", category: "Pages", href: "/mentions-legales", keywords: ["mentions", "légales", "RGPD", "données"] },
   { title: "Dossier Express", description: "Analyse complète de votre dossier par IA avec rapport PDF sous 2h - 97€", category: "Pages", href: "/dossier-express", keywords: ["dossier", "express", "analyse", "rapport", "PDF", "IA", "stratégiia", "97", "rapide"] },
   { title: "CGU", description: "Conditions générales d'utilisation", category: "Pages", href: "/cgu", keywords: ["CGU", "conditions", "générales", "utilisation"] },
+  { title: "Politique de confidentialité", description: "Protection de vos données personnelles (RGPD)", category: "Pages", href: "/politique-confidentialite", keywords: ["RGPD", "confidentialité", "données", "protection", "vie privée", "consentement"] },
+  { title: "Le défi en chiffres", description: "Statistiques nationales : accidents du travail, maladies professionnelles, handicap, MDPH", category: "Pages", href: "/", anchor: "chiffres", keywords: ["chiffres", "statistiques", "700000", "accidents", "12 millions", "handicap", "MDPH", "50000", "maladies"] },
 ];
 
 const TOOLS = [

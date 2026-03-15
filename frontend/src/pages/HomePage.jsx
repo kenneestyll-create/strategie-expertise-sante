@@ -339,7 +339,7 @@ export const HomePage = () => {
       </section>
 
       {/* Le défi en chiffres */}
-      <section className="section-padding bg-background" data-testid="chiffres-section">
+      <section className="section-padding bg-background" data-testid="chiffres-section" id="chiffres">
         <div className="max-w-7xl mx-auto" ref={chiffresRef}>
           <div className="text-center max-w-2xl mx-auto mb-14 reveal">
             <span className="text-sm font-medium text-accent uppercase tracking-wider">Contexte national</span>

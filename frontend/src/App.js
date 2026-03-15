@@ -10,6 +10,10 @@ import { AlerteUrgente } from "@/components/AlerteUrgente";
 import { AuthProvider } from "@/context/AuthContext";
 import { ForumAuthProvider } from "@/context/ForumAuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ScrollToTop } from "@/components/ScrollToTop";
+import { useSearchHighlight } from "@/hooks/useSearchHighlight";
+
+const SearchHighlighter = () => { useSearchHighlight(); return null; };
 
 const SITE_URL = "https://consent-hub-8.preview.emergentagent.com";
 
@@ -132,6 +136,8 @@ function App() {
         <AuthProvider>
           <ForumAuthProvider>
             <BrowserRouter>
+              <ScrollToTop />
+              <SearchHighlighter />
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                   <Route path="/" element={<><Header /><HomePage /><Footer /></>} />
