@@ -33,6 +33,16 @@ const PAGES = [
   { title: "CGU", description: "Conditions générales d'utilisation", category: "Pages", href: "/cgu", keywords: ["CGU", "conditions", "générales", "utilisation"] },
   { title: "Politique de confidentialité", description: "Protection de vos données personnelles (RGPD)", category: "Pages", href: "/politique-confidentialite", keywords: ["RGPD", "confidentialité", "données", "protection", "vie privée", "consentement"] },
   { title: "Le défi en chiffres", description: "Statistiques nationales : accidents du travail, maladies professionnelles, handicap, MDPH", category: "Pages", href: "/", anchor: "chiffres", keywords: ["chiffres", "statistiques", "700000", "accidents", "12 millions", "handicap", "MDPH", "50000", "maladies"] },
+  // Anchored sections
+  { title: "Liste des accompagnements", description: "Tous nos services : AT/MP, MDPH, expertise médicale, protection juridique", category: "Sections", href: "/accompagnements", anchor: "services-liste", keywords: ["liste", "services", "accompagnement", "AT", "MP", "MDPH", "expertise"] },
+  { title: "Régimes spéciaux (SNCF, RATP)", description: "Accompagnement dédié aux agents des régimes spéciaux", category: "Sections", href: "/accompagnements", anchor: "regimes-speciaux", keywords: ["régimes", "spéciaux", "SNCF", "RATP", "cheminots", "agents"] },
+  { title: "Tarif StrategiIA", description: "Analyse IA gratuite avec options premium dès 29€", category: "Sections", href: "/tarifs", anchor: "tarif-strategiia", keywords: ["tarif", "prix", "strategiia", "analyse", "IA", "29"] },
+  { title: "Tarif Dossier Express", description: "Analyse complète par IA + rapport PDF — 97€", category: "Sections", href: "/tarifs", anchor: "tarif-dossier-express", keywords: ["tarif", "prix", "dossier", "express", "97", "rapport"] },
+  { title: "Glossaire santé & droit", description: "Lexique des termes clés : AT, MP, IPP, MDPH, AAH, RQTH", category: "Sections", href: "/ressources", anchor: "glossaire", keywords: ["glossaire", "lexique", "définition", "AT", "MP", "IPP", "AAH", "RQTH", "vocabulaire"] },
+  { title: "Encyclopédie des maladies professionnelles", description: "Tableaux, TMS, IPP et pathologies hors tableau", category: "Sections", href: "/ressources", anchor: "encyclopedie", keywords: ["encyclopédie", "tableaux", "TMS", "IPP", "pathologie", "maladie"] },
+  { title: "FAQ — Questions fréquentes", description: "Réponses aux questions les plus posées", category: "Sections", href: "/ressources", anchor: "faq", keywords: ["FAQ", "questions", "fréquentes", "réponses", "aide"] },
+  { title: "Guides pratiques", description: "Par où commencer ? Guides étape par étape", category: "Sections", href: "/ressources", anchor: "guides", keywords: ["guide", "pratique", "étape", "démarche", "commencer"] },
+  { title: "Bibliothèque de documents", description: "Formulaires, modèles de lettres et documents utiles", category: "Sections", href: "/ressources", anchor: "bibliotheque", keywords: ["bibliothèque", "document", "formulaire", "lettre", "modèle", "téléchargement"] },
 ];
 
 const TOOLS = [

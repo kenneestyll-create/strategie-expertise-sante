@@ -179,7 +179,7 @@ export const ResourcesPage = () => {
       </section>
 
       {/* Glossary */}
-      <section className="section-padding">
+      <section className="section-padding" id="glossaire">
         <div className="max-w-7xl mx-auto">
           <div className="mb-12">
             <span className="text-sm font-medium text-accent uppercase tracking-wider">Lexique</span>
@@ -649,7 +649,7 @@ export const ResourcesPage = () => {
       </section>
 
       {/* Guides Section */}
-      <section className="section-padding">
+      <section className="section-padding" id="guides">
         <div className="max-w-7xl mx-auto">
           <div className="mb-12">
             <span className="text-sm font-medium text-accent uppercase tracking-wider">Guides pratiques</span>

@@ -187,7 +187,7 @@ export const TarifsPage = () => {
       </section>
 
       {/* ==================== ÉTAPE 1 : StratégiIA Gratuite ==================== */}
-      <section className="section-padding">
+      <section className="section-padding" id="tarif-strategiia">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-10 h-10 rounded-full bg-accent text-accent-foreground flex items-center justify-center font-bold text-lg">1</div>
@@ -240,7 +240,7 @@ export const TarifsPage = () => {
       </section>
 
       {/* ==================== ÉTAPE 2 : Dossier Express ==================== */}
-      <section className="section-padding bg-secondary pt-2">
+      <section className="section-padding bg-secondary pt-2" id="tarif-dossier-express">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-10 h-10 rounded-full bg-amber-500 text-amber-950 flex items-center justify-center font-bold text-lg">2</div>

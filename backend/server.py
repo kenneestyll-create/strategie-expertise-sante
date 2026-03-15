@@ -3065,6 +3065,52 @@ async def delete_cas_anonymise(case_id: str, admin: dict = Depends(get_current_a
     await db.cas_anonymises.delete_one({"id": case_id})
     return {"success": True}
 
+@api_router.patch("/admin/cas-anonymises/{case_id}")
+async def update_cas_anonymise(case_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    update = {}
+    for field in ["type_dossier", "regime", "duree", "strategie", "resultat", "score_pertinence", "notes"]:
+        if field in body:
+            update[field] = body[field]
+    update["updated_at"] = datetime.now(timezone.utc).isoformat()
+    result = await db.cas_anonymises.update_one({"id": case_id}, {"$set": update})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Cas non trouvé")
+    return {"success": True}
+
+@api_router.post("/admin/cas-anonymises/import")
+async def import_cas_anonymises(request: Request, admin: dict = Depends(get_current_admin)):
+    """Bulk import anonymized cases from a JSON array."""
+    body = await request.json()
+    cases_data = body.get("cases", [])
+    if not cases_data or not isinstance(cases_data, list):
+        raise HTTPException(status_code=400, detail="Format invalide: 'cases' doit être une liste")
+    imported = 0
+    for item in cases_data[:100]:
+        cas = {
+            "id": str(uuid.uuid4()),
+            "type_dossier": item.get("type_dossier", ""),
+            "regime": item.get("regime", ""),
+            "duree": item.get("duree", ""),
+            "strategie": item.get("strategie", ""),
+            "resultat": item.get("resultat", ""),
+            "score_pertinence": item.get("score_pertinence", 0),
+            "notes": item.get("notes", ""),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.cas_anonymises.insert_one(cas)
+        imported += 1
+    return {"success": True, "imported": imported}
+
+@api_router.get("/admin/cas-anonymises/stats")
+async def get_cas_stats(admin: dict = Depends(get_current_admin)):
+    total = await db.cas_anonymises.count_documents({})
+    pipeline = [{"$group": {"_id": "$type_dossier", "count": {"$sum": 1}}}]
+    by_type = await db.cas_anonymises.aggregate(pipeline).to_list(50)
+    pipeline_regime = [{"$group": {"_id": "$regime", "count": {"$sum": 1}}}]
+    by_regime = await db.cas_anonymises.aggregate(pipeline_regime).to_list(50)
+    return {"total": total, "by_type": [{k: v for k, v in d.items() if k != "_id"} | {"label": d["_id"] or "Non précisé"} for d in by_type], "by_regime": [{k: v for k, v in d.items() if k != "_id"} | {"label": d["_id"] or "Non précisé"} for d in by_regime]}
+
 @api_router.get("/admin/strategiia/stats")
 async def get_strategiia_stats(admin: dict = Depends(get_current_admin)):
     total_analyses = await db.strategiia_analyses.count_documents({})

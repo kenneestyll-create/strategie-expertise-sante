@@ -38,7 +38,10 @@ import {
   User,
   Zap,
   Brain,
-  Plus
+  Plus,
+  Pencil,
+  Upload,
+  X
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
@@ -59,6 +62,9 @@ export const AdminDashboard = () => {
   const [casAnonymises, setCasAnonymises] = useState({ items: [], total: 0 });
   const [premiumAnalyses, setPremiumAnalyses] = useState({ items: [], stats: { total: 0, en_attente: 0, en_cours: 0, termine: 0 } });
   const [newCas, setNewCas] = useState({ type_dossier: '', regime: '', duree: '', strategie: '', resultat: '', score_pertinence: 0, notes: '' });
+  const [editCas, setEditCas] = useState(null);
+  const [casFilter, setCasFilter] = useState('');
+  const [casTypeFilter, setCasTypeFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -1073,10 +1079,48 @@ export const AdminDashboard = () => {
               <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-green-600">{strategiiaData.premium * 29}€</p><p className="text-xs text-muted-foreground">Revenus estimés</p></CardContent></Card>
             </div>
 
-            {/* Add anonymized case form */}
+            {/* Add / Import */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Plus className="w-5 h-5 text-accent" />Ajouter un cas anonymisé (Phase 2)</CardTitle>
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <CardTitle className="flex items-center gap-2"><Plus className="w-5 h-5 text-accent" />Gestion des cas anonymisés</CardTitle>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8" data-testid="cas-import-btn"
+                      onClick={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file'; input.accept = '.json,.csv';
+                        input.onchange = async (e) => {
+                          const file = e.target.files[0];
+                          if (!file) return;
+                          try {
+                            const text = await file.text();
+                            let cases = [];
+                            if (file.name.endsWith('.csv')) {
+                              const lines = text.split('\n').filter(l => l.trim());
+                              const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                              for (let i = 1; i < lines.length; i++) {
+                                const vals = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+                                const obj = {};
+                                headers.forEach((h, j) => { obj[h] = vals[j] || ''; });
+                                cases.push(obj);
+                              }
+                            } else {
+                              const parsed = JSON.parse(text);
+                              cases = Array.isArray(parsed) ? parsed : parsed.cases || [];
+                            }
+                            if (cases.length === 0) { toast.error('Aucun cas trouvé dans le fichier'); return; }
+                            const res = await axios.post(`${API}/admin/cas-anonymises/import`, { cases }, axiosConfig);
+                            toast.success(`${res.data.imported} cas importés`);
+                            fetchData();
+                          } catch (err) { toast.error('Erreur lors de l\'import'); }
+                        };
+                        input.click();
+                      }}
+                    >
+                      <Upload className="w-3.5 h-3.5" /> Importer (JSON/CSV)
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
@@ -1121,35 +1165,119 @@ export const AdminDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Cases list */}
+            {/* Cases list with search/filter */}
             <Card>
-              <CardHeader><CardTitle className="flex items-center gap-2"><Brain className="w-5 h-5 text-accent" />Base de cas anonymisés ({casAnonymises.total})</CardTitle></CardHeader>
+              <CardHeader>
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <CardTitle className="flex items-center gap-2"><Brain className="w-5 h-5 text-accent" />Base de cas anonymisés ({casAnonymises.total})</CardTitle>
+                  <div className="flex gap-2 items-center">
+                    <Input placeholder="Rechercher..." className="h-8 w-40 text-xs" data-testid="cas-search-input"
+                      value={casFilter} onChange={e => setCasFilter(e.target.value)} />
+                    <Select value={casTypeFilter} onValueChange={setCasTypeFilter}>
+                      <SelectTrigger className="h-8 w-32 text-xs" data-testid="cas-type-filter"><SelectValue placeholder="Tous types" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Tous types</SelectItem>
+                        {['AT','MP','MDPH','Assurance','Expertise','Faute inexcusable','Recours','Autre'].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardHeader>
               <CardContent>
                 {casAnonymises.items?.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">Aucun cas anonymisé. Ajoutez vos premiers cas pour enrichir l'IA.</p>
                 ) : (
-                  <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                    {casAnonymises.items?.map(c => (
-                      <div key={c.id} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/20" data-testid={`cas-item-${c.id}`}>
-                        <Badge variant="secondary">{c.type_dossier}</Badge>
-                        <span className="text-sm flex-1">{c.regime} — {c.duree} — {c.strategie}</span>
-                        <Badge variant={c.resultat === 'Favorable' ? 'default' : c.resultat === 'Défavorable' ? 'destructive' : 'outline'} className={c.resultat === 'Favorable' ? 'bg-green-100 text-green-700 border-green-200' : ''}>
-                          {c.resultat}
-                        </Badge>
-                        <span className="text-xs font-mono text-muted-foreground">{c.score_pertinence}/100</span>
-                        <Button size="sm" variant="ghost" className="text-destructive h-8 w-8 p-0"
-                          onClick={async () => {
-                            try { await axios.delete(`${API}/admin/cas-anonymises/${c.id}`, axiosConfig); toast.success('Cas supprimé'); fetchData(); }
-                            catch { toast.error('Erreur'); }
-                          }}
-                          data-testid={`cas-delete-${c.id}`}
-                        ><Trash2 className="w-3.5 h-3.5" /></Button>
+                  <div className="space-y-2 max-h-[500px] overflow-y-auto">
+                    {casAnonymises.items?.filter(c => {
+                      if (casTypeFilter && casTypeFilter !== 'all' && c.type_dossier !== casTypeFilter) return false;
+                      if (casFilter) {
+                        const q = casFilter.toLowerCase();
+                        return [c.type_dossier, c.regime, c.duree, c.strategie, c.resultat, c.notes].some(f => (f || '').toLowerCase().includes(q));
+                      }
+                      return true;
+                    }).map(c => (
+                      <div key={c.id} className="p-3 rounded-lg border border-border hover:bg-muted/20 transition-colors" data-testid={`cas-item-${c.id}`}>
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Badge variant="secondary" className="text-[10px]">{c.type_dossier}</Badge>
+                              {c.regime && <Badge variant="outline" className="text-[10px]">{c.regime}</Badge>}
+                              <Badge variant={c.resultat === 'Favorable' ? 'default' : c.resultat === 'Défavorable' ? 'destructive' : 'outline'} className={`text-[10px] ${c.resultat === 'Favorable' ? 'bg-green-100 text-green-700 border-green-200' : ''}`}>
+                                {c.resultat}
+                              </Badge>
+                              <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{c.score_pertinence}/100</span>
+                            </div>
+                            <p className="text-sm mt-1 truncate">{c.strategie || 'Pas de stratégie renseignée'}</p>
+                            {c.notes && <p className="text-xs text-muted-foreground mt-0.5 truncate">{c.notes}</p>}
+                            <p className="text-[10px] text-muted-foreground mt-0.5">{c.duree} {c.created_at ? `— ${new Date(c.created_at).toLocaleDateString('fr-FR')}` : ''}</p>
+                          </div>
+                          <div className="flex gap-1 flex-shrink-0">
+                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0"
+                              onClick={() => setEditCas(c)}
+                              data-testid={`cas-edit-${c.id}`}
+                            ><Pencil className="w-3 h-3" /></Button>
+                            <Button size="sm" variant="ghost" className="text-destructive h-7 w-7 p-0"
+                              onClick={async () => {
+                                try { await axios.delete(`${API}/admin/cas-anonymises/${c.id}`, axiosConfig); toast.success('Cas supprimé'); fetchData(); }
+                                catch { toast.error('Erreur'); }
+                              }}
+                              data-testid={`cas-delete-${c.id}`}
+                            ><Trash2 className="w-3 h-3" /></Button>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
                 )}
               </CardContent>
             </Card>
+
+            {/* Edit modal */}
+            {editCas && (
+              <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 9999 }}>
+                <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setEditCas(null)} />
+                <Card className="relative z-10 w-full max-w-lg" data-testid="cas-edit-modal">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">Modifier le cas</CardTitle>
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditCas(null)}><X className="w-4 h-4" /></Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <Select value={editCas.type_dossier} onValueChange={v => setEditCas(p => ({...p, type_dossier: v}))}>
+                        <SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
+                        <SelectContent>{['AT','MP','MDPH','Assurance','Expertise','Faute inexcusable','Recours','Autre'].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                      </Select>
+                      <Select value={editCas.regime} onValueChange={v => setEditCas(p => ({...p, regime: v}))}>
+                        <SelectTrigger><SelectValue placeholder="Régime" /></SelectTrigger>
+                        <SelectContent>{['Général','MSA','Fonction publique','Indépendant','Autre'].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                    <Input placeholder="Durée" value={editCas.duree || ''} onChange={e => setEditCas(p => ({...p, duree: e.target.value}))} />
+                    <Input placeholder="Stratégie" value={editCas.strategie || ''} onChange={e => setEditCas(p => ({...p, strategie: e.target.value}))} />
+                    <Select value={editCas.resultat} onValueChange={v => setEditCas(p => ({...p, resultat: v}))}>
+                      <SelectTrigger><SelectValue placeholder="Résultat" /></SelectTrigger>
+                      <SelectContent>{['Favorable','Partiellement favorable','Défavorable','En cours'].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                    </Select>
+                    <Input type="number" min={0} max={100} placeholder="Score (0-100)" value={editCas.score_pertinence || ''} onChange={e => setEditCas(p => ({...p, score_pertinence: parseInt(e.target.value) || 0}))} />
+                    <Input placeholder="Notes" value={editCas.notes || ''} onChange={e => setEditCas(p => ({...p, notes: e.target.value}))} />
+                    <Button className="w-full gap-2 rounded-lg" data-testid="cas-edit-save"
+                      onClick={async () => {
+                        try {
+                          await axios.patch(`${API}/admin/cas-anonymises/${editCas.id}`, editCas, axiosConfig);
+                          toast.success('Cas mis à jour');
+                          setEditCas(null);
+                          fetchData();
+                        } catch { toast.error('Erreur'); }
+                      }}
+                    >
+                      <CheckCircle className="w-4 h-4" /> Enregistrer
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </TabsContent>
 
           {/* Premium Analyses Tab */}
