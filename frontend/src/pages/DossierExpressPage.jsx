@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import {
   FileSearch, Upload, Mail, Clock, Shield, CheckCircle,
   ArrowRight, Loader2, FileText, Zap, Brain, AlertTriangle,
-  ChevronRight, Sparkles, CreditCard, X
+  ChevronRight, Sparkles, CreditCard, X, Crown
 } from 'lucide-react';
 import axios from 'axios';
 import { SEO } from '@/components/SEO';
@@ -50,6 +50,7 @@ export const DossierExpressPage = () => {
   const [files, setFiles] = useState([]);
   const [dossierId, setDossierId] = useState(null);
   const [pollStatus, setPollStatus] = useState(null);
+  const [premiumPdf, setPremiumPdf] = useState(false);
 
   const featuresRef = useRevealChildren();
   const ctaBottomRef = useReveal();
@@ -109,12 +110,14 @@ export const DossierExpressPage = () => {
       return;
     }
     sessionStorage.setItem('dossier_express_form', JSON.stringify(form));
+    sessionStorage.setItem('dossier_express_premium_pdf', premiumPdf ? '1' : '0');
     setLoading(true);
     try {
       const res = await axios.post(`${API}/dossier-express/checkout`, {
         email: form.email,
         name: form.name,
-        origin_url: window.location.origin
+        origin_url: window.location.origin,
+        premium_pdf: premiumPdf
       });
       window.location.href = res.data.url;
     } catch (err) {
@@ -141,6 +144,7 @@ export const DossierExpressPage = () => {
     }
 
     try {
+      const isPremium = sessionStorage.getItem('dossier_express_premium_pdf') === '1';
       const res = await axios.post(`${API}/dossier-express/submit`, {
         session_id: searchParams.get('session_id') || '',
         email: form.email,
@@ -148,11 +152,13 @@ export const DossierExpressPage = () => {
         situation: form.situation,
         type_dossier: form.type_dossier,
         regime: form.regime,
-        documents_text: documentsText
+        documents_text: documentsText,
+        premium_pdf: isPremium
       });
       setDossierId(res.data.dossier_id);
       setStep('processing');
       sessionStorage.removeItem('dossier_express_form');
+      sessionStorage.removeItem('dossier_express_premium_pdf');
     } catch (err) {
       toast.error("Erreur lors de l'envoi. Veuillez réessayer.");
     } finally {
@@ -399,6 +405,19 @@ export const DossierExpressPage = () => {
               {/* Action */}
               <DataConsentBox checked={consent} onChange={setConsent} className="mt-4" />
 
+              {/* Premium PDF option */}
+              <label className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-accent/40 cursor-pointer transition-colors mt-3" data-testid="de-premium-pdf-option">
+                <input type="checkbox" checked={premiumPdf} onChange={e => setPremiumPdf(e.target.checked)} className="mt-0.5 accent-amber-500" />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <Crown className="w-4 h-4 text-accent" />
+                    <span className="text-sm font-medium">Version professionnelle du rapport</span>
+                    <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">+19€</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Rapport sans filigrane, mise en page optimisée pour impression ou transmission à un professionnel (avocat, médecin, expert).</p>
+                </div>
+              </label>
+
               {hasPaid ? (
                 <Button
                   size="lg"
@@ -417,7 +436,7 @@ export const DossierExpressPage = () => {
                   disabled={loading || !form.email || !form.name || !consent}
                   data-testid="de-checkout-button"
                 >
-                  {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection...</> : <><CreditCard className="w-5 h-5" /> Payer 97 € et lancer l'analyse</>}
+                  {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection...</> : <><CreditCard className="w-5 h-5" /> Payer {premiumPdf ? '116' : '97'} € et lancer l'analyse</>}
                 </Button>
               )}
 

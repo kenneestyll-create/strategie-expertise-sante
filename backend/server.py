@@ -2288,6 +2288,7 @@ async def dossier_express_submit(request: Request):
     type_dossier = body.get("type_dossier", "")
     regime = body.get("regime", "")
     documents_text = body.get("documents_text", "")
+    premium_pdf = body.get("premium_pdf", False)
 
     if not email or not situation:
         raise HTTPException(status_code=400, detail="Email et description requis")
@@ -2303,18 +2304,19 @@ async def dossier_express_submit(request: Request):
         "type_dossier": type_dossier,
         "regime": regime,
         "documents_text": documents_text[:10000],
+        "premium_pdf": premium_pdf,
         "status": "processing",
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.dossier_express.insert_one(dossier)
 
     # Trigger async analysis
-    asyncio.create_task(_process_dossier_express(dossier_id, email, name, situation, type_dossier, regime, documents_text))
+    asyncio.create_task(_process_dossier_express(dossier_id, email, name, situation, type_dossier, regime, documents_text, premium_pdf=premium_pdf))
 
     return {"success": True, "dossier_id": dossier_id, "message": "Votre dossier est en cours d'analyse. Vous recevrez le rapport par email sous 2 heures."}
 
 
-async def _process_dossier_express(dossier_id: str, email: str, name: str, situation: str, type_dossier: str, regime: str, documents_text: str):
+async def _process_dossier_express(dossier_id: str, email: str, name: str, situation: str, type_dossier: str, regime: str, documents_text: str, premium_pdf: bool = False):
     """Background task: AI analysis → PDF generation → email delivery."""
     try:
         if not EMERGENT_LLM_KEY:
@@ -2361,7 +2363,7 @@ CONTENU DES DOCUMENTS FOURNIS :
         analysis = await chat.send_message(UserMessage(text=user_msg))
 
         # Generate PDF
-        pdf_bytes = _generate_dossier_pdf(name, email, type_dossier, regime, analysis)
+        pdf_bytes = _generate_dossier_pdf(name, email, type_dossier, regime, analysis, premium_pdf=premium_pdf)
 
         # Send email with PDF attachment
         email_sent = False
@@ -2417,96 +2419,260 @@ CONTENU DES DOCUMENTS FOURNIS :
         )
 
 
-def _generate_dossier_pdf(name: str, email: str, type_dossier: str, regime: str, analysis: str) -> bytes:
-    """Generate a professional PDF report from the AI analysis."""
-    from fpdf import FPDF
-    import textwrap
+def _generate_report_number():
+    """Generate unique report number: SES-2026-XXXXX"""
+    import random
+    year = datetime.now().year
+    seq = random.randint(10000, 99999)
+    return f"SES-{year}-{seq}"
 
-    pdf = FPDF()
-    pdf.set_auto_page_break(auto=True, margin=25)
+
+def _generate_secured_pdf(
+    analysis: str,
+    report_type: str = "Dossier Express",
+    name: str = "",
+    email: str = "",
+    type_dossier: str = "",
+    regime: str = "",
+    with_watermark: bool = True,
+    report_number: str = "",
+) -> bytes:
+    """Generate a professional, secured PDF report with branding, watermark, and legal mentions."""
+    from fpdf import FPDF
+    import math
+
+    if not report_number:
+        report_number = _generate_report_number()
+    gen_date = datetime.now().strftime("%d/%m/%Y")
+    gen_date_long = datetime.now().strftime("%d %B %Y")
+
+    # --- Custom PDF class with header / footer ---
+    class SecuredPDF(FPDF):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self._is_cover = True
+
+        def header(self):
+            if self._is_cover:
+                return
+            # Dark header bar
+            self.set_fill_color(26, 26, 46)
+            self.rect(0, 0, 210, 18, "F")
+            self.set_text_color(255, 255, 255)
+            self.set_font("Helvetica", "B", 9)
+            self.set_y(4)
+            self.set_x(12)
+            self.cell(0, 5, "Strategie & Expertise Sante", new_x="LMARGIN", new_y="NEXT")
+            self.set_font("Helvetica", "", 7)
+            self.set_x(12)
+            self.set_text_color(200, 200, 210)
+            self.cell(100, 4, "strategie-expertise-sante.fr")
+            self.set_x(-60)
+            self.set_font("Helvetica", "", 7)
+            self.cell(0, 4, report_number, align="R")
+            self.set_xy(self.l_margin, 22)
+
+        def footer(self):
+            self.set_y(-14)
+            self.set_draw_color(200, 200, 200)
+            self.line(12, self.get_y(), 198, self.get_y())
+            self.ln(2)
+            self.set_font("Helvetica", "I", 7)
+            self.set_text_color(140, 140, 140)
+            year = datetime.now().year
+            self.cell(0, 5, f"(c) {year} Strategie & Expertise Sante -- strategie-expertise-sante.fr", align="C")
+
+        def _draw_watermark(self):
+            if not with_watermark:
+                return
+            saved_x, saved_y = self.x, self.y
+            saved_r, saved_g, saved_b = self.text_color.serialize().split(" ")[:3]
+            self.set_font("Helvetica", "B", 42)
+            self.set_text_color(230, 228, 222)
+            cx, cy = self.w / 2, self.h / 2
+            text = "Strategie & Expertise Sante"
+            tw = self.get_string_width(text)
+            with self.rotation(40, cx, cy):
+                self.text(cx - tw / 2, cy, text)
+            self.set_xy(saved_x, saved_y)
+
+    pdf = SecuredPDF()
+    pdf.set_auto_page_break(auto=True, margin=22)
+    pdf.set_left_margin(12)
+    pdf.set_right_margin(12)
+
+    # ==================== PAGE DE GARDE ====================
+    pdf._is_cover = True
     pdf.add_page()
 
-    # Header
+    # Dark full-page cover
     pdf.set_fill_color(26, 26, 46)
-    pdf.rect(0, 0, 210, 45, 'F')
+    pdf.rect(0, 0, 210, 297, "F")
+
+    # Gold accent bar
+    pdf.set_fill_color(185, 78, 72)
+    pdf.rect(0, 85, 210, 4, "F")
+
+    # Title block
     pdf.set_text_color(255, 255, 255)
-    pdf.set_font("Helvetica", "B", 22)
-    pdf.set_y(10)
-    pdf.cell(0, 10, "Strategie & Expertise Sante", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", "B", 28)
+    pdf.set_y(100)
+    pdf.cell(0, 14, "Strategie & Expertise Sante", align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("Helvetica", "", 12)
-    pdf.cell(0, 8, "Rapport Dossier Express", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_text_color(200, 200, 210)
+    pdf.cell(0, 8, "strategie-expertise-sante.fr", align="C", new_x="LMARGIN", new_y="NEXT")
 
-    # Client info box
-    pdf.set_y(55)
-    pdf.set_text_color(50, 50, 50)
-    pdf.set_fill_color(245, 245, 250)
-    pdf.rect(15, 52, 180, 28, 'F')
-    pdf.set_font("Helvetica", "B", 10)
-    pdf.set_x(20)
-    pdf.cell(0, 7, f"Client : {name or 'Non renseigne'}", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(15)
+    pdf.set_draw_color(185, 78, 72)
+    pdf.line(70, pdf.get_y(), 140, pdf.get_y())
+    pdf.ln(15)
+
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_font("Helvetica", "B", 18)
+    safe_type = report_type.encode("latin-1", "replace").decode("latin-1")
+    pdf.cell(0, 10, f"Rapport {safe_type}", align="C", new_x="LMARGIN", new_y="NEXT")
+
+    # Info box on cover
+    pdf.ln(20)
+    box_x, box_y, box_w = 40, pdf.get_y(), 130
+    pdf.set_fill_color(40, 40, 60)
+    pdf.rect(box_x, box_y, box_w, 48, "F")
     pdf.set_font("Helvetica", "", 10)
-    pdf.set_x(20)
-    pdf.cell(0, 6, f"Email : {email}", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_x(20)
-    pdf.cell(0, 6, f"Type : {type_dossier or 'Non precise'}  |  Regime : {regime or 'Non precise'}  |  Date : {datetime.now().strftime('%d/%m/%Y')}", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_text_color(200, 200, 210)
+    y_info = box_y + 8
+    for label, val in [
+        ("Numero du rapport", report_number),
+        ("Date de generation", gen_date),
+        ("Client / Dossier", (name or email or "N/A").encode("latin-1", "replace").decode("latin-1")),
+        ("Type de dossier", (type_dossier or "Non precise").encode("latin-1", "replace").decode("latin-1")),
+    ]:
+        pdf.set_xy(box_x + 6, y_info)
+        pdf.set_font("Helvetica", "B", 9)
+        pdf.cell(50, 5, label + " :")
+        pdf.set_font("Helvetica", "", 9)
+        pdf.set_text_color(255, 255, 255)
+        pdf.cell(0, 5, val)
+        pdf.set_text_color(200, 200, 210)
+        y_info += 10
 
-    pdf.ln(8)
+    # Cover footer
+    pdf.set_y(265)
+    pdf.set_font("Helvetica", "I", 8)
+    pdf.set_text_color(140, 140, 150)
+    pdf.cell(0, 5, "Document confidentiel", align="C", new_x="LMARGIN", new_y="NEXT")
+    year = datetime.now().year
+    pdf.cell(0, 5, f"(c) {year} Strategie & Expertise Sante -- StrategiIA", align="C")
 
-    # Parse and render analysis content
-    lines = analysis.split('\n')
+    # ==================== CONTENT PAGES ====================
+    pdf._is_cover = False
+    pdf.add_page()
+
+    # Client info summary
+    pdf.set_fill_color(245, 243, 238)
+    pdf.rect(12, 24, 186, 22, "F")
+    pdf.set_text_color(50, 50, 50)
+    pdf.set_font("Helvetica", "B", 9)
+    pdf.set_xy(16, 26)
+    safe_name = (name or "Non renseigne").encode("latin-1", "replace").decode("latin-1")
+    pdf.cell(0, 5, f"Client : {safe_name}", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", "", 9)
+    pdf.set_x(16)
+    safe_td = (type_dossier or "Non precise").encode("latin-1", "replace").decode("latin-1")
+    safe_reg = (regime or "Non precise").encode("latin-1", "replace").decode("latin-1")
+    pdf.cell(0, 5, f"Type : {safe_td}  |  Regime : {safe_reg}  |  {gen_date}", new_x="LMARGIN", new_y="NEXT")
+
+    pdf.ln(6)
+
+    # Analysis content
+    lines = analysis.split("\n")
     for line in lines:
         stripped = line.strip()
         if not stripped:
             pdf.ln(3)
             continue
-
-        if stripped.startswith('# '):
+        safe = stripped.encode("latin-1", "replace").decode("latin-1")
+        pdf.set_x(pdf.l_margin)
+        if stripped.startswith("# "):
             pdf.set_font("Helvetica", "B", 16)
             pdf.set_text_color(26, 26, 46)
             pdf.ln(5)
-            pdf.multi_cell(0, 8, stripped[2:].encode('latin-1', 'replace').decode('latin-1'))
-        elif stripped.startswith('## '):
+            pdf.multi_cell(0, 8, safe[2:])
+        elif stripped.startswith("## "):
             pdf.set_font("Helvetica", "B", 14)
             pdf.set_text_color(26, 26, 46)
             pdf.ln(4)
-            pdf.multi_cell(0, 7, stripped[3:].encode('latin-1', 'replace').decode('latin-1'))
-        elif stripped.startswith('### '):
+            pdf.multi_cell(0, 7, safe[3:])
+        elif stripped.startswith("### "):
             pdf.set_font("Helvetica", "B", 12)
             pdf.set_text_color(15, 52, 96)
             pdf.ln(3)
-            pdf.multi_cell(0, 7, stripped[4:].encode('latin-1', 'replace').decode('latin-1'))
-        elif stripped.startswith('- ') or stripped.startswith('* '):
+            pdf.multi_cell(0, 7, safe[4:])
+        elif stripped.startswith("- ") or stripped.startswith("* "):
             pdf.set_font("Helvetica", "", 10)
             pdf.set_text_color(50, 50, 50)
-            text = stripped[2:].encode('latin-1', 'replace').decode('latin-1')
             pdf.set_x(20)
-            pdf.multi_cell(170, 6, f"  {text}")
-        elif stripped.startswith('**') and stripped.endswith('**'):
+            pdf.multi_cell(166, 6, f"  {safe[2:]}")
+        elif stripped.startswith("**") and stripped.endswith("**"):
             pdf.set_font("Helvetica", "B", 10)
             pdf.set_text_color(50, 50, 50)
-            text = stripped.strip('*').encode('latin-1', 'replace').decode('latin-1')
-            pdf.multi_cell(0, 6, text)
+            pdf.multi_cell(0, 6, safe.strip("*"))
         else:
             pdf.set_font("Helvetica", "", 10)
             pdf.set_text_color(50, 50, 50)
-            text = stripped.encode('latin-1', 'replace').decode('latin-1')
-            pdf.multi_cell(0, 6, text)
+            pdf.multi_cell(0, 6, safe)
 
-    # Footer disclaimer
-    pdf.ln(10)
-    pdf.set_draw_color(200, 200, 200)
-    pdf.line(15, pdf.get_y(), 195, pdf.get_y())
+    # ==================== LEGAL PAGE ====================
+    pdf.add_page()
     pdf.ln(5)
-    pdf.set_font("Helvetica", "I", 8)
-    pdf.set_text_color(130, 130, 130)
-    pdf.multi_cell(0, 5, "Ce rapport est un outil d'aide a la decision et ne constitue pas un avis juridique. Pour un accompagnement personnalise, contactez Strategie & Expertise Sante.")
+    pdf.set_fill_color(185, 78, 72)
+    pdf.rect(12, pdf.get_y(), 3, 8, "F")
+    pdf.set_x(18)
+    pdf.set_font("Helvetica", "B", 14)
+    pdf.set_text_color(26, 26, 46)
+    pdf.cell(0, 8, "Mentions legales", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(6)
+    pdf.set_font("Helvetica", "", 9)
+    pdf.set_text_color(60, 60, 60)
 
-    return pdf.output()
+    legal_text = (
+        "Ce rapport est fourni a titre d'analyse et d'accompagnement administratif. "
+        "Il ne constitue ni un avis medical ni un conseil juridique.\n\n"
+        "Ce document est la propriete exclusive de Strategie & Expertise Sante. "
+        "Toute reproduction, diffusion ou utilisation commerciale sans autorisation "
+        "ecrite prealable est interdite et constitue une contrefacon.\n\n"
+        f"(c) {datetime.now().year} Strategie & Expertise Sante -- StrategiIA(TM) outil exclusif.\n\n"
+        f"Rapport : {report_number}\n"
+        f"Date de generation : {gen_date}"
+    )
+    pdf.multi_cell(0, 5.5, legal_text)
+
+    # Draw watermark on all pages at the end (after all content is rendered)
+    if with_watermark:
+        total_pages = pdf.pages_count
+        for p_num in range(1, total_pages + 1):
+            pdf.page = p_num
+            pdf._draw_watermark()
+        pdf.page = total_pages
+
+    return bytes(pdf.output())
+
+
+def _generate_dossier_pdf(name: str, email: str, type_dossier: str, regime: str, analysis: str, premium_pdf: bool = False) -> bytes:
+    """Wrapper for Dossier Express PDF generation."""
+    return _generate_secured_pdf(
+        analysis=analysis,
+        report_type="Dossier Express",
+        name=name,
+        email=email,
+        type_dossier=type_dossier,
+        regime=regime,
+        with_watermark=not premium_pdf,
+    )
 
 
 @api_router.post("/dossier-express/checkout")
 async def dossier_express_checkout(request: Request):
-    """Create Stripe checkout for Dossier Express (97 EUR)."""
+    """Create Stripe checkout for Dossier Express (97 EUR or 116 EUR with premium PDF)."""
     if not STRIPE_API_KEY:
         raise HTTPException(status_code=500, detail="Stripe non configure")
 
@@ -2514,8 +2680,11 @@ async def dossier_express_checkout(request: Request):
     origin_url = body.get("origin_url", "").rstrip('/')
     email = body.get("email", "")
     name = body.get("name", "")
+    premium_pdf = body.get("premium_pdf", False)
 
-    success_url = f"{origin_url}/dossier-express?payment=success&session_id={{CHECKOUT_SESSION_ID}}"
+    amount = 116.00 if premium_pdf else 97.00
+
+    success_url = f"{origin_url}/dossier-express?payment=success&session_id={{CHECKOUT_SESSION_ID}}&premium_pdf={'1' if premium_pdf else '0'}"
     cancel_url = f"{origin_url}/dossier-express?payment=cancelled"
 
     host_url = str(request.base_url).rstrip('/')
@@ -2523,15 +2692,16 @@ async def dossier_express_checkout(request: Request):
     stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
 
     checkout_request = CheckoutSessionRequest(
-        amount=97.00,
+        amount=amount,
         currency="eur",
         success_url=success_url,
         cancel_url=cancel_url,
         metadata={
-            "package_id": "dossier_express",
-            "package_name": "Dossier Express StratégiIA",
+            "package_id": "dossier_express_premium" if premium_pdf else "dossier_express",
+            "package_name": "Dossier Express + Version Pro" if premium_pdf else "Dossier Express StratégiIA",
             "customer_email": email,
-            "customer_name": name
+            "customer_name": name,
+            "premium_pdf": "1" if premium_pdf else "0"
         }
     )
 
@@ -2709,7 +2879,7 @@ async def strategiia_register_email(request: Request):
 
 @api_router.post("/strategiia/checkout")
 async def strategiia_checkout(request: Request):
-    """Create Stripe checkout for premium StratégiIA report (29€)"""
+    """Create Stripe checkout for premium StratégiIA report (29€ or 48€ with premium PDF)"""
     if not STRIPE_API_KEY:
         raise HTTPException(status_code=500, detail="Stripe non configuré")
 
@@ -2717,8 +2887,11 @@ async def strategiia_checkout(request: Request):
     origin_url = body.get("origin_url", "").rstrip('/')
     email = body.get("email", "")
     analysis_context = body.get("context", "")
+    premium_pdf = body.get("premium_pdf", False)
 
-    success_url = f"{origin_url}/simulateur?strategiia=success&session_id={{CHECKOUT_SESSION_ID}}"
+    amount = 48.00 if premium_pdf else 29.00
+
+    success_url = f"{origin_url}/simulateur?strategiia=success&session_id={{CHECKOUT_SESSION_ID}}&premium_pdf={'1' if premium_pdf else '0'}"
     cancel_url = f"{origin_url}/simulateur?strategiia=cancelled"
 
     host_url = str(request.base_url).rstrip('/')
@@ -2726,14 +2899,15 @@ async def strategiia_checkout(request: Request):
     stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
 
     checkout_request = CheckoutSessionRequest(
-        amount=29.00,
+        amount=amount,
         currency="eur",
         success_url=success_url,
         cancel_url=cancel_url,
         metadata={
-            "product": "strategiia_premium",
+            "product": "strategiia_premium_pdf" if premium_pdf else "strategiia_premium",
             "customer_email": email,
-            "context": analysis_context[:200]
+            "context": analysis_context[:200],
+            "premium_pdf": "1" if premium_pdf else "0"
         }
     )
 
@@ -2743,6 +2917,30 @@ async def strategiia_checkout(request: Request):
     except Exception as e:
         logger.error(f"StratégiIA checkout error: {e}")
         raise HTTPException(status_code=500, detail="Erreur de paiement")
+
+@api_router.post("/strategiia/generate-pdf")
+async def strategiia_generate_pdf(request: Request):
+    """Generate a secured StratégiIA PDF report server-side."""
+    body = await request.json()
+    analysis = body.get("analysis", "")
+    type_dossier = body.get("type_dossier", "")
+    regime = body.get("regime", "")
+    name = body.get("name", "")
+    premium_pdf = body.get("premium_pdf", False)
+
+    if not analysis:
+        raise HTTPException(status_code=400, detail="Analyse requise")
+
+    pdf_bytes = _generate_secured_pdf(
+        analysis=analysis,
+        report_type="StrategiIA",
+        name=name,
+        type_dossier=type_dossier,
+        regime=regime,
+        with_watermark=not premium_pdf,
+    )
+    encoded = base64.b64encode(pdf_bytes).decode("utf-8")
+    return {"pdf_base64": encoded, "filename": "strategiia-rapport.pdf"}
 
 # Admin: anonymized cases CRUD
 @api_router.get("/admin/cas-anonymises")

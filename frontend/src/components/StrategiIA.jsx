@@ -10,10 +10,9 @@ import { toast } from 'sonner';
 import {
   X, Brain, Loader2, FileText, Download, Lock,
   MessageSquare, Phone, Mail, Copy, Check,
-  AlertTriangle, CreditCard, ArrowRight, Sparkles, UserPlus
+  AlertTriangle, CreditCard, ArrowRight, Sparkles, UserPlus, Crown
 } from 'lucide-react';
 import axios from 'axios';
-import jsPDF from 'jspdf';
 import { DataConsentBox } from '@/components/DataConsentBox';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -37,81 +36,6 @@ const REGIMES = [
   { value: 'autre', label: "Autre" },
 ];
 
-const generatePremiumPDF = (analysis, formData) => {
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  const w = doc.internal.pageSize.getWidth();
-  const margin = 18;
-  const contentW = w - margin * 2;
-  const accent = [185, 78, 72];
-  const dark = [47, 44, 40];
-  const bg = [249, 247, 242];
-  doc.setFillColor(...accent);
-  doc.rect(0, 0, w, 42, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(18);
-  doc.setFont('helvetica', 'bold');
-  doc.text("Stratégie & Expertise Santé", margin, 16);
-  doc.setFontSize(14);
-  doc.text("StratégiIA — Rapport d'analyse", margin, 26);
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.text(new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }), w - margin, 16, { align: 'right' });
-  let y = 50;
-  doc.setFillColor(...bg);
-  doc.roundedRect(margin, y, contentW, 20, 3, 3, 'F');
-  doc.setTextColor(...dark);
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'bold');
-  const typeLabel = TYPES_DOSSIER.find(t => t.value === formData.type_dossier)?.label || formData.type_dossier;
-  const regimeLabel = REGIMES.find(r => r.value === formData.regime)?.label || formData.regime;
-  doc.text(`Type de dossier : ${typeLabel}`, margin + 5, y + 8);
-  doc.text(`Régime : ${regimeLabel}`, margin + 5, y + 15);
-  y += 28;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9.5);
-  for (const line of analysis.split('\n')) {
-    if (y > 270) { doc.addPage(); y = 20; }
-    if (line.startsWith('## ')) {
-      y += 4;
-      doc.setFillColor(...accent);
-      doc.rect(margin, y - 1, 3, 7, 'F');
-      doc.setTextColor(...accent);
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.text(line.replace('## ', ''), margin + 6, y + 4);
-      doc.setFontSize(9.5);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(...dark);
-      y += 10;
-    } else if (line.startsWith('- ') || line.startsWith('* ')) {
-      const wrapped = doc.splitTextToSize(`• ${line.slice(2)}`, contentW - 8);
-      doc.text(wrapped, margin + 5, y);
-      y += wrapped.length * 4.5 + 1.5;
-    } else if (line.trim()) {
-      const wrapped = doc.splitTextToSize(line, contentW);
-      doc.text(wrapped, margin, y);
-      y += wrapped.length * 4.5 + 1;
-    } else { y += 3; }
-  }
-  y += 6;
-  if (y > 260) { doc.addPage(); y = 20; }
-  doc.setFillColor(255, 243, 205);
-  doc.roundedRect(margin, y, contentW, 14, 2, 2, 'F');
-  doc.setTextColor(180, 120, 30);
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'bold');
-  doc.text("OUTIL D'AIDE À LA DÉCISION", margin + 4, y + 5);
-  doc.setFont('helvetica', 'normal');
-  doc.text("Les résultats sont indicatifs et ne constituent pas un conseil juridique.", margin + 4, y + 10);
-  doc.setFillColor(...dark);
-  doc.rect(0, 277, w, 20, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'bold');
-  doc.text("StratégiIA — Stratégie & Expertise Santé", margin, 285);
-  return doc;
-};
-
 export const StrategiIA = () => {
   const [isOpen, setIsOpen] = useState(false);
   // Steps: form -> loading -> teaser -> basic -> premium | quota_exceeded
@@ -127,6 +51,8 @@ export const StrategiIA = () => {
   const [remaining, setRemaining] = useState(null);
   const [registerLoading, setRegisterLoading] = useState(false);
   const [consent, setConsent] = useState(false);
+  const [premiumPdf, setPremiumPdf] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   // Analyze without email — result gated behind read wall
   const handleAnalyze = async () => {
@@ -178,17 +104,38 @@ export const StrategiIA = () => {
     try {
       const { data } = await axios.post(`${API}/strategiia/checkout`, {
         origin_url: window.location.origin, email,
-        context: `${typeDossier} - ${situation.slice(0, 100)}`
+        context: `${typeDossier} - ${situation.slice(0, 100)}`,
+        premium_pdf: premiumPdf
       });
       if (data.url) window.location.href = data.url;
     } catch { toast.error("Erreur de paiement. Réessayez."); }
   };
 
-  const handleDownloadPDF = useCallback(() => {
-    const doc = generatePremiumPDF(premiumResult, { type_dossier: typeDossier, regime });
-    doc.save('strategiia-rapport-complet.pdf');
-    toast.success("Rapport PDF téléchargé !");
-  }, [premiumResult, typeDossier, regime]);
+  const handleDownloadPDF = useCallback(async () => {
+    setPdfLoading(true);
+    try {
+      const { data } = await axios.post(`${API}/strategiia/generate-pdf`, {
+        analysis: premiumResult,
+        type_dossier: TYPES_DOSSIER.find(t => t.value === typeDossier)?.label || typeDossier,
+        regime: REGIMES.find(r => r.value === regime)?.label || regime,
+        name: email,
+        premium_pdf: premiumPdf
+      });
+      const byteCharacters = atob(data.pdf_base64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
+      const blob = new Blob([new Uint8Array(byteNumbers)], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = data.filename || 'strategiia-rapport.pdf';
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Rapport PDF téléchargé !");
+    } catch {
+      toast.error("Erreur lors de la génération du PDF.");
+    } finally { setPdfLoading(false); }
+  }, [premiumResult, typeDossier, regime, email, premiumPdf]);
 
   const getShareUrl = () => `${window.location.origin}/simulateur`;
   const getShareText = () => `J'ai analysé mon dossier avec StratégiIA sur Stratégie & Expertise Santé. Analysez le vôtre :`;
@@ -202,7 +149,7 @@ export const StrategiIA = () => {
     setStep('form');
     setTypeDossier(''); setRegime(''); setSituation('');
     setFullResult(''); setPremiumResult('');
-    setConsent(false);
+    setConsent(false); setPremiumPdf(false);
   };
 
   // Get teaser text — first quarter of the analysis
@@ -394,12 +341,23 @@ export const StrategiIA = () => {
                         <div className="flex items-center gap-2">
                           <Lock className="w-5 h-5 text-accent" />
                           <div>
-                            <h4 className="font-semibold text-sm">Rapport complet StratégiIA — 29€</h4>
-                            <p className="text-xs text-muted-foreground">Jurisprudences détaillées, stratégie complète, score de pertinence, PDF professionnel</p>
+                            <h4 className="font-semibold text-sm">Rapport complet StratégiIA — {premiumPdf ? '48€' : '29€'}</h4>
+                            <p className="text-xs text-muted-foreground">Jurisprudences détaillées, stratégie complète, score de pertinence, PDF sécurisé</p>
                           </div>
                         </div>
+                        <label className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-accent/40 cursor-pointer transition-colors" data-testid="strategiia-premium-pdf-option">
+                          <input type="checkbox" checked={premiumPdf} onChange={e => setPremiumPdf(e.target.checked)} className="mt-0.5 accent-accent" />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <Crown className="w-4 h-4 text-accent" />
+                              <span className="text-sm font-medium">Version professionnelle du rapport</span>
+                              <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">+19€</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">Rapport sans filigrane, mise en page optimisée pour impression ou transmission à un professionnel (avocat, médecin, expert).</p>
+                          </div>
+                        </label>
                         <Button onClick={handlePayForPremium} className="w-full rounded-lg gap-2 bg-accent hover:bg-accent/90" data-testid="strategiia-buy-premium">
-                          <CreditCard className="w-4 h-4" /> Obtenir le rapport complet — 29€
+                          <CreditCard className="w-4 h-4" /> Obtenir le rapport complet — {premiumPdf ? '48€' : '29€'}
                         </Button>
                       </CardContent>
                     </Card>
@@ -426,9 +384,14 @@ export const StrategiIA = () => {
                       <CardContent className="p-4 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
                           <FileText className="w-6 h-6 text-accent" />
-                          <div><p className="font-medium text-sm">Rapport PDF</p><p className="text-xs text-muted-foreground">Téléchargez votre analyse complète</p></div>
+                          <div>
+                            <p className="font-medium text-sm">Rapport PDF sécurisé</p>
+                            <p className="text-xs text-muted-foreground">{premiumPdf ? 'Version professionnelle sans filigrane' : 'Avec filigrane de protection'}</p>
+                          </div>
                         </div>
-                        <Button onClick={handleDownloadPDF} size="sm" className="gap-1.5 rounded-lg" data-testid="strategiia-download-pdf"><Download className="w-3.5 h-3.5" /> PDF</Button>
+                        <Button onClick={handleDownloadPDF} size="sm" className="gap-1.5 rounded-lg" disabled={pdfLoading} data-testid="strategiia-download-pdf">
+                          {pdfLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />} PDF
+                        </Button>
                       </CardContent>
                     </Card>
                     <div className="p-3 rounded-lg bg-yellow-50 border border-yellow-200/50">
