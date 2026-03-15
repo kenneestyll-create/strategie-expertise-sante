@@ -235,19 +235,33 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
       const allFiles = [...files, ...validFiles];
       onFilesChange(allFiles);
 
-      // Auto-trigger OCR on images if enabled
+      // Auto-trigger OCR → GPT-4o pipeline on images
       if (enableOCR) {
         const imageFiles = allFiles.filter(f => f.type?.startsWith('image/'));
         if (imageFiles.length > 0) {
           const result = await extractFromMultiple(imageFiles);
-          if (result && result.fields && Object.keys(result.fields).length > 0) {
+          if (result && result.raw && result.raw.trim().length > 10) {
+            // Phase 1 done, auto-trigger Phase 2 GPT-4o
+            setOcrResult({ ...result, enhancing: true });
+            if (onOcrResult) onOcrResult(result);
+            setAiEnhancing(true);
+            const aiResult = await enhanceWithAI(result.raw);
+            if (aiResult && aiResult.enhanced) {
+              const merged = { ...result, ...aiResult };
+              setOcrResult(merged);
+              if (onOcrResult) onOcrResult({ ...merged, applied: true });
+            } else {
+              setOcrResult(result);
+            }
+            setAiEnhancing(false);
+          } else if (result && result.fields && Object.keys(result.fields).length > 0) {
             setOcrResult(result);
             if (onOcrResult) onOcrResult(result);
           }
         }
       }
     }
-  }, [files, maxFiles, onFilesChange, enableOCR, extractFromMultiple, onOcrResult]);
+  }, [files, maxFiles, onFilesChange, enableOCR, extractFromMultiple, enhanceWithAI, onOcrResult]);
 
   const removeFile = useCallback((index) => {
     const updated = files.filter((_, i) => i !== index);
@@ -317,10 +331,23 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
       )}
 
       {/* OCR Progress */}
-      {enableOCR && <OcrProgressBar processing={ocrProcessing} progress={ocrProgress} />}
+      {enableOCR && (ocrProcessing || aiEnhancing) && (
+        <div className="space-y-2">
+          <OcrProgressBar processing={ocrProcessing} progress={ocrProgress} />
+          {aiEnhancing && !ocrProcessing && (
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-blue-50 border border-blue-200" data-testid="ai-enhancing-progress">
+              <ScanLine className="w-4 h-4 text-blue-600 animate-pulse flex-shrink-0" />
+              <div className="flex-1">
+                <span className="text-xs font-medium text-blue-700">Analyse intelligente GPT-4o en cours...</span>
+                <p className="text-[10px] text-blue-500">Extraction des dates, montants, organismes, type de document...</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* OCR Results */}
-      {enableOCR && ocrResult && !ocrProcessing && (
+      {enableOCR && ocrResult && !ocrProcessing && !aiEnhancing && (
         <div className="space-y-2">
           <OcrFieldsPreview
             ocrResult={ocrResult}
@@ -339,20 +366,19 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
                 if (aiResult) {
                   const merged = { ...ocrResult, ...aiResult };
                   setOcrResult(merged);
-                  if (onOcrResult) onOcrResult(merged);
+                  if (onOcrResult) onOcrResult({ ...merged, applied: true });
                 }
                 setAiEnhancing(false);
               }}
               data-testid="ocr-ai-enhance"
             >
-              {aiEnhancing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ScanLine className="w-3.5 h-3.5" />}
-              {aiEnhancing ? 'Analyse IA en cours...' : 'Enrichir avec GPT-4o'}
+              <ScanLine className="w-3.5 h-3.5" /> Enrichir avec GPT-4o
             </Button>
           )}
           {ocrResult.enhanced && (
             <div className="flex items-center gap-2 p-2 rounded-lg bg-blue-50 border border-blue-200" data-testid="ai-enhanced-badge">
               <CheckCircle className="w-4 h-4 text-blue-600" />
-              <span className="text-xs font-medium text-blue-700">Extraction enrichie par GPT-4o</span>
+              <span className="text-xs font-medium text-blue-700">Champs pré-remplis automatiquement par GPT-4o</span>
             </div>
           )}
         </div>

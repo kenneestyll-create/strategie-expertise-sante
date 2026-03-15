@@ -89,20 +89,30 @@ export const ClientDocuments = ({ token, onDocumentsChange }) => {
     for (const file of uploadFiles) {
       try {
         const base64 = await fileToBase64(file);
+        const ocrFields = lastOcr?.fields || {};
+        // Auto-determine category from AI extraction
+        let autoCategory = '';
+        if (ocrFields.type_dossier_detected?.length > 0) {
+          autoCategory = ocrFields.type_dossier_detected[0];
+        }
         await axios.post(`${API}/client/documents`, {
           filename: file.name,
           file_data: base64,
           mime_type: file.type,
           size: file.size,
-          ocr_fields: lastOcr?.fields || {},
-          tags: {},
+          ocr_fields: ocrFields,
+          tags: {
+            categorie: autoCategory,
+            organisme: ocrFields.organisme || '',
+            type_document: autoCategory || 'autre',
+          },
         }, { headers });
       } catch {
         toast.error(`Erreur upload: ${file.name}`);
       }
     }
 
-    toast.success(`${uploadFiles.length} document(s) uploadé(s)`);
+    toast.success(`${uploadFiles.length} document(s) uploadé(s) et analysé(s)`);
     setUploadFiles([]);
     setShowUpload(false);
     setLastOcr(null);

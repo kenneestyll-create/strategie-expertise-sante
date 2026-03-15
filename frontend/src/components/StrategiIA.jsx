@@ -268,16 +268,28 @@ export const StrategiIA = () => {
                         showGuide={true}
                         enableOCR={true}
                         onOcrResult={(result) => {
-                          if (result?.applied && result.fields) {
+                          if (result?.fields) {
                             const f = result.fields;
+                            // Auto-fill type de dossier
                             if (f.type_dossier_detected?.length > 0 && !typeDossier) {
                               setTypeDossier(f.type_dossier_detected[0]);
                             }
-                            if (f.contexte && !situation.trim()) {
-                              setSituation(f.contexte);
-                            }
-                            if (f.regime_detected && !regime) {
+                            // Auto-fill regime
+                            if (f.organisme && !regime) {
+                              const regimeMap = { MSA: 'agricole', MDPH: 'general', CPAM: 'general', CRAMIF: 'general' };
+                              setRegime(regimeMap[f.organisme] || 'general');
+                            } else if (f.regime_detected && !regime) {
                               setRegime(f.regime_detected);
+                            }
+                            // Auto-fill situation with resume + recommandations
+                            if (!situation.trim()) {
+                              let autoText = '';
+                              if (f.resume) autoText += f.resume;
+                              if (f.recommandations?.length > 0) {
+                                autoText += '\n\nPoints clés identifiés par l\'IA : ' + f.recommandations.join('. ');
+                              }
+                              if (f.contexte && !autoText) autoText = f.contexte;
+                              if (autoText) setSituation(autoText);
                             }
                           }
                         }}

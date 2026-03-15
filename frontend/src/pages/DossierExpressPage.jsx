@@ -378,13 +378,38 @@ export const DossierExpressPage = () => {
                   showGuide={true}
                   enableOCR={true}
                   onOcrResult={(result) => {
-                    if (result?.applied && result.fields) {
+                    if (result?.fields) {
                       const f = result.fields;
-                      if (f.contexte && !form.situation.trim()) {
-                        setForm(prev => ({ ...prev, situation: f.contexte }));
+                      // Auto-fill type de dossier
+                      if (f.type_dossier_detected?.length > 0 && !form.type_dossier) {
+                        const typeMap = { at: 'Accident du travail (AT)', mp: 'Maladie professionnelle (MP)', mdph: 'Demande MDPH / AAH', expertise: 'Expertise médicale', ipp: 'Contestation taux IPP', assurance: 'Litige assurance / protection juridique' };
+                        const matched = typeMap[f.type_dossier_detected[0]];
+                        if (matched) setForm(prev => ({ ...prev, type_dossier: matched }));
                       }
+                      // Auto-fill regime from organisme
+                      if (f.organisme && !form.regime) {
+                        const regimeMap = { MSA: 'Régime agricole (MSA)' };
+                        const matched = regimeMap[f.organisme];
+                        if (matched) setForm(prev => ({ ...prev, regime: matched }));
+                        else setForm(prev => ({ ...prev, regime: 'Régime général' }));
+                      }
+                      // Auto-fill name
                       if (f.noms?.length > 0 && !form.name.trim()) {
                         setForm(prev => ({ ...prev, name: f.noms[0] }));
+                      }
+                      // Auto-fill situation with resume + recommandations
+                      if (!form.situation.trim()) {
+                        let autoText = '';
+                        if (f.resume) autoText += f.resume;
+                        if (f.recommandations?.length > 0) {
+                          autoText += '\n\nPoints identifiés : ' + f.recommandations.join('. ');
+                        }
+                        if (f.contexte && !autoText) autoText = f.contexte;
+                        if (autoText) setForm(prev => ({ ...prev, situation: autoText }));
+                      }
+                      // Auto-fill documents_text with extracted raw text
+                      if (result.raw) {
+                        setForm(prev => ({ ...prev, documents_text: result.raw.substring(0, 3000) }));
                       }
                     }
                   }}

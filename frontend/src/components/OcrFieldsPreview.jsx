@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import {
   ScanLine, CheckCircle, Calendar, DollarSign, FileText,
-  User, Hash, Target, Loader2, ChevronDown, ChevronUp, Pencil, X, Sparkles
+  User, Hash, Target, Loader2, ChevronDown, ChevronUp, X, Sparkles,
+  Building2, MessageSquare, Lightbulb
 } from 'lucide-react';
 
 const FieldRow = ({ icon: Icon, label, values, color = 'text-foreground' }) => {
@@ -25,6 +25,19 @@ const FieldRow = ({ icon: Icon, label, values, color = 'text-foreground' }) => {
   );
 };
 
+const TextBlock = ({ icon: Icon, label, text, color = 'text-foreground' }) => {
+  if (!text) return null;
+  return (
+    <div className="flex items-start gap-2.5 py-1.5">
+      <Icon className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${color}`} />
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
+        <p className="text-xs leading-relaxed mt-0.5">{text}</p>
+      </div>
+    </div>
+  );
+};
+
 export const OcrFieldsPreview = ({ ocrResult, onApplyFields, onDismiss, className = '' }) => {
   const [expanded, setExpanded] = useState(true);
 
@@ -33,7 +46,8 @@ export const OcrFieldsPreview = ({ ocrResult, onApplyFields, onDismiss, classNam
   const { fields, confidence, source } = ocrResult;
   const hasFields = Object.keys(fields).length > 0 && (
     fields.dates?.length || fields.montants?.length || fields.references?.length ||
-    fields.noms?.length || fields.taux_ipp?.length || fields.type_dossier_detected?.length || fields.numero_ss
+    fields.noms?.length || fields.taux_ipp?.length || fields.type_dossier_detected?.length || 
+    fields.numero_ss || fields.organisme || fields.resume || fields.recommandations?.length
   );
 
   if (!hasFields) return null;
@@ -91,6 +105,28 @@ export const OcrFieldsPreview = ({ ocrResult, onApplyFields, onDismiss, classNam
             )}
             {fields.taux_ipp?.length > 0 && (
               <FieldRow icon={Target} label="Taux IPP" values={fields.taux_ipp.map(t => `${t}%`)} color="text-red-500" />
+            )}
+            {fields.organisme && (
+              <FieldRow icon={Building2} label="Organisme émetteur" values={[fields.organisme]} color="text-indigo-600" />
+            )}
+            {fields.resume && (
+              <TextBlock icon={MessageSquare} label="Résumé du document" text={fields.resume} color="text-slate-600" />
+            )}
+            {fields.recommandations?.length > 0 && (
+              <div className="flex items-start gap-2.5 py-1.5">
+                <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-amber-500" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Recommandations IA</p>
+                  <ul className="mt-0.5 space-y-0.5">
+                    {fields.recommandations.map((r, i) => (
+                      <li key={i} className="text-xs leading-relaxed flex items-start gap-1.5">
+                        <CheckCircle className="w-3 h-3 text-green-500 mt-0.5 flex-shrink-0" />
+                        {r}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             )}
 
             {/* Apply button */}

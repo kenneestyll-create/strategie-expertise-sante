@@ -160,6 +160,41 @@ async def upload_client_document(request: Request, client: dict = Depends(get_cu
     if size > 10 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Fichier trop volumineux (max 10 Mo)")
 
+    # Auto-extract with GPT-4o if no OCR fields provided and AI-extractable content exists
+    ai_enhanced = False
+    if not ocr_fields or not any(ocr_fields.get(k) for k in ["type_dossier_detected", "noms", "dates", "organisme"]):
+        try:
+            # For PDFs: extract raw text from base64 data and send to GPT-4o
+            file_bytes = base64.b64decode(file_data)
+            raw_text = ""
+            if mime_type == "application/pdf":
+                try:
+                    import io
+                    # Try simple text extraction from PDF
+                    text_content = file_bytes.decode('latin-1', errors='ignore')
+                    # Extract text between stream/endstream markers (basic PDF text)
+                    import re
+                    text_parts = re.findall(r'\(([^)]+)\)', text_content)
+                    raw_text = ' '.join(text_parts)[:5000]
+                except Exception:
+                    pass
+            elif mime_type and mime_type.startswith("text/"):
+                raw_text = file_bytes.decode('utf-8', errors='ignore')[:5000]
+
+            if raw_text and len(raw_text.strip()) > 20:
+                from utils.ocr_gpt import extract_fields_gpt4o
+                ai_result = await extract_fields_gpt4o(raw_text)
+                if ai_result.get("enhanced") and ai_result.get("fields"):
+                    ocr_fields = ai_result["fields"]
+                    ai_enhanced = True
+                    logger.info(f"Auto GPT-4o extraction for {filename}: {list(ocr_fields.keys())}")
+        except Exception as e:
+            logger.warning(f"Auto GPT-4o extraction failed for {filename}: {e}")
+
+    # Use organisme from GPT-4o if available
+    if ocr_fields.get("organisme") and not manual_tags.get("organisme"):
+        manual_tags["organisme"] = ocr_fields["organisme"]
+
     category = manual_tags.get("categorie", "autre")
     if category == "autre" and ocr_fields.get("type_dossier_detected"):
         type_map = {"at": "at", "mp": "mp", "mdph": "mdph", "expertise": "expertise", "ipp": "expertise"}
@@ -169,6 +204,8 @@ async def upload_client_document(request: Request, client: dict = Depends(get_cu
                 break
 
     organisme = manual_tags.get("organisme", "")
+    if not organisme and ocr_fields.get("organisme"):
+        organisme = ocr_fields["organisme"]
     if not organisme and ocr_fields:
         text_lower = ocr_fields.get("contexte", "").lower()
         for org in ["CPAM", "CRAMIF", "MSA", "MDPH", "CNSA", "TASS", "TCI"]:
@@ -191,7 +228,7 @@ async def upload_client_document(request: Request, client: dict = Depends(get_cu
         "storage_path": storage_path,
         "file_data": file_data if not storage_path else None,
         "tags": {"type_document": manual_tags.get("type_document", category), "date_document": manual_tags.get("date_document", ocr_fields.get("dates", [None])[0] if ocr_fields.get("dates") else None), "organisme": organisme, "noms": ocr_fields.get("noms", []), "references": ocr_fields.get("references", []), "montants": ocr_fields.get("montants", []), "numero_ss": ocr_fields.get("numero_ss"), "taux_ipp": ocr_fields.get("taux_ipp", [])},
-        "ocr_fields": ocr_fields, "status": "en_attente",
+        "ocr_fields": ocr_fields, "ai_enhanced": ai_enhanced, "status": "en_attente",
         "versions": [{"version": 1, "filename": filename, "uploaded_at": datetime.now(timezone.utc).isoformat()}],
         "created_at": datetime.now(timezone.utc).isoformat(), "updated_at": datetime.now(timezone.utc).isoformat(),
     }
