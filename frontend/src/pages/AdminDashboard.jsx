@@ -45,8 +45,202 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
+import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { BarChart3 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+const CHART_COLORS = ['#b8860b', '#1a1a2e', '#d4a843', '#2d2d44', '#e8c547', '#444466', '#c49b2a', '#5a5a7a'];
+
+const formatEuro = (v) => `${Number(v).toLocaleString('fr-FR')}€`;
+const formatShortDate = (d) => {
+  if (!d) return '';
+  const parts = d.split('-');
+  return `${parts[2]}/${parts[1]}`;
+};
+
+const KpiCard = ({ label, value, sub, color = 'text-foreground' }) => (
+  <Card data-testid={`kpi-${label.toLowerCase().replace(/\s+/g, '-')}`}>
+    <CardContent className="py-4 px-5">
+      <p className="text-xs text-muted-foreground uppercase tracking-wide">{label}</p>
+      <p className={`text-2xl font-bold mt-1 ${color}`}>{value}</p>
+      {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
+    </CardContent>
+  </Card>
+);
+
+const AnalyticsTab = ({ data, period, onPeriodChange }) => {
+  const { kpis, time_series, packages, analyse_types } = data;
+
+  return (
+    <div className="space-y-6">
+      {/* Period selector */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <BarChart3 className="w-5 h-5 text-emerald-600" />
+          Tableau de bord analytique
+        </h2>
+        <div className="flex gap-1 bg-muted rounded-lg p-1" data-testid="analytics-period-selector">
+          {[{v: '7d', l: '7 jours'}, {v: '30d', l: '30 jours'}, {v: '90d', l: '90 jours'}].map(p => (
+            <button
+              key={p.v}
+              onClick={() => onPeriodChange(p.v)}
+              className={`px-3 py-1 text-xs rounded-md transition-colors ${period === p.v ? 'bg-background shadow text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+              data-testid={`period-${p.v}`}
+            >
+              {p.l}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* KPI Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <KpiCard label="Revenus" value={formatEuro(kpis.total_revenue)} sub={`${formatEuro(kpis.pending_revenue)} en attente`} color="text-emerald-600" />
+        <KpiCard label="Contacts" value={kpis.total_contacts} />
+        <KpiCard label="Clients inscrits" value={kpis.total_clients} sub={`Taux conversion: ${kpis.conversion_rate}%`} />
+        <KpiCard label="Analyses IA" value={kpis.total_analyses} sub={`${kpis.total_dossiers} dossiers express`} />
+        <KpiCard label="Forum" value={kpis.total_forum_users} sub={`${kpis.total_chatbot_sessions} sessions chatbot`} />
+      </div>
+
+      {/* Charts row 1: Activity over time */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Activité (contacts & analyses)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64" data-testid="chart-activity">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={time_series} margin={{ top: 5, right: 5, left: -10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                  <XAxis dataKey="date" tickFormatter={formatShortDate} tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+                  <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+                  <Tooltip labelFormatter={(v) => `Date: ${v}`} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Bar dataKey="contacts" name="Contacts" fill="#1a1a2e" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="analyses" name="Analyses" fill="#b8860b" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="clients" name="Inscriptions" fill="#d4a843" radius={[2, 2, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Revenus (€)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64" data-testid="chart-revenue">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={time_series} margin={{ top: 5, right: 5, left: -10, bottom: 5 }}>
+                  <defs>
+                    <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#b8860b" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#b8860b" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                  <XAxis dataKey="date" tickFormatter={formatShortDate} tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}€`} />
+                  <Tooltip formatter={(v) => [`${v}€`, 'Revenus']} labelFormatter={(v) => `Date: ${v}`} />
+                  <Area type="monotone" dataKey="revenue" stroke="#b8860b" fill="url(#revenueGrad)" strokeWidth={2} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts row 2: Distributions */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Répartition par prestation</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64" data-testid="chart-packages">
+              {packages.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={packages} dataKey="revenue" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({name, percent}) => `${name.substring(0, 15)}${name.length > 15 ? '...' : ''} (${(percent*100).toFixed(0)}%)`} labelLine={{ strokeWidth: 1 }} style={{ fontSize: 10 }}>
+                      {packages.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip formatter={(v) => [`${v}€`, 'Revenus']} />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-center text-muted-foreground pt-20 text-sm">Aucune transaction</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Types d'analyses IA</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64" data-testid="chart-analyse-types">
+              {analyse_types.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={analyse_types} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                    <XAxis type="number" tick={{ fontSize: 10 }} allowDecimals={false} />
+                    <YAxis type="category" dataKey="type" tick={{ fontSize: 10 }} width={60} />
+                    <Tooltip />
+                    <Bar dataKey="count" name="Analyses" fill="#1a1a2e" radius={[0, 4, 4, 0]}>
+                      {analyse_types.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-center text-muted-foreground pt-20 text-sm">Aucune analyse</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Revenue table */}
+      {packages.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Détail des prestations</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm" data-testid="analytics-packages-table">
+                <thead>
+                  <tr className="border-b text-left text-muted-foreground">
+                    <th className="pb-2 font-medium">Prestation</th>
+                    <th className="pb-2 font-medium text-center">Transactions</th>
+                    <th className="pb-2 font-medium text-right">Revenus</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {packages.map((pkg, i) => (
+                    <tr key={i} className="border-b last:border-0">
+                      <td className="py-2">{pkg.name}</td>
+                      <td className="py-2 text-center">{pkg.count}</td>
+                      <td className="py-2 text-right font-medium">{formatEuro(pkg.revenue)}</td>
+                    </tr>
+                  ))}
+                  <tr className="font-semibold">
+                    <td className="pt-3">Total</td>
+                    <td className="pt-3 text-center">{packages.reduce((s, p) => s + p.count, 0)}</td>
+                    <td className="pt-3 text-right text-emerald-600">{formatEuro(packages.reduce((s, p) => s + p.revenue, 0))}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
 
 export const AdminDashboard = () => {
   const [contacts, setContacts] = useState([]);
@@ -61,6 +255,8 @@ export const AdminDashboard = () => {
   const [strategiiaData, setStrategiiaData] = useState({ total_analyses: 0, premium: 0, total_cases: 0, recent: [] });
   const [casAnonymises, setCasAnonymises] = useState({ items: [], total: 0 });
   const [premiumAnalyses, setPremiumAnalyses] = useState({ items: [], stats: { total: 0, en_attente: 0, en_cours: 0, termine: 0 } });
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [analyticsPeriod, setAnalyticsPeriod] = useState('30d');
   const [newCas, setNewCas] = useState({ type_dossier: '', regime: '', duree: '', strategie: '', resultat: '', score_pertinence: 0, notes: '' });
   const [editCas, setEditCas] = useState(null);
   const [casFilter, setCasFilter] = useState('');
@@ -92,7 +288,7 @@ export const AdminDashboard = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [contactsRes, statsRes, avisRes, avisStatsRes, referralsRes, bookingsRes, relanceRes, clientsRes, alertesRes, strategiiaRes, casRes, premiumRes] = await Promise.all([
+      const [contactsRes, statsRes, avisRes, avisStatsRes, referralsRes, bookingsRes, relanceRes, clientsRes, alertesRes, strategiiaRes, casRes, premiumRes, analyticsRes] = await Promise.all([
         axios.get(`${API}/admin/contacts`, axiosConfig),
         axios.get(`${API}/admin/stats`, axiosConfig),
         axios.get(`${API}/admin/avis`, axiosConfig),
@@ -104,7 +300,8 @@ export const AdminDashboard = () => {
         axios.get(`${API}/admin/alertes-urgentes`, axiosConfig).catch(() => ({ data: { items: [], total: 0, non_traite: 0 } })),
         axios.get(`${API}/admin/strategiia/stats`, axiosConfig).catch(() => ({ data: { total_analyses: 0, premium: 0, total_cases: 0, recent: [] } })),
         axios.get(`${API}/admin/cas-anonymises`, axiosConfig).catch(() => ({ data: { items: [], total: 0 } })),
-        axios.get(`${API}/admin/premium-analyses`, axiosConfig).catch(() => ({ data: { items: [], stats: { total: 0, en_attente: 0, en_cours: 0, termine: 0 } } }))
+        axios.get(`${API}/admin/premium-analyses`, axiosConfig).catch(() => ({ data: { items: [], stats: { total: 0, en_attente: 0, en_cours: 0, termine: 0 } } })),
+        axios.get(`${API}/admin/analytics?period=30d`, axiosConfig).catch(() => ({ data: null }))
       ]);
       setContacts(contactsRes.data);
       setStats(statsRes.data);
@@ -118,6 +315,7 @@ export const AdminDashboard = () => {
       setStrategiiaData(strategiiaRes.data);
       setCasAnonymises(casRes.data);
       setPremiumAnalyses(premiumRes.data);
+      setAnalyticsData(analyticsRes.data);
     } catch (error) {
       console.error('Erreur:', error);
       if (error.response?.status === 401) {
@@ -314,7 +512,7 @@ export const AdminDashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-5xl grid-cols-8">
+          <TabsList className="grid w-full max-w-6xl" style={{gridTemplateColumns: 'repeat(10, 1fr)'}}>
             <TabsTrigger value="contacts" className="gap-1 text-xs sm:text-sm">
               <Users className="w-3 h-3 sm:w-4 sm:h-4" />
               Contacts
@@ -356,6 +554,10 @@ export const AdminDashboard = () => {
               {premiumAnalyses.stats.en_attente > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">{premiumAnalyses.stats.en_attente}</span>
               )}
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="gap-1 text-xs sm:text-sm" data-testid="tab-analytics">
+              <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-600" />
+              Analytique
             </TabsTrigger>
           </TabsList>
 
@@ -1344,6 +1546,25 @@ export const AdminDashboard = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics" className="space-y-6" data-testid="analytics-tab-content">
+            {analyticsData ? (
+              <AnalyticsTab 
+                data={analyticsData} 
+                period={analyticsPeriod} 
+                onPeriodChange={async (p) => {
+                  setAnalyticsPeriod(p);
+                  try {
+                    const res = await axios.get(`${API}/admin/analytics?period=${p}`, axiosConfig);
+                    setAnalyticsData(res.data);
+                  } catch {}
+                }} 
+              />
+            ) : (
+              <Card><CardContent className="py-12 text-center text-muted-foreground">Chargement des analytiques...</CardContent></Card>
+            )}
           </TabsContent>
         </Tabs>
       </main>

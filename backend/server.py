@@ -1732,6 +1732,138 @@ async def get_stats(admin: dict = Depends(get_current_admin)):
         "traite": traite
     }
 
+@api_router.get("/admin/analytics")
+async def get_analytics(
+    period: str = "30d",
+    admin: dict = Depends(get_current_admin)
+):
+    """Advanced analytics dashboard with time-series data."""
+    days = 30 if period == "30d" else (7 if period == "7d" else 90)
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+
+    # --- KPIs ---
+    total_contacts = await db.contacts.count_documents({})
+    total_clients = await db.client_users.count_documents({})
+    total_analyses = await db.strategiia_analyses.count_documents({})
+    total_dossiers = await db.dossier_express.count_documents({})
+    total_forum_users = await db.forum_users.count_documents({})
+    total_chatbot = await db.chatbot_sessions.count_documents({})
+
+    # Revenue from completed payments
+    revenue_pipeline = [
+        {"$match": {"payment_status": {"$in": ["completed", "paid"]}}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+    ]
+    revenue_result = await db.payment_transactions.aggregate(revenue_pipeline).to_list(1)
+    total_revenue = revenue_result[0]["total"] if revenue_result else 0
+
+    # Pending revenue
+    pending_pipeline = [
+        {"$match": {"payment_status": {"$in": ["pending", "initiated"]}}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+    ]
+    pending_result = await db.payment_transactions.aggregate(pending_pipeline).to_list(1)
+    pending_revenue = pending_result[0]["total"] if pending_result else 0
+
+    # --- Time series: Contacts per day ---
+    contacts_ts = []
+    contacts_all = await db.contacts.find(
+        {"created_at": {"$gte": cutoff}}, {"_id": 0, "created_at": 1}
+    ).to_list(1000)
+    contacts_by_day = {}
+    for c in contacts_all:
+        day = str(c.get("created_at", ""))[:10]
+        if day:
+            contacts_by_day[day] = contacts_by_day.get(day, 0) + 1
+
+    # --- Time series: Revenue per day ---
+    payments_all = await db.payment_transactions.find(
+        {"created_at": {"$gte": cutoff}}, {"_id": 0, "created_at": 1, "amount": 1, "payment_status": 1}
+    ).to_list(1000)
+    revenue_by_day = {}
+    for p in payments_all:
+        day = str(p.get("created_at", ""))[:10]
+        if day and p.get("payment_status") in ("completed", "paid"):
+            revenue_by_day[day] = revenue_by_day.get(day, 0) + p.get("amount", 0)
+
+    # --- Time series: Analyses per day ---
+    analyses_all = await db.strategiia_analyses.find(
+        {"created_at": {"$gte": cutoff}}, {"_id": 0, "created_at": 1}
+    ).to_list(1000)
+    analyses_by_day = {}
+    for a in analyses_all:
+        day = str(a.get("created_at", ""))[:10]
+        if day:
+            analyses_by_day[day] = analyses_by_day.get(day, 0) + 1
+
+    # --- Time series: Client registrations per day ---
+    clients_all = await db.client_users.find(
+        {"created_at": {"$gte": cutoff}}, {"_id": 0, "created_at": 1}
+    ).to_list(1000)
+    clients_by_day = {}
+    for cl in clients_all:
+        day = str(cl.get("created_at", ""))[:10]
+        if day:
+            clients_by_day[day] = clients_by_day.get(day, 0) + 1
+
+    # Build unified time series
+    all_days = set()
+    all_days.update(contacts_by_day.keys(), revenue_by_day.keys(), analyses_by_day.keys(), clients_by_day.keys())
+    # Fill missing days in period
+    for i in range(days):
+        d = (datetime.now(timezone.utc) - timedelta(days=days - 1 - i)).strftime("%Y-%m-%d")
+        all_days.add(d)
+    time_series = sorted([
+        {
+            "date": d,
+            "contacts": contacts_by_day.get(d, 0),
+            "revenue": revenue_by_day.get(d, 0),
+            "analyses": analyses_by_day.get(d, 0),
+            "clients": clients_by_day.get(d, 0),
+        }
+        for d in all_days
+    ], key=lambda x: x["date"])
+
+    # --- Distribution: Payments by package ---
+    package_pipeline = [
+        {"$group": {"_id": "$package_name", "count": {"$sum": 1}, "revenue": {"$sum": "$amount"}}},
+        {"$sort": {"revenue": -1}}
+    ]
+    package_dist = await db.payment_transactions.aggregate(package_pipeline).to_list(20)
+    packages = [{"name": p["_id"] or "Inconnu", "count": p["count"], "revenue": p["revenue"]} for p in package_dist]
+
+    # --- Distribution: Analyses by type ---
+    type_pipeline = [
+        {"$group": {"_id": "$type_dossier", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}}
+    ]
+    type_dist = await db.strategiia_analyses.aggregate(type_pipeline).to_list(20)
+    analyse_types = [{"type": t["_id"] or "Inconnu", "count": t["count"]} for t in type_dist]
+
+    # --- Conversion: contacts → clients ---
+    conversion_rate = round((total_clients / total_contacts * 100), 1) if total_contacts > 0 else 0
+
+    # --- Calculator usage ---
+    calc_count = await db.calculator_usage.count_documents({})
+
+    return {
+        "kpis": {
+            "total_contacts": total_contacts,
+            "total_clients": total_clients,
+            "total_analyses": total_analyses,
+            "total_dossiers": total_dossiers,
+            "total_forum_users": total_forum_users,
+            "total_chatbot_sessions": total_chatbot,
+            "total_revenue": total_revenue,
+            "pending_revenue": pending_revenue,
+            "conversion_rate": conversion_rate,
+            "calculator_usage": calc_count,
+        },
+        "time_series": time_series,
+        "packages": packages,
+        "analyse_types": analyse_types,
+    }
+
 # FAQ Admin Routes
 @api_router.post("/admin/faq", response_model=FAQItem)
 async def create_faq(input_data: FAQItemCreate, admin: dict = Depends(get_current_admin)):
