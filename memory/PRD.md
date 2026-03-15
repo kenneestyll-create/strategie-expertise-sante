@@ -13,47 +13,48 @@ Web application in French providing advice and support for occupational diseases
 - IPP & AAH calculators, Global search (fuse.js + anchors + highlighting)
 - StratégiIA (read wall + relevance scoring + OCR), Dossier Express (AI analysis + OCR)
 - Stripe & PayPal (test/sandbox), Resend (ACTIVE), Abandoned cart emails
-- Secured PDF Reports (watermarks, premium +19€), Analyse Premium (+29€/+49€)
-- Navigation (scroll-to-top, anchoring), RGPD (DataConsentBox, privacy policy)
-- StratégiIA Phase 2 (Admin case CRUD, bulk import), Phase 3 (relevance scoring)
-- Analytics Dashboard (KPIs, recharts charts, period selector)
-- Client Notification System (5 types, email + in-app, preferences, admin notify)
-- Document Quality Control (format validation, checklist, scan guide, rejection notifications)
-- OCR System Phase 1 (Tesseract.js + regex extraction, pre-fill forms)
-- PageSpeed/SEO (Schema.org, sitemap, code splitting, lazy loading)
-- Homepage: animated counters, Dossier Express banner
+- Secured PDF Reports, Analyse Premium (+29€/+49€), Navigation & Search, RGPD
+- StratégiIA Phase 2 (Admin case CRUD), Phase 3 (relevance scoring)
+- Analytics Dashboard, Client Notification System (5 types)
+- Document Quality Control, OCR Phase 1 (Tesseract.js)
+- Intelligent Document History
+- PageSpeed/SEO, Homepage animations
 
-### OCR System — Phase 1 (Completed — March 15, 2026)
-- **Frontend (`useOCR.js`):** Tesseract.js v7 worker with French language (fra)
-  - Auto-triggers on image upload (JPG/PNG) in DocumentUploader (enableOCR=true)
-  - `parseFields()` extracts: dates, montants, references, numero_ss, noms, taux_ipp, type_dossier_detected, contexte
-  - Progress bar with percentage during processing
-  - Manual "Relancer l'extraction OCR" button
-- **Frontend (`OcrFieldsPreview.jsx`):** Shows extracted fields in categorized badges
-  - Icons per field type (Calendar, DollarSign, Hash, User, Target)
-  - Confidence percentage badge, source indicator (Tesseract/GPT-4o)
-  - "Pré-remplir le formulaire" button — applies fields to parent form
-  - Dismiss button to close preview
-- **StrategiIA integration:** OCR pre-fills `type_dossier`, `situation`, `regime`
-- **Dossier Express integration:** OCR pre-fills `situation`, `name`
-- **Backend (`POST /api/documents/extract-fields`):** Server-side regex extraction
-  - Same field extraction as frontend (dates, amounts, refs, SSN, names, IPP, types)
-  - Returns `enhanced: false` (Phase 1), ready for Phase 2 GPT-4o
-- **Testing:** 100% pass (iteration_38 — 22 backend + 10 frontend + 3 code review)
-
-### OCR Phase 2 (Architecture Prepared, Pending LLM Budget)
-- Backend endpoint ready: `POST /api/documents/extract-fields` with `enhanced` flag
-- When GPT-4o budget available: AI-powered extraction with higher accuracy
-- Coupling with Analyse Premium for expert validation of OCR results
+### Intelligent Document History (Completed — March 15, 2026)
+- **Backend CRUD (`client_documents` collection):**
+  - `POST /api/client/documents` — upload with auto-categorization from OCR fields
+  - `GET /api/client/documents` — list with filters (category, status, organisme, search) + stats
+  - `GET /api/client/documents/{id}` — single document with file_data for download
+  - `PATCH /api/client/documents/{id}` — update category, tags, status
+  - `DELETE /api/client/documents/{id}` — delete document
+  - `POST /api/client/documents/{id}/version` — add new version (sets status to "corrigé")
+- **Auto-tagging:**
+  - Category auto-detection from OCR `type_dossier_detected` → at, mp, mdph, expertise
+  - Organisme auto-detection from OCR context (CPAM, CRAMIF, MSA, MDPH, CNSA, TASS, TCI)
+  - Date, references, amounts, SSN, IPP rates from OCR fields
+- **7 categories:** AT, MP, MDPH/AAH, Expertises médicales, Courriers CPAM, Documents juridiques, Autres
+- **4 statuses:** en_attente, validé, illisible, corrigé
+- **Frontend (ClientDocuments.jsx):**
+  - "Mes Documents" tab in client portal (alongside "Mes Dossiers")
+  - Stats cards: total, validés, en attente, illisibles
+  - Two views: chronological list + category folders
+  - Search bar, category filter, status filter
+  - Upload panel with OCR-enabled DocumentUploader
+  - Edit tags modal: category, organisme, date_document
+  - Document cards: filename, ext badge, status badge, category badge, date, organisme
+  - Download, edit, delete actions on hover
+  - Version tracking (vN displayed)
+- **File storage:** base64 in MongoDB (< 10MB per file)
+- **Testing:** 100% pass (iteration_39 — 23 backend + 10 frontend)
 
 ## Known Limitations
 - LLM budget exceeded (needs recharge)
 - Stripe/PayPal in test/sandbox mode
 - Resend sender: onboarding@resend.dev
-- OCR Phase 1 (Tesseract.js) less accurate on complex documents — Phase 2 GPT-4o planned
+- OCR Phase 1 (Tesseract.js) less accurate on complex docs — Phase 2 GPT-4o planned
 
 ## Pending (Blocked on User Action)
-- P1: Recharge Emergent LLM Key (unlocks AI features + OCR Phase 2)
+- P1: Recharge Emergent LLM Key
 - P1: HubSpot Portal ID
 - P2: Production Stripe/PayPal keys
 - P3: Legal content finalization
@@ -64,6 +65,7 @@ Web application in French providing advice and support for occupational diseases
 - Browser Push via Service Worker (Web Push API)
 - Legal content finalization
 - Verified Resend domain
+- Object storage migration (for production file hosting)
 
 ## Credentials
 - Admin: admin@accompagn-sante.fr / Admin2024!
