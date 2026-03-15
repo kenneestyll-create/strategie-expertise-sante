@@ -4,4 +4,4 @@ Disallow: /admin
 Disallow: /admin/login
 Disallow: /espace-client
 
-Sitemap: https://analyse-sante.preview.emergentagent.com/sitemap.xml
+Sitemap: https://dossier-preview.preview.emergentagent.com/sitemap.xml

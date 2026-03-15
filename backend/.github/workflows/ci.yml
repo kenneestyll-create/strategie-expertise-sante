@@ -1,0 +1,52 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install emergentintegrations --extra-index-url https://d33sy5i8bnduwe.cloudfront.net/simple/
+
+      - name: Run tests with coverage
+        working-directory: backend
+        env:
+          MONGO_URL: mongodb://localhost:27017
+          DB_NAME: ci_test_database
+          CORS_ORIGINS: "*"
+          EMERGENT_LLM_KEY: test-key
+          STRIPE_API_KEY: sk_test_fake
+          PAYPAL_CLIENT_ID: sb
+          PAYPAL_SECRET: sb
+          PAYPAL_MODE: sandbox
+          RESEND_API_KEY: re_test_fake
+          SENDER_EMAIL: test@test.com
+        run: |
+          python -m pytest --cov=. --cov-report=term-missing -q

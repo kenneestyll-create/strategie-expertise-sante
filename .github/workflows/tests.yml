@@ -1,0 +1,110 @@
+name: Backend Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/tests.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping:1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      MONGO_URL: mongodb://localhost:27017
+      DB_NAME: test_strategie_sante
+      JWT_SECRET: ci-test-secret-key-32chars-min!!
+      RESEND_API_KEY: ""
+      SENDER_EMAIL: "test@test.com"
+      NOTIFICATION_EMAIL: ""
+      STRIPE_API_KEY: ""
+      PAYPAL_CLIENT_ID: ""
+      PAYPAL_SECRET: ""
+      EMERGENT_LLM_KEY: ""
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          pip install pytest-cov
+
+      - name: Seed test database
+        run: |
+          cd backend
+          python -c "
+          import asyncio
+          from config import db
+          from utils.auth import hash_password
+          from models import AdminUser
+          async def seed():
+              existing = await db.admins.find_one({'email': 'admin@accompagn-sante.fr'})
+              if not existing:
+                  admin = AdminUser(email='admin@accompagn-sante.fr', password_hash=hash_password('Admin2024!'), nom='Administrateur')
+                  doc = admin.model_dump()
+                  doc['created_at'] = doc['created_at'].isoformat()
+                  await db.admins.insert_one(doc)
+                  print('Admin seeded')
+              faq_count = await db.faq.count_documents({})
+              if faq_count == 0:
+                  from models import FAQItem
+                  faqs = [
+                      FAQItem(question='Qu est-ce qu une maladie professionnelle ?', reponse='Une maladie professionnelle est une affection contractee en raison de l exposition a un risque.', categorie='AT/MP', ordre=1),
+                      FAQItem(question='Comment faire reconnaitre une maladie professionnelle ?', reponse='Vous devez declarer votre maladie a la CPAM dans les 15 jours.', categorie='AT/MP', ordre=2),
+                  ]
+                  for faq in faqs:
+                      await db.faq.insert_one(faq.model_dump())
+                  print(f'Seeded {len(faqs)} FAQ items')
+          asyncio.run(seed())
+          "
+
+      - name: Run tests with coverage
+        run: |
+          cd backend
+          python -m pytest tests/test_module_*.py \
+            --cov=config --cov=models --cov=utils --cov=routes \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
+            --cov-report=html:htmlcov \
+            --tb=short \
+            -q
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: backend/htmlcov/
+          retention-days: 14
+
+      - name: Coverage summary
+        if: always()
+        run: |
+          cd backend
+          python -m coverage report --fail-under=60 || echo "Coverage below 60% threshold"

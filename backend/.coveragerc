@@ -1,0 +1,14 @@
+[run]
+source = config.py,models.py,utils/,routes/
+omit =
+    tests/*
+    */__pycache__/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if __name__ == .__main__
+    raise NotImplementedError
+show_missing = true
+precision = 1

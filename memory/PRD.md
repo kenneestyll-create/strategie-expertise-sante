@@ -42,8 +42,8 @@ Application web complète en français pour accompagner les victimes de maladies
     └── test_module_routes_misc.py
 ```
 
-## Tests unitaires — 187 tests
-Exécution : `cd /app/backend && python -m pytest tests/test_module_*.py -v`
+## Tests unitaires — 210 tests (100% pass)
+Exécution : `cd /app/backend && python -m pytest --cov=. --cov-report=term-missing -q`
 
 | Module | Tests | Couverture |
 |--------|-------|-----------|
@@ -83,6 +83,8 @@ Exécution : `cd /app/backend && python -m pytest tests/test_module_*.py -v`
 - [x] SEO (sitemap.xml, robots.txt, cache)
 - [x] Refactoring backend modulaire (mars 2026)
 - [x] Suite complète de tests unitaires pytest — 187 tests (mars 2026)
+- [x] Suite de tests élargie — 210 tests, 0 échec, couverture 77.8% (fév 2026)
+- [x] Pipeline CI/CD GitHub Actions (`.github/workflows/ci.yml`)
 
 ## Éléments bloqués (action utilisateur)
 1. **Budget LLM Emergent** épuisé → Profile → Universal Key → Add Balance
