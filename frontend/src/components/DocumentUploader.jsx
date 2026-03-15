@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useOCR } from '@/hooks/useOCR';
 import { OcrFieldsPreview, OcrProgressBar } from '@/components/OcrFieldsPreview';
+import { DocumentScanner } from '@/components/DocumentScanner';
 
 const ACCEPTED_TYPES = {
   'application/pdf': 'PDF',
@@ -206,6 +207,7 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
   const [checks, setChecks] = useState({ readable: false, personal_info: false, dates_signatures: false });
   const [ocrResult, setOcrResult] = useState(null);
   const [aiEnhancing, setAiEnhancing] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const { extractFromMultiple, enhanceWithAI, processing: ocrProcessing, progress: ocrProgress, cancel: cancelOcr } = useOCR();
 
   const allChecked = checks.readable && checks.personal_info && checks.dates_signatures;
@@ -285,28 +287,55 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
     handleFiles(e.dataTransfer.files);
   }, [handleFiles]);
 
+  const handleScanCapture = useCallback((file) => {
+    setShowScanner(false);
+    handleFiles([file]);
+  }, [handleFiles]);
+
   return (
     <div className={`space-y-3 ${className}`} data-testid="document-uploader">
-      {/* Drop zone */}
-      <div
-        className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-accent/50 transition-colors cursor-pointer relative"
-        onDrop={handleDrop}
-        onDragOver={e => e.preventDefault()}
-        onClick={() => inputRef.current?.click()}
-        data-testid="upload-dropzone"
-      >
-        <input
-          ref={inputRef}
-          type="file"
-          multiple
-          accept=".pdf,.jpg,.jpeg,.png,.docx"
-          onChange={e => { handleFiles(e.target.files); e.target.value = ''; }}
-          className="hidden"
-          data-testid="file-input"
+      {/* Scanner Modal */}
+      {showScanner && (
+        <DocumentScanner
+          onCapture={handleScanCapture}
+          onClose={() => setShowScanner(false)}
         />
-        <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-        <p className="text-sm text-muted-foreground">Glissez vos fichiers ou cliquez pour sélectionner</p>
-        <p className="text-xs text-muted-foreground mt-1">PDF, JPG, PNG, DOCX — Max 10 Mo par fichier — Max {maxFiles} fichiers</p>
+      )}
+
+      {/* Drop zone + Scan button */}
+      <div className="flex gap-2">
+        <div
+          className="flex-1 border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-accent/50 transition-colors cursor-pointer relative"
+          onDrop={handleDrop}
+          onDragOver={e => e.preventDefault()}
+          onClick={() => inputRef.current?.click()}
+          data-testid="upload-dropzone"
+        >
+          <input
+            ref={inputRef}
+            type="file"
+            multiple
+            accept=".pdf,.jpg,.jpeg,.png,.docx"
+            onChange={e => { handleFiles(e.target.files); e.target.value = ''; }}
+            className="hidden"
+            data-testid="file-input"
+          />
+          <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">Glissez vos fichiers ou cliquez pour sélectionner</p>
+          <p className="text-xs text-muted-foreground mt-1">PDF, JPG, PNG, DOCX — Max 10 Mo — Max {maxFiles} fichiers</p>
+        </div>
+        {enableOCR && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowScanner(true); }}
+            className="flex flex-col items-center justify-center gap-2 w-28 sm:w-32 rounded-xl border-2 border-dashed border-accent/40 hover:border-accent hover:bg-accent/5 transition-all cursor-pointer group"
+            data-testid="scanner-open-btn"
+          >
+            <div className="w-10 h-10 rounded-full bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors">
+              <Camera className="w-5 h-5 text-accent" />
+            </div>
+            <span className="text-[11px] font-medium text-accent leading-tight text-center">Scanner un document</span>
+          </button>
+        )}
       </div>
 
       {/* Errors */}
