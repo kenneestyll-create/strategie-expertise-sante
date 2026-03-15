@@ -132,6 +132,29 @@ export const AboutPage = () => {
         </div>
       </section>
 
+      {/* Citation du fondateur — Crédibilité */}
+      <section className="section-padding bg-[#0c0c0c]" data-testid="founder-quote-section">
+        <div className="max-w-4xl mx-auto">
+          <div className="relative p-8 sm:p-12 rounded-2xl border border-[#D4AF37]/30 bg-gradient-to-br from-[#0c0c0c] to-[#1a1510]">
+            {/* Decorative gold quote marks */}
+            <div className="absolute top-4 left-6 text-[#D4AF37]/20 text-7xl sm:text-8xl font-serif leading-none select-none" aria-hidden="true">"</div>
+            <div className="absolute bottom-4 right-6 text-[#D4AF37]/20 text-7xl sm:text-8xl font-serif leading-none select-none" aria-hidden="true">"</div>
+            {/* Gold top accent line */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-1 rounded-full bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
+            <blockquote className="relative z-10" data-testid="founder-blockquote">
+              <p className="text-lg sm:text-xl text-[#f5f0e8] leading-relaxed italic text-center" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                Fort de mon expérience personnelle et de mes succès obtenus face à de grands groupes d'assurance nationaux dans la reconnaissance de garanties PTIA et ITT, j'ai développé Stratégie & Expertise Santé pour accompagner toutes les personnes confrontées à ces démarches complexes.
+              </p>
+              <footer className="mt-6 flex items-center justify-center gap-3">
+                <div className="w-8 h-px bg-[#D4AF37]/50" />
+                <cite className="text-sm font-medium text-[#D4AF37] not-italic tracking-wide uppercase">Fondateur, Stratégie & Expertise Santé</cite>
+                <div className="w-8 h-px bg-[#D4AF37]/50" />
+              </footer>
+            </blockquote>
+          </div>
+        </div>
+      </section>
+
       {/* Why Me Section */}
       <section className="section-padding bg-card">
         <div className="max-w-7xl mx-auto">
@@ -232,7 +255,7 @@ export const AboutPage = () => {
         </div>
       </section>
 
-      {/* Quote Section */}
+      {/* Engagement Section */}
       <section className="section-padding">
         <div className="max-w-4xl mx-auto text-center">
           <Award className="w-12 h-12 text-accent mx-auto mb-6" strokeWidth={1.5} />

@@ -483,6 +483,32 @@ export const HomePage = () => {
         </div>
       </section>
 
+      {/* Fondateur — Citation crédibilité */}
+      <section className="relative py-16 sm:py-20 overflow-hidden" data-testid="home-founder-quote">
+        <div className="absolute inset-0 bg-[#0c0c0c]" />
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23D4AF37\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <span className="text-[#D4AF37] text-sm font-medium uppercase tracking-[0.2em]">Le mot du fondateur</span>
+          </div>
+          <div className="relative p-8 sm:p-10 rounded-2xl border border-[#D4AF37]/20 bg-[#0f0d08]/80 backdrop-blur-sm" data-testid="home-founder-card">
+            <div className="absolute -top-4 left-8 w-8 h-8 flex items-center justify-center rounded-full bg-[#D4AF37] text-[#0c0c0c]">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983z"/></svg>
+            </div>
+            <blockquote data-testid="home-founder-blockquote">
+              <p className="text-base sm:text-lg text-[#f5f0e8]/90 leading-relaxed italic text-center" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                Fort de mon expérience personnelle et de mes succès obtenus face à de grands groupes d'assurance nationaux dans la reconnaissance de garanties PTIA et ITT, j'ai développé Stratégie & Expertise Santé pour accompagner toutes les personnes confrontées à ces démarches complexes.
+              </p>
+              <footer className="mt-5 flex items-center justify-center gap-3">
+                <div className="w-6 h-px bg-[#D4AF37]/40" />
+                <cite className="text-xs font-medium text-[#D4AF37]/80 not-italic tracking-widest uppercase">Fondateur</cite>
+                <div className="w-6 h-px bg-[#D4AF37]/40" />
+              </footer>
+            </blockquote>
+          </div>
+        </div>
+      </section>
+
       {/* Services Preview */}
       <section className="section-padding">
         <div className="max-w-7xl mx-auto" ref={servicesRef}>
