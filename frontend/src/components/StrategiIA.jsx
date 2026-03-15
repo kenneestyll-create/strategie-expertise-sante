@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { DataConsentBox } from '@/components/DataConsentBox';
+import { PdfCoverPreview } from '@/components/PdfCoverPreview';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -355,6 +356,7 @@ export const StrategiIA = () => {
                             </div>
                             <p className="text-xs text-muted-foreground mt-1">Rapport sans filigrane, mise en page optimisée pour impression ou transmission à un professionnel (avocat, médecin, expert).</p>
                           </div>
+                          <PdfCoverPreview reportType="StrategiIA" />
                         </label>
                         <Button onClick={handlePayForPremium} className="w-full rounded-lg gap-2 bg-accent hover:bg-accent/90" data-testid="strategiia-buy-premium">
                           <CreditCard className="w-4 h-4" /> Obtenir le rapport complet — {premiumPdf ? '48€' : '29€'}

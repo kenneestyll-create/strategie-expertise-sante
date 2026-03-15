@@ -16,6 +16,7 @@ import axios from 'axios';
 import { SEO } from '@/components/SEO';
 import { useReveal, useRevealChildren } from '@/hooks/useReveal';
 import { DataConsentBox } from '@/components/DataConsentBox';
+import { PdfCoverPreview } from '@/components/PdfCoverPreview';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -416,6 +417,7 @@ export const DossierExpressPage = () => {
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">Rapport sans filigrane, mise en page optimisée pour impression ou transmission à un professionnel (avocat, médecin, expert).</p>
                 </div>
+                <PdfCoverPreview reportType="Dossier Express" />
               </label>
 
               {hasPaid ? (

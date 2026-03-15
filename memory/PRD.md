@@ -34,6 +34,7 @@ Web application in French providing advice and support for occupational diseases
   - Dossier Express: 97€ base → 116€ with premium PDF
   - UI: checkbox with Crown icon, +19€ badge, explanatory text on both pages
   - Dynamic pricing: checkout buttons update in real-time
+- PDF Cover Preview: Clickable miniature of the cover page next to premium option, with zoom modal for detailed view. Shows logo, example report number, watermark, professional layout.
 - Testing: 100% pass rate (iteration_30)
 - UI/UX animations: scroll-triggered reveals (fade-in, slide-left/right, scale), staggered cards, card-glow hover, shimmer, float, icon-bounce, urgent-glow
 - Animations on: Homepage, Tarifs (progressive reveal), Dossier Express (urgency-driven). No animations on À propos (sober/professional).
