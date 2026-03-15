@@ -19,7 +19,7 @@ Web application in French providing advice and support for occupational diseases
 - Tarifs restructured as 4-step progressive journey
 - Chatbot quota (5 free messages)
 - Homepage: urgent red Dossier Express banner after hero section with weekly counter ("X dossiers traités cette semaine")
-- Homepage: "Le défi en chiffres" — 4 stat blocks (700K AT, 50K MP, 12M handicap, 300K MDPH) with official source links (CNAM, INSEE, CNSA), black/gold cards, scroll animations
+- Homepage: "Le défi en chiffres" — 4 stat blocks (700K AT, 50K MP, 12M handicap, 300K MDPH) with official source links (CNAM, INSEE, CNSA), black/gold cards, scroll animations, animated count-up (ease-out cubic, 1.3s, one-shot on scroll), impact phrase below
 - UI/UX animations: scroll-triggered reveals (fade-in, slide-left/right, scale), staggered cards, card-glow hover, shimmer, float, icon-bounce, urgent-glow
 - Animations on: Homepage, Tarifs (progressive reveal), Dossier Express (urgency-driven). No animations on À propos (sober/professional).
 - Disclaimer légal global : Footer (toutes pages), Homepage (section dédiée), Tarifs, StrategiIA (avant formulaire), Dossier Express, Mentions Légales (version détaillée complète)

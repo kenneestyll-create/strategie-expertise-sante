@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -34,9 +34,32 @@ import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+const CountUpNumber = ({ value, unit = '', duration = 1200, started }) => {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    if (!started) return;
+    let start = null;
+    let raf;
+    const step = (ts) => {
+      if (!start) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay(Math.floor(eased * value));
+      if (progress < 1) { raf = requestAnimationFrame(step); }
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [started, value, duration]);
+
+  return <>{display.toLocaleString('fr-FR')}{unit}</>;
+};
+
 export const HomePage = () => {
   const [visitorCount, setVisitorCount] = useState(0);
   const [dossierCount, setDossierCount] = useState(0);
+  const [countStarted, setCountStarted] = useState(false);
+  const countSectionRef = useRef(null);
 
   // Reveal refs for scroll animations
   const bannerRef = useReveal();
@@ -65,6 +88,17 @@ export const HomePage = () => {
       }
     };
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    const el = countSectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setCountStarted(true); observer.disconnect(); } },
+      { threshold: 0.3 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   const services = [
@@ -119,7 +153,8 @@ export const HomePage = () => {
   const chiffresCles = [
     {
       icon: HardHat,
-      chiffre: "700 000",
+      value: 700000,
+      unit: '',
       prefix: "Plus de",
       suffix: "accidents du travail par an en France",
       source: "CNAM",
@@ -127,7 +162,8 @@ export const HomePage = () => {
     },
     {
       icon: Activity,
-      chiffre: "50 000",
+      value: 50000,
+      unit: '',
       prefix: "Environ",
       suffix: "maladies professionnelles reconnues chaque année",
       source: "CNAM",
@@ -135,7 +171,8 @@ export const HomePage = () => {
     },
     {
       icon: Accessibility,
-      chiffre: "12 millions",
+      value: 12,
+      unit: ' millions',
       prefix: "Près de",
       suffix: "de personnes en situation de handicap",
       source: "INSEE",
@@ -143,7 +180,8 @@ export const HomePage = () => {
     },
     {
       icon: ClipboardList,
-      chiffre: "300 000",
+      value: 300000,
+      unit: '',
       prefix: "Plus de",
       suffix: "nouvelles demandes MDPH chaque année",
       source: "CNSA",
@@ -311,7 +349,7 @@ export const HomePage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger" ref={countSectionRef}>
             {chiffresCles.map((item, index) => (
               <div
                 key={index}
@@ -323,7 +361,9 @@ export const HomePage = () => {
                     <item.icon className="w-6 h-6 text-accent" strokeWidth={1.5} />
                   </div>
                   <p className="text-xs uppercase tracking-wider text-primary-foreground/50 mb-1">{item.prefix}</p>
-                  <p className="text-3xl sm:text-4xl font-bold text-accent leading-tight mb-2">{item.chiffre}</p>
+                  <p className="text-3xl sm:text-4xl font-bold text-accent leading-tight mb-2" data-testid={`chiffre-value-${index}`}>
+                    <CountUpNumber value={item.value} unit={item.unit} duration={1300} started={countStarted} />
+                  </p>
                   <p className="text-sm text-primary-foreground/70 leading-relaxed flex-1 mb-4">{item.suffix}</p>
                   <a
                     href={item.lien}
@@ -338,6 +378,10 @@ export const HomePage = () => {
               </div>
             ))}
           </div>
+
+          <p className="text-center mt-12 text-muted-foreground italic max-w-2xl mx-auto reveal" style={{ fontFamily: "'Playfair Display', serif" }} data-testid="chiffres-impact-phrase">
+            Derrière chaque chiffre, une personne confrontée à un parcours administratif complexe.
+          </p>
         </div>
       </section>
 
