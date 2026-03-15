@@ -287,10 +287,36 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
     handleFiles(e.dataTransfer.files);
   }, [handleFiles]);
 
-  const handleScanCapture = useCallback((file) => {
+  const handleScanCapture = useCallback(async (file, imageFiles) => {
     setShowScanner(false);
-    handleFiles([file]);
-  }, [handleFiles]);
+    if (imageFiles && imageFiles.length > 1) {
+      // Multi-scan: PDF file + individual images for OCR
+      const allFiles = [...files, file];
+      onFilesChange(allFiles);
+
+      if (enableOCR) {
+        // Run OCR on individual page images, then GPT-4o on combined text
+        const result = await extractFromMultiple(imageFiles);
+        if (result && result.raw && result.raw.trim().length > 10) {
+          setOcrResult({ ...result, enhancing: true, multiScan: true, pageCount: imageFiles.length });
+          if (onOcrResult) onOcrResult(result);
+          setAiEnhancing(true);
+          const aiResult = await enhanceWithAI(result.raw);
+          if (aiResult && aiResult.enhanced) {
+            const merged = { ...result, ...aiResult, multiScan: true, pageCount: imageFiles.length };
+            setOcrResult(merged);
+            if (onOcrResult) onOcrResult({ ...merged, applied: true });
+          } else {
+            setOcrResult(result);
+          }
+          setAiEnhancing(false);
+        }
+      }
+    } else {
+      // Single scan: treat as regular image file
+      handleFiles([file]);
+    }
+  }, [files, onFilesChange, enableOCR, extractFromMultiple, enhanceWithAI, onOcrResult, handleFiles]);
 
   return (
     <div className={`space-y-3 ${className}`} data-testid="document-uploader">
@@ -407,7 +433,11 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
           {ocrResult.enhanced && (
             <div className="flex items-center gap-2 p-2 rounded-lg bg-blue-50 border border-blue-200" data-testid="ai-enhanced-badge">
               <CheckCircle className="w-4 h-4 text-blue-600" />
-              <span className="text-xs font-medium text-blue-700">Champs pré-remplis automatiquement par GPT-4o</span>
+              <span className="text-xs font-medium text-blue-700">
+                {ocrResult.multiScan 
+                  ? `${ocrResult.pageCount} pages fusionnées — Champs pré-remplis par GPT-4o`
+                  : 'Champs pré-remplis automatiquement par GPT-4o'}
+              </span>
             </div>
           )}
         </div>
