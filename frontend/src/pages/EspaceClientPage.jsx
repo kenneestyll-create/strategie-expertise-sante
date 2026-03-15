@@ -21,7 +21,10 @@ import {
   MessageSquare,
   Bell,
   BellDot,
-  X
+  X,
+  Settings,
+  Mail,
+  Smartphone
 } from 'lucide-react';
 import axios from 'axios';
 import { DataConsentBox } from '@/components/DataConsentBox';
@@ -57,7 +60,7 @@ const useClientAuth = () => {
 const LoginForm = ({ onLogin }) => {
   const [mode, setMode] = useState('login');
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ email: '', password: '', name: '', phone: '' });
+  const [form, setForm] = useState({ email: '', password: '', name: '', phone: '', notifications_email: true, notifications_push: true });
   const [consent, setConsent] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -65,7 +68,9 @@ const LoginForm = ({ onLogin }) => {
     setLoading(true);
     try {
       const endpoint = mode === 'login' ? '/client/login' : '/client/register';
-      const payload = mode === 'login' ? { email: form.email, password: form.password } : form;
+      const payload = mode === 'login' 
+        ? { email: form.email, password: form.password } 
+        : { email: form.email, password: form.password, name: form.name, phone: form.phone, notifications_email: form.notifications_email, notifications_push: form.notifications_push };
       const res = await axios.post(`${API}${endpoint}`, payload);
       onLogin(res.data);
       toast.success(mode === 'login' ? 'Connexion réussie' : 'Compte créé avec succès');
@@ -109,7 +114,21 @@ const LoginForm = ({ onLogin }) => {
               <Input id="client-password" type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} placeholder="Votre mot de passe" required data-testid="client-password-input" />
             </div>
             {mode === 'register' && (
-              <DataConsentBox checked={consent} onChange={setConsent} />
+              <>
+                <div className="p-3 rounded-lg bg-accent/5 border border-accent/20 space-y-2" data-testid="notification-preferences">
+                  <p className="text-sm font-medium flex items-center gap-2"><Bell className="w-4 h-4 text-accent" />Préférences de notifications</p>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={form.notifications_email} onChange={e => setForm(f => ({ ...f, notifications_email: e.target.checked }))} className="accent-accent" data-testid="notif-email-checkbox" />
+                    <span className="text-sm">Recevoir les notifications par email</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={form.notifications_push} onChange={e => setForm(f => ({ ...f, notifications_push: e.target.checked }))} className="accent-accent" data-testid="notif-push-checkbox" />
+                    <span className="text-sm">Recevoir les notifications du navigateur</span>
+                  </label>
+                  <p className="text-xs text-muted-foreground">Vous serez notifié des mises à jour de vos dossiers, paiements et rapports.</p>
+                </div>
+                <DataConsentBox checked={consent} onChange={setConsent} />
+              </>
             )}
             <Button type="submit" className="w-full rounded-lg gap-2" disabled={loading || (mode === 'register' && !consent)} data-testid="client-submit-button">
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
@@ -139,6 +158,9 @@ const ClientDashboard = ({ token, clientName, logout }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifs, setShowNotifs] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [notifSettings, setNotifSettings] = useState({ notifications_email: true, notifications_push: true });
+  const [savingSettings, setSavingSettings] = useState(false);
 
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -147,15 +169,17 @@ const ClientDashboard = ({ token, clientName, logout }) => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [casesRes, profileRes, notifsRes] = await Promise.all([
+      const [casesRes, profileRes, notifsRes, settingsRes] = await Promise.all([
         axios.get(`${API}/client/cases`, { headers }),
         axios.get(`${API}/client/profile`, { headers }),
-        axios.get(`${API}/client/notifications`, { headers }).catch(() => ({ data: { notifications: [], unread_count: 0 } }))
+        axios.get(`${API}/client/notifications`, { headers }).catch(() => ({ data: { notifications: [], unread_count: 0 } })),
+        axios.get(`${API}/client/settings/notifications`, { headers }).catch(() => ({ data: { notifications_email: true, notifications_push: true } }))
       ]);
       setCases(casesRes.data);
       setProfile(profileRes.data);
       setNotifications(notifsRes.data.notifications);
       setUnreadCount(notifsRes.data.unread_count);
+      setNotifSettings(settingsRes.data);
     } catch (err) {
       if (err.response?.status === 401) { logout(); return; }
       toast.error("Erreur de chargement");
@@ -176,6 +200,19 @@ const ClientDashboard = ({ token, clientName, logout }) => {
       setNotifications(prev => prev.map(n => n.id === notifId ? { ...n, read: true } : n));
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch {}
+  };
+
+  const saveNotifSettings = async (key, value) => {
+    const updated = { ...notifSettings, [key]: value };
+    setNotifSettings(updated);
+    setSavingSettings(true);
+    try {
+      await axios.patch(`${API}/client/settings/notifications`, { [key]: value }, { headers });
+      toast.success('Préférences mises à jour');
+    } catch {
+      toast.error('Erreur lors de la mise à jour');
+      setNotifSettings(notifSettings);
+    } finally { setSavingSettings(false); }
   };
 
   const getStatusConfig = (status) => {
@@ -254,6 +291,9 @@ const ClientDashboard = ({ token, clientName, logout }) => {
                 </div>
               )}
             </div>
+            <Button variant="ghost" size="icon" onClick={() => setShowSettings(!showSettings)} className="text-primary-foreground hover:bg-primary-foreground/10" data-testid="client-settings-btn">
+              <Settings className="w-5 h-5" />
+            </Button>
             <Button variant="ghost" size="sm" onClick={logout} className="text-primary-foreground hover:bg-primary-foreground/10 gap-2" data-testid="client-logout">
               <LogOut className="w-4 h-4" /> Déconnexion
             </Button>
@@ -266,6 +306,55 @@ const ClientDashboard = ({ token, clientName, logout }) => {
           <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
         ) : (
           <>
+            {/* Notification Settings Panel */}
+            {showSettings && (
+              <Card className="mb-6 border-accent/20" data-testid="notification-settings-panel">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base flex items-center gap-2"><Settings className="w-5 h-5 text-accent" />Préférences de notifications</CardTitle>
+                    <Button variant="ghost" size="icon" onClick={() => setShowSettings(false)} className="w-8 h-8"><X className="w-4 h-4" /></Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <label className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/30 cursor-pointer transition-colors" data-testid="settings-email-toggle">
+                    <div className="flex items-center gap-3">
+                      <Mail className="w-5 h-5 text-accent" />
+                      <div>
+                        <p className="text-sm font-medium">Notifications par email</p>
+                        <p className="text-xs text-muted-foreground">Recevez un email pour chaque mise à jour de vos dossiers</p>
+                      </div>
+                    </div>
+                    <input 
+                      type="checkbox" 
+                      checked={notifSettings.notifications_email} 
+                      onChange={e => saveNotifSettings('notifications_email', e.target.checked)} 
+                      disabled={savingSettings}
+                      className="w-5 h-5 accent-accent" 
+                    />
+                  </label>
+                  <label className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/30 cursor-pointer transition-colors" data-testid="settings-push-toggle">
+                    <div className="flex items-center gap-3">
+                      <Smartphone className="w-5 h-5 text-accent" />
+                      <div>
+                        <p className="text-sm font-medium">Notifications du navigateur</p>
+                        <p className="text-xs text-muted-foreground">Recevez des alertes instantanées dans votre navigateur</p>
+                      </div>
+                    </div>
+                    <input 
+                      type="checkbox" 
+                      checked={notifSettings.notifications_push} 
+                      onChange={e => saveNotifSettings('notifications_push', e.target.checked)} 
+                      disabled={savingSettings}
+                      className="w-5 h-5 accent-accent" 
+                    />
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    Vous serez notifié pour : analyse premium prête, paiement confirmé, dossier en cours, rapport disponible.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <Card>

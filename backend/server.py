@@ -374,6 +374,8 @@ class ClientUser(BaseModel):
     password_hash: str
     name: str
     phone: Optional[str] = None
+    notifications_email: bool = True
+    notifications_push: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ClientRegister(BaseModel):
@@ -381,6 +383,8 @@ class ClientRegister(BaseModel):
     password: str
     name: str
     phone: Optional[str] = None
+    notifications_email: bool = True
+    notifications_push: bool = True
 
 class ClientLogin(BaseModel):
     email: EmailStr
@@ -588,6 +592,56 @@ async def _notify_admin_premium_analysis(analysis_type: str, email: str, name: s
         logger.info(f"Premium analysis notification sent for {email}")
     except Exception as e:
         logger.error(f"Failed to send premium notification: {e}")
+
+
+async def _create_client_notification(client_id: str, notif_type: str, title: str, message: str, case_id: str = None, send_email: bool = True):
+    """Create an in-app notification and optionally send an email to the client."""
+    notif = {
+        "id": str(uuid.uuid4()),
+        "client_id": client_id,
+        "type": notif_type,
+        "title": title,
+        "message": message,
+        "case_id": case_id,
+        "read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.client_notifications.insert_one(notif)
+
+    if send_email:
+        client = await db.client_users.find_one({"id": client_id}, {"_id": 0, "email": 1, "name": 1, "notifications_email": 1})
+        if client and client.get("notifications_email", True) and RESEND_AVAILABLE and os.environ.get('RESEND_API_KEY'):
+            try:
+                await asyncio.to_thread(resend.Emails.send, {
+                    "from": SENDER_EMAIL,
+                    "to": [client["email"]],
+                    "subject": f"Stratégie & Expertise Santé — {title}",
+                    "html": f"""
+                    <html>
+                    <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                        <div style="background: #1a1a2e; color: #fff; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+                            <h2 style="margin: 0; color: #d4a44a;">{title}</h2>
+                        </div>
+                        <div style="background: #F9F7F2; padding: 20px; border-radius: 0 0 8px 8px; border: 1px solid #E5E0D6;">
+                            <p>Bonjour {client.get('name', '')},</p>
+                            <p>{message}</p>
+                            <p style="margin-top: 20px;">
+                                <a href="{os.environ.get('FRONTEND_URL', 'https://strategie-expertise-sante.fr')}/espace-client"
+                                   style="background: #1a1a2e; color: #d4a44a; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block;">
+                                    Accéder à mon espace client
+                                </a>
+                            </p>
+                            <p style="color: #888; font-size: 12px; margin-top: 20px;">
+                                Cet email a été envoyé automatiquement. Vous pouvez désactiver les notifications email dans votre espace client.
+                            </p>
+                        </div>
+                    </body>
+                    </html>
+                    """
+                })
+                logger.info(f"Notification email sent to {client['email']}: {title}")
+            except Exception as e:
+                logger.error(f"Failed to send notification email to {client.get('email')}: {e}")
 
 
 # ==================== CHATBOT HELPER ====================
@@ -2135,7 +2189,9 @@ async def register_client(data: ClientRegister):
         email=data.email.lower(),
         password_hash=hash_password(data.password),
         name=data.name,
-        phone=data.phone
+        phone=data.phone,
+        notifications_email=data.notifications_email,
+        notifications_push=data.notifications_push
     )
     doc = client.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
@@ -2194,6 +2250,26 @@ async def mark_all_notifications_read(client: dict = Depends(get_current_client)
         {"client_id": client["sub"], "read": False},
         {"$set": {"read": True}}
     )
+    return {"success": True}
+
+@api_router.get("/client/settings/notifications")
+async def get_notification_settings(client: dict = Depends(get_current_client)):
+    user = await db.client_users.find_one({"id": client["sub"]}, {"_id": 0, "notifications_email": 1, "notifications_push": 1})
+    return {
+        "notifications_email": user.get("notifications_email", True) if user else True,
+        "notifications_push": user.get("notifications_push", True) if user else True,
+    }
+
+@api_router.patch("/client/settings/notifications")
+async def update_notification_settings(request: Request, client: dict = Depends(get_current_client)):
+    body = await request.json()
+    update = {}
+    if "notifications_email" in body:
+        update["notifications_email"] = bool(body["notifications_email"])
+    if "notifications_push" in body:
+        update["notifications_push"] = bool(body["notifications_push"])
+    if update:
+        await db.client_users.update_one({"id": client["sub"]}, {"$set": update})
     return {"success": True}
 
 # Admin client management
@@ -3495,7 +3571,7 @@ async def get_premium_analyses(admin: dict = Depends(get_current_admin)):
 
 @api_router.patch("/admin/premium-analyses/{analysis_id}")
 async def update_premium_analysis(analysis_id: str, request: Request, admin: dict = Depends(get_current_admin)):
-    """Admin: update the status of a premium analysis."""
+    """Admin: update the status of a premium analysis. Auto-notifies client on status change."""
     body = await request.json()
     new_status = body.get("status", "")
     if new_status not in ("en_attente", "en_cours", "termine"):
@@ -3506,7 +3582,85 @@ async def update_premium_analysis(analysis_id: str, request: Request, admin: dic
     result = await db.premium_analyses.update_one({"id": analysis_id}, {"$set": update_fields})
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Analyse non trouvée")
+
+    # Auto-notify client on status change
+    analysis = await db.premium_analyses.find_one({"id": analysis_id}, {"_id": 0})
+    if analysis:
+        email = analysis.get("email", "")
+        type_label = "StrategiIA" if analysis.get("type") == "strategiia" else "Dossier Express"
+        client_user = await db.client_users.find_one({"email": email.lower()}, {"_id": 0, "id": 1}) if email else None
+        if client_user:
+            if new_status == "en_cours":
+                asyncio.create_task(_create_client_notification(
+                    client_id=client_user["id"],
+                    notif_type="dossier_in_progress",
+                    title="Votre dossier est en cours de traitement",
+                    message=f"Notre expert a commencé l'analyse de votre dossier ({type_label}). Vous serez notifié dès que le rapport sera disponible."
+                ))
+            elif new_status == "termine":
+                asyncio.create_task(_create_client_notification(
+                    client_id=client_user["id"],
+                    notif_type="analyse_premium_ready",
+                    title="Votre Analyse Premium est prête",
+                    message=f"Votre Analyse Premium ({type_label}) a été finalisée par notre expert. Consultez votre rapport dans votre espace client."
+                ))
+
     return {"success": True}
+
+@api_router.post("/admin/premium-analyses/{analysis_id}/notify")
+async def notify_client_premium(analysis_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    """Admin: manually send a notification to the client about their premium analysis."""
+    analysis = await db.premium_analyses.find_one({"id": analysis_id}, {"_id": 0})
+    if not analysis:
+        raise HTTPException(status_code=404, detail="Analyse non trouvée")
+
+    body = await request.json()
+    custom_message = body.get("message", "")
+    notif_type = body.get("type", "analyse_premium_ready")
+
+    email = analysis.get("email", "")
+    type_label = "StrategiIA" if analysis.get("type") == "strategiia" else "Dossier Express"
+
+    # Find client by email
+    client_user = await db.client_users.find_one({"email": email.lower()}, {"_id": 0, "id": 1}) if email else None
+
+    notif_messages = {
+        "analyse_premium_ready": {
+            "title": "Votre Analyse Premium est prête",
+            "message": custom_message or f"Votre Analyse Premium ({type_label}) a été finalisée par notre expert. Consultez votre rapport dans votre espace client."
+        },
+        "payment_confirmed": {
+            "title": "Paiement confirmé",
+            "message": custom_message or f"Votre paiement pour l'Analyse Premium ({type_label}) a bien été reçu. Notre expert commence l'analyse de votre dossier."
+        },
+        "dossier_in_progress": {
+            "title": "Votre dossier est en cours de traitement",
+            "message": custom_message or f"Notre expert a commencé l'analyse de votre dossier ({type_label}). Vous serez notifié dès que le rapport sera disponible."
+        },
+        "report_ready": {
+            "title": "Votre rapport est prêt",
+            "message": custom_message or f"Votre rapport ({type_label}) est maintenant disponible dans votre espace client."
+        }
+    }
+
+    notif_config = notif_messages.get(notif_type, notif_messages["analyse_premium_ready"])
+
+    if client_user:
+        await _create_client_notification(
+            client_id=client_user["id"],
+            notif_type=notif_type,
+            title=notif_config["title"],
+            message=notif_config["message"],
+            send_email=True
+        )
+
+    # Also mark as notified
+    await db.premium_analyses.update_one(
+        {"id": analysis_id},
+        {"$set": {"client_notified": True, "notified_at": datetime.now(timezone.utc).isoformat(), "notification_type": notif_type}}
+    )
+
+    return {"success": True, "client_found": client_user is not None, "email": email}
 
 
 # ==================== RESOURCES / LIBRARY ROUTES ====================

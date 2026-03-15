@@ -41,7 +41,8 @@ import {
   Plus,
   Pencil,
   Upload,
-  X
+  X,
+  Bell
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
@@ -1519,12 +1520,12 @@ export const AdminDashboard = () => {
                             {item.context && <p className="text-xs text-muted-foreground mt-0.5 truncate">{item.context}</p>}
                             <p className="text-xs text-muted-foreground mt-1">{new Date(item.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
                           </div>
-                          <div className="flex gap-1.5 flex-shrink-0">
+                          <div className="flex gap-1.5 flex-shrink-0 flex-wrap">
                             {item.status === 'en_attente' && (
                               <Button size="sm" variant="outline" className="text-xs h-7 gap-1 border-blue-500/30 text-blue-600 hover:bg-blue-50"
                                 onClick={async () => {
                                   await axios.patch(`${API}/admin/premium-analyses/${item.id}`, { status: 'en_cours' }, axiosConfig);
-                                  fetchData(); toast.success("Statut mis à jour");
+                                  fetchData(); toast.success("Statut mis à jour — client notifié");
                                 }} data-testid={`premium-start-${item.id}`}>
                                 <Eye className="w-3 h-3" /> Traiter
                               </Button>
@@ -1533,11 +1534,22 @@ export const AdminDashboard = () => {
                               <Button size="sm" variant="outline" className="text-xs h-7 gap-1 border-green-500/30 text-green-600 hover:bg-green-50"
                                 onClick={async () => {
                                   await axios.patch(`${API}/admin/premium-analyses/${item.id}`, { status: 'termine' }, axiosConfig);
-                                  fetchData(); toast.success("Analyse marquée comme terminée");
+                                  fetchData(); toast.success("Analyse terminée — client notifié");
                                 }} data-testid={`premium-done-${item.id}`}>
                                 <CheckCircle className="w-3 h-3" /> Terminé
                               </Button>
                             )}
+                            <Button size="sm" variant="outline" className={`text-xs h-7 gap-1 ${item.client_notified ? 'border-green-500/30 text-green-600' : 'border-accent/30 text-accent hover:bg-accent/5'}`}
+                              onClick={async () => {
+                                const notifType = item.status === 'termine' ? 'analyse_premium_ready' : item.status === 'en_cours' ? 'dossier_in_progress' : 'payment_confirmed';
+                                try {
+                                  const res = await axios.post(`${API}/admin/premium-analyses/${item.id}/notify`, { type: notifType }, axiosConfig);
+                                  toast.success(res.data.client_found ? 'Notification envoyée au client' : 'Client non inscrit — notification enregistrée');
+                                  fetchData();
+                                } catch { toast.error("Erreur d'envoi"); }
+                              }} data-testid={`premium-notify-${item.id}`}>
+                              <Bell className="w-3 h-3" /> {item.client_notified ? 'Relancer' : 'Notifier'}
+                            </Button>
                           </div>
                         </div>
                       </div>
