@@ -79,6 +79,11 @@ Exécution : `cd /app/backend && python -m pytest --cov=. --cov-report=term-miss
   - Espace Client Documents : auto-tagging catégorie, organisme, type
   - Backend : auto-extraction GPT-4o pour PDF uploadés sans OCR client
   - OcrFieldsPreview : affiche organisme, résumé, recommandations IA
+- [x] Scanner de documents smartphone — Caméra navigateur + guide visuel + amélioration image + OCR auto (mars 2026)
+  - Composant DocumentScanner : 4 phases (guide → caméra → preview → traitement)
+  - Guide visuel : 4 conseils (droit, visible, luminosité, reflets)
+  - Amélioration Canvas : contraste, luminosité, netteté
+  - Intégré dans Dossier Express, StratégiIA, Espace Client Documents
 
 ## Éléments bloqués (action utilisateur)
 1. **Budget LLM Emergent** épuisé → Profile → Universal Key → Add Balance
