@@ -35,6 +35,15 @@ Web application in French providing advice and support for occupational diseases
   - UI: checkbox with Crown icon, +19€ badge, explanatory text on both pages
   - Dynamic pricing: checkout buttons update in real-time
 - PDF Cover Preview: Clickable miniature of the cover page next to premium option, with zoom modal for detailed view. Shows logo, example report number, watermark, professional layout.
+
+### Analyse Premium Option (Completed — Feb 2026)
+- **StrategiIA** (+29€): Expert human review of AI-generated report, checkbox in premium purchase card
+- **Dossier Express** (+49€): Expert enrichment with personal recommendations, checkbox before checkout
+- Dynamic pricing: base + optional PDF Pro (+19€) + optional Analyse Premium (+29/49€)
+- DB: `premium_analyses` collection stores orders with status tracking (en_attente → en_cours → termine)
+- **Admin panel**: New "Premium" tab with notification badge, stats cards, and status management buttons
+- Backend: `GET /api/admin/premium-analyses`, `PATCH /api/admin/premium-analyses/{id}`
+- Testing: 100% pass rate (iteration_31)
 - Testing: 100% pass rate (iteration_30)
 - UI/UX animations: scroll-triggered reveals (fade-in, slide-left/right, scale), staggered cards, card-glow hover, shimmer, float, icon-bounce, urgent-glow
 - Animations on: Homepage, Tarifs (progressive reveal), Dossier Express (urgency-driven). No animations on À propos (sober/professional).
