@@ -45,7 +45,7 @@ class TestAnalysePremium:
         payload = {
             "email": "test-premium@example.com",
             "name": "Test User Premium",
-            "origin_url": "https://consent-hub-8.preview.emergentagent.com",
+            "origin_url": "https://sante-aide.preview.emergentagent.com",
             "premium_pdf": False,
             "analyse_premium": True  # +49€
         }
@@ -63,7 +63,7 @@ class TestAnalysePremium:
         payload = {
             "email": "test-both@example.com",
             "name": "Test Both Options",
-            "origin_url": "https://consent-hub-8.preview.emergentagent.com",
+            "origin_url": "https://sante-aide.preview.emergentagent.com",
             "premium_pdf": True,      # +19€
             "analyse_premium": True   # +49€
             # Total: 97 + 19 + 49 = 165€
@@ -145,7 +145,7 @@ class TestStrategiIACheckout:
         # Base price: 29€
         # With analyse_premium (+29€): 58€
         payload = {
-            "origin_url": "https://consent-hub-8.preview.emergentagent.com",
+            "origin_url": "https://sante-aide.preview.emergentagent.com",
             "email": "test-strategiia@example.com",
             "context": "Test case for analyse premium",
             "premium_pdf": False,

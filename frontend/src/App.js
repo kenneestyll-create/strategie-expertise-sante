@@ -15,7 +15,7 @@ import { useSearchHighlight } from "@/hooks/useSearchHighlight";
 
 const SearchHighlighter = () => { useSearchHighlight(); return null; };
 
-const SITE_URL = "https://consent-hub-8.preview.emergentagent.com";
+const SITE_URL = "https://sante-aide.preview.emergentagent.com";
 
 const professionalServiceSchema = {
   "@context": "https://schema.org",
