@@ -25,12 +25,15 @@ import {
   Settings,
   Mail,
   Smartphone,
-  Archive
+  Archive,
+  BellRing,
+  Send
 } from 'lucide-react';
 import axios from 'axios';
 import { DataConsentBox } from '@/components/DataConsentBox';
 import { ClientDocuments } from '@/components/ClientDocuments';
 import { ProgressDashboard } from '@/components/ProgressDashboard';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -165,6 +168,7 @@ const ClientDashboard = ({ token, clientName, logout }) => {
   const [notifSettings, setNotifSettings] = useState({ notifications_email: true, notifications_push: true });
   const [savingSettings, setSavingSettings] = useState(false);
   const [activeTab, setActiveTab] = useState('dossiers');
+  const push = usePushNotifications(token);
 
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -352,6 +356,64 @@ const ClientDashboard = ({ token, clientName, logout }) => {
                       className="w-5 h-5 accent-accent" 
                     />
                   </label>
+                  {/* Push Notification Subscription */}
+                  {push.isSupported && (
+                    <div className="p-3 rounded-lg border border-accent/20 bg-accent/5 space-y-3" data-testid="push-subscription-panel">
+                      <div className="flex items-center gap-3">
+                        <BellRing className="w-5 h-5 text-accent" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">Notifications push</p>
+                          <p className="text-xs text-muted-foreground">
+                            {push.isSubscribed 
+                              ? 'Actif — vous recevrez des alertes en temps réel' 
+                              : push.permission === 'denied' 
+                                ? 'Bloqué — autorisez les notifications dans les paramètres du navigateur' 
+                                : 'Activez pour recevoir des alertes même quand la page est fermée'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        {!push.isSubscribed ? (
+                          <Button 
+                            size="sm" 
+                            onClick={async () => { 
+                              const ok = await push.subscribe(); 
+                              if (ok) toast.success('Notifications push activées'); 
+                              else if (push.permission === 'denied') toast.error('Notifications bloquées par le navigateur');
+                            }}
+                            disabled={push.loading || push.permission === 'denied'}
+                            className="gap-2"
+                            data-testid="push-subscribe-btn"
+                          >
+                            {push.loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Bell className="w-3 h-3" />}
+                            Activer les push
+                          </Button>
+                        ) : (
+                          <>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={async () => { await push.testPush(); toast.success('Notification test envoyée'); }}
+                              className="gap-2"
+                              data-testid="push-test-btn"
+                            >
+                              <Send className="w-3 h-3" /> Tester
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="ghost"
+                              onClick={async () => { await push.unsubscribe(); toast.success('Notifications push désactivées'); }}
+                              disabled={push.loading}
+                              className="gap-2 text-muted-foreground"
+                              data-testid="push-unsubscribe-btn"
+                            >
+                              Désactiver
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     Vous serez notifié pour : analyse premium prête, paiement confirmé, dossier en cours, rapport disponible.
                   </p>

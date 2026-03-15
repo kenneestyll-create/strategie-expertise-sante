@@ -47,6 +47,14 @@ async def startup_db_client():
     await db.command("ping")
     logger.info("MongoDB ping successful")
 
+    # Initialize object storage
+    try:
+        from utils.storage import init_storage
+        init_storage()
+        logger.info("Object storage initialized")
+    except Exception as e:
+        logger.warning(f"Object storage init failed (will use DB fallback): {e}")
+
     # Auto-seed on first startup
     existing_admin = await db.admins.find_one({"email": "admin@accompagn-sante.fr"})
     if not existing_admin:

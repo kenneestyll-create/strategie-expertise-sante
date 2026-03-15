@@ -1,12 +1,23 @@
 from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi.responses import Response
 from datetime import datetime, timezone
 import uuid
+import base64
+import logging
 
 from config import db, DOCUMENT_CATEGORIES, DOCUMENT_STATUSES
 from models import ClientUser, ClientRegister, ClientLogin, ClientCase
 from utils.auth import hash_password, verify_password, create_client_token, get_current_client
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
+
+STORAGE_AVAILABLE = False
+try:
+    from utils.storage import upload_file, download_file, init_storage
+    STORAGE_AVAILABLE = True
+except Exception:
+    pass
 
 
 # ==================== CLIENT AUTH ====================
@@ -165,9 +176,20 @@ async def upload_client_document(request: Request, client: dict = Depends(get_cu
                 organisme = org
                 break
 
+    storage_path = None
+    if STORAGE_AVAILABLE and file_data:
+        try:
+            file_bytes = base64.b64decode(file_data)
+            result = upload_file(client["sub"], filename, file_bytes, mime_type)
+            storage_path = result["storage_path"]
+        except Exception as e:
+            logger.warning(f"Object storage upload failed, falling back to DB: {e}")
+
     doc = {
-        "id": str(uuid.uuid4()), "client_id": client["sub"], "filename": filename, "file_data": file_data,
+        "id": str(uuid.uuid4()), "client_id": client["sub"], "filename": filename,
         "mime_type": mime_type, "size": size, "category": category,
+        "storage_path": storage_path,
+        "file_data": file_data if not storage_path else None,
         "tags": {"type_document": manual_tags.get("type_document", category), "date_document": manual_tags.get("date_document", ocr_fields.get("dates", [None])[0] if ocr_fields.get("dates") else None), "organisme": organisme, "noms": ocr_fields.get("noms", []), "references": ocr_fields.get("references", []), "montants": ocr_fields.get("montants", []), "numero_ss": ocr_fields.get("numero_ss"), "taux_ipp": ocr_fields.get("taux_ipp", [])},
         "ocr_fields": ocr_fields, "status": "en_attente",
         "versions": [{"version": 1, "filename": filename, "uploaded_at": datetime.now(timezone.utc).isoformat()}],
@@ -208,6 +230,22 @@ async def get_client_document(doc_id: str, client: dict = Depends(get_current_cl
         raise HTTPException(status_code=404, detail="Document non trouvé")
     return doc
 
+@router.get("/client/documents/{doc_id}/download")
+async def download_client_document(doc_id: str, client: dict = Depends(get_current_client)):
+    doc = await db.client_documents.find_one({"id": doc_id, "client_id": client["sub"]}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document non trouvé")
+    if doc.get("storage_path") and STORAGE_AVAILABLE:
+        try:
+            data, content_type = download_file(doc["storage_path"])
+            return Response(content=data, media_type=doc.get("mime_type", content_type), headers={"Content-Disposition": f'attachment; filename="{doc["filename"]}"'})
+        except Exception as e:
+            logger.error(f"Storage download failed: {e}")
+    if doc.get("file_data"):
+        file_bytes = base64.b64decode(doc["file_data"])
+        return Response(content=file_bytes, media_type=doc.get("mime_type", "application/octet-stream"), headers={"Content-Disposition": f'attachment; filename="{doc["filename"]}"'})
+    raise HTTPException(status_code=404, detail="Fichier non disponible")
+
 @router.patch("/client/documents/{doc_id}")
 async def update_client_document(doc_id: str, request: Request, client: dict = Depends(get_current_client)):
     body = await request.json()
@@ -238,13 +276,32 @@ async def add_document_version(doc_id: str, request: Request, client: dict = Dep
     file_data = body.get("file_data", "")
     if not filename or not file_data:
         raise HTTPException(status_code=400, detail="Fichier requis")
-    doc = await db.client_documents.find_one({"id": doc_id, "client_id": client["sub"]}, {"_id": 0, "versions": 1})
+    doc = await db.client_documents.find_one({"id": doc_id, "client_id": client["sub"]}, {"_id": 0, "versions": 1, "mime_type": 1})
     if not doc:
         raise HTTPException(status_code=404, detail="Document non trouvé")
     new_version = len(doc.get("versions", [])) + 1
+    storage_path = None
+    if STORAGE_AVAILABLE and file_data:
+        try:
+            file_bytes = base64.b64decode(file_data)
+            mime_type = body.get("mime_type", doc.get("mime_type", "application/octet-stream"))
+            result = upload_file(client["sub"], filename, file_bytes, mime_type)
+            storage_path = result["storage_path"]
+        except Exception as e:
+            logger.warning(f"Object storage version upload failed: {e}")
+    update_data = {
+        "filename": filename,
+        "status": "corrige",
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    if storage_path:
+        update_data["storage_path"] = storage_path
+        update_data["file_data"] = None
+    else:
+        update_data["file_data"] = file_data
     await db.client_documents.update_one(
         {"id": doc_id, "client_id": client["sub"]},
-        {"$set": {"file_data": file_data, "filename": filename, "status": "corrige", "updated_at": datetime.now(timezone.utc).isoformat()},
+        {"$set": update_data,
          "$push": {"versions": {"version": new_version, "filename": filename, "uploaded_at": datetime.now(timezone.utc).isoformat()}}}
     )
     return {"success": True, "version": new_version}
@@ -284,3 +341,67 @@ async def update_notification_settings(request: Request, client: dict = Depends(
     if update:
         await db.client_users.update_one({"id": client["sub"]}, {"$set": update})
     return {"success": True}
+
+
+# ==================== PUSH SUBSCRIPTIONS ====================
+
+@router.get("/push/vapid-key")
+async def get_vapid_public_key():
+    import os
+    key = os.environ.get("VAPID_PUBLIC_KEY", "")
+    return {"public_key": key}
+
+@router.post("/push/subscribe")
+async def push_subscribe(request: Request, client: dict = Depends(get_current_client)):
+    body = await request.json()
+    subscription = body.get("subscription")
+    if not subscription or not subscription.get("endpoint"):
+        raise HTTPException(status_code=400, detail="Subscription invalide")
+    existing = await db.push_subscriptions.find_one(
+        {"client_id": client["sub"], "subscription.endpoint": subscription["endpoint"]},
+        {"_id": 0}
+    )
+    if existing:
+        return {"success": True, "message": "Déjà abonné"}
+    doc = {
+        "id": str(uuid.uuid4()),
+        "client_id": client["sub"],
+        "subscription": subscription,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.push_subscriptions.insert_one(doc)
+    return {"success": True, "message": "Abonnement push activé"}
+
+@router.delete("/push/unsubscribe")
+async def push_unsubscribe(request: Request, client: dict = Depends(get_current_client)):
+    body = await request.json()
+    endpoint = body.get("endpoint", "")
+    if endpoint:
+        await db.push_subscriptions.delete_many(
+            {"client_id": client["sub"], "subscription.endpoint": endpoint}
+        )
+    else:
+        await db.push_subscriptions.delete_many({"client_id": client["sub"]})
+    return {"success": True, "message": "Abonnement push désactivé"}
+
+@router.post("/push/test")
+async def test_push_notification(client: dict = Depends(get_current_client)):
+    from utils.push import send_push_to_client
+    await send_push_to_client(
+        db, client["sub"],
+        title="Test de notification",
+        body="Les notifications push fonctionnent correctement !",
+        url="/espace-client",
+        tag="test"
+    )
+    return {"success": True, "message": "Notification test envoyée"}
+
+
+# ==================== STORAGE STATUS ====================
+
+@router.get("/storage/status")
+async def get_storage_status():
+    return {
+        "object_storage_available": STORAGE_AVAILABLE,
+        "provider": "Emergent Object Storage" if STORAGE_AVAILABLE else "MongoDB (base64 fallback)",
+    }

@@ -131,11 +131,16 @@ export const ClientDocuments = ({ token, onDocumentsChange }) => {
 
   const downloadDoc = async (docId, filename) => {
     try {
-      const res = await axios.get(`${API}/client/documents/${docId}`, { headers });
+      const res = await axios.get(`${API}/client/documents/${docId}/download`, { 
+        headers, 
+        responseType: 'blob' 
+      });
+      const blobUrl = URL.createObjectURL(res.data);
       const link = document.createElement('a');
-      link.href = `data:${res.data.mime_type};base64,${res.data.file_data}`;
+      link.href = blobUrl;
       link.download = filename;
       link.click();
+      URL.revokeObjectURL(blobUrl);
     } catch { toast.error('Erreur téléchargement'); }
   };
 
