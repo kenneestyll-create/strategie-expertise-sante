@@ -6,40 +6,22 @@ Application web complète en français pour accompagner les victimes de maladies
 ## Architecture (après refactoring mars 2026)
 ```
 /app/backend/
-├── server.py          (68 lignes — point d'entrée slim)
+├── server.py          (slim entry point)
 ├── config.py          (DB, env, constantes)
 ├── models.py          (modèles Pydantic)
 ├── pyproject.toml     (config pytest)
+├── .github/workflows/ci.yml (CI/CD)
 ├── utils/
-│   ├── auth.py        (auth, tokens, dépendances)
+│   ├── auth.py        (auth, tokens)
 │   ├── email.py       (notifications email Resend)
 │   ├── chatbot.py     (FAQ + IA Claude)
-│   └── pdf.py         (génération PDF fpdf2)
+│   ├── pdf.py         (génération PDF fpdf2)
+│   ├── push.py        (notifications push VAPID/WebPush)
+│   └── storage.py     (stockage objet Emergent)
 ├── routes/
-│   ├── __init__.py    (agrégation des routers)
-│   ├── public.py      (contact, FAQ, avis, visiteurs, parrainage)
-│   ├── chatbot.py     (chatbot IA)
-│   ├── forum.py       (forum CRUD + admin)
-│   ├── payments.py    (Stripe + PayPal)
-│   ├── admin.py       (dashboard admin, analytics, CRUD)
-│   ├── client.py      (portail client, documents, notifications, progression)
-│   ├── strategiia.py  (StratégiIA, Dossier Express, cas anonymisés)
-│   └── misc.py        (RDV, simulateur, alertes, relance, SEO, seed)
-└── tests/             (187 tests pytest)
-    ├── conftest.py    (fixtures partagées)
-    ├── test_module_config.py
-    ├── test_module_models.py
-    ├── test_module_utils_auth.py
-    ├── test_module_utils_chatbot.py
-    ├── test_module_utils_pdf.py
-    ├── test_module_routes_public.py
-    ├── test_module_routes_chatbot.py
-    ├── test_module_routes_forum.py
-    ├── test_module_routes_admin.py
-    ├── test_module_routes_payments.py
-    ├── test_module_routes_client.py
-    ├── test_module_routes_strategiia.py
-    └── test_module_routes_misc.py
+│   ├── client.py      (portail client, docs, notifs, push, stockage)
+│   └── ...            (admin, forum, payments, strategiia, misc, public, chatbot)
+└── tests/             (210+ tests pytest)
 ```
 
 ## Tests unitaires — 210 tests (100% pass)
@@ -85,6 +67,8 @@ Exécution : `cd /app/backend && python -m pytest --cov=. --cov-report=term-miss
 - [x] Suite complète de tests unitaires pytest — 187 tests (mars 2026)
 - [x] Suite de tests élargie — 210 tests, 0 échec, couverture 77.8% (fév 2026)
 - [x] Pipeline CI/CD GitHub Actions (`.github/workflows/ci.yml`)
+- [x] Push notifications navigateur (Service Worker VAPID, mars 2026)
+- [x] Stockage objet Emergent (documents en production, mars 2026)
 
 ## Éléments bloqués (action utilisateur)
 1. **Budget LLM Emergent** épuisé → Profile → Universal Key → Add Balance
@@ -94,8 +78,6 @@ Exécution : `cd /app/backend && python -m pytest --cov=. --cov-report=term-miss
 
 ## Tâches futures
 - P2: OCR Phase 2 (GPT-4o côté serveur)
-- P3: Push notifications navigateur (Service Worker)
-- P3: Stockage objet (fichiers en production)
 - P3: Domaine Resend vérifié
 
 ## Credentials test
