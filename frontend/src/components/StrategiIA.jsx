@@ -54,6 +54,7 @@ export const StrategiIA = () => {
   const [consent, setConsent] = useState(false);
   const [premiumPdf, setPremiumPdf] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [analysePremium, setAnalysePremium] = useState(false);
 
   // Analyze without email — result gated behind read wall
   const handleAnalyze = async () => {
@@ -106,7 +107,8 @@ export const StrategiIA = () => {
       const { data } = await axios.post(`${API}/strategiia/checkout`, {
         origin_url: window.location.origin, email,
         context: `${typeDossier} - ${situation.slice(0, 100)}`,
-        premium_pdf: premiumPdf
+        premium_pdf: premiumPdf,
+        analyse_premium: analysePremium
       });
       if (data.url) window.location.href = data.url;
     } catch { toast.error("Erreur de paiement. Réessayez."); }
@@ -150,7 +152,7 @@ export const StrategiIA = () => {
     setStep('form');
     setTypeDossier(''); setRegime(''); setSituation('');
     setFullResult(''); setPremiumResult('');
-    setConsent(false); setPremiumPdf(false);
+    setConsent(false); setPremiumPdf(false); setAnalysePremium(false);
   };
 
   // Get teaser text — first quarter of the analysis
@@ -342,10 +344,21 @@ export const StrategiIA = () => {
                         <div className="flex items-center gap-2">
                           <Lock className="w-5 h-5 text-accent" />
                           <div>
-                            <h4 className="font-semibold text-sm">Rapport complet StratégiIA — {premiumPdf ? '48€' : '29€'}</h4>
+                            <h4 className="font-semibold text-sm">Rapport complet StratégiIA — {29 + (premiumPdf ? 19 : 0) + (analysePremium ? 29 : 0)}€</h4>
                             <p className="text-xs text-muted-foreground">Jurisprudences détaillées, stratégie complète, score de pertinence, PDF sécurisé</p>
                           </div>
                         </div>
+                        <label className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-accent/40 cursor-pointer transition-colors" data-testid="strategiia-analyse-premium-option">
+                          <input type="checkbox" checked={analysePremium} onChange={e => setAnalysePremium(e.target.checked)} className="mt-0.5 accent-amber-500" />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-amber-400 text-sm">&#9889;</span>
+                              <span className="text-sm font-medium">Analyse Premium</span>
+                              <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px]">+29€</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">Votre rapport StratégiIA enrichi et relu personnellement par notre expert pour une analyse encore plus précise et personnalisée.</p>
+                          </div>
+                        </label>
                         <label className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-accent/40 cursor-pointer transition-colors" data-testid="strategiia-premium-pdf-option">
                           <input type="checkbox" checked={premiumPdf} onChange={e => setPremiumPdf(e.target.checked)} className="mt-0.5 accent-accent" />
                           <div className="flex-1">
@@ -359,7 +372,7 @@ export const StrategiIA = () => {
                           <PdfCoverPreview reportType="StrategiIA" />
                         </label>
                         <Button onClick={handlePayForPremium} className="w-full rounded-lg gap-2 bg-accent hover:bg-accent/90" data-testid="strategiia-buy-premium">
-                          <CreditCard className="w-4 h-4" /> Obtenir le rapport complet — {premiumPdf ? '48€' : '29€'}
+                          <CreditCard className="w-4 h-4" /> Obtenir le rapport complet — {29 + (premiumPdf ? 19 : 0) + (analysePremium ? 29 : 0)}€
                         </Button>
                       </CardContent>
                     </Card>

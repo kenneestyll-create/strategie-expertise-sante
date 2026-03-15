@@ -57,6 +57,7 @@ export const AdminDashboard = () => {
   const [urgentAlerts, setUrgentAlerts] = useState({ items: [], total: 0, non_traite: 0 });
   const [strategiiaData, setStrategiiaData] = useState({ total_analyses: 0, premium: 0, total_cases: 0, recent: [] });
   const [casAnonymises, setCasAnonymises] = useState({ items: [], total: 0 });
+  const [premiumAnalyses, setPremiumAnalyses] = useState({ items: [], stats: { total: 0, en_attente: 0, en_cours: 0, termine: 0 } });
   const [newCas, setNewCas] = useState({ type_dossier: '', regime: '', duree: '', strategie: '', resultat: '', score_pertinence: 0, notes: '' });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -85,7 +86,7 @@ export const AdminDashboard = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [contactsRes, statsRes, avisRes, avisStatsRes, referralsRes, bookingsRes, relanceRes, clientsRes, alertesRes, strategiiaRes, casRes] = await Promise.all([
+      const [contactsRes, statsRes, avisRes, avisStatsRes, referralsRes, bookingsRes, relanceRes, clientsRes, alertesRes, strategiiaRes, casRes, premiumRes] = await Promise.all([
         axios.get(`${API}/admin/contacts`, axiosConfig),
         axios.get(`${API}/admin/stats`, axiosConfig),
         axios.get(`${API}/admin/avis`, axiosConfig),
@@ -96,7 +97,8 @@ export const AdminDashboard = () => {
         axios.get(`${API}/admin/clients`, axiosConfig).catch(() => ({ data: [] })),
         axios.get(`${API}/admin/alertes-urgentes`, axiosConfig).catch(() => ({ data: { items: [], total: 0, non_traite: 0 } })),
         axios.get(`${API}/admin/strategiia/stats`, axiosConfig).catch(() => ({ data: { total_analyses: 0, premium: 0, total_cases: 0, recent: [] } })),
-        axios.get(`${API}/admin/cas-anonymises`, axiosConfig).catch(() => ({ data: { items: [], total: 0 } }))
+        axios.get(`${API}/admin/cas-anonymises`, axiosConfig).catch(() => ({ data: { items: [], total: 0 } })),
+        axios.get(`${API}/admin/premium-analyses`, axiosConfig).catch(() => ({ data: { items: [], stats: { total: 0, en_attente: 0, en_cours: 0, termine: 0 } } }))
       ]);
       setContacts(contactsRes.data);
       setStats(statsRes.data);
@@ -109,6 +111,7 @@ export const AdminDashboard = () => {
       setUrgentAlerts(alertesRes.data);
       setStrategiiaData(strategiiaRes.data);
       setCasAnonymises(casRes.data);
+      setPremiumAnalyses(premiumRes.data);
     } catch (error) {
       console.error('Erreur:', error);
       if (error.response?.status === 401) {
@@ -340,6 +343,13 @@ export const AdminDashboard = () => {
             <TabsTrigger value="strategiia" className="gap-1 text-xs sm:text-sm" data-testid="tab-strategiia">
               <Brain className="w-3 h-3 sm:w-4 sm:h-4" />
               StratégiIA
+            </TabsTrigger>
+            <TabsTrigger value="premium" className="gap-1 text-xs sm:text-sm relative" data-testid="tab-premium">
+              <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-amber-500" />
+              Premium
+              {premiumAnalyses.stats.en_attente > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">{premiumAnalyses.stats.en_attente}</span>
+              )}
             </TabsTrigger>
           </TabsList>
 
@@ -1134,6 +1144,72 @@ export const AdminDashboard = () => {
                           }}
                           data-testid={`cas-delete-${c.id}`}
                         ><Trash2 className="w-3.5 h-3.5" /></Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Premium Analyses Tab */}
+          <TabsContent value="premium" className="space-y-6" data-testid="premium-tab-content">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{premiumAnalyses.stats.total}</p><p className="text-xs text-muted-foreground">Total commandes</p></CardContent></Card>
+              <Card className="border-amber-500/30"><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-amber-500">{premiumAnalyses.stats.en_attente}</p><p className="text-xs text-muted-foreground">En attente</p></CardContent></Card>
+              <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-blue-500">{premiumAnalyses.stats.en_cours}</p><p className="text-xs text-muted-foreground">En cours</p></CardContent></Card>
+              <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-green-600">{premiumAnalyses.stats.termine}</p><p className="text-xs text-muted-foreground">Terminées</p></CardContent></Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Zap className="w-5 h-5 text-amber-500" />
+                  Analyses Premium en attente
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {premiumAnalyses.items.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">Aucune analyse Premium pour le moment.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {premiumAnalyses.items.map(item => (
+                      <div key={item.id} className={`p-4 rounded-xl border ${item.status === 'en_attente' ? 'border-amber-500/30 bg-amber-50/50' : item.status === 'en_cours' ? 'border-blue-500/30 bg-blue-50/50' : 'border-green-500/30 bg-green-50/50'}`} data-testid={`premium-item-${item.id}`}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Badge variant={item.status === 'en_attente' ? 'warning' : item.status === 'en_cours' ? 'default' : 'success'} className={`text-[10px] ${item.status === 'en_attente' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : item.status === 'en_cours' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' : 'bg-green-500/10 text-green-600 border-green-500/20'}`}>
+                                {item.status === 'en_attente' ? 'En attente' : item.status === 'en_cours' ? 'En cours' : 'Terminée'}
+                              </Badge>
+                              <Badge variant="outline" className="text-[10px]">{item.type === 'strategiia' ? 'StrategiIA' : 'Dossier Express'}</Badge>
+                              {item.premium_pdf && <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">PDF Pro</Badge>}
+                              <span className="text-xs text-muted-foreground">{item.amount}€</span>
+                            </div>
+                            <p className="font-medium text-sm mt-1.5">{item.email || item.name || 'Client'}</p>
+                            {item.context && <p className="text-xs text-muted-foreground mt-0.5 truncate">{item.context}</p>}
+                            <p className="text-xs text-muted-foreground mt-1">{new Date(item.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                          </div>
+                          <div className="flex gap-1.5 flex-shrink-0">
+                            {item.status === 'en_attente' && (
+                              <Button size="sm" variant="outline" className="text-xs h-7 gap-1 border-blue-500/30 text-blue-600 hover:bg-blue-50"
+                                onClick={async () => {
+                                  await axios.patch(`${API}/admin/premium-analyses/${item.id}`, { status: 'en_cours' }, axiosConfig);
+                                  fetchData(); toast.success("Statut mis à jour");
+                                }} data-testid={`premium-start-${item.id}`}>
+                                <Eye className="w-3 h-3" /> Traiter
+                              </Button>
+                            )}
+                            {item.status === 'en_cours' && (
+                              <Button size="sm" variant="outline" className="text-xs h-7 gap-1 border-green-500/30 text-green-600 hover:bg-green-50"
+                                onClick={async () => {
+                                  await axios.patch(`${API}/admin/premium-analyses/${item.id}`, { status: 'termine' }, axiosConfig);
+                                  fetchData(); toast.success("Analyse marquée comme terminée");
+                                }} data-testid={`premium-done-${item.id}`}>
+                                <CheckCircle className="w-3 h-3" /> Terminé
+                              </Button>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>

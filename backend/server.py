@@ -2672,7 +2672,7 @@ def _generate_dossier_pdf(name: str, email: str, type_dossier: str, regime: str,
 
 @api_router.post("/dossier-express/checkout")
 async def dossier_express_checkout(request: Request):
-    """Create Stripe checkout for Dossier Express (97 EUR or 116 EUR with premium PDF)."""
+    """Create Stripe checkout for Dossier Express (97€ base + options)."""
     if not STRIPE_API_KEY:
         raise HTTPException(status_code=500, detail="Stripe non configure")
 
@@ -2681,15 +2681,29 @@ async def dossier_express_checkout(request: Request):
     email = body.get("email", "")
     name = body.get("name", "")
     premium_pdf = body.get("premium_pdf", False)
+    analyse_premium = body.get("analyse_premium", False)
 
-    amount = 116.00 if premium_pdf else 97.00
+    amount = 97.00
+    if premium_pdf:
+        amount += 19.00
+    if analyse_premium:
+        amount += 49.00
 
-    success_url = f"{origin_url}/dossier-express?payment=success&session_id={{CHECKOUT_SESSION_ID}}&premium_pdf={'1' if premium_pdf else '0'}"
+    params = f"premium_pdf={'1' if premium_pdf else '0'}&analyse_premium={'1' if analyse_premium else '0'}"
+    success_url = f"{origin_url}/dossier-express?payment=success&session_id={{CHECKOUT_SESSION_ID}}&{params}"
     cancel_url = f"{origin_url}/dossier-express?payment=cancelled"
 
     host_url = str(request.base_url).rstrip('/')
     webhook_url = f"{host_url}/api/webhook/stripe"
     stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+
+    tag = "dossier_express"
+    if premium_pdf and analyse_premium:
+        tag = "dossier_express_full"
+    elif premium_pdf:
+        tag = "dossier_express_pdf_pro"
+    elif analyse_premium:
+        tag = "dossier_express_analyse_premium"
 
     checkout_request = CheckoutSessionRequest(
         amount=amount,
@@ -2697,13 +2711,27 @@ async def dossier_express_checkout(request: Request):
         success_url=success_url,
         cancel_url=cancel_url,
         metadata={
-            "package_id": "dossier_express_premium" if premium_pdf else "dossier_express",
-            "package_name": "Dossier Express + Version Pro" if premium_pdf else "Dossier Express StratégiIA",
+            "package_id": tag,
+            "package_name": f"Dossier Express ({amount:.0f}€)",
             "customer_email": email,
             "customer_name": name,
-            "premium_pdf": "1" if premium_pdf else "0"
+            "premium_pdf": "1" if premium_pdf else "0",
+            "analyse_premium": "1" if analyse_premium else "0"
         }
     )
+
+    # Store premium analysis order if selected
+    if analyse_premium:
+        await db.premium_analyses.insert_one({
+            "id": str(uuid.uuid4()),
+            "type": "dossier_express",
+            "email": email,
+            "name": name,
+            "status": "en_attente",
+            "premium_pdf": premium_pdf,
+            "amount": amount,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
 
     try:
         session = await stripe_checkout.create_checkout_session(checkout_request)
@@ -2879,7 +2907,7 @@ async def strategiia_register_email(request: Request):
 
 @api_router.post("/strategiia/checkout")
 async def strategiia_checkout(request: Request):
-    """Create Stripe checkout for premium StratégiIA report (29€ or 48€ with premium PDF)"""
+    """Create Stripe checkout for premium StratégiIA report (29€ base + options)"""
     if not STRIPE_API_KEY:
         raise HTTPException(status_code=500, detail="Stripe non configuré")
 
@@ -2888,15 +2916,29 @@ async def strategiia_checkout(request: Request):
     email = body.get("email", "")
     analysis_context = body.get("context", "")
     premium_pdf = body.get("premium_pdf", False)
+    analyse_premium = body.get("analyse_premium", False)
 
-    amount = 48.00 if premium_pdf else 29.00
+    amount = 29.00
+    if premium_pdf:
+        amount += 19.00
+    if analyse_premium:
+        amount += 29.00
 
-    success_url = f"{origin_url}/simulateur?strategiia=success&session_id={{CHECKOUT_SESSION_ID}}&premium_pdf={'1' if premium_pdf else '0'}"
+    params = f"premium_pdf={'1' if premium_pdf else '0'}&analyse_premium={'1' if analyse_premium else '0'}"
+    success_url = f"{origin_url}/simulateur?strategiia=success&session_id={{CHECKOUT_SESSION_ID}}&{params}"
     cancel_url = f"{origin_url}/simulateur?strategiia=cancelled"
 
     host_url = str(request.base_url).rstrip('/')
     webhook_url = f"{host_url}/api/webhook/stripe"
     stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+
+    product_tag = "strategiia_premium"
+    if premium_pdf and analyse_premium:
+        product_tag = "strategiia_premium_full"
+    elif premium_pdf:
+        product_tag = "strategiia_premium_pdf"
+    elif analyse_premium:
+        product_tag = "strategiia_analyse_premium"
 
     checkout_request = CheckoutSessionRequest(
         amount=amount,
@@ -2904,12 +2946,26 @@ async def strategiia_checkout(request: Request):
         success_url=success_url,
         cancel_url=cancel_url,
         metadata={
-            "product": "strategiia_premium_pdf" if premium_pdf else "strategiia_premium",
+            "product": product_tag,
             "customer_email": email,
             "context": analysis_context[:200],
-            "premium_pdf": "1" if premium_pdf else "0"
+            "premium_pdf": "1" if premium_pdf else "0",
+            "analyse_premium": "1" if analyse_premium else "0"
         }
     )
+
+    # Store premium analysis order if selected
+    if analyse_premium:
+        await db.premium_analyses.insert_one({
+            "id": str(uuid.uuid4()),
+            "type": "strategiia",
+            "email": email,
+            "context": analysis_context[:500],
+            "status": "en_attente",
+            "premium_pdf": premium_pdf,
+            "amount": amount,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
 
     try:
         session = await stripe_checkout.create_checkout_session(checkout_request)
@@ -3121,6 +3177,38 @@ async def send_relance_email(item_id: str, admin: dict = Depends(get_current_adm
         msg = "Relance marquée (email non configuré)"
     
     return {"success": True, "email_sent": email_sent, "message": msg}
+
+
+# ==================== PREMIUM ANALYSES ADMIN ====================
+
+@api_router.get("/admin/premium-analyses")
+async def get_premium_analyses(admin: dict = Depends(get_current_admin)):
+    """Admin: list all premium analysis orders with their status."""
+    items = await db.premium_analyses.find({}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    stats = {
+        "total": len(items),
+        "en_attente": sum(1 for i in items if i.get("status") == "en_attente"),
+        "en_cours": sum(1 for i in items if i.get("status") == "en_cours"),
+        "termine": sum(1 for i in items if i.get("status") == "termine"),
+    }
+    return {"items": items, "stats": stats}
+
+
+@api_router.patch("/admin/premium-analyses/{analysis_id}")
+async def update_premium_analysis(analysis_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    """Admin: update the status of a premium analysis."""
+    body = await request.json()
+    new_status = body.get("status", "")
+    if new_status not in ("en_attente", "en_cours", "termine"):
+        raise HTTPException(status_code=400, detail="Statut invalide")
+    update_fields = {"status": new_status, "updated_at": datetime.now(timezone.utc).isoformat()}
+    if body.get("notes"):
+        update_fields["admin_notes"] = body["notes"]
+    result = await db.premium_analyses.update_one({"id": analysis_id}, {"$set": update_fields})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Analyse non trouvée")
+    return {"success": True}
+
 
 # ==================== RESOURCES / LIBRARY ROUTES ====================
 

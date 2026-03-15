@@ -52,6 +52,7 @@ export const DossierExpressPage = () => {
   const [dossierId, setDossierId] = useState(null);
   const [pollStatus, setPollStatus] = useState(null);
   const [premiumPdf, setPremiumPdf] = useState(false);
+  const [analysePremium, setAnalysePremium] = useState(false);
 
   const featuresRef = useRevealChildren();
   const ctaBottomRef = useReveal();
@@ -112,13 +113,15 @@ export const DossierExpressPage = () => {
     }
     sessionStorage.setItem('dossier_express_form', JSON.stringify(form));
     sessionStorage.setItem('dossier_express_premium_pdf', premiumPdf ? '1' : '0');
+    sessionStorage.setItem('dossier_express_analyse_premium', analysePremium ? '1' : '0');
     setLoading(true);
     try {
       const res = await axios.post(`${API}/dossier-express/checkout`, {
         email: form.email,
         name: form.name,
         origin_url: window.location.origin,
-        premium_pdf: premiumPdf
+        premium_pdf: premiumPdf,
+        analyse_premium: analysePremium
       });
       window.location.href = res.data.url;
     } catch (err) {
@@ -406,6 +409,19 @@ export const DossierExpressPage = () => {
               {/* Action */}
               <DataConsentBox checked={consent} onChange={setConsent} className="mt-4" />
 
+              {/* Analyse Premium option */}
+              <label className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-amber-500/30 cursor-pointer transition-colors mt-3" data-testid="de-analyse-premium-option">
+                <input type="checkbox" checked={analysePremium} onChange={e => setAnalysePremium(e.target.checked)} className="mt-0.5 accent-amber-500" />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-amber-400 text-sm">&#9889;</span>
+                    <span className="text-sm font-medium">Analyse Premium</span>
+                    <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px]">+49€</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Votre dossier analysé par StratégiIA puis enrichi par la relecture personnelle de notre expert avec ses recommandations exclusives.</p>
+                </div>
+              </label>
+
               {/* Premium PDF option */}
               <label className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-accent/40 cursor-pointer transition-colors mt-3" data-testid="de-premium-pdf-option">
                 <input type="checkbox" checked={premiumPdf} onChange={e => setPremiumPdf(e.target.checked)} className="mt-0.5 accent-amber-500" />
@@ -438,7 +454,7 @@ export const DossierExpressPage = () => {
                   disabled={loading || !form.email || !form.name || !consent}
                   data-testid="de-checkout-button"
                 >
-                  {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection...</> : <><CreditCard className="w-5 h-5" /> Payer {premiumPdf ? '116' : '97'} € et lancer l'analyse</>}
+                  {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection...</> : <><CreditCard className="w-5 h-5" /> Payer {97 + (premiumPdf ? 19 : 0) + (analysePremium ? 49 : 0)} € et lancer l'analyse</>}
                 </Button>
               )}
 
