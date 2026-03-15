@@ -1,72 +1,82 @@
 # Stratégie & Expertise Santé — PRD
 
-## Problem Statement
-Web application in French providing advice and support for occupational diseases, insurance disputes, and disability procedures.
+## Problème original
+Application web complète en français pour accompagner les victimes de maladies professionnelles, accidents du travail, litiges assurantiels et procédures d'invalidité (MDPH).
 
 ## Architecture
-- **Frontend:** React + Tailwind CSS + Shadcn UI + recharts + Tesseract.js + react-helmet-async (port 3000)
-- **Backend:** FastAPI + MongoDB + GZip (port 8001, monolithic server.py)
-- **Integrations:** Stripe (test), PayPal (sandbox), Claude Sonnet 4.5 (Emergent LLM Key), Resend (ACTIVE), HubSpot (pending), fpdf2, Tesseract.js (OCR)
+```
+/app/backend/
+├── server.py          (68 lignes — point d'entrée slim)
+├── config.py          (DB, env, constantes)
+├── models.py          (modèles Pydantic)
+├── utils/
+│   ├── auth.py        (auth, tokens, dépendances)
+│   ├── email.py       (notifications email Resend)
+│   ├── chatbot.py     (FAQ + IA Claude)
+│   └── pdf.py         (génération PDF fpdf2)
+├── routes/
+│   ├── public.py      (contact, FAQ, avis, visiteurs, parrainage)
+│   ├── chatbot.py     (chatbot IA)
+│   ├── forum.py       (forum CRUD + admin)
+│   ├── payments.py    (Stripe + PayPal)
+│   ├── admin.py       (dashboard admin, analytics, CRUD)
+│   ├── client.py      (portail client, documents, notifications, progression)
+│   ├── strategiia.py  (StratégiIA, Dossier Express, cas anonymisés)
+│   └── misc.py        (RDV, simulateur, alertes, relance, SEO, seed)
+└── tests/
 
-## Completed Features (Full List)
-- Core pages, Admin panel (10 tabs), Forum, Chatbot (5 free Q), Reviews, Referral system, PDF viewer
-- IPP & AAH calculators, Global search (fuse.js + anchors + highlighting)
-- StratégiIA (read wall + relevance scoring + OCR), Dossier Express (AI analysis + OCR)
-- Stripe & PayPal (test/sandbox), Resend (ACTIVE), Abandoned cart emails
-- Secured PDF Reports, Analyse Premium (+29€/+49€), Navigation & Search, RGPD
-- StratégiIA Phase 2 (Admin case CRUD), Phase 3 (relevance scoring)
-- Analytics Dashboard, Client Notification System (5 types)
-- Document Quality Control, OCR Phase 1 (Tesseract.js)
-- Intelligent Document History
-- PageSpeed/SEO, Homepage animations
+/app/frontend/src/
+├── pages/             (AdminDashboard, EspaceClient, StrategiIA, DossierExpress...)
+├── components/        (DocumentUploader, OcrFieldsPreview, Chatbot...)
+└── hooks/             (useOCR.js)
+```
 
-### Intelligent Document History (Completed — March 15, 2026)
-- **Backend CRUD (`client_documents` collection):**
-  - `POST /api/client/documents` — upload with auto-categorization from OCR fields
-  - `GET /api/client/documents` — list with filters (category, status, organisme, search) + stats
-  - `GET /api/client/documents/{id}` — single document with file_data for download
-  - `PATCH /api/client/documents/{id}` — update category, tags, status
-  - `DELETE /api/client/documents/{id}` — delete document
-  - `POST /api/client/documents/{id}/version` — add new version (sets status to "corrigé")
-- **Auto-tagging:**
-  - Category auto-detection from OCR `type_dossier_detected` → at, mp, mdph, expertise
-  - Organisme auto-detection from OCR context (CPAM, CRAMIF, MSA, MDPH, CNSA, TASS, TCI)
-  - Date, references, amounts, SSN, IPP rates from OCR fields
-- **7 categories:** AT, MP, MDPH/AAH, Expertises médicales, Courriers CPAM, Documents juridiques, Autres
-- **4 statuses:** en_attente, validé, illisible, corrigé
-- **Frontend (ClientDocuments.jsx):**
-  - "Mes Documents" tab in client portal (alongside "Mes Dossiers")
-  - Stats cards: total, validés, en attente, illisibles
-  - Two views: chronological list + category folders
-  - Search bar, category filter, status filter
-  - Upload panel with OCR-enabled DocumentUploader
-  - Edit tags modal: category, organisme, date_document
-  - Document cards: filename, ext badge, status badge, category badge, date, organisme
-  - Download, edit, delete actions on hover
-  - Version tracking (vN displayed)
-- **File storage:** base64 in MongoDB (< 10MB per file)
-- **Testing:** 100% pass (iteration_39 — 23 backend + 10 frontend)
+## Fonctionnalités implémentées
+- [x] Site vitrine multipage (AT/MP, MDPH, expertises, tarifs, etc.)
+- [x] Formulaire de contact + notifications email (Resend)
+- [x] FAQ dynamique + chatbot IA (Claude Sonnet 4.5)
+- [x] Forum communautaire avec modération admin
+- [x] Simulateur de diagnostic interactif
+- [x] Calculatrice IPP/AAH
+- [x] Paiements Stripe + PayPal (sandbox)
+- [x] Parrainage + fidélité (réductions auto)
+- [x] Prise de RDV avec créneaux
+- [x] StrategiIA (analyse IA, quota gratuit, premium, PDF)
+- [x] Dossier Express (analyse complète IA + envoi email PDF)
+- [x] Cas anonymisés (scoring de pertinence)
+- [x] Portail client (inscription, dossiers, documents, notifications, progression)
+- [x] OCR Phase 1 (Tesseract.js côté client)
+- [x] Contrôle qualité documents (validation, checklist, guide scan)
+- [x] Historique intelligent documents (tags, catégories, filtres)
+- [x] Dashboard progression client (donut chart + timeline)
+- [x] Analytics admin (KPIs, graphiques recharts)
+- [x] SEO (sitemap.xml, robots.txt, cache)
+- [x] **Refactoring backend** — monolithe 4327 lignes → 16 modules (mars 2026)
 
-## Known Limitations
-- LLM budget exceeded (needs recharge)
-- Stripe/PayPal in test/sandbox mode
-- Resend sender: onboarding@resend.dev
-- OCR Phase 1 (Tesseract.js) less accurate on complex docs — Phase 2 GPT-4o planned
+## Éléments bloqués (action utilisateur)
+1. **Budget LLM Emergent** épuisé → Profile → Universal Key → Add Balance
+2. **HubSpot Portal ID** → fournir `HUBSPOT_PORTAL_ID`
+3. **Clés Stripe/PayPal production** → fournir les clés live
+4. **Contenu juridique** → fournir texte final Mentions Légales
 
-## Pending (Blocked on User Action)
-- P1: Recharge Emergent LLM Key
-- P1: HubSpot Portal ID
-- P2: Production Stripe/PayPal keys
-- P3: Legal content finalization
+## Tâches futures
+- P2: OCR Phase 2 (GPT-4o côté serveur) — bloqué par budget LLM
+- P3: Push notifications navigateur (Service Worker)
+- P3: Stockage objet (fichiers en production)
+- P3: Domaine Resend vérifié
 
-## Backlog
-- OCR Phase 2: GPT-4o enhanced extraction (pending LLM budget)
-- Backend refactoring: Break server.py into modules
-- Browser Push via Service Worker (Web Push API)
-- Legal content finalization
-- Verified Resend domain
-- Object storage migration (for production file hosting)
+## Credentials test
+- Admin: `admin@accompagn-sante.fr` / `Admin2024!`
+- Client: inscription via `/espace-client`
 
-## Credentials
-- Admin: admin@accompagn-sante.fr / Admin2024!
-- Test client: test-notif@example.com / Test1234!
+## Intégrations
+| Service | Statut |
+|---------|--------|
+| Stripe | Sandbox |
+| PayPal | Sandbox |
+| Claude Sonnet 4.5 (Emergent) | Budget épuisé |
+| Resend | Actif |
+| Tesseract.js | Actif (côté client) |
+| HubSpot | En attente Portal ID |
+| recharts | Actif |
+| fpdf2 | Actif |

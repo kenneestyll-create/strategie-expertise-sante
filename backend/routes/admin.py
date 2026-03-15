@@ -187,6 +187,8 @@ async def get_all_avis(status: Optional[str] = None, admin: dict = Depends(get_c
     for avis in avis_list:
         if isinstance(avis.get('created_at'), str):
             avis['created_at'] = datetime.fromisoformat(avis['created_at'])
+        if 'temoignage' in avis and 'commentaire' not in avis:
+            avis['commentaire'] = avis.pop('temoignage')
     return avis_list
 
 @router.get("/admin/avis/stats")
