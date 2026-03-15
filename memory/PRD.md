@@ -20,6 +20,21 @@ Web application in French providing advice and support for occupational diseases
 - Chatbot quota (5 free messages)
 - Homepage: urgent red Dossier Express banner after hero section with weekly counter ("X dossiers traités cette semaine")
 - Homepage: "Le défi en chiffres" — 4 stat blocks (700K AT, 50K MP, 12M handicap, 300K MDPH) with official source links (CNAM, INSEE, CNSA), black/gold cards, scroll animations, animated count-up (ease-out cubic, 1.3s, one-shot on scroll), impact phrase below
+
+### Secured PDF Reports (Completed — Feb 2026)
+- Server-side PDF generator (`_generate_secured_pdf` in server.py) with:
+  - Cover page: report type, unique number (SES-YYYY-XXXXX), date, client name, type de dossier
+  - Header on every page: brand name + site URL + report number
+  - Footer on every page: copyright line
+  - Semi-transparent diagonal watermark "Strategie & Expertise Sante" (default, removable for premium)
+  - Legal mention on last page: copyright, IP protection, disclaimer
+- New endpoint: `POST /api/strategiia/generate-pdf` — server-side PDF for StrategiIA (replaced client-side jsPDF)
+- Premium PDF option (+19€): watermark-free version for professional use
+  - StrategiIA: 29€ base → 48€ with premium PDF
+  - Dossier Express: 97€ base → 116€ with premium PDF
+  - UI: checkbox with Crown icon, +19€ badge, explanatory text on both pages
+  - Dynamic pricing: checkout buttons update in real-time
+- Testing: 100% pass rate (iteration_30)
 - UI/UX animations: scroll-triggered reveals (fade-in, slide-left/right, scale), staggered cards, card-glow hover, shimmer, float, icon-bounce, urgent-glow
 - Animations on: Homepage, Tarifs (progressive reveal), Dossier Express (urgency-driven). No animations on À propos (sober/professional).
 - Disclaimer légal global : Footer (toutes pages), Homepage (section dédiée), Tarifs, StrategiIA (avant formulaire), Dossier Express, Mentions Légales (version détaillée complète)
