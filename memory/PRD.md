@@ -73,6 +73,12 @@ Exécution : `cd /app/backend && python -m pytest --cov=. --cov-report=term-miss
 - [x] OCR Phase 2 GPT-4o (extraction intelligente de champs, mars 2026)
 - [x] Admin — Onglet Documents (validation/rejet avec notifications auto, mars 2026)
 - [x] Admin — Onglet Config (Resend, stockage objet, push, guide vérification domaine, mars 2026)
+- [x] OCR automatique à l'upload — Pipeline complet Tesseract.js → GPT-4o → pré-remplissage automatique (mars 2026)
+  - Dossier Express : auto-fill nom, type dossier, régime, situation
+  - StratégiIA : auto-fill type dossier, régime, situation enrichie
+  - Espace Client Documents : auto-tagging catégorie, organisme, type
+  - Backend : auto-extraction GPT-4o pour PDF uploadés sans OCR client
+  - OcrFieldsPreview : affiche organisme, résumé, recommandations IA
 
 ## Éléments bloqués (action utilisateur)
 1. **Budget LLM Emergent** épuisé → Profile → Universal Key → Add Balance
