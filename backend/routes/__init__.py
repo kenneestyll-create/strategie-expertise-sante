@@ -1,0 +1,19 @@
+from routes.public import router as public_router
+from routes.chatbot import router as chatbot_router
+from routes.forum import router as forum_router
+from routes.payments import router as payments_router
+from routes.admin import router as admin_router
+from routes.client import router as client_router
+from routes.strategiia import router as strategiia_router
+from routes.misc import router as misc_router
+
+all_routers = [
+    public_router,
+    chatbot_router,
+    forum_router,
+    payments_router,
+    admin_router,
+    client_router,
+    strategiia_router,
+    misc_router,
+]
