@@ -24,10 +24,12 @@ import {
   X,
   Settings,
   Mail,
-  Smartphone
+  Smartphone,
+  Archive
 } from 'lucide-react';
 import axios from 'axios';
 import { DataConsentBox } from '@/components/DataConsentBox';
+import { ClientDocuments } from '@/components/ClientDocuments';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -161,6 +163,7 @@ const ClientDashboard = ({ token, clientName, logout }) => {
   const [showSettings, setShowSettings] = useState(false);
   const [notifSettings, setNotifSettings] = useState({ notifications_email: true, notifications_push: true });
   const [savingSettings, setSavingSettings] = useState(false);
+  const [activeTab, setActiveTab] = useState('dossiers');
 
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -355,8 +358,20 @@ const ClientDashboard = ({ token, clientName, logout }) => {
               </Card>
             )}
 
-            {/* Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {/* Tabs: Dossiers / Documents */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full max-w-xs grid-cols-2 mb-6">
+                <TabsTrigger value="dossiers" className="gap-1.5 text-xs" data-testid="tab-dossiers">
+                  <FolderOpen className="w-3.5 h-3.5" /> Mes Dossiers
+                </TabsTrigger>
+                <TabsTrigger value="documents" className="gap-1.5 text-xs" data-testid="tab-documents">
+                  <Archive className="w-3.5 h-3.5" /> Mes Documents
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="dossiers">
+                {/* Stats */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <Card>
                 <CardContent className="p-4 flex items-center gap-3">
                   <FolderOpen className="w-8 h-8 text-accent" strokeWidth={1.5} />
@@ -469,6 +484,12 @@ const ClientDashboard = ({ token, clientName, logout }) => {
                 )}
               </div>
             )}
+              </TabsContent>
+
+              <TabsContent value="documents" data-testid="documents-tab-content">
+                <ClientDocuments token={token} onDocumentsChange={() => {}} />
+              </TabsContent>
+            </Tabs>
           </>
         )}
       </div>

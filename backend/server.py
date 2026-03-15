@@ -2228,6 +2228,195 @@ async def get_client_case(case_id: str, client: dict = Depends(get_current_clien
         raise HTTPException(status_code=404, detail="Dossier non trouvé")
     return case
 
+
+# ==================== CLIENT DOCUMENTS ====================
+
+DOCUMENT_CATEGORIES = {
+    "at": "Accident du travail",
+    "mp": "Maladie professionnelle",
+    "mdph": "MDPH / AAH",
+    "expertise": "Expertises médicales",
+    "cpam": "Courriers CPAM",
+    "tribunal": "Documents juridiques",
+    "autre": "Autres documents",
+}
+
+DOCUMENT_STATUSES = ["en_attente", "valide", "illisible", "corrige"]
+
+
+@api_router.post("/client/documents")
+async def upload_client_document(request: Request, client: dict = Depends(get_current_client)):
+    """Upload a document with auto-tagging from OCR fields."""
+    body = await request.json()
+    filename = body.get("filename", "")
+    file_data = body.get("file_data", "")  # base64
+    mime_type = body.get("mime_type", "")
+    size = body.get("size", 0)
+    ocr_fields = body.get("ocr_fields", {})
+    manual_tags = body.get("tags", {})
+
+    if not filename or not file_data:
+        raise HTTPException(status_code=400, detail="Fichier requis")
+    if size > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Fichier trop volumineux (max 10 Mo)")
+
+    # Auto-detect category from OCR fields or manual tags
+    category = manual_tags.get("categorie", "autre")
+    if category == "autre" and ocr_fields.get("type_dossier_detected"):
+        type_map = {"at": "at", "mp": "mp", "mdph": "mdph", "expertise": "expertise", "ipp": "expertise"}
+        for t in ocr_fields["type_dossier_detected"]:
+            if t in type_map:
+                category = type_map[t]
+                break
+
+    # Auto-detect organisme
+    organisme = manual_tags.get("organisme", "")
+    if not organisme and ocr_fields:
+        text_lower = ocr_fields.get("contexte", "").lower()
+        for org in ["CPAM", "CRAMIF", "MSA", "MDPH", "CNSA", "TASS", "TCI"]:
+            if org.lower() in text_lower:
+                organisme = org
+                break
+
+    doc = {
+        "id": str(uuid.uuid4()),
+        "client_id": client["sub"],
+        "filename": filename,
+        "file_data": file_data,
+        "mime_type": mime_type,
+        "size": size,
+        "category": category,
+        "tags": {
+            "type_document": manual_tags.get("type_document", category),
+            "date_document": manual_tags.get("date_document", ocr_fields.get("dates", [None])[0] if ocr_fields.get("dates") else None),
+            "organisme": organisme,
+            "noms": ocr_fields.get("noms", []),
+            "references": ocr_fields.get("references", []),
+            "montants": ocr_fields.get("montants", []),
+            "numero_ss": ocr_fields.get("numero_ss"),
+            "taux_ipp": ocr_fields.get("taux_ipp", []),
+        },
+        "ocr_fields": ocr_fields,
+        "status": "en_attente",
+        "versions": [{"version": 1, "filename": filename, "uploaded_at": datetime.now(timezone.utc).isoformat()}],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.client_documents.insert_one(doc)
+    doc.pop("_id", None)
+    doc.pop("file_data", None)
+    return {"success": True, "document": doc}
+
+
+@api_router.get("/client/documents")
+async def list_client_documents(
+    client: dict = Depends(get_current_client),
+    category: str = None,
+    status: str = None,
+    organisme: str = None,
+    search: str = None,
+):
+    """List client documents with optional filters. Returns without file_data."""
+    query = {"client_id": client["sub"]}
+    if category:
+        query["category"] = category
+    if status:
+        query["status"] = status
+    if organisme:
+        query["tags.organisme"] = {"$regex": organisme, "$options": "i"}
+    if search:
+        query["$or"] = [
+            {"filename": {"$regex": search, "$options": "i"}},
+            {"tags.organisme": {"$regex": search, "$options": "i"}},
+            {"tags.references": {"$elemMatch": {"$regex": search, "$options": "i"}}},
+        ]
+
+    docs = await db.client_documents.find(query, {"_id": 0, "file_data": 0}).sort("created_at", -1).to_list(200)
+
+    # Stats
+    all_docs = await db.client_documents.find({"client_id": client["sub"]}, {"_id": 0, "category": 1, "status": 1}).to_list(500)
+    by_category = {}
+    by_status = {"en_attente": 0, "valide": 0, "illisible": 0, "corrige": 0}
+    for d in all_docs:
+        cat = d.get("category", "autre")
+        by_category[cat] = by_category.get(cat, 0) + 1
+        st = d.get("status", "en_attente")
+        if st in by_status:
+            by_status[st] += 1
+
+    return {"documents": docs, "total": len(all_docs), "by_category": by_category, "by_status": by_status}
+
+
+@api_router.get("/client/documents/{doc_id}")
+async def get_client_document(doc_id: str, client: dict = Depends(get_current_client)):
+    """Get a single document including file_data for download."""
+    doc = await db.client_documents.find_one({"id": doc_id, "client_id": client["sub"]}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document non trouvé")
+    return doc
+
+
+@api_router.patch("/client/documents/{doc_id}")
+async def update_client_document(doc_id: str, request: Request, client: dict = Depends(get_current_client)):
+    """Update document tags, category, or status."""
+    body = await request.json()
+    update = {"updated_at": datetime.now(timezone.utc).isoformat()}
+
+    if "category" in body and body["category"] in DOCUMENT_CATEGORIES:
+        update["category"] = body["category"]
+    if "status" in body and body["status"] in DOCUMENT_STATUSES:
+        update["status"] = body["status"]
+    if "tags" in body and isinstance(body["tags"], dict):
+        for k, v in body["tags"].items():
+            update[f"tags.{k}"] = v
+
+    result = await db.client_documents.update_one(
+        {"id": doc_id, "client_id": client["sub"]}, {"$set": update}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Document non trouvé")
+    return {"success": True}
+
+
+@api_router.delete("/client/documents/{doc_id}")
+async def delete_client_document(doc_id: str, client: dict = Depends(get_current_client)):
+    result = await db.client_documents.delete_one({"id": doc_id, "client_id": client["sub"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Document non trouvé")
+    return {"success": True}
+
+
+@api_router.post("/client/documents/{doc_id}/version")
+async def add_document_version(doc_id: str, request: Request, client: dict = Depends(get_current_client)):
+    """Upload a new version of an existing document."""
+    body = await request.json()
+    filename = body.get("filename", "")
+    file_data = body.get("file_data", "")
+
+    if not filename or not file_data:
+        raise HTTPException(status_code=400, detail="Fichier requis")
+
+    doc = await db.client_documents.find_one({"id": doc_id, "client_id": client["sub"]}, {"_id": 0, "versions": 1})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document non trouvé")
+
+    new_version = len(doc.get("versions", [])) + 1
+    await db.client_documents.update_one(
+        {"id": doc_id, "client_id": client["sub"]},
+        {
+            "$set": {
+                "file_data": file_data,
+                "filename": filename,
+                "status": "corrige",
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            },
+            "$push": {
+                "versions": {"version": new_version, "filename": filename, "uploaded_at": datetime.now(timezone.utc).isoformat()}
+            }
+        }
+    )
+    return {"success": True, "version": new_version}
+
 @api_router.get("/client/notifications")
 async def get_client_notifications(client: dict = Depends(get_current_client)):
     notifs = await db.client_notifications.find(
