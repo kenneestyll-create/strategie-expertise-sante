@@ -23,7 +23,12 @@ import {
   Bus,
   Eye,
   Zap,
-  Clock
+  Clock,
+  HardHat,
+  Activity,
+  Accessibility,
+  ClipboardList,
+  ExternalLink
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -35,6 +40,7 @@ export const HomePage = () => {
 
   // Reveal refs for scroll animations
   const bannerRef = useReveal();
+  const chiffresRef = useRevealChildren();
   const innovationRef = useRevealChildren();
   const missionRef = useRevealChildren();
   const servicesRef = useRevealChildren();
@@ -108,6 +114,41 @@ export const HomePage = () => {
   const regimesSpeciaux = [
     { icon: Train, name: "SNCF", description: "Cheminots et agents SNCF" },
     { icon: Bus, name: "RATP", description: "Agents RATP" }
+  ];
+
+  const chiffresCles = [
+    {
+      icon: HardHat,
+      chiffre: "700 000",
+      prefix: "Plus de",
+      suffix: "accidents du travail par an en France",
+      source: "CNAM",
+      lien: "https://assurance-maladie.ameli.fr"
+    },
+    {
+      icon: Activity,
+      chiffre: "50 000",
+      prefix: "Environ",
+      suffix: "maladies professionnelles reconnues chaque année",
+      source: "CNAM",
+      lien: "https://assurance-maladie.ameli.fr"
+    },
+    {
+      icon: Accessibility,
+      chiffre: "12 millions",
+      prefix: "Près de",
+      suffix: "de personnes en situation de handicap",
+      source: "INSEE",
+      lien: "https://www.insee.fr"
+    },
+    {
+      icon: ClipboardList,
+      chiffre: "300 000",
+      prefix: "Plus de",
+      suffix: "nouvelles demandes MDPH chaque année",
+      source: "CNSA",
+      lien: "https://www.cnsa.fr"
+    }
   ];
 
   return (
@@ -255,6 +296,47 @@ export const HomePage = () => {
                 <ArrowRight className="w-3 h-3" />
               </Button>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Le défi en chiffres */}
+      <section className="section-padding bg-background" data-testid="chiffres-section">
+        <div className="max-w-7xl mx-auto" ref={chiffresRef}>
+          <div className="text-center max-w-2xl mx-auto mb-14 reveal">
+            <span className="text-sm font-medium text-accent uppercase tracking-wider">Contexte national</span>
+            <h2 className="text-3xl sm:text-4xl font-semibold mt-2 mb-4">Le défi en chiffres</h2>
+            <p className="text-muted-foreground">
+              Des millions de personnes sont concernées chaque année en France. Derrière ces chiffres, des parcours humains qui méritent un véritable accompagnement.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger">
+            {chiffresCles.map((item, index) => (
+              <div
+                key={index}
+                className="relative group reveal"
+                data-testid={`chiffre-bloc-${index}`}
+              >
+                <div className="h-full bg-foreground text-primary-foreground rounded-2xl p-6 flex flex-col items-center text-center transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-xl">
+                  <div className="w-12 h-12 rounded-xl bg-accent/15 flex items-center justify-center mb-5">
+                    <item.icon className="w-6 h-6 text-accent" strokeWidth={1.5} />
+                  </div>
+                  <p className="text-xs uppercase tracking-wider text-primary-foreground/50 mb-1">{item.prefix}</p>
+                  <p className="text-3xl sm:text-4xl font-bold text-accent leading-tight mb-2">{item.chiffre}</p>
+                  <p className="text-sm text-primary-foreground/70 leading-relaxed flex-1 mb-4">{item.suffix}</p>
+                  <a
+                    href={item.lien}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-primary-foreground/40 hover:text-accent transition-colors"
+                    data-testid={`chiffre-source-${index}`}
+                  >
+                    Source : {item.source} <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
