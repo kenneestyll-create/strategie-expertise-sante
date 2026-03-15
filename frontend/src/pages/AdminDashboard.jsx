@@ -42,7 +42,8 @@ import {
   Pencil,
   Upload,
   X,
-  Bell
+  Bell,
+  AlertTriangle
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
@@ -1133,6 +1134,20 @@ export const AdminDashboard = () => {
                             data-testid={`create-case-${client.id}`}
                           >
                             <FolderOpen className="w-3 h-3" /> Créer un dossier
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1 text-xs text-amber-600 border-amber-200 hover:bg-amber-50"
+                            onClick={async () => {
+                              try {
+                                await axios.post(`${API}/admin/notify-document-rejected/${client.id}`, {}, axiosConfig);
+                                toast.success("Notification de documents refusés envoyée");
+                              } catch { toast.error("Erreur d'envoi"); }
+                            }}
+                            data-testid={`notify-docs-${client.id}`}
+                          >
+                            <AlertTriangle className="w-3 h-3" /> Documents à renvoyer
                           </Button>
                         </div>
                       </div>

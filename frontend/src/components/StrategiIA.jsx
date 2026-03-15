@@ -16,6 +16,7 @@ import {
 import axios from 'axios';
 import { DataConsentBox } from '@/components/DataConsentBox';
 import { PdfCoverPreview } from '@/components/PdfCoverPreview';
+import { DocumentUploader } from '@/components/DocumentUploader';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -57,6 +58,8 @@ export const StrategiIA = () => {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [analysePremium, setAnalysePremium] = useState(false);
   const [scoreData, setScoreData] = useState(null);
+  const [stratFiles, setStratFiles] = useState([]);
+  const [docChecks, setDocChecks] = useState({ readable: false, personal_info: false, dates_signatures: false });
 
   // Fetch relevance score when we have results
   useEffect(() => {
@@ -164,6 +167,7 @@ export const StrategiIA = () => {
     setTypeDossier(''); setRegime(''); setSituation('');
     setFullResult(''); setPremiumResult('');
     setConsent(false); setPremiumPdf(false); setAnalysePremium(false); setScoreData(null);
+    setStratFiles([]); setDocChecks({ readable: false, personal_info: false, dates_signatures: false });
   };
 
   // Get teaser text — first quarter of the analysis
@@ -253,8 +257,20 @@ export const StrategiIA = () => {
                         data-testid="strategiia-situation-input"
                       />
                     </div>
+                    {/* Optional document upload */}
+                    <div className="space-y-2">
+                      <Label className="font-medium">Documents justificatifs (optionnel)</Label>
+                      <DocumentUploader
+                        files={stratFiles}
+                        onFilesChange={setStratFiles}
+                        maxFiles={3}
+                        showChecklist={stratFiles.length > 0}
+                        showGuide={true}
+                      />
+                    </div>
+
                     <DataConsentBox checked={consent} onChange={setConsent} />
-                    <Button onClick={handleAnalyze} className="w-full rounded-lg gap-2" disabled={!typeDossier || !situation.trim() || !consent} data-testid="strategiia-analyze-button">
+                    <Button onClick={handleAnalyze} className="w-full rounded-lg gap-2" disabled={!typeDossier || !situation.trim() || !consent || (stratFiles.length > 0 && !(docChecks.readable && docChecks.personal_info && docChecks.dates_signatures))} data-testid="strategiia-analyze-button">
                       <Brain className="w-4 h-4" /> Analyser mon dossier gratuitement
                     </Button>
                     <p className="text-[11px] text-muted-foreground text-center flex items-center justify-center gap-1">

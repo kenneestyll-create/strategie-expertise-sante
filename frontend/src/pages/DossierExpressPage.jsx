@@ -17,6 +17,7 @@ import { SEO } from '@/components/SEO';
 import { useReveal, useRevealChildren } from '@/hooks/useReveal';
 import { DataConsentBox } from '@/components/DataConsentBox';
 import { PdfCoverPreview } from '@/components/PdfCoverPreview';
+import { DocumentUploader } from '@/components/DocumentUploader';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -53,6 +54,7 @@ export const DossierExpressPage = () => {
   const [pollStatus, setPollStatus] = useState(null);
   const [premiumPdf, setPremiumPdf] = useState(false);
   const [analysePremium, setAnalysePremium] = useState(false);
+  const [docChecks, setDocChecks] = useState({ readable: false, personal_info: false, dates_signatures: false });
 
   const featuresRef = useRevealChildren();
   const ctaBottomRef = useReveal();
@@ -96,15 +98,6 @@ export const DossierExpressPage = () => {
     }, 5000);
     return () => clearInterval(interval);
   }, [dossierId, step]);
-
-  const handleFileChange = (e) => {
-    const newFiles = Array.from(e.target.files);
-    setFiles(prev => [...prev, ...newFiles].slice(0, 5));
-  };
-
-  const removeFile = (index) => {
-    setFiles(prev => prev.filter((_, i) => i !== index));
-  };
 
   const handleCheckout = async () => {
     if (!form.email || !form.name) {
@@ -374,36 +367,16 @@ export const DossierExpressPage = () => {
                 <p className="text-xs text-muted-foreground">Plus votre description est détaillée, plus l'analyse sera pertinente.</p>
               </div>
 
-              {/* File upload */}
+              {/* Document upload with quality control */}
               <div className="space-y-2">
                 <Label>Documents (optionnel, max 5 fichiers)</Label>
-                <div className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-accent/50 transition-colors cursor-pointer relative">
-                  <input
-                    type="file"
-                    multiple
-                    accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
-                    onChange={handleFileChange}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                    data-testid="de-file-input"
-                  />
-                  <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Glissez vos fichiers ou cliquez pour sélectionner</p>
-                  <p className="text-xs text-muted-foreground mt-1">PDF, Word, TXT, images (max 5 fichiers)</p>
-                </div>
-                {files.length > 0 && (
-                  <div className="space-y-2 mt-3">
-                    {files.map((f, i) => (
-                      <div key={i} className="flex items-center gap-2 bg-secondary rounded-lg px-3 py-2 text-sm">
-                        <FileText className="w-4 h-4 text-accent flex-shrink-0" />
-                        <span className="flex-1 truncate">{f.name}</span>
-                        <span className="text-muted-foreground text-xs">{(f.size/1024).toFixed(0)} Ko</span>
-                        <button onClick={() => removeFile(i)} className="text-muted-foreground hover:text-destructive">
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <DocumentUploader
+                  files={files}
+                  onFilesChange={setFiles}
+                  maxFiles={5}
+                  showChecklist={files.length > 0}
+                  showGuide={true}
+                />
               </div>
 
               {/* Action */}
@@ -441,7 +414,7 @@ export const DossierExpressPage = () => {
                   size="lg"
                   className="w-full rounded-xl gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold"
                   onClick={handleSubmitDossier}
-                  disabled={loading || !form.situation.trim() || !form.email || !consent}
+                  disabled={loading || !form.situation.trim() || !form.email || !consent || (files.length > 0 && !(docChecks.readable && docChecks.personal_info && docChecks.dates_signatures))}
                   data-testid="de-submit-button"
                 >
                   {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi en cours...</> : <><Brain className="w-5 h-5" /> Soumettre mon dossier</>}
@@ -451,7 +424,7 @@ export const DossierExpressPage = () => {
                   size="lg"
                   className="w-full rounded-xl gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold"
                   onClick={handleCheckout}
-                  disabled={loading || !form.email || !form.name || !consent}
+                  disabled={loading || !form.email || !form.name || !consent || (files.length > 0 && !(docChecks.readable && docChecks.personal_info && docChecks.dates_signatures))}
                   data-testid="de-checkout-button"
                 >
                   {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection...</> : <><CreditCard className="w-5 h-5" /> Payer {97 + (premiumPdf ? 19 : 0) + (analysePremium ? 49 : 0)} € et lancer l'analyse</>}

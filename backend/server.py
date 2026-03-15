@@ -3663,6 +3663,55 @@ async def notify_client_premium(analysis_id: str, request: Request, admin: dict 
     return {"success": True, "client_found": client_user is not None, "email": email}
 
 
+@api_router.post("/admin/notify-document-rejected/{client_id}")
+async def notify_document_rejected(client_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    """Admin: notify a client that their document(s) were rejected/unreadable."""
+    body = await request.json()
+    custom_message = body.get("message", "")
+    message = custom_message or "Un ou plusieurs documents de votre dossier sont illisibles — merci de les renvoyer pour que nous puissions traiter votre analyse."
+
+    await _create_client_notification(
+        client_id=client_id,
+        notif_type="document_rejected",
+        title="Documents à renvoyer",
+        message=message,
+        send_email=True
+    )
+    return {"success": True}
+
+
+@api_router.post("/documents/validate")
+async def validate_document(request: Request):
+    """Validate uploaded document format and basic integrity."""
+    body = await request.json()
+    filename = body.get("filename", "")
+    size = body.get("size", 0)
+    mime_type = body.get("mime_type", "")
+
+    accepted_mimes = [
+        "application/pdf",
+        "image/jpeg",
+        "image/png",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ]
+    accepted_exts = [".pdf", ".jpg", ".jpeg", ".png", ".docx"]
+    max_size = 10 * 1024 * 1024  # 10MB
+
+    ext = "." + filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    errors = []
+
+    if ext not in accepted_exts:
+        errors.append(f"Format '{ext}' non accepté. Formats autorisés : PDF, JPG, PNG, DOCX.")
+    if size > max_size:
+        errors.append(f"Fichier trop volumineux ({size // (1024*1024)} Mo). Taille maximale : 10 Mo.")
+    if size < 100:
+        errors.append("Ce document semble illisible ou corrompu. Merci de le scanner à nouveau en haute qualité.")
+    if mime_type and mime_type not in accepted_mimes:
+        errors.append("Le type MIME du fichier ne correspond pas aux formats acceptés.")
+
+    return {"valid": len(errors) == 0, "errors": errors}
+
+
 # ==================== RESOURCES / LIBRARY ROUTES ====================
 
 @api_router.post("/resources/download")
