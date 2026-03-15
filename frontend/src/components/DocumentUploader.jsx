@@ -205,7 +205,8 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
   const [errors, setErrors] = useState([]);
   const [checks, setChecks] = useState({ readable: false, personal_info: false, dates_signatures: false });
   const [ocrResult, setOcrResult] = useState(null);
-  const { extractFromMultiple, processing: ocrProcessing, progress: ocrProgress, cancel: cancelOcr } = useOCR();
+  const [aiEnhancing, setAiEnhancing] = useState(false);
+  const { extractFromMultiple, enhanceWithAI, processing: ocrProcessing, progress: ocrProgress, cancel: cancelOcr } = useOCR();
 
   const allChecked = checks.readable && checks.personal_info && checks.dates_signatures;
   const hasFiles = files.length > 0;
@@ -320,11 +321,41 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
 
       {/* OCR Results */}
       {enableOCR && ocrResult && !ocrProcessing && (
-        <OcrFieldsPreview
-          ocrResult={ocrResult}
-          onApplyFields={onOcrResult ? (fields) => onOcrResult({ ...ocrResult, fields, applied: true }) : null}
-          onDismiss={() => setOcrResult(null)}
-        />
+        <div className="space-y-2">
+          <OcrFieldsPreview
+            ocrResult={ocrResult}
+            onApplyFields={onOcrResult ? (fields) => onOcrResult({ ...ocrResult, fields, applied: true }) : null}
+            onDismiss={() => setOcrResult(null)}
+          />
+          {!ocrResult.enhanced && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 text-xs border-blue-300 text-blue-700 hover:bg-blue-50"
+              disabled={aiEnhancing}
+              onClick={async () => {
+                setAiEnhancing(true);
+                const aiResult = await enhanceWithAI(ocrResult.raw);
+                if (aiResult) {
+                  const merged = { ...ocrResult, ...aiResult };
+                  setOcrResult(merged);
+                  if (onOcrResult) onOcrResult(merged);
+                }
+                setAiEnhancing(false);
+              }}
+              data-testid="ocr-ai-enhance"
+            >
+              {aiEnhancing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ScanLine className="w-3.5 h-3.5" />}
+              {aiEnhancing ? 'Analyse IA en cours...' : 'Enrichir avec GPT-4o'}
+            </Button>
+          )}
+          {ocrResult.enhanced && (
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-blue-50 border border-blue-200" data-testid="ai-enhanced-badge">
+              <CheckCircle className="w-4 h-4 text-blue-600" />
+              <span className="text-xs font-medium text-blue-700">Extraction enrichie par GPT-4o</span>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Quality checklist */}

@@ -1,9 +1,12 @@
 import { useState, useCallback, useRef } from 'react';
 import { createWorker } from 'tesseract.js';
+import axios from 'axios';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 /**
  * Hook for OCR text extraction using Tesseract.js (Phase 1)
- * Architecture prepared for Phase 2 GPT-4o upgrade
+ * + GPT-4o AI-enhanced extraction (Phase 2)
  */
 export const useOCR = () => {
   const [processing, setProcessing] = useState(false);
@@ -116,7 +119,20 @@ export const useOCR = () => {
     setProgress(0);
   }, []);
 
-  return { extractText, extractFromMultiple, cancel, processing, progress, error };
+  const enhanceWithAI = useCallback(async (rawText) => {
+    if (!rawText || rawText.trim().length < 10) return null;
+    try {
+      const res = await axios.post(`${API}/documents/extract-fields-ai`, { text: rawText });
+      if (res.data?.enhanced && res.data?.fields) {
+        return { fields: res.data.fields, source: 'gpt-4o', enhanced: true };
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  return { extractText, extractFromMultiple, enhanceWithAI, cancel, processing, progress, error };
 };
 
 // ==================== FIELD EXTRACTION (Regex-based, Phase 1) ====================

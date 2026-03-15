@@ -10,6 +10,12 @@ try:
 except ImportError:
     pass
 
+try:
+    from utils.push import send_push_to_client
+    PUSH_AVAILABLE = True
+except Exception:
+    PUSH_AVAILABLE = False
+
 
 async def send_notification_email(contact):
     if not RESEND_AVAILABLE or not os.environ.get('RESEND_API_KEY') or not NOTIFICATION_EMAIL:
@@ -97,6 +103,17 @@ async def create_client_notification(client_id: str, notif_type: str, title: str
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.client_notifications.insert_one(notif)
+
+    # Push notification
+    if PUSH_AVAILABLE:
+        try:
+            client_user = await db.client_users.find_one({"id": client_id}, {"_id": 0, "notifications_push": 1})
+            if client_user and client_user.get("notifications_push", True):
+                url = f"/espace-client"
+                await send_push_to_client(db, client_id, title=title, body=message, url=url, tag=notif_type)
+                logger.info(f"Push notification sent to client {client_id}: {title}")
+        except Exception as e:
+            logger.error(f"Push notification failed for client {client_id}: {e}")
 
     if send_email:
         client = await db.client_users.find_one({"id": client_id}, {"_id": 0, "email": 1, "name": 1, "notifications_email": 1})

@@ -3,6 +3,7 @@ from typing import List, Optional
 from datetime import datetime, timezone, timedelta
 import asyncio
 import uuid
+import os
 
 from config import db, logger
 from models import (
@@ -253,6 +254,12 @@ async def create_client_case(client_id: str, request: Request, admin: dict = Dep
     await db.client_cases.insert_one(doc)
     notif = {"id": str(uuid.uuid4()), "client_id": client_id, "type": "case_created", "title": "Nouveau dossier créé", "message": f"Votre dossier \"{case.title}\" a été créé par votre accompagnant.", "case_id": case.id, "read": False, "created_at": datetime.now(timezone.utc).isoformat()}
     await db.client_notifications.insert_one(notif)
+    # Send push notification for new case
+    try:
+        from utils.push import send_push_to_client
+        asyncio.create_task(send_push_to_client(db, client_id, title="Nouveau dossier créé", body=f"Votre dossier \"{case.title}\" a été créé par votre accompagnant.", url="/espace-client", tag="case_created"))
+    except Exception:
+        pass
     return {"success": True, "case_id": case.id}
 
 @router.patch("/admin/cases/{case_id}")
@@ -277,6 +284,12 @@ async def update_client_case(case_id: str, request: Request, admin: dict = Depen
     if notification_message and case.get("client_id"):
         notif = {"id": str(uuid.uuid4()), "client_id": case["client_id"], "type": "case_updated", "title": "Dossier mis à jour", "message": notification_message, "case_id": case_id, "read": False, "created_at": datetime.now(timezone.utc).isoformat()}
         await db.client_notifications.insert_one(notif)
+        # Send push notification for case update
+        try:
+            from utils.push import send_push_to_client
+            asyncio.create_task(send_push_to_client(db, case["client_id"], title="Dossier mis à jour", body=notification_message, url="/espace-client", tag="case_updated"))
+        except Exception:
+            pass
     return {"success": True}
 
 
@@ -343,3 +356,90 @@ async def notify_document_rejected(client_id: str, request: Request, admin: dict
     message = custom_message or "Un ou plusieurs documents de votre dossier sont illisibles — merci de les renvoyer pour que nous puissions traiter votre analyse."
     await create_client_notification(client_id=client_id, notif_type="document_rejected", title="Documents à renvoyer", message=message, send_email=True)
     return {"success": True}
+
+
+@router.patch("/admin/documents/{doc_id}/status")
+async def admin_update_document_status(doc_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    new_status = body.get("status", "")
+    if new_status not in ("en_attente", "valide", "illisible", "corrige"):
+        raise HTTPException(status_code=400, detail="Statut invalide")
+
+    doc = await db.client_documents.find_one({"id": doc_id}, {"_id": 0, "client_id": 1, "filename": 1, "status": 1})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document non trouvé")
+
+    await db.client_documents.update_one(
+        {"id": doc_id},
+        {"$set": {"status": new_status, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+
+    client_id = doc.get("client_id")
+    filename = doc.get("filename", "document")
+    if client_id and new_status == "valide":
+        await create_client_notification(
+            client_id=client_id, notif_type="document_validated",
+            title="Document validé",
+            message=f"Votre document \"{filename}\" a été vérifié et validé par notre équipe.",
+            send_email=True
+        )
+    elif client_id and new_status == "illisible":
+        await create_client_notification(
+            client_id=client_id, notif_type="document_rejected",
+            title="Document illisible",
+            message=f"Votre document \"{filename}\" est illisible. Merci de le renvoyer en meilleure qualité.",
+            send_email=True
+        )
+
+    return {"success": True, "new_status": new_status}
+
+@router.get("/admin/documents")
+async def admin_list_all_documents(admin: dict = Depends(get_current_admin), status: str = None, client_id: str = None):
+    query = {}
+    if status:
+        query["status"] = status
+    if client_id:
+        query["client_id"] = client_id
+    docs = await db.client_documents.find(query, {"_id": 0, "file_data": 0}).sort("created_at", -1).to_list(500)
+    stats = {
+        "total": len(docs),
+        "en_attente": sum(1 for d in docs if d.get("status") == "en_attente"),
+        "valide": sum(1 for d in docs if d.get("status") == "valide"),
+        "illisible": sum(1 for d in docs if d.get("status") == "illisible"),
+    }
+    return {"documents": docs, "stats": stats}
+
+
+@router.get("/admin/email/status")
+async def admin_email_status(admin: dict = Depends(get_current_admin)):
+    import importlib
+    resend_installed = importlib.util.find_spec("resend") is not None
+    api_key = os.environ.get("RESEND_API_KEY", "")
+    return {
+        "resend_installed": resend_installed,
+        "api_key_configured": bool(api_key),
+        "api_key_preview": (api_key[:6] + "..." + api_key[-4:]) if len(api_key) > 10 else ("Oui" if api_key else "Non"),
+        "sender_email": os.environ.get("SENDER_EMAIL", "non configuré"),
+        "notification_email": os.environ.get("NOTIFICATION_EMAIL", "non configuré"),
+        "domain_verified": not os.environ.get("SENDER_EMAIL", "").endswith("resend.dev"),
+    }
+
+@router.post("/admin/email/test")
+async def admin_email_test(request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    email = body.get("email", "")
+    if not email:
+        raise HTTPException(status_code=400, detail="Email requis")
+    try:
+        import resend
+        resend.api_key = os.environ.get("RESEND_API_KEY", "")
+        params = {
+            "from": os.environ.get("SENDER_EMAIL", "onboarding@resend.dev"),
+            "to": [email],
+            "subject": "Test email - Stratégie & Expertise Santé",
+            "html": "<h2>Test réussi</h2><p>Ceci est un email de test envoyé depuis le panneau d'administration.</p>"
+        }
+        await asyncio.to_thread(resend.Emails.send, params)
+        return {"success": True, "message": f"Email test envoyé à {email}"}
+    except Exception as e:
+        return {"success": False, "message": str(e)}

@@ -208,8 +208,21 @@ async def extract_document_fields(request: Request):
     body = await request.json()
     raw_text = body.get("text", "")
     source = body.get("source", "tesseract")
+    use_ai = body.get("use_ai", False)
     if not raw_text.strip():
         return {"fields": {}, "source": source, "enhanced": False}
+
+    # Phase 2: Try GPT-4o if requested
+    if use_ai:
+        try:
+            from utils.ocr_gpt import extract_fields_gpt4o
+            result = await extract_fields_gpt4o(raw_text)
+            if result.get("enhanced"):
+                return result
+        except Exception as e:
+            logger.warning(f"GPT-4o extraction failed, falling back to regex: {e}")
+
+    # Phase 1: Regex extraction
 
     fields = {}
     date_matches = re.findall(r'\d{2}[\/\-\.]\d{2}[\/\-\.]\d{4}', raw_text)
@@ -236,7 +249,26 @@ async def extract_document_fields(request: Request):
     detected_types = list(set(dtype for keyword, dtype in type_keywords.items() if keyword.lower() in raw_text.lower()))
     if detected_types:
         fields["type_dossier_detected"] = detected_types
-    return {"fields": fields, "source": source, "enhanced": False, "message": "Extraction regex (Phase 1). Phase 2 GPT-4o disponible prochainement."}
+    return {"fields": fields, "source": source, "enhanced": False, "message": "Extraction regex (Phase 1). Phase 2 GPT-4o disponible."}
+
+
+@router.post("/documents/extract-fields-ai")
+async def extract_document_fields_ai(request: Request):
+    """Phase 2: GPT-4o enhanced field extraction from OCR text."""
+    body = await request.json()
+    raw_text = body.get("text", "")
+    if not raw_text.strip():
+        return {"fields": {}, "source": "gpt-4o", "enhanced": False}
+
+    try:
+        from utils.ocr_gpt import extract_fields_gpt4o
+        result = await extract_fields_gpt4o(raw_text)
+        return result
+    except ImportError:
+        return {"fields": {}, "enhanced": False, "error": "Module OCR GPT-4o non disponible"}
+    except Exception as e:
+        logger.error(f"OCR Phase 2 error: {e}")
+        return {"fields": {}, "enhanced": False, "error": str(e)}
 
 
 # ==================== RESOURCES ====================

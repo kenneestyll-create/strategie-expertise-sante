@@ -43,7 +43,10 @@ import {
   Upload,
   X,
   Bell,
-  AlertTriangle
+  AlertTriangle,
+  FileText,
+  Shield,
+  Settings
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
@@ -275,6 +278,9 @@ export const AdminDashboard = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [notesAdmin, setNotesAdmin] = useState('');
   const [activeTab, setActiveTab] = useState('contacts');
+  const [adminDocs, setAdminDocs] = useState({ documents: [], stats: {} });
+  const [emailStatus, setEmailStatus] = useState(null);
+  const [docStatusFilter, setDocStatusFilter] = useState('');
 
   const navigate = useNavigate();
   const { token, adminName, logout } = useAuth();
@@ -318,6 +324,9 @@ export const AdminDashboard = () => {
       setCasAnonymises(casRes.data);
       setPremiumAnalyses(premiumRes.data);
       setAnalyticsData(analyticsRes.data);
+      // Fetch admin docs & email status separately (non-critical)
+      axios.get(`${API}/admin/documents`, axiosConfig).then(r => setAdminDocs(r.data)).catch(() => {});
+      axios.get(`${API}/admin/email/status`, axiosConfig).then(r => setEmailStatus(r.data)).catch(() => {});
     } catch (error) {
       console.error('Erreur:', error);
       if (error.response?.status === 401) {
@@ -560,6 +569,14 @@ export const AdminDashboard = () => {
             <TabsTrigger value="analytics" className="gap-1 text-xs sm:text-sm" data-testid="tab-analytics">
               <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-600" />
               Analytique
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="gap-1 text-xs sm:text-sm" data-testid="tab-admin-documents">
+              <FileText className="w-3 h-3 sm:w-4 sm:h-4 text-teal-600" />
+              Documents
+            </TabsTrigger>
+            <TabsTrigger value="config" className="gap-1 text-xs sm:text-sm" data-testid="tab-config">
+              <Settings className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
+              Config
             </TabsTrigger>
           </TabsList>
 
@@ -1592,6 +1609,211 @@ export const AdminDashboard = () => {
             ) : (
               <Card><CardContent className="py-12 text-center text-muted-foreground">Chargement des analytiques...</CardContent></Card>
             )}
+          </TabsContent>
+
+          {/* Admin Documents Tab */}
+          <TabsContent value="documents" className="space-y-6" data-testid="admin-documents-tab">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Documents clients</h3>
+              <div className="flex gap-2">
+                <select
+                  value={docStatusFilter}
+                  onChange={async (e) => {
+                    setDocStatusFilter(e.target.value);
+                    try {
+                      const params = e.target.value ? `?status=${e.target.value}` : '';
+                      const res = await axios.get(`${API}/admin/documents${params}`, axiosConfig);
+                      setAdminDocs(res.data);
+                    } catch {}
+                  }}
+                  className="h-8 text-xs border rounded-lg px-2 bg-background"
+                  data-testid="admin-doc-status-filter"
+                >
+                  <option value="">Tous statuts</option>
+                  <option value="en_attente">En attente</option>
+                  <option value="valide">Validés</option>
+                  <option value="illisible">Illisibles</option>
+                </select>
+                <Button size="sm" variant="outline" onClick={async () => {
+                  try { const r = await axios.get(`${API}/admin/documents`, axiosConfig); setAdminDocs(r.data); } catch {}
+                }} className="gap-1" data-testid="admin-doc-refresh">
+                  <RefreshCw className="w-3 h-3" /> Actualiser
+                </Button>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 gap-3">
+              <Card><CardContent className="p-3 text-center"><p className="text-xl font-bold">{adminDocs.stats?.total || 0}</p><p className="text-[10px] text-muted-foreground uppercase">Total</p></CardContent></Card>
+              <Card><CardContent className="p-3 text-center"><p className="text-xl font-bold text-amber-600">{adminDocs.stats?.en_attente || 0}</p><p className="text-[10px] text-muted-foreground uppercase">En attente</p></CardContent></Card>
+              <Card><CardContent className="p-3 text-center"><p className="text-xl font-bold text-green-600">{adminDocs.stats?.valide || 0}</p><p className="text-[10px] text-muted-foreground uppercase">Validés</p></CardContent></Card>
+              <Card><CardContent className="p-3 text-center"><p className="text-xl font-bold text-red-600">{adminDocs.stats?.illisible || 0}</p><p className="text-[10px] text-muted-foreground uppercase">Illisibles</p></CardContent></Card>
+            </div>
+            {adminDocs.documents?.length === 0 ? (
+              <Card><CardContent className="py-12 text-center text-muted-foreground">Aucun document client pour le moment</CardContent></Card>
+            ) : (
+              <Card>
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/30 border-b"><tr>
+                        <th className="py-2 px-3 text-left font-medium text-muted-foreground">Fichier</th>
+                        <th className="py-2 px-3 text-left font-medium text-muted-foreground">Catégorie</th>
+                        <th className="py-2 px-3 text-left font-medium text-muted-foreground">Statut</th>
+                        <th className="py-2 px-3 text-left font-medium text-muted-foreground">Date</th>
+                        <th className="py-2 px-3 text-left font-medium text-muted-foreground">Actions</th>
+                      </tr></thead>
+                      <tbody>
+                        {(adminDocs.documents || []).map((doc) => (
+                          <tr key={doc.id} className="border-b last:border-0 hover:bg-muted/20" data-testid={`admin-doc-${doc.id}`}>
+                            <td className="py-2 px-3">
+                              <p className="font-medium truncate max-w-[200px]">{doc.filename}</p>
+                              <p className="text-[10px] text-muted-foreground">{doc.client_id?.slice(0, 8)}...</p>
+                            </td>
+                            <td className="py-2 px-3"><Badge variant="outline" className="text-[10px]">{doc.category}</Badge></td>
+                            <td className="py-2 px-3">
+                              <Badge className={`text-[10px] ${doc.status === 'valide' ? 'bg-green-100 text-green-700' : doc.status === 'illisible' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                                {doc.status}
+                              </Badge>
+                            </td>
+                            <td className="py-2 px-3 text-muted-foreground text-xs">{doc.created_at ? new Date(doc.created_at).toLocaleDateString('fr-FR') : ''}</td>
+                            <td className="py-2 px-3">
+                              <div className="flex gap-1">
+                                {doc.status !== 'valide' && (
+                                  <Button size="sm" variant="ghost" className="h-7 px-2 text-green-600 hover:bg-green-50 text-xs"
+                                    onClick={async () => {
+                                      try {
+                                        await axios.patch(`${API}/admin/documents/${doc.id}/status`, { status: 'valide' }, axiosConfig);
+                                        toast.success('Document validé + notification envoyée');
+                                        const r = await axios.get(`${API}/admin/documents${docStatusFilter ? `?status=${docStatusFilter}` : ''}`, axiosConfig);
+                                        setAdminDocs(r.data);
+                                      } catch { toast.error('Erreur'); }
+                                    }}
+                                    data-testid={`validate-doc-${doc.id}`}
+                                  >
+                                    <CheckCircle className="w-3 h-3 mr-1" /> Valider
+                                  </Button>
+                                )}
+                                {doc.status !== 'illisible' && (
+                                  <Button size="sm" variant="ghost" className="h-7 px-2 text-red-600 hover:bg-red-50 text-xs"
+                                    onClick={async () => {
+                                      try {
+                                        await axios.patch(`${API}/admin/documents/${doc.id}/status`, { status: 'illisible' }, axiosConfig);
+                                        toast.success('Document marqué illisible + notification envoyée');
+                                        const r = await axios.get(`${API}/admin/documents${docStatusFilter ? `?status=${docStatusFilter}` : ''}`, axiosConfig);
+                                        setAdminDocs(r.data);
+                                      } catch { toast.error('Erreur'); }
+                                    }}
+                                    data-testid={`reject-doc-${doc.id}`}
+                                  >
+                                    <XCircle className="w-3 h-3 mr-1" /> Illisible
+                                  </Button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Config Tab */}
+          <TabsContent value="config" className="space-y-6" data-testid="config-tab-content">
+            {/* Email Configuration */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2"><Mail className="w-5 h-5 text-accent" /> Configuration Email (Resend)</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {emailStatus ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-3 rounded-lg border">
+                        <p className="text-xs text-muted-foreground">Resend installé</p>
+                        <p className="font-medium flex items-center gap-2">
+                          {emailStatus.resend_installed ? <CheckCircle className="w-4 h-4 text-green-500" /> : <XCircle className="w-4 h-4 text-red-500" />}
+                          {emailStatus.resend_installed ? 'Oui' : 'Non'}
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-lg border">
+                        <p className="text-xs text-muted-foreground">Clé API</p>
+                        <p className="font-medium flex items-center gap-2">
+                          {emailStatus.api_key_configured ? <CheckCircle className="w-4 h-4 text-green-500" /> : <XCircle className="w-4 h-4 text-red-500" />}
+                          {emailStatus.api_key_preview || 'Non configurée'}
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-lg border">
+                        <p className="text-xs text-muted-foreground">Expéditeur</p>
+                        <p className="font-medium text-sm">{emailStatus.sender_email}</p>
+                      </div>
+                      <div className="p-3 rounded-lg border">
+                        <p className="text-xs text-muted-foreground">Notification admin</p>
+                        <p className="font-medium text-sm">{emailStatus.notification_email}</p>
+                      </div>
+                    </div>
+                    <div className="p-4 rounded-lg border border-accent/20 bg-accent/5 space-y-2">
+                      <p className="text-sm font-medium flex items-center gap-2"><Shield className="w-4 h-4 text-accent" /> Vérification de domaine Resend</p>
+                      <p className="text-xs text-muted-foreground">Pour envoyer des emails depuis votre propre domaine (au lieu de onboarding@resend.dev), suivez ces étapes :</p>
+                      <ol className="text-xs text-muted-foreground space-y-1 list-decimal ml-4">
+                        <li>Connectez-vous sur <a href="https://resend.com/domains" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">resend.com/domains</a></li>
+                        <li>Ajoutez votre domaine (ex: accompagn-sante.fr)</li>
+                        <li>Ajoutez les enregistrements DNS (SPF, DKIM, DMARC) fournis par Resend</li>
+                        <li>Attendez la vérification (quelques minutes à 24h)</li>
+                        <li>Mettez à jour SENDER_EMAIL dans la configuration backend</li>
+                      </ol>
+                    </div>
+                    <Button size="sm" variant="outline" className="gap-2"
+                      onClick={async () => {
+                        try {
+                          const res = await axios.post(`${API}/admin/email/test`, { email: emailStatus.notification_email || 'admin@accompagn-sante.fr' }, axiosConfig);
+                          if (res.data.success) toast.success('Email test envoyé');
+                          else toast.error(res.data.message);
+                        } catch { toast.error('Erreur envoi test'); }
+                      }}
+                      data-testid="email-test-btn"
+                    >
+                      <Send className="w-3 h-3" /> Envoyer un email test
+                    </Button>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Chargement...</p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Storage Status */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2"><Upload className="w-5 h-5 text-accent" /> Stockage Objet</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="p-3 rounded-lg border flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-500" />
+                  <div>
+                    <p className="font-medium text-sm">Emergent Object Storage</p>
+                    <p className="text-xs text-muted-foreground">Les documents sont stockés de manière sécurisée dans le stockage objet cloud.</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Push Notifications Status */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2"><Bell className="w-5 h-5 text-accent" /> Notifications Push</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="p-3 rounded-lg border flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-500" />
+                  <div>
+                    <p className="font-medium text-sm">Service Worker + VAPID actif</p>
+                    <p className="text-xs text-muted-foreground">Les notifications push sont envoyées automatiquement lors des événements suivants : validation/rejet de document, mise à jour de dossier, analyse premium prête.</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </main>
