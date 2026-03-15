@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,7 +10,8 @@ import { toast } from 'sonner';
 import {
   X, Brain, Loader2, FileText, Download, Lock,
   MessageSquare, Phone, Mail, Copy, Check,
-  AlertTriangle, CreditCard, ArrowRight, Sparkles, UserPlus, Crown
+  AlertTriangle, CreditCard, ArrowRight, Sparkles, UserPlus, Crown,
+  TrendingUp, Shield, Target
 } from 'lucide-react';
 import axios from 'axios';
 import { DataConsentBox } from '@/components/DataConsentBox';
@@ -55,6 +56,16 @@ export const StrategiIA = () => {
   const [premiumPdf, setPremiumPdf] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [analysePremium, setAnalysePremium] = useState(false);
+  const [scoreData, setScoreData] = useState(null);
+
+  // Fetch relevance score when we have results
+  useEffect(() => {
+    if ((step === 'basic' || step === 'teaser') && typeDossier) {
+      axios.get(`${API}/strategiia/score`, { params: { type_dossier: typeDossier, regime } })
+        .then(res => setScoreData(res.data))
+        .catch(() => setScoreData(null));
+    }
+  }, [step, typeDossier, regime]);
 
   // Analyze without email — result gated behind read wall
   const handleAnalyze = async () => {
@@ -152,7 +163,7 @@ export const StrategiIA = () => {
     setStep('form');
     setTypeDossier(''); setRegime(''); setSituation('');
     setFullResult(''); setPremiumResult('');
-    setConsent(false); setPremiumPdf(false); setAnalysePremium(false);
+    setConsent(false); setPremiumPdf(false); setAnalysePremium(false); setScoreData(null);
   };
 
   // Get teaser text — first quarter of the analysis
@@ -330,6 +341,62 @@ export const StrategiIA = () => {
                         <Badge className="bg-green-100 text-green-700 border-green-200 text-xs">{remaining} restante{remaining > 1 ? 's' : ''}</Badge>
                       )}
                     </div>
+
+                    {/* Relevance Score Card */}
+                    {scoreData && scoreData.score !== null && (
+                      <Card className="border-accent/20 bg-gradient-to-r from-accent/5 to-transparent" data-testid="relevance-score-card">
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-4">
+                            <div className="flex-shrink-0 w-16 h-16 rounded-xl bg-foreground flex flex-col items-center justify-center" data-testid="relevance-score-value">
+                              <span className="text-2xl font-bold text-accent">{scoreData.score}</span>
+                              <span className="text-[9px] text-primary-foreground/60 uppercase tracking-wider">/100</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Target className="w-4 h-4 text-accent" />
+                                <span className="text-sm font-semibold">Score de pertinence</span>
+                                <Badge variant="outline" className={`text-[10px] ${scoreData.confidence === 'high' ? 'border-green-400 text-green-600' : scoreData.confidence === 'medium' ? 'border-yellow-400 text-yellow-600' : 'border-orange-400 text-orange-600'}`}>
+                                  {scoreData.confidence === 'high' ? 'Fiabilité haute' : scoreData.confidence === 'medium' ? 'Fiabilité moyenne' : 'Fiabilité limitée'}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground">{scoreData.message}</p>
+                              {/* Distribution bar */}
+                              {scoreData.distribution && (scoreData.distribution.favorable + scoreData.distribution.defavorable) > 0 && (
+                                <div className="mt-2">
+                                  <div className="flex h-2 rounded-full overflow-hidden bg-muted">
+                                    {scoreData.distribution.favorable > 0 && (
+                                      <div className="bg-green-500 transition-all" style={{width: `${(scoreData.distribution.favorable / scoreData.total_cases) * 100}%`}} />
+                                    )}
+                                    {scoreData.distribution.en_cours > 0 && (
+                                      <div className="bg-yellow-400 transition-all" style={{width: `${(scoreData.distribution.en_cours / scoreData.total_cases) * 100}%`}} />
+                                    )}
+                                    {scoreData.distribution.defavorable > 0 && (
+                                      <div className="bg-red-400 transition-all" style={{width: `${(scoreData.distribution.defavorable / scoreData.total_cases) * 100}%`}} />
+                                    )}
+                                  </div>
+                                  <div className="flex justify-between mt-1 text-[10px] text-muted-foreground">
+                                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />{scoreData.distribution.favorable} favorable{scoreData.distribution.favorable > 1 ? 's' : ''}</span>
+                                    {scoreData.distribution.en_cours > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-400 inline-block" />{scoreData.distribution.en_cours} en cours</span>}
+                                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400 inline-block" />{scoreData.distribution.defavorable} défavorable{scoreData.distribution.defavorable > 1 ? 's' : ''}</span>
+                                  </div>
+                                </div>
+                              )}
+                              {/* Top strategies */}
+                              {scoreData.top_strategies && scoreData.top_strategies.length > 0 && (
+                                <div className="mt-2">
+                                  <p className="text-[10px] font-medium text-muted-foreground mb-1">Stratégies favorables :</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {scoreData.top_strategies.map((s, i) => (
+                                      <Badge key={i} variant="outline" className="text-[10px] bg-green-50 border-green-200 text-green-700">{s.strategie} ({s.count})</Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
                     <div className="prose prose-sm max-w-none text-sm leading-relaxed whitespace-pre-wrap bg-muted/30 p-4 rounded-xl border border-border" data-testid="strategiia-basic-text">
                       {fullResult}
                     </div>

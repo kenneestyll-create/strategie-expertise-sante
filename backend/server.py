@@ -1766,7 +1766,6 @@ async def get_analytics(
     pending_revenue = pending_result[0]["total"] if pending_result else 0
 
     # --- Time series: Contacts per day ---
-    contacts_ts = []
     contacts_all = await db.contacts.find(
         {"created_at": {"$gte": cutoff}}, {"_id": 0, "created_at": 1}
     ).to_list(1000)
@@ -3036,6 +3035,89 @@ Description de la situation : {situation}
     except Exception as e:
         logger.error(f"StratégiIA error: {e}")
         raise HTTPException(status_code=500, detail="Erreur lors de l'analyse IA")
+
+@api_router.get("/strategiia/score")
+async def get_relevance_score(type_dossier: str, regime: str = ""):
+    """Compute a relevance/success score based on anonymized historical cases.
+    No LLM needed — pure statistical analysis."""
+    query = {"type_dossier": type_dossier}
+    if regime:
+        query["regime"] = regime
+
+    cases = await db.cas_anonymises.find(query, {"_id": 0, "resultat": 1, "score_pertinence": 1, "strategie": 1, "duree": 1}).to_list(500)
+    total = len(cases)
+
+    if total == 0:
+        # Fallback: try with just type_dossier
+        if regime:
+            cases = await db.cas_anonymises.find({"type_dossier": type_dossier}, {"_id": 0, "resultat": 1, "score_pertinence": 1, "strategie": 1, "duree": 1}).to_list(500)
+            total = len(cases)
+
+    if total == 0:
+        return {
+            "score": None,
+            "confidence": "insufficient_data",
+            "total_cases": 0,
+            "message": "Pas assez de cas similaires pour estimer un score de pertinence.",
+            "distribution": {}
+        }
+
+    # Count outcomes
+    favorable = sum(1 for c in cases if c.get("resultat", "").lower() in ("favorable", "très favorable", "accepté", "accord"))
+    defavorable = sum(1 for c in cases if c.get("resultat", "").lower() in ("défavorable", "refusé", "rejet", "refus"))
+    en_cours = sum(1 for c in cases if c.get("resultat", "").lower() in ("en cours", "en attente", "partiel"))
+    other = total - favorable - defavorable - en_cours
+
+    # Average admin-assigned score
+    scored_cases = [c for c in cases if c.get("score_pertinence") and c["score_pertinence"] > 0]
+    avg_admin_score = round(sum(c["score_pertinence"] for c in scored_cases) / len(scored_cases)) if scored_cases else None
+
+    # Compute success rate
+    decided = favorable + defavorable
+    success_rate = round(favorable / decided * 100) if decided > 0 else None
+
+    # Compute composite score (0-100)
+    if success_rate is not None and avg_admin_score is not None:
+        composite = round(success_rate * 0.6 + avg_admin_score * 0.4)
+    elif success_rate is not None:
+        composite = success_rate
+    elif avg_admin_score is not None:
+        composite = avg_admin_score
+    else:
+        composite = None
+
+    # Confidence level
+    if total >= 20:
+        confidence = "high"
+    elif total >= 5:
+        confidence = "medium"
+    else:
+        confidence = "low"
+
+    # Common strategies from favorable cases
+    favorable_cases = [c for c in cases if c.get("resultat", "").lower() in ("favorable", "très favorable", "accepté", "accord")]
+    strategies = {}
+    for c in favorable_cases:
+        s = c.get("strategie", "").strip()
+        if s:
+            strategies[s] = strategies.get(s, 0) + 1
+    top_strategies = sorted(strategies.items(), key=lambda x: -x[1])[:3]
+
+    return {
+        "score": composite,
+        "success_rate": success_rate,
+        "avg_admin_score": avg_admin_score,
+        "confidence": confidence,
+        "total_cases": total,
+        "distribution": {
+            "favorable": favorable,
+            "defavorable": defavorable,
+            "en_cours": en_cours,
+            "autre": other,
+        },
+        "top_strategies": [{"strategie": s, "count": c} for s, c in top_strategies],
+        "message": f"Score basé sur {total} cas similaires ({confidence} confiance)."
+    }
 
 @api_router.get("/strategiia/quota/{email}")
 async def strategiia_quota(email: str):
