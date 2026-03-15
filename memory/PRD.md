@@ -4,69 +4,62 @@
 Web application in French providing advice and support for occupational diseases, insurance disputes, and disability procedures.
 
 ## Architecture
-- **Frontend:** React + Tailwind CSS + Shadcn UI + recharts + react-helmet-async (port 3000)
+- **Frontend:** React + Tailwind CSS + Shadcn UI + recharts + Tesseract.js + react-helmet-async (port 3000)
 - **Backend:** FastAPI + MongoDB + GZip (port 8001, monolithic server.py)
-- **Integrations:** Stripe (test), PayPal (sandbox), Claude Sonnet 4.5 (Emergent LLM Key), Resend (ACTIVE), HubSpot (pending), fpdf2 (PDF gen)
+- **Integrations:** Stripe (test), PayPal (sandbox), Claude Sonnet 4.5 (Emergent LLM Key), Resend (ACTIVE), HubSpot (pending), fpdf2, Tesseract.js (OCR)
 
-## Completed Features
-- Core pages, Admin panel, Forum, Chatbot (5 free Q), Reviews, Referral system, PDF viewer
-- IPP & AAH calculators, Global search (fuse.js), StratégiIA (read wall + scoring)
+## Completed Features (Full List)
+- Core pages, Admin panel (10 tabs), Forum, Chatbot (5 free Q), Reviews, Referral system, PDF viewer
+- IPP & AAH calculators, Global search (fuse.js + anchors + highlighting)
+- StratégiIA (read wall + relevance scoring + OCR), Dossier Express (AI analysis + OCR)
 - Stripe & PayPal (test/sandbox), Resend (ACTIVE), Abandoned cart emails
-- Secured PDF Reports, Analyse Premium, Navigation & Search, RGPD, Homepage animations
-- StratégiIA Phase 2 (Admin case management), Search Index Enrichment, PageSpeed/SEO
+- Secured PDF Reports (watermarks, premium +19€), Analyse Premium (+29€/+49€)
+- Navigation (scroll-to-top, anchoring), RGPD (DataConsentBox, privacy policy)
+- StratégiIA Phase 2 (Admin case CRUD, bulk import), Phase 3 (relevance scoring)
+- Analytics Dashboard (KPIs, recharts charts, period selector)
+- Client Notification System (5 types, email + in-app, preferences, admin notify)
+- Document Quality Control (format validation, checklist, scan guide, rejection notifications)
+- OCR System Phase 1 (Tesseract.js + regex extraction, pre-fill forms)
+- PageSpeed/SEO (Schema.org, sitemap, code splitting, lazy loading)
+- Homepage: animated counters, Dossier Express banner
 
-### Analytics Dashboard (Completed — March 15, 2026)
-- Admin "Analytique" tab with KPIs, recharts (activity, revenue, distributions), period selector
-- Testing: 100% pass (iteration_34)
+### OCR System — Phase 1 (Completed — March 15, 2026)
+- **Frontend (`useOCR.js`):** Tesseract.js v7 worker with French language (fra)
+  - Auto-triggers on image upload (JPG/PNG) in DocumentUploader (enableOCR=true)
+  - `parseFields()` extracts: dates, montants, references, numero_ss, noms, taux_ipp, type_dossier_detected, contexte
+  - Progress bar with percentage during processing
+  - Manual "Relancer l'extraction OCR" button
+- **Frontend (`OcrFieldsPreview.jsx`):** Shows extracted fields in categorized badges
+  - Icons per field type (Calendar, DollarSign, Hash, User, Target)
+  - Confidence percentage badge, source indicator (Tesseract/GPT-4o)
+  - "Pré-remplir le formulaire" button — applies fields to parent form
+  - Dismiss button to close preview
+- **StrategiIA integration:** OCR pre-fills `type_dossier`, `situation`, `regime`
+- **Dossier Express integration:** OCR pre-fills `situation`, `name`
+- **Backend (`POST /api/documents/extract-fields`):** Server-side regex extraction
+  - Same field extraction as frontend (dates, amounts, refs, SSN, names, IPP, types)
+  - Returns `enhanced: false` (Phase 1), ready for Phase 2 GPT-4o
+- **Testing:** 100% pass (iteration_38 — 22 backend + 10 frontend + 3 code review)
 
-### StratégiIA Phase 3 — Relevance Scoring (Completed — March 15, 2026)
-- `GET /api/strategiia/score` — composite score (0-100) from historical cases
-- Score card in results with confidence badge, distribution bar, top strategies
-- Testing: Backend 100% (iteration_35)
-
-### Client Notification System (Completed — March 15, 2026)
-- 4 types: analyse_premium_ready, payment_confirmed, dossier_in_progress, report_ready, document_rejected
-- Registration form notification preferences, client settings panel, admin "Notifier" button
-- Auto-notification on premium analysis status change
-- Testing: 100% pass (iteration_36)
-
-### Document Quality Control System (Completed — March 15, 2026)
-- **Reusable `DocumentUploader` component** (`/app/frontend/src/components/DocumentUploader.jsx`):
-  - Format validation: PDF, JPG, PNG, DOCX only
-  - Size validation: max 10MB per file, min 100 bytes (corruption check)
-  - File preview: thumbnails for images, icons for PDF/DOCX
-  - "Supprimer et remplacer" button on each file (RefreshCw icon)
-  - "Qualité vérifiée" badge after checklist completion
-  - Error messages for invalid/corrupted files
-- **Quality Checklist** (3 mandatory items before submission):
-  - Documents lisibles et complets
-  - Informations personnelles visibles
-  - Dates et signatures lisibles
-  - Submit buttons disabled until all checked (when files present)
-- **Scan Guide** (collapsible):
-  - 4 visual tips: bonne luminosité, scanner droit, pas de reflets, texte visible
-  - Good vs Bad document visual comparison
-- **Backend:**
-  - `POST /api/documents/validate` — validates filename, size, MIME type
-  - `POST /api/admin/notify-document-rejected/{client_id}` — sends rejection notification + email
-- **Integration:**
-  - Dossier Express: replaces old file upload with DocumentUploader
-  - StrategiIA: new optional "Documents justificatifs" section
-  - Admin Clients tab: "Documents à renvoyer" button per client
-- **Testing:** 100% pass (iteration_37 — 15 backend + 12 frontend UI)
+### OCR Phase 2 (Architecture Prepared, Pending LLM Budget)
+- Backend endpoint ready: `POST /api/documents/extract-fields` with `enhanced` flag
+- When GPT-4o budget available: AI-powered extraction with higher accuracy
+- Coupling with Analyse Premium for expert validation of OCR results
 
 ## Known Limitations
 - LLM budget exceeded (needs recharge)
 - Stripe/PayPal in test/sandbox mode
 - Resend sender: onboarding@resend.dev
+- OCR Phase 1 (Tesseract.js) less accurate on complex documents — Phase 2 GPT-4o planned
 
 ## Pending (Blocked on User Action)
-- P1: Recharge Emergent LLM Key
+- P1: Recharge Emergent LLM Key (unlocks AI features + OCR Phase 2)
 - P1: HubSpot Portal ID
 - P2: Production Stripe/PayPal keys
 - P3: Legal content finalization
 
 ## Backlog
+- OCR Phase 2: GPT-4o enhanced extraction (pending LLM budget)
 - Backend refactoring: Break server.py into modules
 - Browser Push via Service Worker (Web Push API)
 - Legal content finalization
