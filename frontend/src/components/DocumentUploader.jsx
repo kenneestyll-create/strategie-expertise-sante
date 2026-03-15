@@ -5,8 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import {
   Upload, FileText, Image, X, AlertTriangle, CheckCircle,
   RefreshCw, Eye, ChevronDown, ChevronUp, Lightbulb,
-  Camera, Smartphone, Sun, FileCheck, Shield
+  Camera, Smartphone, Sun, FileCheck, Shield, ScanLine
 } from 'lucide-react';
+import { useOCR } from '@/hooks/useOCR';
+import { OcrFieldsPreview, OcrProgressBar } from '@/components/OcrFieldsPreview';
 
 const ACCEPTED_TYPES = {
   'application/pdf': 'PDF',
@@ -198,15 +200,17 @@ const QualityChecklist = ({ checks, onChange }) => {
   );
 };
 
-export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, showChecklist = true, showGuide = true, className = '' }) => {
+export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, showChecklist = true, showGuide = true, enableOCR = false, onOcrResult = null, className = '' }) => {
   const inputRef = useRef(null);
   const [errors, setErrors] = useState([]);
   const [checks, setChecks] = useState({ readable: false, personal_info: false, dates_signatures: false });
+  const [ocrResult, setOcrResult] = useState(null);
+  const { extractFromMultiple, processing: ocrProcessing, progress: ocrProgress, cancel: cancelOcr } = useOCR();
 
   const allChecked = checks.readable && checks.personal_info && checks.dates_signatures;
   const hasFiles = files.length > 0;
 
-  const handleFiles = useCallback((newFiles) => {
+  const handleFiles = useCallback(async (newFiles) => {
     const fileList = Array.from(newFiles);
     const validFiles = [];
     const newErrors = [];
@@ -227,9 +231,22 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
 
     setErrors(newErrors);
     if (validFiles.length > 0) {
-      onFilesChange([...files, ...validFiles]);
+      const allFiles = [...files, ...validFiles];
+      onFilesChange(allFiles);
+
+      // Auto-trigger OCR on images if enabled
+      if (enableOCR) {
+        const imageFiles = allFiles.filter(f => f.type?.startsWith('image/'));
+        if (imageFiles.length > 0) {
+          const result = await extractFromMultiple(imageFiles);
+          if (result && result.fields && Object.keys(result.fields).length > 0) {
+            setOcrResult(result);
+            if (onOcrResult) onOcrResult(result);
+          }
+        }
+      }
     }
-  }, [files, maxFiles, onFilesChange]);
+  }, [files, maxFiles, onFilesChange, enableOCR, extractFromMultiple, onOcrResult]);
 
   const removeFile = useCallback((index) => {
     const updated = files.filter((_, i) => i !== index);
@@ -298,6 +315,18 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
         </div>
       )}
 
+      {/* OCR Progress */}
+      {enableOCR && <OcrProgressBar processing={ocrProcessing} progress={ocrProgress} />}
+
+      {/* OCR Results */}
+      {enableOCR && ocrResult && !ocrProcessing && (
+        <OcrFieldsPreview
+          ocrResult={ocrResult}
+          onApplyFields={onOcrResult ? (fields) => onOcrResult({ ...ocrResult, fields, applied: true }) : null}
+          onDismiss={() => setOcrResult(null)}
+        />
+      )}
+
       {/* Quality checklist */}
       {hasFiles && showChecklist && (
         <QualityChecklist checks={checks} onChange={handleCheckChange} />
@@ -305,6 +334,26 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
 
       {/* Scan guide */}
       {showGuide && <ScanGuide />}
+
+      {/* Manual OCR trigger */}
+      {enableOCR && hasFiles && !ocrProcessing && !ocrResult && files.some(f => f.type?.startsWith('image/')) && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2 text-xs border-accent/30 text-accent hover:bg-accent/5"
+          onClick={async () => {
+            const imageFiles = files.filter(f => f.type?.startsWith('image/'));
+            const result = await extractFromMultiple(imageFiles);
+            if (result && result.fields && Object.keys(result.fields).length > 0) {
+              setOcrResult(result);
+              if (onOcrResult) onOcrResult(result);
+            }
+          }}
+          data-testid="ocr-manual-trigger"
+        >
+          <ScanLine className="w-3.5 h-3.5" /> Relancer l'extraction OCR
+        </Button>
+      )}
 
       {/* Status badge */}
       {hasFiles && allChecked && showChecklist && (

@@ -257,7 +257,7 @@ export const StrategiIA = () => {
                         data-testid="strategiia-situation-input"
                       />
                     </div>
-                    {/* Optional document upload */}
+                    {/* Optional document upload with OCR */}
                     <div className="space-y-2">
                       <Label className="font-medium">Documents justificatifs (optionnel)</Label>
                       <DocumentUploader
@@ -266,6 +266,21 @@ export const StrategiIA = () => {
                         maxFiles={3}
                         showChecklist={stratFiles.length > 0}
                         showGuide={true}
+                        enableOCR={true}
+                        onOcrResult={(result) => {
+                          if (result?.applied && result.fields) {
+                            const f = result.fields;
+                            if (f.type_dossier_detected?.length > 0 && !typeDossier) {
+                              setTypeDossier(f.type_dossier_detected[0]);
+                            }
+                            if (f.contexte && !situation.trim()) {
+                              setSituation(f.contexte);
+                            }
+                            if (f.regime_detected && !regime) {
+                              setRegime(f.regime_detected);
+                            }
+                          }
+                        }}
                       />
                     </div>
 

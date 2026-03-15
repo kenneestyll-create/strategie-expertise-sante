@@ -367,7 +367,7 @@ export const DossierExpressPage = () => {
                 <p className="text-xs text-muted-foreground">Plus votre description est détaillée, plus l'analyse sera pertinente.</p>
               </div>
 
-              {/* Document upload with quality control */}
+              {/* Document upload with quality control + OCR */}
               <div className="space-y-2">
                 <Label>Documents (optionnel, max 5 fichiers)</Label>
                 <DocumentUploader
@@ -376,6 +376,18 @@ export const DossierExpressPage = () => {
                   maxFiles={5}
                   showChecklist={files.length > 0}
                   showGuide={true}
+                  enableOCR={true}
+                  onOcrResult={(result) => {
+                    if (result?.applied && result.fields) {
+                      const f = result.fields;
+                      if (f.contexte && !form.situation.trim()) {
+                        setForm(prev => ({ ...prev, situation: f.contexte }));
+                      }
+                      if (f.noms?.length > 0 && !form.name.trim()) {
+                        setForm(prev => ({ ...prev, name: f.noms[0] }));
+                      }
+                    }
+                  }}
                 />
               </div>
 

@@ -3712,6 +3712,78 @@ async def validate_document(request: Request):
     return {"valid": len(errors) == 0, "errors": errors}
 
 
+@api_router.post("/documents/extract-fields")
+async def extract_document_fields(request: Request):
+    """Phase 2 endpoint: AI-powered field extraction from OCR text.
+    Currently returns parsed fields from regex. When GPT-4o budget is available,
+    this will be enhanced with AI extraction."""
+    body = await request.json()
+    raw_text = body.get("text", "")
+    source = body.get("source", "tesseract")
+
+    if not raw_text.strip():
+        return {"fields": {}, "source": source, "enhanced": False}
+
+    import re
+
+    fields = {}
+
+    # Dates (dd/mm/yyyy)
+    date_matches = re.findall(r'\d{2}[\/\-\.]\d{2}[\/\-\.]\d{4}', raw_text)
+    if date_matches:
+        fields["dates"] = list(set(date_matches))
+
+    # Amounts
+    amount_matches = re.findall(r'(\d[\d\s\.]*\d[,]\d{2})\s*(?:€|EUR|euros?)', raw_text, re.IGNORECASE)
+    simple_amounts = re.findall(r'(?:^|[^\d,.])\s*(\d{2,6})\s*€', raw_text, re.MULTILINE)
+    all_amounts = list(set([a.replace(' ', '') + '€' for a in amount_matches] + [a.strip() + '€' for a in simple_amounts]))
+    if all_amounts:
+        fields["montants"] = all_amounts
+
+    # References (only match refs that look like codes, not words)
+    ref_matches = re.findall(r'(?:N°|n°|Réf\.?|réf\.?|référence|dossier)\s*(?:n°\s*)?[:\s]*([A-Z][A-Z0-9\-\/]{3,20})', raw_text)
+    if ref_matches:
+        fields["references"] = list(set(ref_matches))
+
+    # Social Security
+    ss_matches = re.findall(r'[12]\s?\d{2}\s?\d{2}\s?\d{2}\s?\d{3}\s?\d{3}\s?\d{2}', raw_text)
+    if ss_matches:
+        fields["numero_ss"] = ss_matches[0].replace(' ', '')
+
+    # Names (stop at newline)
+    name_matches = re.findall(r'(?:Nom|Patient|Assuré|Bénéficiaire)\s*:\s*([A-ZÀ-Ü][a-zà-ü]+(?:[ \t]+[A-ZÀ-Ü][a-zà-ü]+){0,3})', raw_text)
+    if name_matches:
+        fields["noms"] = list(set(name_matches))
+
+    # IPP rates
+    ipp_matches = re.findall(r'(?:taux|IPP|incapacité)\s*[:\s]?\s*(\d{1,3})\s*%', raw_text, re.IGNORECASE)
+    if ipp_matches:
+        fields["taux_ipp"] = [int(x) for x in ipp_matches]
+
+    # Dossier type detection
+    type_keywords = {
+        'accident du travail': 'at', 'accident de travail': 'at',
+        'maladie professionnelle': 'mp', 'tableau des maladies': 'mp',
+        'mdph': 'mdph', 'aah': 'mdph', 'handicap': 'mdph',
+        'expertise médicale': 'expertise', 'expertise': 'expertise',
+        'ipp': 'ipp', 'incapacité permanente': 'ipp',
+        'cpam': 'at', 'cramif': 'at',
+    }
+    detected_types = list(set(
+        dtype for keyword, dtype in type_keywords.items()
+        if keyword.lower() in raw_text.lower()
+    ))
+    if detected_types:
+        fields["type_dossier_detected"] = detected_types
+
+    return {
+        "fields": fields,
+        "source": source,
+        "enhanced": False,
+        "message": "Extraction regex (Phase 1). Phase 2 GPT-4o disponible prochainement."
+    }
+
+
 # ==================== RESOURCES / LIBRARY ROUTES ====================
 
 @api_router.post("/resources/download")
