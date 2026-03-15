@@ -44,6 +44,13 @@ Web application in French providing advice and support for occupational diseases
 - **Admin panel**: New "Premium" tab with notification badge, stats cards, and status management buttons
 - Backend: `GET /api/admin/premium-analyses`, `PATCH /api/admin/premium-analyses/{id}`
 - Testing: 100% pass rate (iteration_31)
+
+### Navigation & Search Improvements (Completed — Feb 2026)
+- **Scroll-to-top**: Global `ScrollToTop` component resets scroll to top (smooth) on every page navigation. Skips when URL has anchor hash.
+- **Search anchoring**: Search results link to specific page sections via anchors (e.g., `#chiffres`). Page scrolls directly to relevant content.
+- **Search highlighting**: Matching terms highlighted in golden badges on target pages, auto-fade after 4 seconds. Also in search results dropdown.
+- **Admin notification email**: Resend email sent to admin when Analyse Premium is ordered (branded HTML with type, client, amount).
+- Testing: 100% pass rate (iteration_32)
 - Testing: 100% pass rate (iteration_30)
 - UI/UX animations: scroll-triggered reveals (fade-in, slide-left/right, scale), staggered cards, card-glow hover, shimmer, float, icon-bounce, urgent-glow
 - Animations on: Homepage, Tarifs (progressive reveal), Dossier Express (urgency-driven). No animations on À propos (sober/professional).
