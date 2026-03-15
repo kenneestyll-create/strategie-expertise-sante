@@ -69,6 +69,10 @@ Exécution : `cd /app/backend && python -m pytest --cov=. --cov-report=term-miss
 - [x] Pipeline CI/CD GitHub Actions (`.github/workflows/ci.yml`)
 - [x] Push notifications navigateur (Service Worker VAPID, mars 2026)
 - [x] Stockage objet Emergent (documents en production, mars 2026)
+- [x] Push notifications automatiques (validation/rejet document, mise à jour dossier, mars 2026)
+- [x] OCR Phase 2 GPT-4o (extraction intelligente de champs, mars 2026)
+- [x] Admin — Onglet Documents (validation/rejet avec notifications auto, mars 2026)
+- [x] Admin — Onglet Config (Resend, stockage objet, push, guide vérification domaine, mars 2026)
 
 ## Éléments bloqués (action utilisateur)
 1. **Budget LLM Emergent** épuisé → Profile → Universal Key → Add Balance
@@ -77,8 +81,8 @@ Exécution : `cd /app/backend && python -m pytest --cov=. --cov-report=term-miss
 4. **Contenu juridique** → fournir texte final Mentions Légales
 
 ## Tâches futures
-- P2: OCR Phase 2 (GPT-4o côté serveur)
-- P3: Domaine Resend vérifié
+- P2: Vérification domaine Resend (action utilisateur)
+- P3: Activer intégrations production (HubSpot, Stripe/PayPal live, contenu juridique)
 
 ## Credentials test
 - Admin: `admin@accompagn-sante.fr` / `Admin2024!`
