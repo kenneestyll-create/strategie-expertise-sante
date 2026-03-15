@@ -84,6 +84,12 @@ Exécution : `cd /app/backend && python -m pytest --cov=. --cov-report=term-miss
   - Guide visuel : 4 conseils (droit, visible, luminosité, reflets)
   - Amélioration Canvas : contraste, luminosité, netteté
   - Intégré dans Dossier Express, StratégiIA, Espace Client Documents
+- [x] Mode multi-scan — Fusion multi-pages en PDF + OCR combiné (mars 2026)
+  - 6 phases : guide → caméra → aperçu → revue pages → aperçu PDF → traitement
+  - Barre de miniatures (PageStrip) avec suppression individuelle
+  - Navigation entre pages (flèches), aperçu PDF (iframe jsPDF)
+  - Fusion automatique en PDF A4 + OCR GPT-4o sur le texte combiné
+  - Bandeau "Mode multi-pages : scannez plusieurs pages, elles seront fusionnées en un seul PDF"
 
 ## Éléments bloqués (action utilisateur)
 1. **Budget LLM Emergent** épuisé → Profile → Universal Key → Add Balance
