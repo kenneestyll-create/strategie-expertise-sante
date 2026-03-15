@@ -90,6 +90,10 @@ Exécution : `cd /app/backend && python -m pytest --cov=. --cov-report=term-miss
   - Navigation entre pages (flèches), aperçu PDF (iframe jsPDF)
   - Fusion automatique en PDF A4 + OCR GPT-4o sur le texte combiné
   - Bandeau "Mode multi-pages : scannez plusieurs pages, elles seront fusionnées en un seul PDF"
+- [x] Citation fondateur — Style noir et or (mars 2026)
+  - Page À propos : blockquote avec guillemets dorés, fond noir, bordure #D4AF37
+  - Page d'accueil : section "Le mot du fondateur" avec icône guillemet doré
+  - Typographie Playfair Display serif italique, signature "FONDATEUR" en or
 
 ## Éléments bloqués (action utilisateur)
 1. **Budget LLM Emergent** épuisé → Profile → Universal Key → Add Balance
