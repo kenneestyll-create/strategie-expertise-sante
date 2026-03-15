@@ -3,18 +3,20 @@
 ## Problème original
 Application web complète en français pour accompagner les victimes de maladies professionnelles, accidents du travail, litiges assurantiels et procédures d'invalidité (MDPH).
 
-## Architecture
+## Architecture (après refactoring mars 2026)
 ```
 /app/backend/
 ├── server.py          (68 lignes — point d'entrée slim)
 ├── config.py          (DB, env, constantes)
 ├── models.py          (modèles Pydantic)
+├── pyproject.toml     (config pytest)
 ├── utils/
 │   ├── auth.py        (auth, tokens, dépendances)
 │   ├── email.py       (notifications email Resend)
 │   ├── chatbot.py     (FAQ + IA Claude)
 │   └── pdf.py         (génération PDF fpdf2)
 ├── routes/
+│   ├── __init__.py    (agrégation des routers)
 │   ├── public.py      (contact, FAQ, avis, visiteurs, parrainage)
 │   ├── chatbot.py     (chatbot IA)
 │   ├── forum.py       (forum CRUD + admin)
@@ -23,13 +25,41 @@ Application web complète en français pour accompagner les victimes de maladies
 │   ├── client.py      (portail client, documents, notifications, progression)
 │   ├── strategiia.py  (StratégiIA, Dossier Express, cas anonymisés)
 │   └── misc.py        (RDV, simulateur, alertes, relance, SEO, seed)
-└── tests/
-
-/app/frontend/src/
-├── pages/             (AdminDashboard, EspaceClient, StrategiIA, DossierExpress...)
-├── components/        (DocumentUploader, OcrFieldsPreview, Chatbot...)
-└── hooks/             (useOCR.js)
+└── tests/             (187 tests pytest)
+    ├── conftest.py    (fixtures partagées)
+    ├── test_module_config.py
+    ├── test_module_models.py
+    ├── test_module_utils_auth.py
+    ├── test_module_utils_chatbot.py
+    ├── test_module_utils_pdf.py
+    ├── test_module_routes_public.py
+    ├── test_module_routes_chatbot.py
+    ├── test_module_routes_forum.py
+    ├── test_module_routes_admin.py
+    ├── test_module_routes_payments.py
+    ├── test_module_routes_client.py
+    ├── test_module_routes_strategiia.py
+    └── test_module_routes_misc.py
 ```
+
+## Tests unitaires — 187 tests
+Exécution : `cd /app/backend && python -m pytest tests/test_module_*.py -v`
+
+| Module | Tests | Couverture |
+|--------|-------|-----------|
+| config | 9 | Constantes, packages, slots, DB |
+| models | 22 | Validation Pydantic, defaults, bornes |
+| utils/auth | 8 | Hash, verify, tokens (admin/forum/client) |
+| utils/chatbot | 9 | FAQ matching, keywords |
+| utils/pdf | 8 | PDF génération, watermark, caractères spéciaux |
+| routes/public | 15 | Contact, FAQ, avis, visiteurs, parrainage |
+| routes/chatbot | 4 | FAQ, IA fallback, quota |
+| routes/forum | 16 | Auth, topics, replies, likes, reports, admin |
+| routes/admin | 18 | Auth, contacts, analytics, FAQ, avis, clients |
+| routes/payments | 5 | Packages, PayPal, Stripe validation |
+| routes/client | 17 | Auth, profile, progress, documents CRUD, notifications |
+| routes/strategiia | 16 | Score, quota, analyse, PDF, cas anonymisés CRUD |
+| routes/misc | 30 | Booking, simulator, alerts, OCR, SEO, seed |
 
 ## Fonctionnalités implémentées
 - [x] Site vitrine multipage (AT/MP, MDPH, expertises, tarifs, etc.)
@@ -44,14 +74,15 @@ Application web complète en français pour accompagner les victimes de maladies
 - [x] StrategiIA (analyse IA, quota gratuit, premium, PDF)
 - [x] Dossier Express (analyse complète IA + envoi email PDF)
 - [x] Cas anonymisés (scoring de pertinence)
-- [x] Portail client (inscription, dossiers, documents, notifications, progression)
+- [x] Portail client complet (inscription, dossiers, documents, notifications, progression)
 - [x] OCR Phase 1 (Tesseract.js côté client)
-- [x] Contrôle qualité documents (validation, checklist, guide scan)
-- [x] Historique intelligent documents (tags, catégories, filtres)
-- [x] Dashboard progression client (donut chart + timeline)
+- [x] Contrôle qualité documents
+- [x] Historique intelligent documents
+- [x] Dashboard progression client
 - [x] Analytics admin (KPIs, graphiques recharts)
 - [x] SEO (sitemap.xml, robots.txt, cache)
-- [x] **Refactoring backend** — monolithe 4327 lignes → 16 modules (mars 2026)
+- [x] Refactoring backend modulaire (mars 2026)
+- [x] Suite complète de tests unitaires pytest — 187 tests (mars 2026)
 
 ## Éléments bloqués (action utilisateur)
 1. **Budget LLM Emergent** épuisé → Profile → Universal Key → Add Balance
@@ -60,7 +91,7 @@ Application web complète en français pour accompagner les victimes de maladies
 4. **Contenu juridique** → fournir texte final Mentions Légales
 
 ## Tâches futures
-- P2: OCR Phase 2 (GPT-4o côté serveur) — bloqué par budget LLM
+- P2: OCR Phase 2 (GPT-4o côté serveur)
 - P3: Push notifications navigateur (Service Worker)
 - P3: Stockage objet (fichiers en production)
 - P3: Domaine Resend vérifié
@@ -68,15 +99,3 @@ Application web complète en français pour accompagner les victimes de maladies
 ## Credentials test
 - Admin: `admin@accompagn-sante.fr` / `Admin2024!`
 - Client: inscription via `/espace-client`
-
-## Intégrations
-| Service | Statut |
-|---------|--------|
-| Stripe | Sandbox |
-| PayPal | Sandbox |
-| Claude Sonnet 4.5 (Emergent) | Budget épuisé |
-| Resend | Actif |
-| Tesseract.js | Actif (côté client) |
-| HubSpot | En attente Portal ID |
-| recharts | Actif |
-| fpdf2 | Actif |
