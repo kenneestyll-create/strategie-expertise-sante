@@ -491,3 +491,37 @@ async def get_completeness_notifications(admin: dict = Depends(get_current_admin
     for t in [50, 80, 100]:
         by_threshold[str(t)] = await db.completeness_notifications.count_documents({"threshold_pct": t})
     return {"notifications": notifs, "total": total, "stats": stats, "by_threshold": by_threshold}
+
+
+# ==================== INACTIVITY REMINDERS ====================
+
+@router.post("/admin/relance-inactivite/run")
+async def run_inactivity_reminders_endpoint(admin: dict = Depends(get_current_admin)):
+    from utils.email import run_inactivity_reminders
+    results = await run_inactivity_reminders()
+    return {"success": True, "results": results}
+
+@router.get("/admin/relance-inactivite/history")
+async def get_inactivity_reminders(admin: dict = Depends(get_current_admin), limit: int = 50, skip: int = 0):
+    reminders = await db.inactivity_reminders.find({}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    total = await db.inactivity_reminders.count_documents({})
+    stats = {
+        "total": total,
+        "sent": await db.inactivity_reminders.count_documents({"status": "sent"}),
+        "failed": await db.inactivity_reminders.count_documents({"status": "failed"}),
+        "skipped": await db.inactivity_reminders.count_documents({"status": "skipped"}),
+    }
+    by_level = {}
+    for lvl in [1, 2, 3]:
+        by_level[str(lvl)] = await db.inactivity_reminders.count_documents({"level": lvl})
+    return {"reminders": reminders, "total": total, "stats": stats, "by_level": by_level}
+
+@router.post("/admin/relance-inactivite/toggle-pause")
+async def toggle_client_reminder_pause(request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    client_id = body.get("client_id")
+    paused = body.get("paused", True)
+    if not client_id:
+        raise HTTPException(status_code=400, detail="client_id requis")
+    await db.client_users.update_one({"id": client_id}, {"$set": {"reminders_paused": paused}})
+    return {"success": True, "client_id": client_id, "reminders_paused": paused}

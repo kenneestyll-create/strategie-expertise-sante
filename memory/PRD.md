@@ -107,6 +107,7 @@ Exécution : `cd /app/backend && python -m pytest --cov=. --cov-report=term-miss
 - [x] P2 Score qualité dossier StrategiIA — Endpoint POST /api/strategiia/dossier-score, score /100 avec niveau, 3 barres détail (complétude/cohérence/pièces), conseils pédagogiques, affiché dans le modal avant analyse (mars 2026)
 - [x] P3 Analytique admin enrichi — Cartes utilisation services (StrategiIA/Dossier Express/Premium/Chatbot) avec compteurs mensuels, KPIs supplémentaires (dossiers actifs, documents, forum, calculatrice) (mars 2026)
 - [x] Notifications automatiques de complétude — Emails Resend aux seuils 50%/80%/100%, déclenchés après upload de document, templates personnalisés (prénom, % complétude, docs manquants, CTA), historique admin avec stats et tableau détaillé (mars 2026)
+- [x] Relances d'inactivité automatiques — Scan clients inactifs (<50% complétude, 7+ jours sans upload), 3 niveaux progressifs (J+7/J+14/J+21), anti-doublon, opt-out par client, bouton admin "Lancer les relances", historique complet avec stats par niveau et bouton pause (mars 2026)
 
 ## Éléments bloqués (action utilisateur)
 1. **Budget LLM Emergent** épuisé → Profile → Universal Key → Add Balance

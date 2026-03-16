@@ -310,6 +310,9 @@ export const AdminDashboard = () => {
   const [emailStatus, setEmailStatus] = useState(null);
   const [docStatusFilter, setDocStatusFilter] = useState('');
   const [completenessNotifs, setCompletenessNotifs] = useState({ notifications: [], total: 0, stats: {}, by_threshold: {} });
+  const [inactivityReminders, setInactivityReminders] = useState({ reminders: [], total: 0, stats: {}, by_level: {} });
+  const [runningReminders, setRunningReminders] = useState(false);
+  const [lastReminderResults, setLastReminderResults] = useState(null);
 
   const navigate = useNavigate();
   const { token, adminName, logout } = useAuth();
@@ -357,6 +360,7 @@ export const AdminDashboard = () => {
       axios.get(`${API}/admin/documents`, axiosConfig).then(r => setAdminDocs(r.data)).catch(() => {});
       axios.get(`${API}/admin/email/status`, axiosConfig).then(r => setEmailStatus(r.data)).catch(() => {});
       axios.get(`${API}/admin/completeness-notifications`, axiosConfig).then(r => setCompletenessNotifs(r.data)).catch(() => {});
+      axios.get(`${API}/admin/relance-inactivite/history`, axiosConfig).then(r => setInactivityReminders(r.data)).catch(() => {});
     } catch (error) {
       console.error('Erreur:', error);
       if (error.response?.status === 401) {
@@ -1931,6 +1935,146 @@ export const AdminDashboard = () => {
                   </div>
                 ) : (
                   <p className="text-center text-muted-foreground py-8 text-sm">Aucune notification de complétude envoyée pour le moment.</p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Inactivity Reminders Section */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-orange-500" /> Relances d'inactivité
+                    </CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">Emails envoyés aux clients inactifs (&lt; 50% complétude, aucun upload depuis 7+ jours) — J+7, J+14, J+21</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    className="gap-1.5"
+                    disabled={runningReminders}
+                    data-testid="run-reminders-btn"
+                    onClick={async () => {
+                      setRunningReminders(true);
+                      setLastReminderResults(null);
+                      try {
+                        const r = await axios.post(`${API}/admin/relance-inactivite/run`, {}, { headers: { Authorization: `Bearer ${adminToken}` } });
+                        setLastReminderResults(r.data.results);
+                        const h = await axios.get(`${API}/admin/relance-inactivite/history`, { headers: { Authorization: `Bearer ${adminToken}` } });
+                        setInactivityReminders(h.data);
+                      } catch {}
+                      setRunningReminders(false);
+                    }}
+                  >
+                    {runningReminders ? <><Clock className="w-3 h-3 animate-spin" /> Scan...</> : <><Send className="w-3 h-3" /> Lancer les relances</>}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Last run results */}
+                {lastReminderResults && (
+                  <div className="p-3 rounded-lg bg-blue-50 border border-blue-200 text-sm" data-testid="reminder-results">
+                    <p className="font-medium text-blue-800 mb-1">Résultat du scan</p>
+                    <div className="grid grid-cols-3 md:grid-cols-6 gap-2 text-xs">
+                      <span>Scannés: <strong>{lastReminderResults.scanned}</strong></span>
+                      <span>Éligibles: <strong>{lastReminderResults.eligible}</strong></span>
+                      <span className="text-green-700">Envoyés: <strong>{lastReminderResults.sent}</strong></span>
+                      <span className="text-red-600">Échoués: <strong>{lastReminderResults.failed}</strong></span>
+                      <span className="text-gray-500">Non envoyés: <strong>{lastReminderResults.skipped}</strong></span>
+                      <span className="text-amber-600">Déjà relancés: <strong>{lastReminderResults.already_reminded}</strong></span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="p-3 rounded-lg border text-center">
+                    <p className="text-2xl font-bold">{inactivityReminders.stats.total || 0}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase">Total relances</p>
+                  </div>
+                  <div className="p-3 rounded-lg border text-center">
+                    <p className="text-2xl font-bold text-green-600">{inactivityReminders.stats.sent || 0}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase">Envoyées</p>
+                  </div>
+                  <div className="p-3 rounded-lg border text-center">
+                    <p className="text-2xl font-bold text-red-500">{inactivityReminders.stats.failed || 0}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase">Échouées</p>
+                  </div>
+                  <div className="p-3 rounded-lg border text-center">
+                    <p className="text-2xl font-bold text-gray-400">{inactivityReminders.stats.skipped || 0}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase">Non envoyées</p>
+                  </div>
+                </div>
+
+                {/* By level */}
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    {lvl: 1, label: "J+7 — Relance douce", color: "text-amber-600"},
+                    {lvl: 2, label: "J+14 — Relance motivante", color: "text-orange-600"},
+                    {lvl: 3, label: "J+21 — Dernière relance", color: "text-red-600"},
+                  ].map(t => (
+                    <div key={t.lvl} className="p-3 rounded-lg border">
+                      <p className={`text-lg font-bold ${t.color}`}>{inactivityReminders.by_level?.[String(t.lvl)] || 0}</p>
+                      <p className="text-[10px] text-muted-foreground">{t.label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* History table */}
+                {inactivityReminders.reminders?.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm" data-testid="inactivity-reminders-table">
+                      <thead>
+                        <tr className="border-b text-left text-muted-foreground">
+                          <th className="pb-2 font-medium">Date</th>
+                          <th className="pb-2 font-medium">Client</th>
+                          <th className="pb-2 font-medium text-center">Niveau</th>
+                          <th className="pb-2 font-medium text-center">Inactif</th>
+                          <th className="pb-2 font-medium text-center">Complétude</th>
+                          <th className="pb-2 font-medium text-center">Statut</th>
+                          <th className="pb-2 font-medium text-center">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {inactivityReminders.reminders.map((r, i) => (
+                          <tr key={r.id || i} className="border-b last:border-0">
+                            <td className="py-2 text-xs">{new Date(r.created_at).toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'})}</td>
+                            <td className="py-2">
+                              <p className="text-xs font-medium">{r.client_name || 'N/A'}</p>
+                              <p className="text-[10px] text-muted-foreground">{r.client_email}</p>
+                            </td>
+                            <td className="py-2 text-center">
+                              <Badge variant="outline" className={`text-xs ${r.level === 3 ? 'bg-red-100 text-red-700' : r.level === 2 ? 'bg-orange-100 text-orange-700' : 'bg-amber-100 text-amber-700'}`}>
+                                L{r.level}
+                              </Badge>
+                            </td>
+                            <td className="py-2 text-center text-xs">{r.days_inactive}j</td>
+                            <td className="py-2 text-center text-xs font-medium">{r.completeness_pct}%</td>
+                            <td className="py-2 text-center">
+                              <Badge variant="outline" className={`text-[10px] ${r.status === 'sent' ? 'bg-green-100 text-green-700' : r.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500'}`}>
+                                {r.status === 'sent' ? 'Envoyé' : r.status === 'failed' ? 'Échoué' : 'Non envoyé'}
+                              </Badge>
+                            </td>
+                            <td className="py-2 text-center">
+                              <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px]"
+                                onClick={async () => {
+                                  try {
+                                    await axios.post(`${API}/admin/relance-inactivite/toggle-pause`, { client_id: r.client_id, paused: true }, { headers: { Authorization: `Bearer ${adminToken}` } });
+                                    toast.success('Relances pausées pour ce client');
+                                  } catch { toast.error('Erreur'); }
+                                }}
+                                data-testid={`pause-reminder-${i}`}
+                              >
+                                Pause
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-center text-muted-foreground py-8 text-sm">Aucune relance envoyée pour le moment. Cliquez sur "Lancer les relances" pour scanner les clients inactifs.</p>
                 )}
               </CardContent>
             </Card>
