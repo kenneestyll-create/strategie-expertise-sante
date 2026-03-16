@@ -1,129 +1,60 @@
-# Stratégie & Expertise Santé — PRD
+# PRD — Stratégie & Expertise Santé
 
-## Problème original
-Application web complète en français pour accompagner les victimes de maladies professionnelles, accidents du travail, litiges assurantiels et procédures d'invalidité (MDPH).
+## Énoncé du problème
+Application web complète en français pour fournir des conseils sur les maladies professionnelles et les litiges d'assurance. Nommée "Stratégie & Expertise Santé".
 
-## Architecture (après refactoring mars 2026)
-```
-/app/backend/
-├── server.py          (slim entry point)
-├── config.py          (DB, env, constantes)
-├── models.py          (modèles Pydantic)
-├── pyproject.toml     (config pytest)
-├── .github/workflows/ci.yml (CI/CD)
-├── utils/
-│   ├── auth.py        (auth, tokens)
-│   ├── email.py       (notifications email Resend)
-│   ├── chatbot.py     (FAQ + IA Claude)
-│   ├── pdf.py         (génération PDF fpdf2)
-│   ├── push.py        (notifications push VAPID/WebPush)
-│   └── storage.py     (stockage objet Emergent)
-├── routes/
-│   ├── client.py      (portail client, docs, notifs, push, stockage)
-│   └── ...            (admin, forum, payments, strategiia, misc, public, chatbot)
-└── tests/             (210+ tests pytest)
-```
-
-## Tests unitaires — 210 tests (100% pass)
-Exécution : `cd /app/backend && python -m pytest --cov=. --cov-report=term-missing -q`
-
-| Module | Tests | Couverture |
-|--------|-------|-----------|
-| config | 9 | Constantes, packages, slots, DB |
-| models | 22 | Validation Pydantic, defaults, bornes |
-| utils/auth | 8 | Hash, verify, tokens (admin/forum/client) |
-| utils/chatbot | 9 | FAQ matching, keywords |
-| utils/pdf | 8 | PDF génération, watermark, caractères spéciaux |
-| routes/public | 15 | Contact, FAQ, avis, visiteurs, parrainage |
-| routes/chatbot | 4 | FAQ, IA fallback, quota |
-| routes/forum | 16 | Auth, topics, replies, likes, reports, admin |
-| routes/admin | 18 | Auth, contacts, analytics, FAQ, avis, clients |
-| routes/payments | 5 | Packages, PayPal, Stripe validation |
-| routes/client | 17 | Auth, profile, progress, documents CRUD, notifications |
-| routes/strategiia | 16 | Score, quota, analyse, PDF, cas anonymisés CRUD |
-| routes/misc | 30 | Booking, simulator, alerts, OCR, SEO, seed |
+## Architecture
+- **Frontend:** React + Shadcn/UI + Tailwind CSS + Recharts
+- **Backend:** FastAPI + MongoDB
+- **Thème:** Noir et Or
+- **Intégrations:** Stripe (test), PayPal (test), Claude Sonnet 4.5 (Emergent LLM Key), Resend (sandbox), apscheduler (cron)
 
 ## Fonctionnalités implémentées
-- [x] Site vitrine multipage (AT/MP, MDPH, expertises, tarifs, etc.)
-- [x] Formulaire de contact + notifications email (Resend)
-- [x] FAQ dynamique + chatbot IA (Claude Sonnet 4.5)
-- [x] Forum communautaire avec modération admin
-- [x] Simulateur de diagnostic interactif
-- [x] Calculatrice IPP/AAH
-- [x] Paiements Stripe + PayPal (sandbox)
-- [x] Parrainage + fidélité (réductions auto)
-- [x] Prise de RDV avec créneaux
-- [x] StrategiIA (analyse IA, quota gratuit, premium, PDF)
-- [x] Dossier Express (analyse complète IA + envoi email PDF)
-- [x] Cas anonymisés (scoring de pertinence)
-- [x] Portail client complet (inscription, dossiers, documents, notifications, progression)
-- [x] OCR Phase 1 (Tesseract.js côté client)
-- [x] Contrôle qualité documents
-- [x] Historique intelligent documents
-- [x] Dashboard progression client
-- [x] Analytics admin (KPIs, graphiques recharts)
-- [x] SEO (sitemap.xml, robots.txt, cache)
-- [x] Refactoring backend modulaire (mars 2026)
-- [x] Suite complète de tests unitaires pytest — 187 tests (mars 2026)
-- [x] Suite de tests élargie — 210 tests, 0 échec, couverture 77.8% (fév 2026)
-- [x] Pipeline CI/CD GitHub Actions (`.github/workflows/ci.yml`)
-- [x] Push notifications navigateur (Service Worker VAPID, mars 2026)
-- [x] Stockage objet Emergent (documents en production, mars 2026)
-- [x] Push notifications automatiques (validation/rejet document, mise à jour dossier, mars 2026)
-- [x] OCR Phase 2 GPT-4o (extraction intelligente de champs, mars 2026)
-- [x] Admin — Onglet Documents (validation/rejet avec notifications auto, mars 2026)
-- [x] Admin — Onglet Config (Resend, stockage objet, push, guide vérification domaine, mars 2026)
-- [x] OCR automatique à l'upload — Pipeline complet Tesseract.js → GPT-4o → pré-remplissage automatique (mars 2026)
-  - Dossier Express : auto-fill nom, type dossier, régime, situation
-  - StratégiIA : auto-fill type dossier, régime, situation enrichie
-  - Espace Client Documents : auto-tagging catégorie, organisme, type
-  - Backend : auto-extraction GPT-4o pour PDF uploadés sans OCR client
-  - OcrFieldsPreview : affiche organisme, résumé, recommandations IA
-- [x] Scanner de documents smartphone — Caméra navigateur + guide visuel + amélioration image + OCR auto (mars 2026)
-  - Composant DocumentScanner : 4 phases (guide → caméra → preview → traitement)
-  - Guide visuel : 4 conseils (droit, visible, luminosité, reflets)
-  - Amélioration Canvas : contraste, luminosité, netteté
-  - Intégré dans Dossier Express, StratégiIA, Espace Client Documents
-- [x] Mode multi-scan — Fusion multi-pages en PDF + OCR combiné (mars 2026)
-  - 6 phases : guide → caméra → aperçu → revue pages → aperçu PDF → traitement
-  - Barre de miniatures (PageStrip) avec suppression individuelle
-  - Navigation entre pages (flèches), aperçu PDF (iframe jsPDF)
-  - Fusion automatique en PDF A4 + OCR GPT-4o sur le texte combiné
-  - Bandeau "Mode multi-pages : scannez plusieurs pages, elles seront fusionnées en un seul PDF"
-- [x] Citation fondateur — Style noir et or (mars 2026)
-  - Page À propos : blockquote avec guillemets dorés, fond noir, bordure #D4AF37
-  - Page d'accueil : section "Le mot du fondateur" avec icône guillemet doré
-  - Typographie Playfair Display serif italique, signature "FONDATEUR" en or
-- [x] Logo bouclier — Couleur noir #1a1a1a + détails or #C9A84C, taille +30% (mars 2026)
-- [x] Scanner mobile uniquement — Masqué sur desktop (sm:hidden), visible sur mobile (mars 2026)
-- [x] Timeline "Mon parcours" — 5 étapes noir et or avec icônes, badges, victoires PTIA/ITT (mars 2026)
-- [x] Logo initiales F/S recentrées + footer logo corrigé (noir/or, plus blanc) (mars 2026)
-- [x] Témoignages clients anonymisés — 6 cartes page d'accueil + 3 cartes page À propos (mars 2026)
-- [x] Logo calligraphique — Refactorisation SVG inline (Logo.jsx), police Cormorant Garamond italic pour initiales F/S, appliqué Header + Footer (mars 2026)
-- [x] Animation shimmer doré — Reflet doré subtil au survol du logo (0.9s, hover uniquement), Header + Footer (mars 2026)
-- [x] FAB mobile StratégiIA — Bouton flottant noir et or (bottom-right), visible uniquement sur mobile, ouvre le modal StratégiIA via custom event (mars 2026)
-- [x] Fix débordement horizontal mobile — overflow-x:hidden sur html/body, overflow-hidden sur sections avec reveal-left/right, FAB repositionné à 24px des bords (mars 2026)
-- [x] P1 Dashboard progression client enrichi — Pie chart, barre de progression, complétude documentaire %, cartes statut documents, documents essentiels manquants avec boutons "Ajouter", 3 prochaines actions avec CTA colorés, timeline 6 étapes (mars 2026)
-- [x] P2 Score qualité dossier StrategiIA — Endpoint POST /api/strategiia/dossier-score, score /100 avec niveau, 3 barres détail (complétude/cohérence/pièces), conseils pédagogiques, affiché dans le modal avant analyse (mars 2026)
-- [x] P3 Analytique admin enrichi — Cartes utilisation services (StrategiIA/Dossier Express/Premium/Chatbot) avec compteurs mensuels, KPIs supplémentaires (dossiers actifs, documents, forum, calculatrice) (mars 2026)
-- [x] Notifications automatiques de complétude — Emails Resend aux seuils 50%/80%/100%, déclenchés après upload de document, templates personnalisés (prénom, % complétude, docs manquants, CTA), historique admin avec stats et tableau détaillé (mars 2026)
-- [x] Relances d'inactivité automatiques — Scan clients inactifs (<50% complétude, 7+ jours sans upload), 3 niveaux progressifs (J+7/J+14/J+21), anti-doublon, opt-out par client, bouton admin "Lancer les relances", historique complet avec stats par niveau et bouton pause (mars 2026)
-- [x] Cron hybride relances — Scheduler asyncio quotidien (9h UTC), toggle ON/OFF admin, bouton manuel permanent, log dernière exécution automatique avec résultats détaillés dans onglet Notifs (mars 2026)
-- [x] Dashboard KPIs d'engagement — Tracking pixel (ouvertures) + redirect (clics) dans tous les emails, endpoint /api/admin/engagement-kpis, dashboard avec 6 KPI cards, performance par niveau J+7/J+14/J+21 avec barres, évolution complétude avant/après relance, graphique temporel 30 jours (mars 2026)
-- [x] Export CSV relances + KPIs — Endpoint /api/admin/export/relances-csv avec tableau relances, notifications complétude et résumé KPIs, bouton téléchargement dans admin (mars 2026)
-- [x] Alertes KPI critiques — Seuils paramétrables (ouverture/clic), alertes visuelles rouges/orange dans admin, endpoint /api/admin/kpi-alerts/check et /config, inputs de configuration avec sauvegarde (mars 2026)
-- [x] A/B Testing emails — 3 variantes (rassurant/incitatif/urgent) avec sujets et contenus différents par niveau, sélection aléatoire lors de l'envoi, collection ab_tests, résultats par variante (envois/ouvertures/clics), identification automatique du gagnant après 50 envois, bouton "Promouvoir gagnant", pause/reprise des tests (mars 2026)
 
-## Éléments bloqués (action utilisateur)
-1. **Budget LLM Emergent** épuisé → Profile → Universal Key → Add Balance
-2. **HubSpot Portal ID** → fournir `HUBSPOT_PORTAL_ID`
-3. **Clés Stripe/PayPal production** → fournir les clés live
-4. **Contenu juridique** → fournir texte final Mentions Légales
+### Core
+- Authentification (admin + client)
+- Dashboard client avec progression du dossier
+- Dashboard admin avec 14 onglets
+- StratégiIA (analyse IA des dossiers)
+- Scoring qualité des dossiers
+- Forum, chatbot, calculatrice
 
-## Tâches futures
-- P2: Vérification domaine Resend (action utilisateur)
-- P3: Activer intégrations production (HubSpot, Stripe/PayPal live, contenu juridique)
+### Système de notifications
+- Emails automatiques de complétion (50%, 80%, 100%)
+- Relances d'inactivité (J+7, J+14, J+21)
+- Cron job hybride (automatique + manuel)
+- Tracking d'engagement (ouvertures, clics)
+- Dashboard KPIs d'engagement
+- Export CSV des données
+- Alertes de performance configurables
+- Tests A/B des emails
 
-## Credentials test
+### Éditeur de templates email (Complété - Feb 2026)
+- Interface visuelle dans l'onglet "Templates" admin
+- CRUD complet (créer, modifier, dupliquer, supprimer)
+- Aperçu live du HTML de l'email
+- Toggle statut actif/brouillon
+- 3 templates par défaut : rassurant, incitatif, urgent
+- Backend : 6 endpoints REST sous `/api/admin/email-templates`
+- Composant séparé : `EmailTemplateEditor.jsx`
+
+## Tâches en attente (bloquées)
+- **HubSpot (P2):** En attente du HUBSPOT_PORTAL_ID utilisateur
+- **Paiements production (P2):** En attente des clés Stripe/PayPal production
+- **Contenu juridique (P3):** En attente du contenu utilisateur pour les pages légales
+
+## Backlog / Améliorations futures
+- Refactoring AdminDashboard.jsx (fichier volumineux, ~2700 lignes)
+- Intégration complète templates ↔ A/B testing (utiliser les templates créés comme variantes)
+- Statistiques d'utilisation des templates par email envoyé
+
+## Fichiers clés
+- `/app/frontend/src/pages/AdminDashboard.jsx` — Dashboard admin principal
+- `/app/frontend/src/components/EmailTemplateEditor.jsx` — Éditeur de templates
+- `/app/backend/routes/admin.py` — Endpoints admin (analytics, notifs, cron, A/B, templates)
+- `/app/backend/utils/email.py` — Logique d'envoi d'emails
+- `/app/backend/server.py` — Scheduler, tracking
+
+## Credentials de test
 - Admin: `admin@accompagn-sante.fr` / `Admin2024!`
-- Client: inscription via `/espace-client`
+- Client: `demo@test.com` / `Password123!`
