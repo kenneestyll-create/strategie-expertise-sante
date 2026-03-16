@@ -109,6 +109,7 @@ Exécution : `cd /app/backend && python -m pytest --cov=. --cov-report=term-miss
 - [x] Notifications automatiques de complétude — Emails Resend aux seuils 50%/80%/100%, déclenchés après upload de document, templates personnalisés (prénom, % complétude, docs manquants, CTA), historique admin avec stats et tableau détaillé (mars 2026)
 - [x] Relances d'inactivité automatiques — Scan clients inactifs (<50% complétude, 7+ jours sans upload), 3 niveaux progressifs (J+7/J+14/J+21), anti-doublon, opt-out par client, bouton admin "Lancer les relances", historique complet avec stats par niveau et bouton pause (mars 2026)
 - [x] Cron hybride relances — Scheduler asyncio quotidien (9h UTC), toggle ON/OFF admin, bouton manuel permanent, log dernière exécution automatique avec résultats détaillés dans onglet Notifs (mars 2026)
+- [x] Dashboard KPIs d'engagement — Tracking pixel (ouvertures) + redirect (clics) dans tous les emails, endpoint /api/admin/engagement-kpis, dashboard avec 6 KPI cards, performance par niveau J+7/J+14/J+21 avec barres, évolution complétude avant/après relance, graphique temporel 30 jours (mars 2026)
 
 ## Éléments bloqués (action utilisateur)
 1. **Budget LLM Emergent** épuisé → Profile → Universal Key → Add Balance

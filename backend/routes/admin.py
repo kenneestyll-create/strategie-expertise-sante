@@ -547,3 +547,110 @@ async def toggle_reminder_cron(request: Request, admin: dict = Depends(get_curre
         upsert=True
     )
     return {"success": True, "enabled": enabled}
+
+
+# ==================== ENGAGEMENT KPIS ====================
+
+@router.get("/admin/engagement-kpis")
+async def get_engagement_kpis(admin: dict = Depends(get_current_admin)):
+    from datetime import timedelta
+
+    # Inactivity reminders stats
+    ir_total = await db.inactivity_reminders.count_documents({"status": {"$in": ["sent", "failed", "skipped"]}})
+    ir_opened = await db.inactivity_reminders.count_documents({"opened": True})
+    ir_clicked = await db.inactivity_reminders.count_documents({"clicked": True})
+
+    # Completeness notifications stats
+    cn_total = await db.completeness_notifications.count_documents({"status": {"$in": ["sent", "failed", "skipped"]}})
+    cn_opened = await db.completeness_notifications.count_documents({"opened": True})
+    cn_clicked = await db.completeness_notifications.count_documents({"clicked": True})
+
+    total_all = ir_total + cn_total
+    opened_all = ir_opened + cn_opened
+    clicked_all = ir_clicked + cn_clicked
+
+    open_rate = round((opened_all / total_all) * 100, 1) if total_all > 0 else 0
+    click_rate = round((clicked_all / total_all) * 100, 1) if total_all > 0 else 0
+    click_to_open = round((clicked_all / opened_all) * 100, 1) if opened_all > 0 else 0
+
+    # By level breakdown (inactivity only)
+    by_level = []
+    for lvl in [1, 2, 3]:
+        total_lvl = await db.inactivity_reminders.count_documents({"level": lvl})
+        opened_lvl = await db.inactivity_reminders.count_documents({"level": lvl, "opened": True})
+        clicked_lvl = await db.inactivity_reminders.count_documents({"level": lvl, "clicked": True})
+        by_level.append({
+            "level": lvl,
+            "total": total_lvl,
+            "opened": opened_lvl,
+            "clicked": clicked_lvl,
+            "open_rate": round((opened_lvl / total_lvl) * 100, 1) if total_lvl > 0 else 0,
+            "click_rate": round((clicked_lvl / total_lvl) * 100, 1) if total_lvl > 0 else 0,
+        })
+
+    # Completeness evolution: average completeness of clients who were reminded vs before
+    # Get clients who received reminders and clicked
+    clicked_clients = await db.inactivity_reminders.find(
+        {"clicked": True}, {"_id": 0, "client_id": 1, "completeness_pct": 1}
+    ).to_list(200)
+    completeness_before = []
+    completeness_after = []
+    for cc in clicked_clients:
+        completeness_before.append(cc.get("completeness_pct", 0))
+        # Check current completeness from latest docs
+        cid = cc["client_id"]
+        docs = await db.client_documents.find({"client_id": cid}, {"_id": 0, "category": 1, "name": 1}).to_list(500)
+        doc_cats = [d.get("category", "") for d in docs] + [d.get("name", "") for d in docs]
+        from routes.client import ESSENTIAL_DOCS, _match_doc_to_essential
+        essential = ESSENTIAL_DOCS.get("at", [])
+        found = sum(1 for ed in essential if _match_doc_to_essential(doc_cats, ed["key"], ed["category"]))
+        current_pct = round((found / len(essential)) * 100) if essential else 100
+        completeness_after.append(current_pct)
+
+    avg_before = round(sum(completeness_before) / len(completeness_before), 1) if completeness_before else 0
+    avg_after = round(sum(completeness_after) / len(completeness_after), 1) if completeness_after else 0
+    improvement = round(avg_after - avg_before, 1)
+
+    # Timeline: daily counts for last 30 days
+    now = datetime.now(timezone.utc)
+    cutoff = (now - timedelta(days=30)).isoformat()
+    recent_reminders = await db.inactivity_reminders.find(
+        {"created_at": {"$gte": cutoff}},
+        {"_id": 0, "created_at": 1, "opened": 1, "clicked": 1}
+    ).to_list(5000)
+    recent_notifs = await db.completeness_notifications.find(
+        {"created_at": {"$gte": cutoff}},
+        {"_id": 0, "created_at": 1, "opened": 1, "clicked": 1}
+    ).to_list(5000)
+
+    timeline = {}
+    for r in recent_reminders + recent_notifs:
+        day = str(r.get("created_at", ""))[:10]
+        if day not in timeline:
+            timeline[day] = {"date": day, "sent": 0, "opened": 0, "clicked": 0}
+        timeline[day]["sent"] += 1
+        if r.get("opened"):
+            timeline[day]["opened"] += 1
+        if r.get("clicked"):
+            timeline[day]["clicked"] += 1
+
+    timeline_list = sorted(timeline.values(), key=lambda x: x["date"])
+
+    return {
+        "summary": {
+            "total_sent": total_all,
+            "total_opened": opened_all,
+            "total_clicked": clicked_all,
+            "open_rate": open_rate,
+            "click_rate": click_rate,
+            "click_to_open_rate": click_to_open,
+        },
+        "by_level": by_level,
+        "completeness_evolution": {
+            "clients_tracked": len(completeness_before),
+            "avg_before": avg_before,
+            "avg_after": avg_after,
+            "improvement": improvement,
+        },
+        "timeline": timeline_list,
+    }

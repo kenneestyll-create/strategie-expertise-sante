@@ -314,6 +314,7 @@ export const AdminDashboard = () => {
   const [runningReminders, setRunningReminders] = useState(false);
   const [lastReminderResults, setLastReminderResults] = useState(null);
   const [cronStatus, setCronStatus] = useState({ enabled: true, hour: 9, minute: 0, last_run: null, last_results: null });
+  const [engagementKpis, setEngagementKpis] = useState(null);
 
   const navigate = useNavigate();
   const { token, adminName, logout } = useAuth();
@@ -363,6 +364,7 @@ export const AdminDashboard = () => {
       axios.get(`${API}/admin/completeness-notifications`, axiosConfig).then(r => setCompletenessNotifs(r.data)).catch(() => {});
       axios.get(`${API}/admin/relance-inactivite/history`, axiosConfig).then(r => setInactivityReminders(r.data)).catch(() => {});
       axios.get(`${API}/admin/reminder-cron/status`, axiosConfig).then(r => setCronStatus(r.data)).catch(() => {});
+      axios.get(`${API}/admin/engagement-kpis`, axiosConfig).then(r => setEngagementKpis(r.data)).catch(() => {});
     } catch (error) {
       console.error('Erreur:', error);
       if (error.response?.status === 401) {
@@ -1858,6 +1860,128 @@ export const AdminDashboard = () => {
 
           {/* NOTIFICATIONS TAB */}
           <TabsContent value="notifications" className="space-y-6" data-testid="notifications-tab-content">
+            {/* Engagement KPIs Dashboard */}
+            {engagementKpis && (
+              <Card data-testid="engagement-kpis-card">
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5 text-blue-500" /> KPIs d'engagement
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">Impact des relances automatiques et manuelles sur l'engagement client</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Main KPI cards */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                    <div className="p-3 rounded-lg border text-center">
+                      <p className="text-2xl font-bold">{engagementKpis.summary.total_sent}</p>
+                      <p className="text-[10px] text-muted-foreground uppercase">Emails envoyés</p>
+                    </div>
+                    <div className="p-3 rounded-lg border text-center">
+                      <p className="text-2xl font-bold text-blue-600">{engagementKpis.summary.total_opened}</p>
+                      <p className="text-[10px] text-muted-foreground uppercase">Ouvertures</p>
+                    </div>
+                    <div className="p-3 rounded-lg border text-center">
+                      <p className="text-2xl font-bold text-green-600">{engagementKpis.summary.total_clicked}</p>
+                      <p className="text-[10px] text-muted-foreground uppercase">Clics CTA</p>
+                    </div>
+                    <div className="p-3 rounded-lg border text-center bg-blue-50">
+                      <p className="text-2xl font-bold text-blue-700">{engagementKpis.summary.open_rate}%</p>
+                      <p className="text-[10px] text-muted-foreground uppercase">Taux d'ouverture</p>
+                    </div>
+                    <div className="p-3 rounded-lg border text-center bg-green-50">
+                      <p className="text-2xl font-bold text-green-700">{engagementKpis.summary.click_rate}%</p>
+                      <p className="text-[10px] text-muted-foreground uppercase">Taux de clic</p>
+                    </div>
+                    <div className="p-3 rounded-lg border text-center bg-amber-50">
+                      <p className="text-2xl font-bold text-amber-700">{engagementKpis.summary.click_to_open_rate}%</p>
+                      <p className="text-[10px] text-muted-foreground uppercase">Clic / ouverture</p>
+                    </div>
+                  </div>
+
+                  {/* By level breakdown */}
+                  <div>
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Performance par niveau de relance</h4>
+                    <div className="grid grid-cols-3 gap-3">
+                      {engagementKpis.by_level.map(lvl => (
+                        <div key={lvl.level} className="p-3 rounded-lg border">
+                          <div className="flex items-center justify-between mb-2">
+                            <Badge variant="outline" className={`text-xs ${lvl.level === 3 ? 'bg-red-100 text-red-700' : lvl.level === 2 ? 'bg-orange-100 text-orange-700' : 'bg-amber-100 text-amber-700'}`}>
+                              {lvl.level === 1 ? 'J+7' : lvl.level === 2 ? 'J+14' : 'J+21'}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">{lvl.total} envoyés</span>
+                          </div>
+                          <div className="space-y-1.5">
+                            <div>
+                              <div className="flex justify-between text-[10px] mb-0.5">
+                                <span className="text-muted-foreground">Ouverture</span>
+                                <span className="font-medium text-blue-600">{lvl.open_rate}%</span>
+                              </div>
+                              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                                <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.min(lvl.open_rate, 100)}%` }} />
+                              </div>
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-[10px] mb-0.5">
+                                <span className="text-muted-foreground">Clic CTA</span>
+                                <span className="font-medium text-green-600">{lvl.click_rate}%</span>
+                              </div>
+                              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                                <div className="h-full bg-green-500 rounded-full" style={{ width: `${Math.min(lvl.click_rate, 100)}%` }} />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Completeness evolution */}
+                  <div className="p-4 rounded-lg border bg-gradient-to-r from-blue-50 to-green-50" data-testid="completeness-evolution">
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Évolution de la complétude après relance</h4>
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Complétude avant</p>
+                        <p className="text-2xl font-bold text-orange-600">{engagementKpis.completeness_evolution.avg_before}%</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Complétude après</p>
+                        <p className="text-2xl font-bold text-green-600">{engagementKpis.completeness_evolution.avg_after}%</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Amélioration</p>
+                        <p className={`text-2xl font-bold ${engagementKpis.completeness_evolution.improvement > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+                          {engagementKpis.completeness_evolution.improvement > 0 ? '+' : ''}{engagementKpis.completeness_evolution.improvement}%
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground text-center mt-2">
+                      Basé sur {engagementKpis.completeness_evolution.clients_tracked} client(s) ayant cliqué sur le CTA
+                    </p>
+                  </div>
+
+                  {/* Timeline chart */}
+                  {engagementKpis.timeline.length > 0 && (
+                    <div>
+                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Activité des 30 derniers jours</h4>
+                      <div className="h-40">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={engagementKpis.timeline}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                            <XAxis dataKey="date" tick={{ fontSize: 9 }} tickFormatter={v => v.slice(5)} />
+                            <YAxis tick={{ fontSize: 9 }} />
+                            <Tooltip contentStyle={{ fontSize: 11 }} />
+                            <Bar dataKey="sent" fill="#94a3b8" name="Envoyés" radius={[2, 2, 0, 0]} />
+                            <Bar dataKey="opened" fill="#3b82f6" name="Ouverts" radius={[2, 2, 0, 0]} />
+                            <Bar dataKey="clicked" fill="#16a34a" name="Cliqués" radius={[2, 2, 0, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">

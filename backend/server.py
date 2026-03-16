@@ -1,12 +1,13 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import Response, RedirectResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 import asyncio
 from datetime import datetime, timezone, time as dtime
 
-from config import client, db, logger
+from config import client, db, logger, SITE_URL
 from routes import all_routers
 
 app = FastAPI(title="Stratégie & Expertise Santé API")
@@ -25,6 +26,42 @@ for router in all_routers:
     api_router.include_router(router)
 
 app.include_router(api_router)
+
+# ==================== EMAIL TRACKING (public, no auth) ====================
+
+# 1x1 transparent PNG pixel
+PIXEL = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n\xb4\x00\x00\x00\x00IEND\xaeB`\x82'
+
+@app.get("/api/track/open/{reminder_id}")
+async def track_email_open(reminder_id: str):
+    """Tracking pixel endpoint — records email open."""
+    now = datetime.now(timezone.utc).isoformat()
+    # Try inactivity reminders first, then completeness notifications
+    result = await db.inactivity_reminders.update_one(
+        {"id": reminder_id, "opened_at": {"$exists": False}},
+        {"$set": {"opened_at": now, "opened": True}}
+    )
+    if result.modified_count == 0:
+        await db.completeness_notifications.update_one(
+            {"id": reminder_id, "opened_at": {"$exists": False}},
+            {"$set": {"opened_at": now, "opened": True}}
+        )
+    return Response(content=PIXEL, media_type="image/png", headers={"Cache-Control": "no-store, no-cache"})
+
+@app.get("/api/track/click/{reminder_id}")
+async def track_email_click(reminder_id: str):
+    """CTA click tracking — records click and redirects to client space."""
+    now = datetime.now(timezone.utc).isoformat()
+    result = await db.inactivity_reminders.update_one(
+        {"id": reminder_id, "clicked_at": {"$exists": False}},
+        {"$set": {"clicked_at": now, "clicked": True}}
+    )
+    if result.modified_count == 0:
+        await db.completeness_notifications.update_one(
+            {"id": reminder_id, "clicked_at": {"$exists": False}},
+            {"$set": {"clicked_at": now, "clicked": True}}
+        )
+    return RedirectResponse(url=f"{SITE_URL}/espace-client?tab=documents", status_code=302)
 
 app.add_middleware(GZipMiddleware, minimum_size=500)
 

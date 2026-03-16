@@ -218,7 +218,7 @@ async def check_and_send_completeness_notification(client_id: str, completeness_
                 </div>
                 {missing_html}
                 <div style="text-align:center;margin:24px 0;">
-                    <a href="{site_url}/espace-client?tab=documents"
+                    <a href="{site_url}/api/track/click/{notif_record['id']}"
                        style="background:#1a1a2e;color:#d4a44a;padding:14px 28px;border-radius:6px;text-decoration:none;display:inline-block;font-weight:600;font-size:14px;">
                         {"Voir mon dossier complet" if threshold_pct == 100 else "Compléter mon dossier"}
                     </a>
@@ -227,6 +227,7 @@ async def check_and_send_completeness_notification(client_id: str, completeness_
                     Stratégie &amp; Expertise Santé — Cet email est envoyé automatiquement.
                 </p>
             </div>
+            <img src="{site_url}/api/track/open/{notif_record['id']}" width="1" height="1" style="display:none;" alt="" />
         </body>
         </html>
         """
@@ -283,7 +284,7 @@ REMINDER_LEVELS = [
 ]
 
 
-def _build_reminder_html(prenom: str, completeness_pct: int, missing_docs: list, level: int, site_url: str) -> str:
+def _build_reminder_html(prenom: str, completeness_pct: int, missing_docs: list, level: int, site_url: str, reminder_id: str = "") -> str:
     missing_count = len(missing_docs)
 
     if level == 1:
@@ -331,7 +332,7 @@ def _build_reminder_html(prenom: str, completeness_pct: int, missing_docs: list,
             {missing_html}
             <p style="color:#555;font-size:14px;">{motivation}</p>
             <div style="text-align:center;margin:24px 0;">
-                <a href="{site_url}/espace-client?tab=documents"
+                <a href="{site_url}/api/track/click/{reminder_id}"
                    style="background:#1a1a2e;color:#d4a44a;padding:14px 28px;border-radius:6px;text-decoration:none;display:inline-block;font-weight:600;font-size:14px;">
                     Compléter mon dossier
                 </a>
@@ -341,6 +342,7 @@ def _build_reminder_html(prenom: str, completeness_pct: int, missing_docs: list,
                 <br/>Si vous ne souhaitez plus recevoir ces relances, contactez-nous.
             </p>
         </div>
+        <img src="{site_url}/api/track/open/{reminder_id}" width="1" height="1" style="display:none;" alt="" />
     </body>
     </html>
     """
@@ -440,8 +442,6 @@ async def run_inactivity_reminders(inactivity_days: int = 7, max_completeness: i
             continue
 
         # Build and send email
-        html = _build_reminder_html(prenom, comp_pct, missing, target_level["level"], site_url)
-
         record = {
             "id": str(uuid.uuid4()),
             "client_id": cid,
@@ -455,6 +455,8 @@ async def run_inactivity_reminders(inactivity_days: int = 7, max_completeness: i
             "status": "pending",
             "created_at": now.isoformat(),
         }
+
+        html = _build_reminder_html(prenom, comp_pct, missing, target_level["level"], site_url, record["id"])
 
         if RESEND_AVAILABLE and os.environ.get('RESEND_API_KEY'):
             try:
