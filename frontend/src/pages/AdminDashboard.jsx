@@ -51,7 +51,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, BellRing } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -309,6 +309,7 @@ export const AdminDashboard = () => {
   const [adminDocs, setAdminDocs] = useState({ documents: [], stats: {} });
   const [emailStatus, setEmailStatus] = useState(null);
   const [docStatusFilter, setDocStatusFilter] = useState('');
+  const [completenessNotifs, setCompletenessNotifs] = useState({ notifications: [], total: 0, stats: {}, by_threshold: {} });
 
   const navigate = useNavigate();
   const { token, adminName, logout } = useAuth();
@@ -355,6 +356,7 @@ export const AdminDashboard = () => {
       // Fetch admin docs & email status separately (non-critical)
       axios.get(`${API}/admin/documents`, axiosConfig).then(r => setAdminDocs(r.data)).catch(() => {});
       axios.get(`${API}/admin/email/status`, axiosConfig).then(r => setEmailStatus(r.data)).catch(() => {});
+      axios.get(`${API}/admin/completeness-notifications`, axiosConfig).then(r => setCompletenessNotifs(r.data)).catch(() => {});
     } catch (error) {
       console.error('Erreur:', error);
       if (error.response?.status === 401) {
@@ -551,7 +553,7 @@ export const AdminDashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-6xl" style={{gridTemplateColumns: 'repeat(10, 1fr)'}}>
+          <TabsList className="grid w-full max-w-6xl" style={{gridTemplateColumns: 'repeat(13, 1fr)'}}>
             <TabsTrigger value="contacts" className="gap-1 text-xs sm:text-sm">
               <Users className="w-3 h-3 sm:w-4 sm:h-4" />
               Contacts
@@ -605,6 +607,10 @@ export const AdminDashboard = () => {
             <TabsTrigger value="config" className="gap-1 text-xs sm:text-sm" data-testid="tab-config">
               <Settings className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
               Config
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="gap-1 text-xs sm:text-sm" data-testid="tab-notifications">
+              <BellRing className="w-3 h-3 sm:w-4 sm:h-4 text-amber-500" />
+              Notifs
             </TabsTrigger>
           </TabsList>
 
@@ -1840,6 +1846,92 @@ export const AdminDashboard = () => {
                     <p className="text-xs text-muted-foreground">Les notifications push sont envoyées automatiquement lors des événements suivants : validation/rejet de document, mise à jour de dossier, analyse premium prête.</p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* NOTIFICATIONS TAB */}
+          <TabsContent value="notifications" className="space-y-6" data-testid="notifications-tab-content">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <BellRing className="w-5 h-5 text-amber-500" /> Notifications de complétude
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">Emails envoyés automatiquement aux clients lorsqu'ils atteignent 50%, 80% ou 100% de complétude</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Stats cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="p-3 rounded-lg border text-center">
+                    <p className="text-2xl font-bold">{completenessNotifs.stats.total || 0}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase">Total envoyées</p>
+                  </div>
+                  <div className="p-3 rounded-lg border text-center">
+                    <p className="text-2xl font-bold text-green-600">{completenessNotifs.stats.sent || 0}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase">Envoyées</p>
+                  </div>
+                  <div className="p-3 rounded-lg border text-center">
+                    <p className="text-2xl font-bold text-red-500">{completenessNotifs.stats.failed || 0}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase">Échouées</p>
+                  </div>
+                  <div className="p-3 rounded-lg border text-center">
+                    <p className="text-2xl font-bold text-gray-400">{completenessNotifs.stats.skipped || 0}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase">Non envoyées</p>
+                  </div>
+                </div>
+
+                {/* By threshold */}
+                <div className="grid grid-cols-3 gap-3">
+                  {[{pct: 50, label: "50% — Mi-chemin", color: "text-amber-600"}, {pct: 80, label: "80% — Presque complet", color: "text-blue-600"}, {pct: 100, label: "100% — Complet", color: "text-green-600"}].map(t => (
+                    <div key={t.pct} className="p-3 rounded-lg border">
+                      <p className={`text-lg font-bold ${t.color}`}>{completenessNotifs.by_threshold?.[String(t.pct)] || 0}</p>
+                      <p className="text-[10px] text-muted-foreground">{t.label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* History table */}
+                {completenessNotifs.notifications?.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm" data-testid="completeness-notifs-table">
+                      <thead>
+                        <tr className="border-b text-left text-muted-foreground">
+                          <th className="pb-2 font-medium">Date</th>
+                          <th className="pb-2 font-medium">Client</th>
+                          <th className="pb-2 font-medium text-center">Seuil</th>
+                          <th className="pb-2 font-medium text-center">Complétude</th>
+                          <th className="pb-2 font-medium">Type dossier</th>
+                          <th className="pb-2 font-medium text-center">Statut</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {completenessNotifs.notifications.map((n, i) => (
+                          <tr key={n.id || i} className="border-b last:border-0">
+                            <td className="py-2 text-xs">{new Date(n.created_at).toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'})}</td>
+                            <td className="py-2">
+                              <p className="text-xs font-medium">{n.client_name || 'N/A'}</p>
+                              <p className="text-[10px] text-muted-foreground">{n.client_email}</p>
+                            </td>
+                            <td className="py-2 text-center">
+                              <Badge variant="outline" className={`text-xs ${n.threshold_pct === 100 ? 'bg-green-100 text-green-700' : n.threshold_pct === 80 ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>
+                                {n.threshold_pct}%
+                              </Badge>
+                            </td>
+                            <td className="py-2 text-center text-xs font-medium">{n.actual_pct}%</td>
+                            <td className="py-2 text-xs">{n.case_type || '—'}</td>
+                            <td className="py-2 text-center">
+                              <Badge variant="outline" className={`text-[10px] ${n.status === 'sent' ? 'bg-green-100 text-green-700' : n.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500'}`}>
+                                {n.status === 'sent' ? 'Envoyé' : n.status === 'failed' ? 'Échoué' : 'Non envoyé'}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-center text-muted-foreground py-8 text-sm">Aucune notification de complétude envoyée pour le moment.</p>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

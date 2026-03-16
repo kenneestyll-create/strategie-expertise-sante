@@ -351,6 +351,35 @@ async def upload_client_document(request: Request, client: dict = Depends(get_cu
     await db.client_documents.insert_one(doc)
     doc.pop("_id", None)
     doc.pop("file_data", None)
+
+    # Check completeness and send notification if threshold reached
+    try:
+        from utils.email import check_and_send_completeness_notification
+        all_docs = await db.client_documents.find({"client_id": client["sub"]}, {"_id": 0, "category": 1, "name": 1}).to_list(500)
+        doc_categories = [d.get("category", "") for d in all_docs] + [d.get("name", "") for d in all_docs]
+        email = client.get("email", "")
+        # Detect case type
+        ct = None
+        la = await db.strategiia_analyses.find_one({"email": email}, {"_id": 0, "type_dossier": 1}, sort=[("created_at", -1)])
+        if la:
+            ct = la.get("type_dossier")
+        if not ct:
+            ld = await db.dossier_express.find_one({"email": email}, {"_id": 0, "type_dossier": 1}, sort=[("created_at", -1)])
+            if ld:
+                ct = ld.get("type_dossier")
+        essential_list = ESSENTIAL_DOCS.get(ct, ESSENTIAL_DOCS.get("at", []))
+        found_count = 0
+        missing_list = []
+        for ed in essential_list:
+            if _match_doc_to_essential(doc_categories, ed["key"], ed["category"]):
+                found_count += 1
+            else:
+                missing_list.append(ed)
+        comp_pct = round((found_count / len(essential_list)) * 100) if essential_list else 100
+        await check_and_send_completeness_notification(client["sub"], comp_pct, missing_list, ct)
+    except Exception as e:
+        logger.warning(f"Completeness notification check failed: {e}")
+
     return {"success": True, "document": doc}
 
 @router.get("/client/documents")

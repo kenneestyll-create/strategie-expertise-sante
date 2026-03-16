@@ -3,7 +3,7 @@ import os
 import uuid
 from datetime import datetime, timezone
 
-from config import db, RESEND_AVAILABLE, SENDER_EMAIL, NOTIFICATION_EMAIL, logger
+from config import db, RESEND_AVAILABLE, SENDER_EMAIL, NOTIFICATION_EMAIL, SITE_URL, logger
 
 try:
     import resend
@@ -149,3 +149,126 @@ async def create_client_notification(client_id: str, notif_type: str, title: str
                 logger.info(f"Notification email sent to {client['email']}: {title}")
             except Exception as e:
                 logger.error(f"Failed to send notification email to {client.get('email')}: {e}")
+
+
+# ==================== COMPLETENESS NOTIFICATIONS ====================
+
+COMPLETENESS_THRESHOLDS = [
+    {"pct": 50, "title": "Votre dossier avance bien !", "emoji": "📊"},
+    {"pct": 80, "title": "Votre dossier est presque complet !", "emoji": "🎯"},
+    {"pct": 100, "title": "Félicitations, dossier complet !", "emoji": "🎉"},
+]
+
+
+async def check_and_send_completeness_notification(client_id: str, completeness_pct: int, missing_docs: list, case_type: str = None):
+    """Check if a completeness threshold has been newly reached and send email notification."""
+    if completeness_pct <= 0:
+        return
+
+    client_user = await db.client_users.find_one({"id": client_id}, {"_id": 0, "email": 1, "name": 1, "notifications_email": 1})
+    if not client_user or not client_user.get("notifications_email", True):
+        return
+
+    for threshold in COMPLETENESS_THRESHOLDS:
+        if completeness_pct < threshold["pct"]:
+            continue
+
+        # Check if already sent for this threshold
+        already_sent = await db.completeness_notifications.find_one(
+            {"client_id": client_id, "threshold_pct": threshold["pct"]}, {"_id": 0, "id": 1}
+        )
+        if already_sent:
+            continue
+
+        # New threshold reached - send notification
+        name = client_user.get("name", "")
+        email = client_user["email"]
+        prenom = name.split()[0] if name else ""
+        missing_count = len(missing_docs)
+        threshold_pct = threshold["pct"]
+
+        if threshold_pct == 100:
+            body_text = "Tous les documents essentiels ont été fournis. Votre dossier est prêt pour une analyse complète."
+            missing_html = ""
+        else:
+            body_text = f"Votre dossier est désormais complété à {completeness_pct}%."
+            if missing_docs:
+                missing_items = "".join(f'<li style="margin:4px 0;">{d.get("label", d) if isinstance(d, dict) else d}</li>' for d in missing_docs[:5])
+                missing_html = f"""
+                <div style="background:#FFF8E1;padding:12px 16px;border-radius:6px;border-left:4px solid #d4a44a;margin:16px 0;">
+                    <p style="margin:0 0 8px;font-weight:600;color:#7B6B2E;">Documents encore manquants ({missing_count}) :</p>
+                    <ul style="margin:0;padding-left:20px;color:#5D4E1A;">{missing_items}</ul>
+                </div>"""
+            else:
+                missing_html = ""
+
+        site_url = os.environ.get("FRONTEND_URL", SITE_URL)
+        html_content = f"""
+        <html>
+        <body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:0;background:#f5f5f5;">
+            <div style="background:#1a1a2e;color:#fff;padding:24px;text-align:center;">
+                <h1 style="margin:0;color:#d4a44a;font-size:22px;">{threshold["emoji"]} {threshold["title"]}</h1>
+            </div>
+            <div style="background:#FFFFFF;padding:24px;border:1px solid #E5E0D6;">
+                <p style="font-size:16px;">Bonjour <strong>{prenom}</strong>,</p>
+                <p>{body_text}</p>
+                <div style="background:#F0F7F0;padding:16px;border-radius:8px;text-align:center;margin:20px 0;">
+                    <p style="margin:0;font-size:36px;font-weight:bold;color:#16a34a;">{completeness_pct}%</p>
+                    <p style="margin:4px 0 0;color:#666;font-size:13px;">de complétude</p>
+                </div>
+                {missing_html}
+                <div style="text-align:center;margin:24px 0;">
+                    <a href="{site_url}/espace-client?tab=documents"
+                       style="background:#1a1a2e;color:#d4a44a;padding:14px 28px;border-radius:6px;text-decoration:none;display:inline-block;font-weight:600;font-size:14px;">
+                        {"Voir mon dossier complet" if threshold_pct == 100 else "Compléter mon dossier"}
+                    </a>
+                </div>
+                <p style="color:#888;font-size:11px;text-align:center;margin-top:20px;">
+                    Stratégie &amp; Expertise Santé — Cet email est envoyé automatiquement.
+                </p>
+            </div>
+        </body>
+        </html>
+        """
+
+        # Record the notification
+        notif_record = {
+            "id": str(uuid.uuid4()),
+            "client_id": client_id,
+            "client_email": email,
+            "client_name": name,
+            "threshold_pct": threshold_pct,
+            "actual_pct": completeness_pct,
+            "case_type": case_type,
+            "missing_docs_count": missing_count,
+            "status": "pending",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+
+        # Send email
+        if RESEND_AVAILABLE and os.environ.get('RESEND_API_KEY'):
+            try:
+                await asyncio.to_thread(resend.Emails.send, {
+                    "from": SENDER_EMAIL,
+                    "to": [email],
+                    "subject": f"Stratégie & Expertise Santé — {threshold['title']}",
+                    "html": html_content
+                })
+                notif_record["status"] = "sent"
+                logger.info(f"Completeness notification sent to {email}: {threshold_pct}% threshold (actual: {completeness_pct}%)")
+            except Exception as e:
+                notif_record["status"] = "failed"
+                notif_record["error"] = str(e)
+                logger.error(f"Failed to send completeness notification to {email}: {e}")
+        else:
+            notif_record["status"] = "skipped"
+            logger.info(f"Completeness notification skipped (Resend not configured): {email} at {threshold_pct}%")
+
+        await db.completeness_notifications.insert_one(notif_record)
+
+        # Also create in-app notification
+        if threshold_pct < 100:
+            msg = f"Votre dossier est complété à {completeness_pct}%. Il manque encore {missing_count} document(s) essentiels."
+        else:
+            msg = "Tous vos documents essentiels sont fournis. Votre dossier est prêt pour une analyse approfondie !"
+        await create_client_notification(client_id, "completeness", threshold["title"], msg)

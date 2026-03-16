@@ -473,3 +473,21 @@ async def admin_email_test(request: Request, admin: dict = Depends(get_current_a
         return {"success": True, "message": f"Email test envoyé à {email}"}
     except Exception as e:
         return {"success": False, "message": str(e)}
+
+
+# ==================== COMPLETENESS NOTIFICATIONS HISTORY ====================
+
+@router.get("/admin/completeness-notifications")
+async def get_completeness_notifications(admin: dict = Depends(get_current_admin), limit: int = 50, skip: int = 0):
+    notifs = await db.completeness_notifications.find({}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    total = await db.completeness_notifications.count_documents({})
+    stats = {
+        "total": total,
+        "sent": await db.completeness_notifications.count_documents({"status": "sent"}),
+        "failed": await db.completeness_notifications.count_documents({"status": "failed"}),
+        "skipped": await db.completeness_notifications.count_documents({"status": "skipped"}),
+    }
+    by_threshold = {}
+    for t in [50, 80, 100]:
+        by_threshold[str(t)] = await db.completeness_notifications.count_documents({"threshold_pct": t})
+    return {"notifications": notifs, "total": total, "stats": stats, "by_threshold": by_threshold}
