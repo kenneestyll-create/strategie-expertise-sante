@@ -725,12 +725,12 @@ export const ResourcesPage = () => {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { id: 'guide_mp', title: "Déclarer une maladie professionnelle", description: "Les étapes pour faire reconnaître votre maladie.", category: "AT/MP", pages: "12 pages" },
-              { id: 'guide_expertise', title: "Se préparer à une expertise médicale", description: "Conseils et liste de contrôle.", category: "Expertises", pages: "8 pages" },
-              { id: 'guide_mdph', title: "Constituer un dossier MDPH", description: "Formulaire, documents et astuces.", category: "MDPH", pages: "15 pages" },
-              { id: 'guide_recours', title: "Contester un refus", description: "Vos droits et voies de recours.", category: "Recours", pages: "10 pages" },
-              { id: 'guide_ipp', title: "Comprendre le taux d'IPP", description: "Comment le taux est fixé et ses impacts.", category: "AT/MP", pages: "8 pages" },
-              { id: 'guide_assurance', title: "Activer sa protection juridique", description: "Identifier et activer votre PJ.", category: "Assurances", pages: "6 pages" }
+              { id: 'guide_mp', title: "Déclarer une maladie professionnelle", description: "Feuille de route complète : éligibilité, CMI, dossier CPAM, instruction et indemnisation.", category: "AT/MP" },
+              { id: 'guide_expertise', title: "Se préparer à une expertise médicale", description: "Check-list complète : documents, doléances, accompagnement et suivi post-expertise.", category: "Expertises" },
+              { id: 'guide_mdph', title: "Constituer un dossier MDPH", description: "Formulaires, projet de vie, certificat médical et stratégie de recours.", category: "MDPH" },
+              { id: 'guide_recours', title: "Contester un refus", description: "Stratégie étape par étape : CRA, RAPO, médiateur et tribunal judiciaire.", category: "Recours" },
+              { id: 'guide_ipp', title: "Comprendre le taux d'IPP", description: "Barème 2025, calcul de la rente, exemples concrets et contestation.", category: "AT/MP" },
+              { id: 'guide_assurance', title: "Activer sa protection juridique", description: "Où trouver sa PJ, déclaration du litige, choix de l'avocat et plafonds.", category: "Assurances" }
             ].map(g => (
               <Card key={g.id} className="border-border flex flex-col" data-testid={`library-guide-${g.id}`}>
                 <CardHeader className="pb-3">
@@ -745,7 +745,7 @@ export const ResourcesPage = () => {
                 <CardContent className="flex-1 flex flex-col">
                   <p className="text-sm text-muted-foreground flex-1">{g.description}</p>
                   <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-                    <span className="text-xs text-muted-foreground">PDF — {g.pages}</span>
+                    <span className="text-xs text-muted-foreground">PDF</span>
                     <Button variant="outline" size="sm" className="gap-1.5 rounded-lg"
                       onClick={() => { window.open(`${API}/resources/pdf/${g.id}`, '_blank'); }}
                       data-testid={`download-${g.id}`}>
