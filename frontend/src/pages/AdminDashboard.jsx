@@ -51,7 +51,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { BarChart3, BellRing, Download } from 'lucide-react';
+import { BarChart3, BellRing, Download, FlaskConical } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -317,6 +317,9 @@ export const AdminDashboard = () => {
   const [engagementKpis, setEngagementKpis] = useState(null);
   const [kpiAlerts, setKpiAlerts] = useState({ alerts: [] });
   const [kpiAlertConfig, setKpiAlertConfig] = useState({ open_rate_threshold: 30, click_rate_threshold: 10, alerts_enabled: true });
+  const [abTests, setAbTests] = useState([]);
+  const [abResults, setAbResults] = useState({});
+  const [creatingAb, setCreatingAb] = useState(false);
 
   const navigate = useNavigate();
   const { token, adminName, logout } = useAuth();
@@ -369,6 +372,14 @@ export const AdminDashboard = () => {
       axios.get(`${API}/admin/engagement-kpis`, axiosConfig).then(r => setEngagementKpis(r.data)).catch(() => {});
       axios.get(`${API}/admin/kpi-alerts/check`, axiosConfig).then(r => setKpiAlerts(r.data)).catch(() => {});
       axios.get(`${API}/admin/kpi-alerts/config`, axiosConfig).then(r => setKpiAlertConfig(r.data)).catch(() => {});
+      axios.get(`${API}/admin/ab-tests`, axiosConfig).then(async r => {
+        setAbTests(r.data.tests || []);
+        const results = {};
+        for (const t of (r.data.tests || []).slice(0, 5)) {
+          try { const res = await axios.get(`${API}/admin/ab-tests/${t.id}/results`, axiosConfig); results[t.id] = res.data; } catch {}
+        }
+        setAbResults(results);
+      }).catch(() => {});
     } catch (error) {
       console.error('Erreur:', error);
       if (error.response?.status === 401) {
@@ -2306,6 +2317,157 @@ export const AdminDashboard = () => {
                   </div>
                 ) : (
                   <p className="text-center text-muted-foreground py-8 text-sm">Aucune relance envoyée pour le moment. Cliquez sur "Lancer les relances" pour scanner les clients inactifs.</p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* A/B Testing Section */}
+            <Card data-testid="ab-testing-section">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <FlaskConical className="w-5 h-5 text-purple-500" /> A/B Testing Emails
+                    </CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">Testez différentes variantes d'emails pour optimiser l'engagement</p>
+                  </div>
+                  {!abTests.some(t => t.status === 'active') && (
+                    <Button size="sm" className="gap-1.5" disabled={creatingAb} data-testid="create-ab-test-btn"
+                      onClick={async () => {
+                        setCreatingAb(true);
+                        try {
+                          await axios.post(`${API}/admin/ab-tests`, {
+                            name: `Test A/B — ${new Date().toLocaleDateString('fr-FR')}`,
+                            variants: [
+                              { name: 'rassurant', label: 'Ton rassurant' },
+                              { name: 'incitatif', label: 'Ton incitatif' },
+                              { name: 'urgent', label: 'Ton urgent' },
+                            ],
+                            min_sends: 50,
+                          }, { headers: { Authorization: `Bearer ${adminToken}` } });
+                          const r = await axios.get(`${API}/admin/ab-tests`, { headers: { Authorization: `Bearer ${adminToken}` } });
+                          setAbTests(r.data.tests || []);
+                          toast.success('Test A/B créé et activé');
+                        } catch { toast.error('Erreur'); }
+                        setCreatingAb(false);
+                      }}
+                    >
+                      <FlaskConical className="w-3 h-3" /> Créer un test A/B
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {abTests.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-6 text-sm">Aucun test A/B créé. Créez-en un pour comparer les performances des différents tons d'email.</p>
+                ) : (
+                  abTests.map(test => {
+                    const res = abResults[test.id];
+                    return (
+                      <div key={test.id} className="border rounded-lg overflow-hidden" data-testid={`ab-test-${test.id}`}>
+                        <div className="flex items-center justify-between p-3 bg-muted/30 border-b">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold">{test.name}</span>
+                            <Badge variant="outline" className={`text-[10px] ${test.status === 'active' ? 'bg-green-100 text-green-700' : test.status === 'completed' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
+                              {test.status === 'active' ? 'Actif' : test.status === 'completed' ? 'Terminé' : 'Pausé'}
+                            </Badge>
+                            {test.promoted_variant && (
+                              <Badge className="text-[10px] bg-green-600">Gagnant : {test.promoted_variant}</Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-muted-foreground">Min. {test.min_sends_per_variant} envois/variante</span>
+                            {test.status === 'active' && (
+                              <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px]"
+                                onClick={async () => {
+                                  await axios.post(`${API}/admin/ab-tests/${test.id}/toggle`, { status: 'paused' }, { headers: { Authorization: `Bearer ${adminToken}` } });
+                                  const r = await axios.get(`${API}/admin/ab-tests`, { headers: { Authorization: `Bearer ${adminToken}` } });
+                                  setAbTests(r.data.tests || []);
+                                  toast.success('Test pausé');
+                                }}
+                              >Pause</Button>
+                            )}
+                            {test.status === 'paused' && (
+                              <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px]"
+                                onClick={async () => {
+                                  await axios.post(`${API}/admin/ab-tests/${test.id}/toggle`, { status: 'active' }, { headers: { Authorization: `Bearer ${adminToken}` } });
+                                  const r = await axios.get(`${API}/admin/ab-tests`, { headers: { Authorization: `Bearer ${adminToken}` } });
+                                  setAbTests(r.data.tests || []);
+                                  toast.success('Test réactivé');
+                                }}
+                              >Activer</Button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Results grid */}
+                        {res && (
+                          <div className="p-3 space-y-3">
+                            <div className="grid grid-cols-3 gap-3">
+                              {res.results.map(v => {
+                                const isWinner = res.winner && res.winner.variant === v.variant;
+                                return (
+                                  <div key={v.variant} className={`p-3 rounded-lg border ${isWinner ? 'bg-green-50 border-green-300 ring-2 ring-green-200' : 'bg-white'}`}>
+                                    <div className="flex items-center justify-between mb-2">
+                                      <span className="text-xs font-semibold capitalize">{v.variant}</span>
+                                      {isWinner && <Badge className="text-[9px] bg-green-600 px-1">Meilleur</Badge>}
+                                    </div>
+                                    <p className="text-lg font-bold">{v.sent} <span className="text-xs font-normal text-muted-foreground">envoyés</span></p>
+                                    <div className="space-y-1.5 mt-2">
+                                      <div>
+                                        <div className="flex justify-between text-[10px] mb-0.5">
+                                          <span className="text-muted-foreground">Ouverture</span>
+                                          <span className="font-medium text-blue-600">{v.open_rate}%</span>
+                                        </div>
+                                        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                                          <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.min(v.open_rate, 100)}%` }} />
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <div className="flex justify-between text-[10px] mb-0.5">
+                                          <span className="text-muted-foreground">Clic CTA</span>
+                                          <span className="font-medium text-green-600">{v.click_rate}%</span>
+                                        </div>
+                                        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                                          <div className="h-full bg-green-500 rounded-full" style={{ width: `${Math.min(v.click_rate, 100)}%` }} />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+
+                            {/* Promote winner button */}
+                            {res.ready_to_promote && !test.promoted_variant && (
+                              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                                <div>
+                                  <p className="text-xs font-semibold text-green-800">Variante gagnante identifiée : <span className="capitalize">{res.winner.variant}</span></p>
+                                  <p className="text-[10px] text-green-600">Taux de clic : {res.winner.click_rate}% ({res.winner.sent} envois)</p>
+                                </div>
+                                <Button size="sm" className="bg-green-600 hover:bg-green-700 text-xs gap-1" data-testid="promote-winner-btn"
+                                  onClick={async () => {
+                                    await axios.post(`${API}/admin/ab-tests/${test.id}/promote`, { variant_name: res.winner.variant }, { headers: { Authorization: `Bearer ${adminToken}` } });
+                                    const r = await axios.get(`${API}/admin/ab-tests`, { headers: { Authorization: `Bearer ${adminToken}` } });
+                                    setAbTests(r.data.tests || []);
+                                    toast.success(`Variante "${res.winner.variant}" promue comme template principal`);
+                                  }}
+                                >
+                                  Promouvoir gagnant
+                                </Button>
+                              </div>
+                            )}
+
+                            {!res.ready_to_promote && !test.promoted_variant && (
+                              <p className="text-center text-[10px] text-muted-foreground py-1">
+                                En attente de {test.min_sends_per_variant} envois minimum par variante pour déterminer le gagnant
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
                 )}
               </CardContent>
             </Card>

@@ -283,11 +283,88 @@ REMINDER_LEVELS = [
     {"level": 3, "days": 21, "subject": "Dernière relance — Finalisez votre dossier", "tone": "urgente"},
 ]
 
+# A/B test variant content overrides
+AB_VARIANT_CONTENT = {
+    "rassurant": {
+        "subjects": {1: "Votre dossier vous attend", 2: "Nous sommes là pour vous accompagner", 3: "Votre dossier mérite d'être finalisé"},
+        "intros": {
+            1: "Nous avons remarqué que vous n'avez pas ajouté de documents récemment. Votre dossier est actuellement à <strong>{pct}%</strong> de complétude. Prenez quelques minutes pour le compléter.",
+            2: "Votre dossier est toujours en attente. Il est complété à <strong>{pct}%</strong>. Nous sommes à vos côtés pour vous aider.",
+            3: "Votre dossier est à <strong>{pct}%</strong>. Nous restons disponibles pour vous accompagner jusqu'à la finalisation.",
+        },
+        "motivations": {
+            1: "En complétant votre dossier, vous profiterez d'une analyse StratégiIA plus précise et de recommandations personnalisées.",
+            2: "Chaque document ajouté renforce la qualité de notre analyse. Nous sommes là pour vous accompagner.",
+            3: "Finalisez votre dossier pour bénéficier de toute notre expertise. Nous restons à votre écoute.",
+        },
+    },
+    "incitatif": {
+        "subjects": {1: "Plus que quelques documents pour une analyse complète !", 2: "Boostez votre dossier — il ne manque presque rien !", 3: "Dernière ligne droite pour votre dossier !"},
+        "intros": {
+            1: "Bonne nouvelle ! Votre dossier est déjà à <strong>{pct}%</strong>. Il ne manque que quelques documents pour débloquer une analyse complète.",
+            2: "Vous y êtes presque ! À <strong>{pct}%</strong>, votre dossier est sur la bonne voie. Ajoutez les dernières pièces pour maximiser vos résultats.",
+            3: "C'est le moment d'agir ! Votre dossier à <strong>{pct}%</strong> est si proche d'être complet.",
+        },
+        "motivations": {
+            1: "Chaque document supplémentaire améliore significativement la précision de votre analyse StratégiIA et vos chances de succès.",
+            2: "Les clients qui complètent leur dossier obtiennent des recommandations 3x plus précises. Ne manquez pas cette opportunité !",
+            3: "Un dossier complet = une analyse optimale = les meilleures recommandations. Franchissez cette dernière étape !",
+        },
+    },
+    "urgent": {
+        "subjects": {1: "Action requise : complétez votre dossier", 2: "Votre dossier attend vos documents depuis 2 semaines", 3: "Dernière relance : ne laissez pas votre dossier en suspens"},
+        "intros": {
+            1: "Votre dossier est à <strong>{pct}%</strong> de complétude et attend vos documents. Sans les pièces manquantes, l'analyse ne peut pas être optimale.",
+            2: "Cela fait maintenant 2 semaines que votre dossier est en attente à <strong>{pct}%</strong>. Les délais de traitement augmentent avec le temps.",
+            3: "C'est notre dernière relance. Votre dossier à <strong>{pct}%</strong> risque de ne pas bénéficier d'une analyse complète sans action de votre part.",
+        },
+        "motivations": {
+            1: "Sans les documents essentiels, notre analyse reste incomplète. Agissez maintenant pour ne rien manquer.",
+            2: "Plus vous attendez, plus les délais s'allongent. Complétez votre dossier aujourd'hui pour avancer sereinement.",
+            3: "C'est votre dernière chance de compléter votre dossier avant la clôture du suivi automatique. Agissez maintenant.",
+        },
+    },
+}
 
-def _build_reminder_html(prenom: str, completeness_pct: int, missing_docs: list, level: int, site_url: str, reminder_id: str = "") -> str:
+
+async def _get_ab_variant_for_reminder(level: int) -> dict | None:
+    """Select an A/B test variant for this reminder level, or None if no active test."""
+    import random
+    test = await db.ab_tests.find_one({"status": "active"}, {"_id": 0})
+    if not test:
+        return None
+
+    # If a winner was already promoted, use it
+    if test.get("promoted_variant"):
+        variant_name = test["promoted_variant"]
+    else:
+        # Random selection among variants
+        variants = test.get("variants", [])
+        if not variants:
+            return None
+        variant = random.choice(variants)
+        variant_name = variant["name"]
+
+    content = AB_VARIANT_CONTENT.get(variant_name)
+    if not content:
+        return None
+
+    return {
+        "test_id": test["id"],
+        "variant_name": variant_name,
+        "subject": content["subjects"].get(level, REMINDER_LEVELS[level - 1]["subject"]),
+        "intro": content["intros"].get(level, ""),
+        "motivation": content["motivations"].get(level, ""),
+    }
+
+
+def _build_reminder_html(prenom: str, completeness_pct: int, missing_docs: list, level: int, site_url: str, reminder_id: str = "", ab_override: dict = None) -> str:
     missing_count = len(missing_docs)
 
-    if level == 1:
+    if ab_override and ab_override.get("intro"):
+        intro = ab_override["intro"].replace("{pct}", str(completeness_pct))
+        motivation = ab_override.get("motivation", "")
+    elif level == 1:
         intro = f"Nous avons remarqué que vous n'avez pas ajouté de documents récemment. Votre dossier est actuellement à <strong>{completeness_pct}%</strong> de complétude."
         motivation = "En complétant votre dossier, vous profiterez d'une analyse StratégiIA plus précise et de recommandations personnalisées."
     elif level == 2:
@@ -456,14 +533,23 @@ async def run_inactivity_reminders(inactivity_days: int = 7, max_completeness: i
             "created_at": now.isoformat(),
         }
 
-        html = _build_reminder_html(prenom, comp_pct, missing, target_level["level"], site_url, record["id"])
+        # Check for A/B test variant
+        ab_variant = await _get_ab_variant_for_reminder(target_level["level"])
+        if ab_variant:
+            record["ab_test_id"] = ab_variant["test_id"]
+            record["ab_variant"] = ab_variant["variant_name"]
+            email_subject = f"Stratégie & Expertise Santé — {ab_variant['subject']}"
+        else:
+            email_subject = f"Stratégie & Expertise Santé — {target_level['subject']}"
+
+        html = _build_reminder_html(prenom, comp_pct, missing, target_level["level"], site_url, record["id"], ab_variant)
 
         if RESEND_AVAILABLE and os.environ.get('RESEND_API_KEY'):
             try:
                 await asyncio.to_thread(resend.Emails.send, {
                     "from": SENDER_EMAIL,
                     "to": [email],
-                    "subject": f"Stratégie & Expertise Santé — {target_level['subject']}",
+                    "subject": email_subject,
                     "html": html
                 })
                 record["status"] = "sent"

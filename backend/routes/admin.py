@@ -795,3 +795,89 @@ async def check_kpi_alerts(admin: dict = Depends(get_current_admin)):
         })
 
     return {"alerts": alerts, "checked": True, "open_rate": open_rate, "click_rate": click_rate}
+
+
+# ==================== A/B TESTING ====================
+
+@router.post("/admin/ab-tests")
+async def create_ab_test(request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    name = body.get("name", "Test A/B")
+    variants = body.get("variants", [])
+    if len(variants) < 2:
+        raise HTTPException(status_code=400, detail="Au moins 2 variantes requises")
+
+    # Deactivate any existing active test
+    await db.ab_tests.update_many({"status": "active"}, {"$set": {"status": "paused"}})
+
+    test = {
+        "id": str(uuid.uuid4()),
+        "name": name,
+        "variants": variants,
+        "status": "active",
+        "min_sends_per_variant": body.get("min_sends", 50),
+        "promoted_variant": None,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.ab_tests.insert_one(test)
+    test.pop("_id", None)
+    return test
+
+@router.get("/admin/ab-tests")
+async def list_ab_tests(admin: dict = Depends(get_current_admin)):
+    tests = await db.ab_tests.find({}, {"_id": 0}).sort("created_at", -1).to_list(50)
+    return {"tests": tests}
+
+@router.get("/admin/ab-tests/{test_id}/results")
+async def get_ab_test_results(test_id: str, admin: dict = Depends(get_current_admin)):
+    test = await db.ab_tests.find_one({"id": test_id}, {"_id": 0})
+    if not test:
+        raise HTTPException(status_code=404, detail="Test non trouvé")
+
+    variant_names = [v["name"] for v in test.get("variants", [])]
+    results = []
+    for vn in variant_names:
+        sent = await db.inactivity_reminders.count_documents({"ab_test_id": test_id, "ab_variant": vn})
+        opened = await db.inactivity_reminders.count_documents({"ab_test_id": test_id, "ab_variant": vn, "opened": True})
+        clicked = await db.inactivity_reminders.count_documents({"ab_test_id": test_id, "ab_variant": vn, "clicked": True})
+        open_rate = round((opened / sent) * 100, 1) if sent > 0 else 0
+        click_rate = round((clicked / sent) * 100, 1) if sent > 0 else 0
+        results.append({
+            "variant": vn,
+            "sent": sent,
+            "opened": opened,
+            "clicked": clicked,
+            "open_rate": open_rate,
+            "click_rate": click_rate,
+        })
+
+    # Determine winner (highest click_rate among variants with enough sends)
+    min_sends = test.get("min_sends_per_variant", 50)
+    qualified = [r for r in results if r["sent"] >= min_sends]
+    winner = None
+    if len(qualified) >= 2:
+        winner = max(qualified, key=lambda r: r["click_rate"])
+
+    return {"test": test, "results": results, "winner": winner, "ready_to_promote": winner is not None}
+
+@router.post("/admin/ab-tests/{test_id}/promote")
+async def promote_ab_winner(test_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    variant_name = body.get("variant_name")
+    if not variant_name:
+        raise HTTPException(status_code=400, detail="variant_name requis")
+
+    await db.ab_tests.update_one(
+        {"id": test_id},
+        {"$set": {"promoted_variant": variant_name, "status": "completed", "completed_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    return {"success": True, "promoted_variant": variant_name}
+
+@router.post("/admin/ab-tests/{test_id}/toggle")
+async def toggle_ab_test(test_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    status = body.get("status", "paused")
+    if status == "active":
+        await db.ab_tests.update_many({"status": "active"}, {"$set": {"status": "paused"}})
+    await db.ab_tests.update_one({"id": test_id}, {"$set": {"status": status}})
+    return {"success": True, "status": status}

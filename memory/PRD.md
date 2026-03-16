@@ -112,6 +112,7 @@ Exécution : `cd /app/backend && python -m pytest --cov=. --cov-report=term-miss
 - [x] Dashboard KPIs d'engagement — Tracking pixel (ouvertures) + redirect (clics) dans tous les emails, endpoint /api/admin/engagement-kpis, dashboard avec 6 KPI cards, performance par niveau J+7/J+14/J+21 avec barres, évolution complétude avant/après relance, graphique temporel 30 jours (mars 2026)
 - [x] Export CSV relances + KPIs — Endpoint /api/admin/export/relances-csv avec tableau relances, notifications complétude et résumé KPIs, bouton téléchargement dans admin (mars 2026)
 - [x] Alertes KPI critiques — Seuils paramétrables (ouverture/clic), alertes visuelles rouges/orange dans admin, endpoint /api/admin/kpi-alerts/check et /config, inputs de configuration avec sauvegarde (mars 2026)
+- [x] A/B Testing emails — 3 variantes (rassurant/incitatif/urgent) avec sujets et contenus différents par niveau, sélection aléatoire lors de l'envoi, collection ab_tests, résultats par variante (envois/ouvertures/clics), identification automatique du gagnant après 50 envois, bouton "Promouvoir gagnant", pause/reprise des tests (mars 2026)
 
 ## Éléments bloqués (action utilisateur)
 1. **Budget LLM Emergent** épuisé → Profile → Universal Key → Add Balance
