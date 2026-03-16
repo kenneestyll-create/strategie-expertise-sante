@@ -38,16 +38,19 @@ Application web complète en français pour fournir des conseils sur les maladie
 - Composant séparé : `EmailTemplateEditor.jsx`
 
 ### Variables dynamiques pour emails (Complété - Feb 2026)
-- 5 variables supportées : `{{prenom}}`, `{{nom}}`, `{{completeness}}`, `{{documents_missing}}`, `{{date_inscription}}`
-- Barre d'insertion de variables (boutons cliquables) au-dessus de chaque champ texte en mode édition
-- Insertion à la position du curseur
-- Coloration syntaxique des variables en mode lecture (badges colorés via `HighlightedText`)
-- Carte de référence des variables disponibles avec exemples
-- Aperçu en temps réel avec résolution des variables (valeurs d'exemple)
-- Backend : `resolve_template_variables()` remplace les placeholders par les vraies données client
-- Endpoint `GET /api/admin/email-templates/variables` pour lister les variables
-- Compatible avec le système A/B testing existant
-- `_build_reminder_html()` accepte un `custom_template` avec résolution de variables
+- 5 variables : `{{prenom}}`, `{{nom}}`, `{{completeness}}`, `{{documents_missing}}`, `{{date_inscription}}`
+- Barre d'insertion cliquable au-dessus de chaque champ texte
+- Coloration syntaxique en mode lecture (badges colorés)
+- Aperçu avec résolution automatique des variables
+- Backend : `resolve_template_variables()` + endpoint `/api/admin/email-templates/variables`
+
+### Mode test email (Complété - Feb 2026)
+- Bouton "Envoyer un test" (icône Send verte) sur chaque template
+- Dialog avec : email destinataire, valeurs éditables pour chaque variable
+- Avertissement sandbox Resend visible dans le dialog
+- Email de test préfixé `[TEST]` + bandeau "EMAIL DE TEST" dans le HTML
+- Aucune trace dans les KPIs/tracking
+- Endpoint : `POST /api/admin/email-templates/send-test`
 
 ## Tâches en attente (bloquées)
 - **HubSpot (P2):** En attente du HUBSPOT_PORTAL_ID utilisateur
@@ -61,7 +64,7 @@ Application web complète en français pour fournir des conseils sur les maladie
 
 ## Fichiers clés
 - `/app/frontend/src/pages/AdminDashboard.jsx` — Dashboard admin principal
-- `/app/frontend/src/components/EmailTemplateEditor.jsx` — Éditeur de templates + variables
+- `/app/frontend/src/components/EmailTemplateEditor.jsx` — Éditeur de templates + variables + test
 - `/app/backend/routes/admin.py` — Endpoints admin
 - `/app/backend/utils/email.py` — Logique d'envoi, variables, résolution
 - `/app/backend/server.py` — Scheduler, tracking
