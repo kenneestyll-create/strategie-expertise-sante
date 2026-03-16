@@ -51,7 +51,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { BarChart3, BellRing } from 'lucide-react';
+import { BarChart3, BellRing, Download } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -315,6 +315,8 @@ export const AdminDashboard = () => {
   const [lastReminderResults, setLastReminderResults] = useState(null);
   const [cronStatus, setCronStatus] = useState({ enabled: true, hour: 9, minute: 0, last_run: null, last_results: null });
   const [engagementKpis, setEngagementKpis] = useState(null);
+  const [kpiAlerts, setKpiAlerts] = useState({ alerts: [] });
+  const [kpiAlertConfig, setKpiAlertConfig] = useState({ open_rate_threshold: 30, click_rate_threshold: 10, alerts_enabled: true });
 
   const navigate = useNavigate();
   const { token, adminName, logout } = useAuth();
@@ -365,6 +367,8 @@ export const AdminDashboard = () => {
       axios.get(`${API}/admin/relance-inactivite/history`, axiosConfig).then(r => setInactivityReminders(r.data)).catch(() => {});
       axios.get(`${API}/admin/reminder-cron/status`, axiosConfig).then(r => setCronStatus(r.data)).catch(() => {});
       axios.get(`${API}/admin/engagement-kpis`, axiosConfig).then(r => setEngagementKpis(r.data)).catch(() => {});
+      axios.get(`${API}/admin/kpi-alerts/check`, axiosConfig).then(r => setKpiAlerts(r.data)).catch(() => {});
+      axios.get(`${API}/admin/kpi-alerts/config`, axiosConfig).then(r => setKpiAlertConfig(r.data)).catch(() => {});
     } catch (error) {
       console.error('Erreur:', error);
       if (error.response?.status === 401) {
@@ -1864,12 +1868,76 @@ export const AdminDashboard = () => {
             {engagementKpis && (
               <Card data-testid="engagement-kpis-card">
                 <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <BarChart3 className="w-5 h-5 text-blue-500" /> KPIs d'engagement
-                  </CardTitle>
-                  <p className="text-xs text-muted-foreground">Impact des relances automatiques et manuelles sur l'engagement client</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5 text-blue-500" /> KPIs d'engagement
+                      </CardTitle>
+                      <p className="text-xs text-muted-foreground">Impact des relances automatiques et manuelles sur l'engagement client</p>
+                    </div>
+                    <Button size="sm" variant="outline" className="gap-1.5 text-xs" data-testid="export-csv-btn"
+                      onClick={() => {
+                        const link = document.createElement('a');
+                        link.href = `${API}/admin/export/relances-csv`;
+                        link.download = 'relances_kpis_export.csv';
+                        const token = adminToken;
+                        fetch(`${API}/admin/export/relances-csv`, { headers: { Authorization: `Bearer ${token}` } })
+                          .then(r => r.blob())
+                          .then(blob => { link.href = URL.createObjectURL(blob); link.click(); toast.success('Export CSV téléchargé'); })
+                          .catch(() => toast.error('Erreur export'));
+                      }}
+                    >
+                      <Download className="w-3.5 h-3.5" /> Exporter CSV
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* KPI Alerts */}
+                  {kpiAlerts.alerts?.length > 0 && (
+                    <div className="space-y-2" data-testid="kpi-alerts-section">
+                      {kpiAlerts.alerts.map((alert, i) => (
+                        <div key={i} className={`flex items-center gap-3 p-3 rounded-lg border ${alert.severity === 'critical' ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'}`}>
+                          <AlertTriangle className={`w-4 h-4 flex-shrink-0 ${alert.severity === 'critical' ? 'text-red-600' : 'text-amber-600'}`} />
+                          <div className="flex-1">
+                            <p className={`text-xs font-semibold ${alert.severity === 'critical' ? 'text-red-700' : 'text-amber-700'}`}>{alert.message}</p>
+                          </div>
+                          <Badge variant="outline" className={`text-[10px] ${alert.severity === 'critical' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                            {alert.severity === 'critical' ? 'Critique' : 'Attention'}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Alert thresholds config */}
+                  <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30 border" data-testid="kpi-alert-config">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">Seuils d'alerte :</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-muted-foreground">Ouverture &lt;</span>
+                      <input type="number" className="w-14 h-7 text-xs text-center rounded border px-1" value={kpiAlertConfig.open_rate_threshold}
+                        onChange={e => setKpiAlertConfig(c => ({...c, open_rate_threshold: parseInt(e.target.value) || 0}))} />
+                      <span className="text-[10px] text-muted-foreground">%</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-muted-foreground">Clic &lt;</span>
+                      <input type="number" className="w-14 h-7 text-xs text-center rounded border px-1" value={kpiAlertConfig.click_rate_threshold}
+                        onChange={e => setKpiAlertConfig(c => ({...c, click_rate_threshold: parseInt(e.target.value) || 0}))} />
+                      <span className="text-[10px] text-muted-foreground">%</span>
+                    </div>
+                    <Button size="sm" variant="outline" className="h-7 text-[10px] px-3"
+                      onClick={async () => {
+                        try {
+                          await axios.post(`${API}/admin/kpi-alerts/config`, kpiAlertConfig, { headers: { Authorization: `Bearer ${adminToken}` } });
+                          const r = await axios.get(`${API}/admin/kpi-alerts/check`, { headers: { Authorization: `Bearer ${adminToken}` } });
+                          setKpiAlerts(r.data);
+                          toast.success('Seuils mis à jour');
+                        } catch { toast.error('Erreur'); }
+                      }}
+                      data-testid="save-alert-config-btn"
+                    >
+                      Enregistrer
+                    </Button>
+                  </div>
                   {/* Main KPI cards */}
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                     <div className="p-3 rounded-lg border text-center">

@@ -654,3 +654,144 @@ async def get_engagement_kpis(admin: dict = Depends(get_current_admin)):
         },
         "timeline": timeline_list,
     }
+
+
+# ==================== CSV EXPORT ====================
+
+@router.get("/admin/export/relances-csv")
+async def export_relances_csv(admin: dict = Depends(get_current_admin)):
+    from fastapi.responses import StreamingResponse
+    import io, csv
+
+    output = io.StringIO()
+    writer = csv.writer(output, delimiter=';')
+    writer.writerow(["Date", "Client", "Email", "Niveau", "Jours inactif", "Complétude %", "Type dossier", "Statut", "Ouvert", "Cliqué"])
+
+    reminders = await db.inactivity_reminders.find({}, {"_id": 0}).sort("created_at", -1).to_list(10000)
+    for r in reminders:
+        writer.writerow([
+            r.get("created_at", "")[:19],
+            r.get("client_name", ""),
+            r.get("client_email", ""),
+            f"L{r.get('level', '')}",
+            r.get("days_inactive", ""),
+            r.get("completeness_pct", ""),
+            r.get("case_type", ""),
+            r.get("status", ""),
+            "Oui" if r.get("opened") else "Non",
+            "Oui" if r.get("clicked") else "Non",
+        ])
+
+    # Add completeness notifications
+    writer.writerow([])
+    writer.writerow(["--- Notifications de complétude ---"])
+    writer.writerow(["Date", "Client", "Email", "Seuil %", "Complétude réelle %", "Type dossier", "Statut", "Ouvert", "Cliqué"])
+    notifs = await db.completeness_notifications.find({}, {"_id": 0}).sort("created_at", -1).to_list(10000)
+    for n in notifs:
+        writer.writerow([
+            n.get("created_at", "")[:19],
+            n.get("client_name", ""),
+            n.get("client_email", ""),
+            n.get("threshold_pct", ""),
+            n.get("actual_pct", ""),
+            n.get("case_type", ""),
+            n.get("status", ""),
+            "Oui" if n.get("opened") else "Non",
+            "Oui" if n.get("clicked") else "Non",
+        ])
+
+    # Add KPI summary
+    writer.writerow([])
+    writer.writerow(["--- KPIs d'engagement ---"])
+    total_ir = await db.inactivity_reminders.count_documents({})
+    opened_ir = await db.inactivity_reminders.count_documents({"opened": True})
+    clicked_ir = await db.inactivity_reminders.count_documents({"clicked": True})
+    total_cn = await db.completeness_notifications.count_documents({})
+    opened_cn = await db.completeness_notifications.count_documents({"opened": True})
+    clicked_cn = await db.completeness_notifications.count_documents({"clicked": True})
+    total = total_ir + total_cn
+    opened = opened_ir + opened_cn
+    clicked = clicked_ir + clicked_cn
+    writer.writerow(["Métrique", "Valeur"])
+    writer.writerow(["Total emails", total])
+    writer.writerow(["Ouvertures", opened])
+    writer.writerow(["Clics CTA", clicked])
+    writer.writerow(["Taux ouverture", f"{round((opened/total)*100,1)}%" if total else "0%"])
+    writer.writerow(["Taux clic", f"{round((clicked/total)*100,1)}%" if total else "0%"])
+    writer.writerow(["Clic/ouverture", f"{round((clicked/opened)*100,1)}%" if opened else "0%"])
+
+    content = output.getvalue()
+    output.close()
+
+    return StreamingResponse(
+        iter([content]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=relances_kpis_export.csv"}
+    )
+
+
+# ==================== KPI ALERTS ====================
+
+KPI_ALERT_DEFAULTS = {"open_rate_threshold": 30, "click_rate_threshold": 10, "alerts_enabled": True}
+
+@router.get("/admin/kpi-alerts/config")
+async def get_kpi_alert_config(admin: dict = Depends(get_current_admin)):
+    config = await db.app_config.find_one({"key": "kpi_alerts"}, {"_id": 0})
+    if not config:
+        return KPI_ALERT_DEFAULTS
+    config.pop("key", None)
+    return config
+
+@router.post("/admin/kpi-alerts/config")
+async def update_kpi_alert_config(request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    update = {
+        "open_rate_threshold": body.get("open_rate_threshold", 30),
+        "click_rate_threshold": body.get("click_rate_threshold", 10),
+        "alerts_enabled": body.get("alerts_enabled", True),
+    }
+    await db.app_config.update_one({"key": "kpi_alerts"}, {"$set": update}, upsert=True)
+    return {"success": True, **update}
+
+@router.get("/admin/kpi-alerts/check")
+async def check_kpi_alerts(admin: dict = Depends(get_current_admin)):
+    config = await db.app_config.find_one({"key": "kpi_alerts"}, {"_id": 0})
+    if not config or not config.get("alerts_enabled", True):
+        return {"alerts": [], "checked": True}
+
+    total_ir = await db.inactivity_reminders.count_documents({})
+    opened_ir = await db.inactivity_reminders.count_documents({"opened": True})
+    clicked_ir = await db.inactivity_reminders.count_documents({"clicked": True})
+    total_cn = await db.completeness_notifications.count_documents({})
+    opened_cn = await db.completeness_notifications.count_documents({"opened": True})
+    clicked_cn = await db.completeness_notifications.count_documents({"clicked": True})
+
+    total = total_ir + total_cn
+    opened = opened_ir + opened_cn
+    clicked = clicked_ir + clicked_cn
+
+    open_rate = round((opened / total) * 100, 1) if total > 0 else 0
+    click_rate = round((clicked / total) * 100, 1) if total > 0 else 0
+
+    alerts = []
+    open_threshold = config.get("open_rate_threshold", 30)
+    click_threshold = config.get("click_rate_threshold", 10)
+
+    if total >= 10 and open_rate < open_threshold:
+        alerts.append({
+            "type": "open_rate",
+            "severity": "critical" if open_rate < open_threshold / 2 else "warning",
+            "message": f"Taux d'ouverture critique : {open_rate}% (seuil : {open_threshold}%)",
+            "current_value": open_rate,
+            "threshold": open_threshold,
+        })
+    if total >= 10 and click_rate < click_threshold:
+        alerts.append({
+            "type": "click_rate",
+            "severity": "critical" if click_rate < click_threshold / 2 else "warning",
+            "message": f"Taux de clic critique : {click_rate}% (seuil : {click_threshold}%)",
+            "current_value": click_rate,
+            "threshold": click_threshold,
+        })
+
+    return {"alerts": alerts, "checked": True, "open_rate": open_rate, "click_rate": click_rate}

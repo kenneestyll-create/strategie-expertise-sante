@@ -110,6 +110,8 @@ Exécution : `cd /app/backend && python -m pytest --cov=. --cov-report=term-miss
 - [x] Relances d'inactivité automatiques — Scan clients inactifs (<50% complétude, 7+ jours sans upload), 3 niveaux progressifs (J+7/J+14/J+21), anti-doublon, opt-out par client, bouton admin "Lancer les relances", historique complet avec stats par niveau et bouton pause (mars 2026)
 - [x] Cron hybride relances — Scheduler asyncio quotidien (9h UTC), toggle ON/OFF admin, bouton manuel permanent, log dernière exécution automatique avec résultats détaillés dans onglet Notifs (mars 2026)
 - [x] Dashboard KPIs d'engagement — Tracking pixel (ouvertures) + redirect (clics) dans tous les emails, endpoint /api/admin/engagement-kpis, dashboard avec 6 KPI cards, performance par niveau J+7/J+14/J+21 avec barres, évolution complétude avant/après relance, graphique temporel 30 jours (mars 2026)
+- [x] Export CSV relances + KPIs — Endpoint /api/admin/export/relances-csv avec tableau relances, notifications complétude et résumé KPIs, bouton téléchargement dans admin (mars 2026)
+- [x] Alertes KPI critiques — Seuils paramétrables (ouverture/clic), alertes visuelles rouges/orange dans admin, endpoint /api/admin/kpi-alerts/check et /config, inputs de configuration avec sauvegarde (mars 2026)
 
 ## Éléments bloqués (action utilisateur)
 1. **Budget LLM Emergent** épuisé → Profile → Universal Key → Add Balance
