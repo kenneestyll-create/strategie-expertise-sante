@@ -17,6 +17,38 @@ except Exception:
     PUSH_AVAILABLE = False
 
 
+# ==================== DYNAMIC TEMPLATE VARIABLES ====================
+
+TEMPLATE_VARIABLES = [
+    {"key": "prenom", "label": "Prénom du client", "sample": "Marie"},
+    {"key": "nom", "label": "Nom de famille", "sample": "Dupont"},
+    {"key": "completeness", "label": "% de complétude", "sample": "42"},
+    {"key": "documents_missing", "label": "Documents manquants", "sample": "Attestation employeur, Certificat médical initial"},
+    {"key": "date_inscription", "label": "Date d'inscription", "sample": "15/01/2026"},
+]
+
+SAMPLE_CONTEXT = {v["key"]: v["sample"] for v in TEMPLATE_VARIABLES}
+
+
+def resolve_template_variables(text: str, context: dict) -> str:
+    """Replace {{variable}} placeholders with actual values from context."""
+    if not text:
+        return text
+    for key, value in context.items():
+        text = text.replace("{{" + key + "}}", str(value))
+    return text
+
+
+def build_missing_docs_html(missing_docs: list) -> str:
+    """Convert a list of missing docs into a readable string for template variables."""
+    if not missing_docs:
+        return "Aucun"
+    labels = []
+    for d in missing_docs[:5]:
+        labels.append(d.get("label", d) if isinstance(d, dict) else str(d))
+    return ", ".join(labels)
+
+
 async def send_notification_email(contact):
     if not RESEND_AVAILABLE or not os.environ.get('RESEND_API_KEY') or not NOTIFICATION_EMAIL:
         logger.info("Email notification skipped - Resend not configured")
@@ -109,7 +141,7 @@ async def create_client_notification(client_id: str, notif_type: str, title: str
         try:
             client_user = await db.client_users.find_one({"id": client_id}, {"_id": 0, "notifications_push": 1})
             if client_user and client_user.get("notifications_push", True):
-                url = f"/espace-client"
+                url = "/espace-client"
                 await send_push_to_client(db, client_id, title=title, body=message, url=url, tag=notif_type)
                 logger.info(f"Push notification sent to client {client_id}: {title}")
         except Exception as e:
@@ -203,6 +235,21 @@ async def check_and_send_completeness_notification(client_id: str, completeness_
                 missing_html = ""
 
         site_url = os.environ.get("FRONTEND_URL", SITE_URL)
+
+        # Record the notification (create before HTML so we have the ID for tracking)
+        notif_record = {
+            "id": str(uuid.uuid4()),
+            "client_id": client_id,
+            "client_email": email,
+            "client_name": name,
+            "threshold_pct": threshold_pct,
+            "actual_pct": completeness_pct,
+            "case_type": case_type,
+            "missing_docs_count": missing_count,
+            "status": "pending",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+
         html_content = f"""
         <html>
         <body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:0;background:#f5f5f5;">
@@ -231,20 +278,6 @@ async def check_and_send_completeness_notification(client_id: str, completeness_
         </body>
         </html>
         """
-
-        # Record the notification
-        notif_record = {
-            "id": str(uuid.uuid4()),
-            "client_id": client_id,
-            "client_email": email,
-            "client_name": name,
-            "threshold_pct": threshold_pct,
-            "actual_pct": completeness_pct,
-            "case_type": case_type,
-            "missing_docs_count": missing_count,
-            "status": "pending",
-            "created_at": datetime.now(timezone.utc).isoformat(),
-        }
 
         # Send email
         if RESEND_AVAILABLE and os.environ.get('RESEND_API_KEY'):
@@ -358,21 +391,39 @@ async def _get_ab_variant_for_reminder(level: int) -> dict | None:
     }
 
 
-def _build_reminder_html(prenom: str, completeness_pct: int, missing_docs: list, level: int, site_url: str, reminder_id: str = "", ab_override: dict = None) -> str:
+def _build_reminder_html(prenom: str, completeness_pct: int, missing_docs: list, level: int, site_url: str, reminder_id: str = "", ab_override: dict = None, custom_template: dict = None) -> str:
     missing_count = len(missing_docs)
 
-    if ab_override and ab_override.get("intro"):
+    # Build variable context for resolution
+    var_context = {
+        "prenom": prenom,
+        "nom": "",
+        "completeness": str(completeness_pct),
+        "documents_missing": build_missing_docs_html(missing_docs),
+        "date_inscription": "",
+    }
+
+    # Use custom template if provided (from email_templates collection)
+    if custom_template and custom_template.get("intro"):
+        intro = resolve_template_variables(custom_template["intro"], var_context)
+        motivation = resolve_template_variables(custom_template.get("motivation", ""), var_context)
+        cta_text = resolve_template_variables(custom_template.get("cta_text", "Compléter mon dossier"), var_context)
+    elif ab_override and ab_override.get("intro"):
         intro = ab_override["intro"].replace("{pct}", str(completeness_pct))
         motivation = ab_override.get("motivation", "")
+        cta_text = "Compléter mon dossier"
     elif level == 1:
         intro = f"Nous avons remarqué que vous n'avez pas ajouté de documents récemment. Votre dossier est actuellement à <strong>{completeness_pct}%</strong> de complétude."
         motivation = "En complétant votre dossier, vous profiterez d'une analyse StratégiIA plus précise et de recommandations personnalisées."
+        cta_text = "Compléter mon dossier"
     elif level == 2:
         intro = f"Votre dossier est toujours en attente de documents. Il est actuellement complété à <strong>{completeness_pct}%</strong>."
         motivation = "Chaque document ajouté renforce la qualité de notre analyse et nous permet de mieux vous accompagner dans vos démarches."
+        cta_text = "Compléter mon dossier"
     else:
         intro = f"C'est notre dernière relance automatique. Votre dossier est à <strong>{completeness_pct}%</strong> et attend vos documents."
         motivation = "Finalisez votre dossier maintenant pour bénéficier de toute la puissance de notre expertise et de StratégiIA."
+        cta_text = "Compléter mon dossier"
 
     if missing_docs:
         items = "".join(f'<li style="margin:4px 0;color:#5D4E1A;">{d.get("label", d) if isinstance(d, dict) else d}</li>' for d in missing_docs[:5])
@@ -411,7 +462,7 @@ def _build_reminder_html(prenom: str, completeness_pct: int, missing_docs: list,
             <div style="text-align:center;margin:24px 0;">
                 <a href="{site_url}/api/track/click/{reminder_id}"
                    style="background:#1a1a2e;color:#d4a44a;padding:14px 28px;border-radius:6px;text-decoration:none;display:inline-block;font-weight:600;font-size:14px;">
-                    Compléter mon dossier
+                    {cta_text}
                 </a>
             </div>
             <p style="color:#888;font-size:11px;text-align:center;margin-top:20px;">

@@ -661,7 +661,8 @@ async def get_engagement_kpis(admin: dict = Depends(get_current_admin)):
 @router.get("/admin/export/relances-csv")
 async def export_relances_csv(admin: dict = Depends(get_current_admin)):
     from fastapi.responses import StreamingResponse
-    import io, csv
+    import io
+    import csv
 
     output = io.StringIO()
     writer = csv.writer(output, delimiter=';')
@@ -982,17 +983,34 @@ async def duplicate_email_template(template_id: str, admin: dict = Depends(get_c
     new_doc.pop("_id", None)
     return new_doc
 
+@router.get("/admin/email-templates/variables")
+async def list_template_variables(admin: dict = Depends(get_current_admin)):
+    from utils.email import TEMPLATE_VARIABLES
+    return {"variables": TEMPLATE_VARIABLES}
+
+
 @router.post("/admin/email-templates/preview")
 async def preview_email_template(request: Request, admin: dict = Depends(get_current_admin)):
+    from utils.email import resolve_template_variables, SAMPLE_CONTEXT
     body = await request.json()
     from config import SITE_URL
     site_url = os.environ.get("FRONTEND_URL", SITE_URL)
-    subject = body.get("subject", "Objet de l'email")
-    intro = body.get("intro", "Introduction...")
-    motivation = body.get("motivation", "Motivation...")
-    cta_text = body.get("cta_text", "Compléter mon dossier")
-    prenom = body.get("prenom", "Marie")
-    completeness_pct = body.get("completeness_pct", 42)
+
+    # Build preview context with sample values (overridable)
+    preview_context = {**SAMPLE_CONTEXT}
+    if body.get("prenom"):
+        preview_context["prenom"] = body["prenom"]
+    if body.get("completeness_pct") is not None:
+        preview_context["completeness"] = str(body["completeness_pct"])
+    if body.get("documents_missing"):
+        preview_context["documents_missing"] = body["documents_missing"]
+
+    subject = resolve_template_variables(body.get("subject", "Objet de l'email"), preview_context)
+    intro = resolve_template_variables(body.get("intro", "Introduction..."), preview_context)
+    motivation = resolve_template_variables(body.get("motivation", "Motivation..."), preview_context)
+    cta_text = resolve_template_variables(body.get("cta_text", "Compléter mon dossier"), preview_context)
+    prenom = preview_context["prenom"]
+    completeness_pct = preview_context["completeness"]
 
     html = f"""
     <html>

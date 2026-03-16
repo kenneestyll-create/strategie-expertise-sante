@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,11 +7,59 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import {
-  FileText, Plus, Copy, Trash2, Eye, Save, Loader2, Pencil, X, Check, RefreshCw
+  FileText, Plus, Copy, Trash2, Eye, Loader2, Pencil, X, Check, RefreshCw, Code
 } from 'lucide-react';
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+const VARIABLES = [
+  { key: 'prenom', label: 'Prénom', sample: 'Marie', color: 'bg-blue-100 text-blue-700 hover:bg-blue-200' },
+  { key: 'nom', label: 'Nom', sample: 'Dupont', color: 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' },
+  { key: 'completeness', label: '% Complétude', sample: '42', color: 'bg-green-100 text-green-700 hover:bg-green-200' },
+  { key: 'documents_missing', label: 'Docs manquants', sample: 'Attestation employeur, Certificat médical', color: 'bg-amber-100 text-amber-700 hover:bg-amber-200' },
+  { key: 'date_inscription', label: 'Date inscription', sample: '15/01/2026', color: 'bg-purple-100 text-purple-700 hover:bg-purple-200' },
+];
+
+const VariableToolbar = ({ onInsert, targetField }) => (
+  <div className="flex items-center gap-1.5 flex-wrap py-1.5 px-2 bg-muted/40 rounded-md border border-dashed" data-testid={`var-toolbar-${targetField}`}>
+    <Code className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+    <span className="text-[10px] text-muted-foreground mr-1">Variables :</span>
+    {VARIABLES.map(v => (
+      <button
+        key={v.key}
+        type="button"
+        onClick={() => onInsert(`{{${v.key}}}`)}
+        className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium cursor-pointer transition-colors ${v.color}`}
+        title={`Insérer {{${v.key}}} — ${v.label} (ex: ${v.sample})`}
+        data-testid={`var-btn-${v.key}-${targetField}`}
+      >
+        {`{{${v.key}}}`}
+      </button>
+    ))}
+  </div>
+);
+
+const HighlightedText = ({ text }) => {
+  if (!text) return null;
+  const parts = text.split(/(\{\{[a-z_]+\}\})/g);
+  return (
+    <span>
+      {parts.map((part, i) => {
+        const match = part.match(/^\{\{([a-z_]+)\}\}$/);
+        if (match) {
+          const v = VARIABLES.find(x => x.key === match[1]);
+          return (
+            <span key={i} className={`inline-block text-[10px] px-1 py-0 rounded font-semibold ${v?.color || 'bg-gray-100 text-gray-600'}`}>
+              {part}
+            </span>
+          );
+        }
+        return <span key={i}>{part}</span>;
+      })}
+    </span>
+  );
+};
 
 export const EmailTemplateEditor = ({ token }) => {
   const [templates, setTemplates] = useState([]);
@@ -26,6 +74,16 @@ export const EmailTemplateEditor = ({ token }) => {
   const [newForm, setNewForm] = useState({ name: '', label: '', subject: '', intro: '', motivation: '', cta_text: 'Compléter mon dossier' });
   const [creating, setCreating] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [activeFieldRef, setActiveFieldRef] = useState(null);
+
+  const subjectRef = useRef(null);
+  const introRef = useRef(null);
+  const motivationRef = useRef(null);
+  const ctaRef = useRef(null);
+  const newSubjectRef = useRef(null);
+  const newIntroRef = useRef(null);
+  const newMotivationRef = useRef(null);
+  const newCtaRef = useRef(null);
 
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -42,6 +100,24 @@ export const EmailTemplateEditor = ({ token }) => {
   }, [token]);
 
   useEffect(() => { fetchTemplates(); }, [fetchTemplates]);
+
+  const insertAtCursor = (ref, field, formSetter, value) => {
+    const el = ref?.current;
+    if (el) {
+      const start = el.selectionStart ?? el.value?.length ?? 0;
+      const end = el.selectionEnd ?? start;
+      const current = el.value || '';
+      const newVal = current.slice(0, start) + value + current.slice(end);
+      formSetter(f => ({ ...f, [field]: newVal }));
+      requestAnimationFrame(() => {
+        el.focus();
+        const pos = start + value.length;
+        el.setSelectionRange(pos, pos);
+      });
+    } else {
+      formSetter(f => ({ ...f, [field]: (f[field] || '') + value }));
+    }
+  };
 
   const startEdit = (tpl) => {
     setEditingId(tpl.id);
@@ -75,7 +151,7 @@ export const EmailTemplateEditor = ({ token }) => {
     try {
       const res = await axios.post(`${API}/admin/email-templates/preview`, {
         subject: data.subject, intro: data.intro, motivation: data.motivation, cta_text: data.cta_text,
-        prenom: 'Marie', completeness_pct: 42
+        prenom: 'Marie', completeness_pct: 42, documents_missing: 'Attestation employeur, Certificat médical initial'
       }, { headers });
       setPreviewHtml(res.data.html);
     } catch {
@@ -171,7 +247,7 @@ export const EmailTemplateEditor = ({ token }) => {
             Éditeur de templates email
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Créez et modifiez vos modèles d'emails sans toucher au code
+            Créez et modifiez vos modèles d'emails — utilisez les variables dynamiques pour personnaliser chaque envoi
           </p>
         </div>
         <div className="flex gap-2">
@@ -183,6 +259,25 @@ export const EmailTemplateEditor = ({ token }) => {
           </Button>
         </div>
       </div>
+
+      {/* Variables reference card */}
+      <Card className="border-dashed" data-testid="variables-reference-card">
+        <CardContent className="py-3 px-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Code className="w-4 h-4 text-violet-500" />
+            <span className="text-xs font-semibold">Variables dynamiques disponibles</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {VARIABLES.map(v => (
+              <div key={v.key} className="flex items-center gap-1.5 text-xs">
+                <span className={`px-1.5 py-0.5 rounded font-mono font-medium text-[11px] ${v.color}`}>{`{{${v.key}}}`}</span>
+                <span className="text-muted-foreground">{v.label}</span>
+                <span className="text-[10px] text-muted-foreground/60 italic">ex: {v.sample}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Templates list */}
       {templates.length === 0 ? (
@@ -255,7 +350,9 @@ export const EmailTemplateEditor = ({ token }) => {
                     <div className="grid gap-3">
                       <div>
                         <label className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Sujet de l'email</label>
+                        <VariableToolbar targetField="subject" onInsert={(v) => insertAtCursor(subjectRef, 'subject', setEditForm, v)} />
                         <Input
+                          ref={subjectRef}
                           value={editForm.subject}
                           onChange={e => setEditForm(f => ({ ...f, subject: e.target.value }))}
                           className="mt-1 text-sm"
@@ -264,7 +361,9 @@ export const EmailTemplateEditor = ({ token }) => {
                       </div>
                       <div>
                         <label className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Texte d'introduction</label>
+                        <VariableToolbar targetField="intro" onInsert={(v) => insertAtCursor(introRef, 'intro', setEditForm, v)} />
                         <Textarea
+                          ref={introRef}
                           value={editForm.intro}
                           onChange={e => setEditForm(f => ({ ...f, intro: e.target.value }))}
                           className="mt-1 text-sm min-h-[60px]"
@@ -273,7 +372,9 @@ export const EmailTemplateEditor = ({ token }) => {
                       </div>
                       <div>
                         <label className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Texte de motivation</label>
+                        <VariableToolbar targetField="motivation" onInsert={(v) => insertAtCursor(motivationRef, 'motivation', setEditForm, v)} />
                         <Textarea
+                          ref={motivationRef}
                           value={editForm.motivation}
                           onChange={e => setEditForm(f => ({ ...f, motivation: e.target.value }))}
                           className="mt-1 text-sm min-h-[60px]"
@@ -282,7 +383,9 @@ export const EmailTemplateEditor = ({ token }) => {
                       </div>
                       <div>
                         <label className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Texte du bouton CTA</label>
+                        <VariableToolbar targetField="cta" onInsert={(v) => insertAtCursor(ctaRef, 'cta_text', setEditForm, v)} />
                         <Input
+                          ref={ctaRef}
                           value={editForm.cta_text}
                           onChange={e => setEditForm(f => ({ ...f, cta_text: e.target.value }))}
                           className="mt-1 text-sm"
@@ -291,7 +394,7 @@ export const EmailTemplateEditor = ({ token }) => {
                       </div>
                       <div className="flex justify-end">
                         <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => loadPreview(tpl)} data-testid={`preview-edit-${tpl.name}`}>
-                          <Eye className="w-3.5 h-3.5" /> Aperçu en direct
+                          <Eye className="w-3.5 h-3.5" /> Aperçu avec variables résolues
                         </Button>
                       </div>
                     </div>
@@ -299,15 +402,15 @@ export const EmailTemplateEditor = ({ token }) => {
                     <div className="grid gap-2">
                       <div className="flex items-start gap-2">
                         <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium min-w-[60px] pt-0.5">Sujet</span>
-                        <p className="text-sm text-foreground">{tpl.subject}</p>
+                        <p className="text-sm text-foreground"><HighlightedText text={tpl.subject} /></p>
                       </div>
                       <div className="flex items-start gap-2">
                         <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium min-w-[60px] pt-0.5">Intro</span>
-                        <p className="text-sm text-muted-foreground line-clamp-2">{tpl.intro}</p>
+                        <p className="text-sm text-muted-foreground line-clamp-2"><HighlightedText text={tpl.intro} /></p>
                       </div>
                       <div className="flex items-start gap-2">
                         <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium min-w-[60px] pt-0.5">CTA</span>
-                        <Badge variant="outline" className="text-xs">{tpl.cta_text}</Badge>
+                        <Badge variant="outline" className="text-xs"><HighlightedText text={tpl.cta_text} /></Badge>
                       </div>
                     </div>
                   )}
@@ -323,9 +426,12 @@ export const EmailTemplateEditor = ({ token }) => {
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto" data-testid="template-preview-dialog">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base">
-              <Eye className="w-4 h-4 text-blue-500" /> Aperçu du template
+              <Eye className="w-4 h-4 text-blue-500" /> Aperçu du template (variables résolues)
             </DialogTitle>
           </DialogHeader>
+          <p className="text-xs text-muted-foreground -mt-2">
+            Les variables <code className="bg-muted px-1 rounded">{`{{prenom}}`}</code>, <code className="bg-muted px-1 rounded">{`{{completeness}}`}</code>, etc. sont remplacées par des valeurs d'exemple.
+          </p>
           {previewLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -349,7 +455,7 @@ export const EmailTemplateEditor = ({ token }) => {
 
       {/* New Template Dialog */}
       <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>
-        <DialogContent className="max-w-lg" data-testid="new-template-dialog">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto" data-testid="new-template-dialog">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base">
               <Plus className="w-4 h-4 text-amber-500" /> Nouveau template
@@ -366,19 +472,23 @@ export const EmailTemplateEditor = ({ token }) => {
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground">Sujet de l'email</label>
-              <Input value={newForm.subject} onChange={e => setNewForm(f => ({ ...f, subject: e.target.value }))} placeholder="Objet de l'email" className="mt-1" data-testid="new-tpl-subject" />
+              <VariableToolbar targetField="new-subject" onInsert={(v) => insertAtCursor(newSubjectRef, 'subject', setNewForm, v)} />
+              <Input ref={newSubjectRef} value={newForm.subject} onChange={e => setNewForm(f => ({ ...f, subject: e.target.value }))} placeholder="Objet de l'email" className="mt-1" data-testid="new-tpl-subject" />
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground">Texte d'introduction</label>
-              <Textarea value={newForm.intro} onChange={e => setNewForm(f => ({ ...f, intro: e.target.value }))} placeholder="Introduction du message..." className="mt-1 min-h-[60px]" data-testid="new-tpl-intro" />
+              <VariableToolbar targetField="new-intro" onInsert={(v) => insertAtCursor(newIntroRef, 'intro', setNewForm, v)} />
+              <Textarea ref={newIntroRef} value={newForm.intro} onChange={e => setNewForm(f => ({ ...f, intro: e.target.value }))} placeholder="Bonjour {{prenom}}, votre dossier est à {{completeness}}%..." className="mt-1 min-h-[60px]" data-testid="new-tpl-intro" />
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground">Texte de motivation</label>
-              <Textarea value={newForm.motivation} onChange={e => setNewForm(f => ({ ...f, motivation: e.target.value }))} placeholder="Texte de motivation..." className="mt-1 min-h-[60px]" data-testid="new-tpl-motivation" />
+              <VariableToolbar targetField="new-motivation" onInsert={(v) => insertAtCursor(newMotivationRef, 'motivation', setNewForm, v)} />
+              <Textarea ref={newMotivationRef} value={newForm.motivation} onChange={e => setNewForm(f => ({ ...f, motivation: e.target.value }))} placeholder="Documents manquants : {{documents_missing}}..." className="mt-1 min-h-[60px]" data-testid="new-tpl-motivation" />
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground">Texte du bouton CTA</label>
-              <Input value={newForm.cta_text} onChange={e => setNewForm(f => ({ ...f, cta_text: e.target.value }))} placeholder="Compléter mon dossier" className="mt-1" data-testid="new-tpl-cta" />
+              <VariableToolbar targetField="new-cta" onInsert={(v) => insertAtCursor(newCtaRef, 'cta_text', setNewForm, v)} />
+              <Input ref={newCtaRef} value={newForm.cta_text} onChange={e => setNewForm(f => ({ ...f, cta_text: e.target.value }))} placeholder="Compléter mon dossier" className="mt-1" data-testid="new-tpl-cta" />
             </div>
           </div>
           <DialogFooter>
