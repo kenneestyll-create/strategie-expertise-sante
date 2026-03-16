@@ -100,6 +100,7 @@ Exécution : `cd /app/backend && python -m pytest --cov=. --cov-report=term-miss
 - [x] Logo initiales F/S recentrées + footer logo corrigé (noir/or, plus blanc) (mars 2026)
 - [x] Témoignages clients anonymisés — 6 cartes page d'accueil + 3 cartes page À propos (mars 2026)
 - [x] Logo calligraphique — Refactorisation SVG inline (Logo.jsx), police Cormorant Garamond italic pour initiales F/S, appliqué Header + Footer (mars 2026)
+- [x] Animation shimmer doré — Reflet doré subtil au survol du logo (0.9s, hover uniquement), Header + Footer (mars 2026)
 
 ## Éléments bloqués (action utilisateur)
 1. **Budget LLM Emergent** épuisé → Profile → Universal Key → Add Balance

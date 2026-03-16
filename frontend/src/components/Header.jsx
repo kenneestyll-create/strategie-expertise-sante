@@ -78,7 +78,7 @@ export const Header = () => {
           {/* Logo */}
           <Link 
             to="/" 
-            className="flex items-center gap-0 text-foreground hover:opacity-80 transition-opacity"
+            className="logo-shimmer flex items-center gap-0 text-foreground hover:opacity-90 transition-opacity"
             data-testid="header-logo"
           >
             <LogoFull className="h-12 w-auto flex-shrink-0" />

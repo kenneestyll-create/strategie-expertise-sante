@@ -210,6 +210,40 @@ html {
     animation: shimmer 2.5s ease-in-out infinite;
 }
 
+/* ── Logo gold shimmer on hover ── */
+@keyframes logoShimmer {
+    0% { left: -100%; }
+    100% { left: 200%; }
+}
+.logo-shimmer {
+    position: relative;
+    overflow: hidden;
+}
+.logo-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(
+        105deg,
+        transparent 20%,
+        rgba(212, 175, 55, 0.12) 40%,
+        rgba(201, 168, 76, 0.22) 50%,
+        rgba(212, 175, 55, 0.12) 60%,
+        transparent 80%
+    );
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+.logo-shimmer:hover::after {
+    opacity: 1;
+    animation: logoShimmer 0.9s ease-in-out forwards;
+}
+
+
 @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-6px); }
