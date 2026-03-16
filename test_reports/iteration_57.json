@@ -1,0 +1,79 @@
+{
+  "summary": "Iteration 57: BUG FIX VERIFIED - PDF download buttons on Resources page now work correctly. Backend: 34/34 tests passed (100%). Frontend: All 6 download buttons verified working. Previously buttons showed 'Ce guide sera bientôt disponible' toast, now they correctly open PDF files via /api/resources/pdf/{guide_id}.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "tests_executed": {
+    "backend_tests": [
+      "test_guide_pdf_returns_200[guide_mp] - PASS",
+      "test_guide_pdf_returns_200[guide_expertise] - PASS",
+      "test_guide_pdf_returns_200[guide_mdph] - PASS",
+      "test_guide_pdf_returns_200[guide_recours] - PASS",
+      "test_guide_pdf_returns_200[guide_ipp] - PASS",
+      "test_guide_pdf_returns_200[guide_assurance] - PASS",
+      "test_guide_pdf_content_type[all 6 guides] - PASS - Returns application/pdf",
+      "test_guide_pdf_content_disposition[all 6 guides] - PASS - Returns attachment; filename='{guide_id}.pdf'",
+      "test_guide_pdf_size_not_empty[all 6 guides] - PASS - All PDFs > 1000 bytes",
+      "test_guide_pdf_starts_with_pdf_header[all 6 guides] - PASS - All start with %PDF",
+      "test_invalid_guide_returns_404 - PASS - Returns 404 with 'Guide non trouvé'",
+      "test_nonexistent_guide_returns_404 - PASS",
+      "test_download_creates_tracking_record - PASS",
+      "test_resource_download_tracking_endpoint - PASS"
+    ],
+    "frontend_tests": [
+      "Navigate to /ressources page - PASS",
+      "Scroll to Bibliothèque section - PASS",
+      "Verify 6 guide cards visible (data-testid: library-guide-{id}) - PASS",
+      "Verify 6 download buttons present (data-testid: download-{id}) - PASS",
+      "Click download-guide_mp - PASS - window.open() called with correct URL",
+      "Click download-guide_expertise - PASS - window.open() called with correct URL",
+      "Click download-guide_mdph - PASS - window.open() called with correct URL",
+      "Click download-guide_recours - PASS - window.open() called with correct URL",
+      "Click download-guide_ipp - PASS - window.open() called with correct URL",
+      "Click download-guide_assurance - PASS - window.open() called with correct URL",
+      "Verify NO 'bientôt disponible' toast appears - PASS"
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_pdf_guides_download.py",
+    "/app/test_reports/pytest/pytest_pdf_guides_download.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Backend GET /api/resources/pdf/{guide_id} correctly generates PDF using fpdf2 and tracks download in resource_downloads collection",
+    "Backend validates guide_id against GUIDES dict and returns 404 for invalid IDs",
+    "Backend returns proper headers: Content-Type: application/pdf, Content-Disposition: attachment",
+    "Frontend buttons now use onClick={() => window.open(`${API}/resources/pdf/${g.id}`, '_blank')} instead of toast.info()",
+    "PDF generation uses branded styling with dark header, gold accents, and ASCII-safe French text"
+  ],
+  "updated_files": ["/app/backend/tests/test_pdf_guides_download.py"],
+  "success_rate": {
+    "backend": "100% (34/34 tests passed)",
+    "frontend": "100% (11/11 steps passed)"
+  },
+  "test_credentials": "None required - public endpoints",
+  "seed_data_creation": "",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 57 verified PDF download bug fix. The 6 guide IDs are: guide_mp, guide_expertise, guide_mdph, guide_recours, guide_ipp, guide_assurance. Backend endpoint: GET /api/resources/pdf/{guide_id} (public, no auth). Frontend data-testids: library-guide-{id}, download-{id}. PDFs are generated on-the-fly using fpdf2 with branded styling.",
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  },
+  "bug_fix_verification": {
+    "bug_description": "Download buttons on Resources page showed 'Ce guide sera bientôt disponible' toast instead of downloading PDFs",
+    "fix_applied": "Created backend PDF generation using fpdf2, added GET /api/resources/pdf/{guide_id} endpoint, updated frontend buttons to use window.open()",
+    "verification_status": "CONFIRMED FIXED",
+    "affected_files": [
+      "/app/backend/utils/pdf_guides.py",
+      "/app/backend/routes/misc.py",
+      "/app/frontend/src/pages/ResourcesPage.jsx"
+    ]
+  }
+}

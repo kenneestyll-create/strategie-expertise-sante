@@ -279,6 +279,29 @@ async def track_resource_download(request: Request):
     await db.resource_downloads.insert_one({"resource_id": body.get("resource_id", ""), "resource_title": body.get("resource_title", ""), "created_at": datetime.now(timezone.utc).isoformat()})
     return {"success": True}
 
+
+@router.get("/resources/pdf/{guide_id}")
+async def download_guide_pdf(guide_id: str):
+    """Generate and serve a PDF guide."""
+    from utils.pdf_guides import generate_guide_pdf
+    pdf_bytes = generate_guide_pdf(guide_id)
+    if not pdf_bytes:
+        raise HTTPException(status_code=404, detail="Guide non trouvé")
+
+    # Track the download
+    await db.resource_downloads.insert_one({
+        "resource_id": guide_id,
+        "resource_title": guide_id,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
+    filename = f"{guide_id}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
+
 @router.get("/admin/resources/stats")
 async def get_resource_stats(admin: dict = Depends(get_current_admin)):
     pipeline = [{"$group": {"_id": "$resource_id", "title": {"$first": "$resource_title"}, "count": {"$sum": 1}}}, {"$sort": {"count": -1}}]

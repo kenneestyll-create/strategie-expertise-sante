@@ -747,9 +747,9 @@ export const ResourcesPage = () => {
                   <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
                     <span className="text-xs text-muted-foreground">PDF — {g.pages}</span>
                     <Button variant="outline" size="sm" className="gap-1.5 rounded-lg"
-                      onClick={() => { axios.post(`${API}/resources/download`, { resource_id: g.id, resource_title: g.title }).catch(() => {}); toast.info("Ce guide sera bientôt disponible."); }}
+                      onClick={() => { window.open(`${API}/resources/pdf/${g.id}`, '_blank'); }}
                       data-testid={`download-${g.id}`}>
-                      <Download className="w-3.5 h-3.5" /> Télécharger
+                      <Download className="w-3.5 h-3.5" /> Telecharger
                     </Button>
                   </div>
                 </CardContent>
