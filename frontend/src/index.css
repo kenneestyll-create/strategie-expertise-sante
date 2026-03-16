@@ -83,13 +83,16 @@ h1, h2, h3, h4, h5, h6 {
     }
 }
 
-/* Smooth scroll */
+/* Scroll — auto for route changes, smooth only for anchor links */
 html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
     overflow-x: hidden;
 }
 body {
     overflow-x: hidden;
+}
+a[href^="#"] {
+    scroll-behavior: smooth;
 }
 
 /* Link underline animation */
