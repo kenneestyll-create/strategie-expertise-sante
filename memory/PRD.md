@@ -103,6 +103,9 @@ Exécution : `cd /app/backend && python -m pytest --cov=. --cov-report=term-miss
 - [x] Animation shimmer doré — Reflet doré subtil au survol du logo (0.9s, hover uniquement), Header + Footer (mars 2026)
 - [x] FAB mobile StratégiIA — Bouton flottant noir et or (bottom-right), visible uniquement sur mobile, ouvre le modal StratégiIA via custom event (mars 2026)
 - [x] Fix débordement horizontal mobile — overflow-x:hidden sur html/body, overflow-hidden sur sections avec reveal-left/right, FAB repositionné à 24px des bords (mars 2026)
+- [x] P1 Dashboard progression client enrichi — Pie chart, barre de progression, complétude documentaire %, cartes statut documents, documents essentiels manquants avec boutons "Ajouter", 3 prochaines actions avec CTA colorés, timeline 6 étapes (mars 2026)
+- [x] P2 Score qualité dossier StrategiIA — Endpoint POST /api/strategiia/dossier-score, score /100 avec niveau, 3 barres détail (complétude/cohérence/pièces), conseils pédagogiques, affiché dans le modal avant analyse (mars 2026)
+- [x] P3 Analytique admin enrichi — Cartes utilisation services (StrategiIA/Dossier Express/Premium/Chatbot) avec compteurs mensuels, KPIs supplémentaires (dossiers actifs, documents, forum, calculatrice) (mars 2026)
 
 ## Éléments bloqués (action utilisateur)
 1. **Budget LLM Emergent** épuisé → Profile → Universal Key → Add Balance
