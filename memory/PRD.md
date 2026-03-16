@@ -97,6 +97,8 @@ Exécution : `cd /app/backend && python -m pytest --cov=. --cov-report=term-miss
 - [x] Logo bouclier — Couleur noir #1a1a1a + détails or #C9A84C, taille +30% (mars 2026)
 - [x] Scanner mobile uniquement — Masqué sur desktop (sm:hidden), visible sur mobile (mars 2026)
 - [x] Timeline "Mon parcours" — 5 étapes noir et or avec icônes, badges, victoires PTIA/ITT (mars 2026)
+- [x] Logo initiales F/S recentrées + footer logo corrigé (noir/or, plus blanc) (mars 2026)
+- [x] Témoignages clients anonymisés — 6 cartes page d'accueil + 3 cartes page À propos (mars 2026)
 
 ## Éléments bloqués (action utilisateur)
 1. **Budget LLM Emergent** épuisé → Profile → Universal Key → Add Balance
