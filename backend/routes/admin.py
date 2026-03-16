@@ -525,3 +525,25 @@ async def toggle_client_reminder_pause(request: Request, admin: dict = Depends(g
         raise HTTPException(status_code=400, detail="client_id requis")
     await db.client_users.update_one({"id": client_id}, {"$set": {"reminders_paused": paused}})
     return {"success": True, "client_id": client_id, "reminders_paused": paused}
+
+
+# ==================== CRON CONFIG ====================
+
+@router.get("/admin/reminder-cron/status")
+async def get_reminder_cron_status(admin: dict = Depends(get_current_admin)):
+    config = await db.app_config.find_one({"key": "reminder_cron"}, {"_id": 0})
+    if not config:
+        return {"enabled": False, "hour": 9, "minute": 0, "last_run": None, "last_results": None}
+    config.pop("key", None)
+    return config
+
+@router.post("/admin/reminder-cron/toggle")
+async def toggle_reminder_cron(request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    enabled = body.get("enabled", True)
+    await db.app_config.update_one(
+        {"key": "reminder_cron"},
+        {"$set": {"enabled": enabled}},
+        upsert=True
+    )
+    return {"success": True, "enabled": enabled}

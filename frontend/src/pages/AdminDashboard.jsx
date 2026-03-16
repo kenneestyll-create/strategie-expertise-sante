@@ -313,6 +313,7 @@ export const AdminDashboard = () => {
   const [inactivityReminders, setInactivityReminders] = useState({ reminders: [], total: 0, stats: {}, by_level: {} });
   const [runningReminders, setRunningReminders] = useState(false);
   const [lastReminderResults, setLastReminderResults] = useState(null);
+  const [cronStatus, setCronStatus] = useState({ enabled: true, hour: 9, minute: 0, last_run: null, last_results: null });
 
   const navigate = useNavigate();
   const { token, adminName, logout } = useAuth();
@@ -361,6 +362,7 @@ export const AdminDashboard = () => {
       axios.get(`${API}/admin/email/status`, axiosConfig).then(r => setEmailStatus(r.data)).catch(() => {});
       axios.get(`${API}/admin/completeness-notifications`, axiosConfig).then(r => setCompletenessNotifs(r.data)).catch(() => {});
       axios.get(`${API}/admin/relance-inactivite/history`, axiosConfig).then(r => setInactivityReminders(r.data)).catch(() => {});
+      axios.get(`${API}/admin/reminder-cron/status`, axiosConfig).then(r => setCronStatus(r.data)).catch(() => {});
     } catch (error) {
       console.error('Erreur:', error);
       if (error.response?.status === 401) {
@@ -1949,29 +1951,66 @@ export const AdminDashboard = () => {
                     </CardTitle>
                     <p className="text-xs text-muted-foreground mt-1">Emails envoyés aux clients inactifs (&lt; 50% complétude, aucun upload depuis 7+ jours) — J+7, J+14, J+21</p>
                   </div>
-                  <Button
-                    size="sm"
-                    className="gap-1.5"
-                    disabled={runningReminders}
-                    data-testid="run-reminders-btn"
-                    onClick={async () => {
-                      setRunningReminders(true);
-                      setLastReminderResults(null);
-                      try {
-                        const r = await axios.post(`${API}/admin/relance-inactivite/run`, {}, { headers: { Authorization: `Bearer ${adminToken}` } });
-                        setLastReminderResults(r.data.results);
-                        const h = await axios.get(`${API}/admin/relance-inactivite/history`, { headers: { Authorization: `Bearer ${adminToken}` } });
-                        setInactivityReminders(h.data);
-                      } catch {}
-                      setRunningReminders(false);
-                    }}
-                  >
-                    {runningReminders ? <><Clock className="w-3 h-3 animate-spin" /> Scan...</> : <><Send className="w-3 h-3" /> Lancer les relances</>}
-                  </Button>
+                  <div className="flex items-center gap-3">
+                    {/* Cron toggle */}
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border bg-muted/30" data-testid="cron-toggle-section">
+                      <span className="text-[10px] text-muted-foreground whitespace-nowrap">Cron {cronStatus.hour}h{String(cronStatus.minute).padStart(2,'0')}</span>
+                      <button
+                        className={`relative w-9 h-5 rounded-full transition-colors ${cronStatus.enabled ? 'bg-green-500' : 'bg-gray-300'}`}
+                        data-testid="cron-toggle-btn"
+                        onClick={async () => {
+                          const newVal = !cronStatus.enabled;
+                          try {
+                            await axios.post(`${API}/admin/reminder-cron/toggle`, { enabled: newVal }, { headers: { Authorization: `Bearer ${adminToken}` } });
+                            setCronStatus(s => ({ ...s, enabled: newVal }));
+                            toast.success(newVal ? 'Cron automatique activé' : 'Cron automatique désactivé');
+                          } catch { toast.error('Erreur'); }
+                        }}
+                      >
+                        <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${cronStatus.enabled ? 'left-[18px]' : 'left-0.5'}`} />
+                      </button>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="gap-1.5"
+                      disabled={runningReminders}
+                      data-testid="run-reminders-btn"
+                      onClick={async () => {
+                        setRunningReminders(true);
+                        setLastReminderResults(null);
+                        try {
+                          const r = await axios.post(`${API}/admin/relance-inactivite/run`, {}, { headers: { Authorization: `Bearer ${adminToken}` } });
+                          setLastReminderResults(r.data.results);
+                          const h = await axios.get(`${API}/admin/relance-inactivite/history`, { headers: { Authorization: `Bearer ${adminToken}` } });
+                          setInactivityReminders(h.data);
+                        } catch {}
+                        setRunningReminders(false);
+                      }}
+                    >
+                      {runningReminders ? <><Clock className="w-3 h-3 animate-spin" /> Scan...</> : <><Send className="w-3 h-3" /> Lancer les relances</>}
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Last run results */}
+                {/* Last cron run info */}
+                {cronStatus.last_run && (
+                  <div className="p-3 rounded-lg bg-muted/30 border flex items-center justify-between text-xs" data-testid="cron-last-run">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                      <span className="text-muted-foreground">Dernière exécution automatique :</span>
+                      <span className="font-medium">{new Date(cronStatus.last_run).toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'})}</span>
+                    </div>
+                    {cronStatus.last_results && (
+                      <div className="flex gap-3">
+                        <span>Scannés: <strong>{cronStatus.last_results.scanned}</strong></span>
+                        <span>Éligibles: <strong>{cronStatus.last_results.eligible}</strong></span>
+                        <span className="text-green-700">Envoyés: <strong>{cronStatus.last_results.sent}</strong></span>
+                        <span className="text-red-600">Échoués: <strong>{cronStatus.last_results.failed}</strong></span>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {lastReminderResults && (
                   <div className="p-3 rounded-lg bg-blue-50 border border-blue-200 text-sm" data-testid="reminder-results">
                     <p className="font-medium text-blue-800 mb-1">Résultat du scan</p>
