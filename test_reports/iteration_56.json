@@ -1,0 +1,75 @@
+{
+  "summary": "Iteration 56: Tested scheduled email campaigns feature. Backend: 15/15 tests passed (100%). Frontend: All 12 test steps passed (100%). The feature correctly allows admins to schedule campaigns with target selection, cancel scheduled campaigns, delete campaigns, and view campaign status/history in the dashboard.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "tests_executed": {
+    "backend_tests": [
+      "test_schedule_campaign_success - PASS - POST /api/admin/campaigns/schedule creates campaign with status 'scheduled'",
+      "test_schedule_campaign_with_past_date_returns_400 - PASS - Returns 400 for past dates",
+      "test_schedule_campaign_without_template_id_returns_400 - PASS - Returns 400 when missing template_id",
+      "test_schedule_campaign_with_invalid_template_returns_404 - PASS - Returns 404 for non-existent template",
+      "test_schedule_campaign_with_ab_test - PASS - Accepts ab_test_id parameter",
+      "test_schedule_campaign_requires_auth - PASS - Returns 401/403 without auth",
+      "test_list_campaigns_success - PASS - GET /api/admin/campaigns returns campaigns array",
+      "test_list_campaigns_requires_auth - PASS - Returns 401/403 without auth",
+      "test_cancel_scheduled_campaign_success - PASS - PUT /api/admin/campaigns/{id}/cancel changes status to 'cancelled'",
+      "test_cancel_non_scheduled_campaign_returns_400 - PASS - Returns 400 for already cancelled campaign",
+      "test_cancel_nonexistent_campaign_returns_404 - PASS - Returns 404 for non-existent campaign",
+      "test_delete_campaign_success - PASS - DELETE /api/admin/campaigns/{id} removes campaign",
+      "test_delete_nonexistent_campaign_returns_404 - PASS - Returns 404 for non-existent campaign",
+      "test_campaign_has_all_required_fields - PASS - Campaign contains id, template_id, template_name, template_label, scheduled_at, target, status, recipients_count, sent_count, failed_count, created_at",
+      "test_campaign_valid_statuses - PASS - Campaigns only have valid status values (scheduled, executing, sent, cancelled, failed)"
+    ],
+    "frontend_tests": [
+      "Admin login at /admin/login - PASS",
+      "Navigate to Templates tab (data-testid='tab-templates') - PASS",
+      "Verify schedule buttons on all templates (schedule-btn-rassurant, schedule-btn-incitatif, schedule-btn-urgent) - PASS - All 3 found",
+      "Click schedule button on 'Ton rassurant' - PASS",
+      "Verify schedule dialog opens (data-testid='schedule-campaign-dialog') - PASS",
+      "Verify dialog elements (date-input, time-input, target-select, confirm-schedule-btn, info-message) - PASS - All found",
+      "Verify date prefilled to tomorrow, time to 09:00 - PASS",
+      "Select 'Clients inactifs' target - PASS",
+      "Click 'Programmer' button - PASS - Dialog closed, success toast shown",
+      "Verify campaigns dashboard shows campaign with 'Programmé' status - PASS",
+      "Test cancel campaign - PASS - Confirmation dialog opened, campaign status changed to 'Annulé'",
+      "Verify previous features still work (preview, send test, edit, duplicate, delete buttons) - PASS"
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_scheduled_campaigns.py",
+    "/app/test_reports/pytest/pytest_scheduled_campaigns.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Backend POST /api/admin/campaigns/schedule validates template exists, date is in future, and optionally validates A/B test",
+    "Backend _campaign_scheduler() background task runs every 60s checking for due campaigns",
+    "Backend _execute_campaign() properly sends emails using Resend with variable resolution",
+    "Frontend openSchedule() prefills date to tomorrow and time to 09:00, fetches active A/B tests",
+    "Frontend scheduleCampaign() constructs ISO datetime and calls API, handles success/error",
+    "Frontend CampaignsDashboard component fetches campaigns, shows status badges with correct colors",
+    "Campaign status badges use correct colors: scheduled=amber, cancelled=gray, sent=green, executing=blue, failed=red",
+    "Delete button only shown for cancelled/sent/failed campaigns, cancel button only for scheduled"
+  ],
+  "updated_files": ["/app/backend/tests/test_scheduled_campaigns.py"],
+  "success_rate": {
+    "backend": "100% (15/15 tests passed)",
+    "frontend": "100% (12/12 steps passed)"
+  },
+  "test_credentials": "admin@accompagn-sante.fr / Admin2024!",
+  "seed_data_creation": "Created test campaigns during testing which were cleaned up",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 56 verified scheduled email campaigns feature. Key endpoints: POST /api/admin/campaigns/schedule (creates campaign), GET /api/admin/campaigns (lists campaigns), PUT /api/admin/campaigns/{id}/cancel (cancels), DELETE /api/admin/campaigns/{id} (deletes). Frontend data-testids: schedule-btn-{templatename}, schedule-campaign-dialog, schedule-date-input, schedule-time-input, schedule-target-select, schedule-ab-select (if active AB tests exist), confirm-schedule-btn, campaigns-dashboard, campaign-row-{id}, cancel-campaign-{id}, delete-campaign-{id}, cancel-campaign-dialog, confirm-cancel-campaign-btn. Campaign statuses: scheduled, executing, sent, cancelled, failed. The campaign scheduler background task runs every 60s checking for due campaigns.",
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": [],
+    "note": "Resend is in sandbox mode - actual campaign emails won't be delivered to non-verified addresses. This is expected behavior for testing."
+  }
+}

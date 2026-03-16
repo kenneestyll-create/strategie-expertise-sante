@@ -1148,3 +1148,90 @@ async def get_template_test_history(template_id: str, admin: dict = Depends(get_
         {"template_id": template_id}, {"_id": 0}
     ).sort("sent_at", -1).limit(10).to_list(10)
     return {"history": history, "total": len(history)}
+
+
+# ==================== SCHEDULED CAMPAIGNS ====================
+
+@router.post("/admin/campaigns/schedule")
+async def schedule_campaign(request: Request, admin: dict = Depends(get_current_admin)):
+    """Schedule a campaign to send a template at a specific date/time."""
+    body = await request.json()
+    template_id = body.get("template_id")
+    scheduled_at = body.get("scheduled_at")
+    target = body.get("target", "inactive_clients")
+    ab_test_id = body.get("ab_test_id")
+
+    if not template_id or not scheduled_at:
+        raise HTTPException(status_code=400, detail="template_id et scheduled_at requis")
+
+    # Validate template exists
+    tpl = await db.email_templates.find_one({"id": template_id}, {"_id": 0})
+    if not tpl:
+        raise HTTPException(status_code=404, detail="Template non trouvé")
+
+    # Validate scheduled_at is in the future
+    try:
+        sched_dt = datetime.fromisoformat(scheduled_at.replace("Z", "+00:00"))
+    except (ValueError, AttributeError):
+        raise HTTPException(status_code=400, detail="Format de date invalide")
+
+    if sched_dt <= datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="La date doit être dans le futur")
+
+    # Validate AB test if provided
+    if ab_test_id:
+        ab = await db.ab_tests.find_one({"id": ab_test_id}, {"_id": 0})
+        if not ab:
+            raise HTTPException(status_code=404, detail="Test A/B non trouvé")
+
+    campaign = {
+        "id": str(uuid.uuid4()),
+        "template_id": template_id,
+        "template_name": tpl.get("name", ""),
+        "template_label": tpl.get("label", tpl.get("name", "")),
+        "scheduled_at": sched_dt.isoformat(),
+        "target": target,
+        "ab_test_id": ab_test_id,
+        "status": "scheduled",
+        "recipients_count": 0,
+        "sent_count": 0,
+        "failed_count": 0,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "executed_at": None,
+        "error": None,
+    }
+    await db.scheduled_campaigns.insert_one(campaign)
+    campaign.pop("_id", None)
+    return campaign
+
+
+@router.get("/admin/campaigns")
+async def list_campaigns(admin: dict = Depends(get_current_admin)):
+    """List all scheduled campaigns."""
+    campaigns = await db.scheduled_campaigns.find({}, {"_id": 0}).sort("scheduled_at", -1).to_list(50)
+    return {"campaigns": campaigns}
+
+
+@router.put("/admin/campaigns/{campaign_id}/cancel")
+async def cancel_campaign(campaign_id: str, admin: dict = Depends(get_current_admin)):
+    """Cancel a scheduled campaign."""
+    campaign = await db.scheduled_campaigns.find_one({"id": campaign_id}, {"_id": 0})
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campagne non trouvée")
+    if campaign["status"] != "scheduled":
+        raise HTTPException(status_code=400, detail="Seule une campagne programmée peut être annulée")
+
+    await db.scheduled_campaigns.update_one(
+        {"id": campaign_id},
+        {"$set": {"status": "cancelled", "executed_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    return {"success": True, "message": "Campagne annulée"}
+
+
+@router.delete("/admin/campaigns/{campaign_id}")
+async def delete_campaign(campaign_id: str, admin: dict = Depends(get_current_admin)):
+    """Delete a campaign record."""
+    result = await db.scheduled_campaigns.delete_one({"id": campaign_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Campagne non trouvée")
+    return {"success": True}

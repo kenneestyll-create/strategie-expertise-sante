@@ -7,9 +7,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import {
-  FileText, Plus, Copy, Trash2, Eye, Loader2, Pencil, X, Check, RefreshCw, Code, Send, Clock
+  FileText, Plus, Copy, Trash2, Eye, Loader2, Pencil, X, Check, RefreshCw, Code, Send, Clock, CalendarClock
 } from 'lucide-react';
 import axios from 'axios';
+import { CampaignsDashboard } from './CampaignsDashboard';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -92,6 +94,11 @@ export const EmailTemplateEditor = ({ token }) => {
   const [sending, setSending] = useState(false);
   const [testHistory, setTestHistory] = useState([]);
   const [testHistoryMap, setTestHistoryMap] = useState({});
+  const [scheduleTpl, setScheduleTpl] = useState(null);
+  const [scheduleForm, setScheduleForm] = useState({ date: '', time: '09:00', target: 'inactive_clients', ab_test_id: '' });
+  const [scheduling, setScheduling] = useState(false);
+  const [abTests, setAbTests] = useState([]);
+  const [campaignsKey, setCampaignsKey] = useState(0);
 
   const subjectRef = useRef(null);
   const introRef = useRef(null);
@@ -305,6 +312,41 @@ export const EmailTemplateEditor = ({ token }) => {
     }
   };
 
+  const openSchedule = async (tpl) => {
+    setScheduleTpl(tpl);
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    setScheduleForm({ date: tomorrow.toISOString().split('T')[0], time: '09:00', target: 'inactive_clients', ab_test_id: '' });
+    try {
+      const res = await axios.get(`${API}/admin/ab-tests`, { headers });
+      setAbTests((res.data.tests || []).filter(t => t.status === 'active'));
+    } catch { setAbTests([]); }
+  };
+
+  const scheduleCampaign = async () => {
+    if (!scheduleTpl || !scheduleForm.date || !scheduleForm.time) {
+      toast.error('Date et heure requises');
+      return;
+    }
+    setScheduling(true);
+    try {
+      const scheduled_at = new Date(`${scheduleForm.date}T${scheduleForm.time}:00`).toISOString();
+      await axios.post(`${API}/admin/campaigns/schedule`, {
+        template_id: scheduleTpl.id,
+        scheduled_at,
+        target: scheduleForm.target,
+        ab_test_id: scheduleForm.ab_test_id || null,
+      }, { headers });
+      toast.success('Campagne programmée avec succès');
+      setScheduleTpl(null);
+      setCampaignsKey(k => k + 1);
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Erreur lors de la programmation');
+    } finally {
+      setScheduling(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16" data-testid="templates-loading">
@@ -418,6 +460,9 @@ export const EmailTemplateEditor = ({ token }) => {
                           </Button>
                           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => openSendTest(tpl)} data-testid={`sendtest-btn-${tpl.name}`} title="Envoyer un email de test">
                             <Send className="w-3.5 h-3.5 text-emerald-500" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => openSchedule(tpl)} data-testid={`schedule-btn-${tpl.name}`} title="Programmer une campagne">
+                            <CalendarClock className="w-3.5 h-3.5 text-violet-500" />
                           </Button>
                           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => startEdit(tpl)} data-testid={`edit-btn-${tpl.name}`}>
                             <Pencil className="w-3.5 h-3.5 text-amber-500" />
@@ -671,6 +716,90 @@ export const EmailTemplateEditor = ({ token }) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Schedule Campaign Dialog */}
+      <Dialog open={!!scheduleTpl} onOpenChange={(o) => { if (!o) setScheduleTpl(null); }}>
+        <DialogContent className="max-w-md" data-testid="schedule-campaign-dialog">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <CalendarClock className="w-4 h-4 text-violet-500" /> Programmer une campagne
+            </DialogTitle>
+          </DialogHeader>
+          {scheduleTpl && (
+            <div className="grid gap-3 py-1">
+              <p className="text-xs text-muted-foreground">
+                Template : <span className="font-medium text-foreground">{scheduleTpl.label}</span>
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Date</label>
+                  <Input
+                    type="date"
+                    value={scheduleForm.date}
+                    onChange={e => setScheduleForm(f => ({ ...f, date: e.target.value }))}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="mt-1"
+                    data-testid="schedule-date-input"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Heure</label>
+                  <Input
+                    type="time"
+                    value={scheduleForm.time}
+                    onChange={e => setScheduleForm(f => ({ ...f, time: e.target.value }))}
+                    className="mt-1"
+                    data-testid="schedule-time-input"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Cible</label>
+                <Select value={scheduleForm.target} onValueChange={v => setScheduleForm(f => ({ ...f, target: v }))}>
+                  <SelectTrigger className="mt-1" data-testid="schedule-target-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="inactive_clients">Clients inactifs (+7 jours)</SelectItem>
+                    <SelectItem value="all_clients">Tous les clients</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {abTests.length > 0 && (
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Test A/B (optionnel)</label>
+                  <Select value={scheduleForm.ab_test_id || 'none'} onValueChange={v => setScheduleForm(f => ({ ...f, ab_test_id: v === 'none' ? '' : v }))}>
+                    <SelectTrigger className="mt-1" data-testid="schedule-ab-select">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Sans A/B testing</SelectItem>
+                      {abTests.map(t => (
+                        <SelectItem key={t.id} value={t.id}>{t.name} ({t.variants?.length} variantes)</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              <div className="p-2.5 rounded-md bg-violet-50 border border-violet-200">
+                <p className="text-[11px] text-violet-700">
+                  La campagne sera envoyée automatiquement à la date et heure indiquées. Les variables dynamiques seront résolues pour chaque client.
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setScheduleTpl(null)}>Annuler</Button>
+            <Button className="gap-1.5 bg-violet-600 hover:bg-violet-700" onClick={scheduleCampaign} disabled={scheduling} data-testid="confirm-schedule-btn">
+              {scheduling ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CalendarClock className="w-3.5 h-3.5" />}
+              Programmer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Campaigns Dashboard */}
+      <CampaignsDashboard token={token} key={campaignsKey} />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null); }}>

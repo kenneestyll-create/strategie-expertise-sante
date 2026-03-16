@@ -5,7 +5,9 @@ from fastapi.responses import Response, RedirectResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 import asyncio
-from datetime import datetime, timezone, time as dtime
+import os
+import uuid
+from datetime import datetime, timezone, timedelta, time as dtime
 
 from config import client, db, logger, SITE_URL
 from routes import all_routers
@@ -124,6 +126,181 @@ async def startup_db_client():
 
     # Start the daily reminder scheduler
     asyncio.create_task(_daily_reminder_scheduler())
+
+    # Start the campaign scheduler (checks every minute)
+    asyncio.create_task(_campaign_scheduler())
+
+
+async def _campaign_scheduler():
+    """Background task that checks for scheduled campaigns to execute."""
+    logger.info("Campaign scheduler started")
+    while True:
+        try:
+            now = datetime.now(timezone.utc)
+            # Find campaigns that are due
+            due_campaigns = await db.scheduled_campaigns.find({
+                "status": "scheduled",
+                "scheduled_at": {"$lte": now.isoformat()}
+            }, {"_id": 0}).to_list(10)
+
+            for campaign in due_campaigns:
+                await _execute_campaign(campaign)
+
+            await asyncio.sleep(60)  # Check every minute
+
+        except Exception as e:
+            logger.error(f"Campaign scheduler error: {e}")
+            await asyncio.sleep(120)
+
+
+async def _execute_campaign(campaign: dict):
+    """Execute a scheduled campaign: send the template to target clients."""
+    from utils.email import resolve_template_variables, build_missing_docs_html, SAMPLE_CONTEXT
+    from config import RESEND_AVAILABLE, SENDER_EMAIL
+
+    campaign_id = campaign["id"]
+    template_id = campaign["template_id"]
+    target = campaign.get("target", "inactive_clients")
+    ab_test_id = campaign.get("ab_test_id")
+
+    logger.info(f"Executing campaign {campaign_id} (template={campaign.get('template_name')})")
+
+    # Mark as executing
+    await db.scheduled_campaigns.update_one(
+        {"id": campaign_id}, {"$set": {"status": "executing"}}
+    )
+
+    # Load template
+    tpl = await db.email_templates.find_one({"id": template_id}, {"_id": 0})
+    if not tpl:
+        await db.scheduled_campaigns.update_one(
+            {"id": campaign_id},
+            {"$set": {"status": "failed", "error": "Template introuvable", "executed_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        return
+
+    # Load AB test variants if applicable
+    ab_variants = []
+    if ab_test_id:
+        ab_test = await db.ab_tests.find_one({"id": ab_test_id}, {"_id": 0})
+        if ab_test:
+            ab_variants = ab_test.get("variants", [])
+
+    # Find target clients
+    query = {}
+    if target == "inactive_clients":
+        cutoff = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+        query = {"last_upload": {"$lt": cutoff}}
+    # For "all_clients", no filter
+
+    clients = await db.client_cases.find(query, {"_id": 0}).to_list(500)
+    recipients_count = len(clients)
+    sent_count = 0
+    failed_count = 0
+    site_url = os.environ.get("FRONTEND_URL", SITE_URL)
+
+    for i, client_doc in enumerate(clients):
+        try:
+            email = client_doc.get("email", "")
+            if not email:
+                continue
+
+            prenom = client_doc.get("prenom", client_doc.get("nom", "Client"))
+            nom = client_doc.get("nom", "")
+            comp_pct = client_doc.get("completeness_pct", 0)
+            missing = client_doc.get("missing_docs", [])
+
+            # Choose template content (AB variant or main template)
+            if ab_variants and len(ab_variants) > 1:
+                variant = ab_variants[i % len(ab_variants)]
+                content = {
+                    "subject": variant.get("subject", tpl.get("subject", "")),
+                    "intro": variant.get("intro", tpl.get("intro", "")),
+                    "motivation": variant.get("motivation", tpl.get("motivation", "")),
+                    "cta_text": variant.get("cta_text", tpl.get("cta_text", "Compléter mon dossier")),
+                }
+            else:
+                content = tpl
+
+            # Resolve variables
+            ctx = {
+                "prenom": prenom,
+                "nom": nom,
+                "completeness": str(comp_pct),
+                "documents_missing": build_missing_docs_html(missing),
+                "date_inscription": client_doc.get("created_at", "")[:10] if client_doc.get("created_at") else "",
+            }
+
+            subject = resolve_template_variables(content.get("subject", ""), ctx)
+            intro = resolve_template_variables(content.get("intro", ""), ctx)
+            motivation = resolve_template_variables(content.get("motivation", ""), ctx)
+            cta_text = resolve_template_variables(content.get("cta_text", "Compléter mon dossier"), ctx)
+
+            record_id = str(uuid.uuid4())
+
+            html = f"""
+            <html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:0;background:#f5f5f5;">
+            <div style="background:#1a1a2e;color:#fff;padding:24px;text-align:center;">
+                <h1 style="margin:0;color:#d4a44a;font-size:20px;">Stratégie &amp; Expertise Santé</h1>
+            </div>
+            <div style="background:#FFFFFF;padding:24px;border:1px solid #E5E0D6;">
+                <p style="font-size:16px;">Bonjour <strong>{prenom}</strong>,</p>
+                <p>{intro}</p>
+                <div style="background:#F0F7F0;padding:16px;border-radius:8px;text-align:center;margin:20px 0;">
+                    <p style="margin:0;font-size:36px;font-weight:bold;color:#f59e0b;">{comp_pct}%</p>
+                    <p style="margin:4px 0 0;color:#666;font-size:13px;">de complétude</p>
+                </div>
+                <p style="color:#555;font-size:14px;">{motivation}</p>
+                <div style="text-align:center;margin:24px 0;">
+                    <a href="{site_url}/api/track/click/{record_id}"
+                       style="background:#1a1a2e;color:#d4a44a;padding:14px 28px;border-radius:6px;text-decoration:none;display:inline-block;font-weight:600;font-size:14px;">
+                        {cta_text}</a>
+                </div>
+            </div>
+            <img src="{site_url}/api/track/open/{record_id}" width="1" height="1" style="display:none;" alt="" />
+            </body></html>
+            """
+
+            if RESEND_AVAILABLE and os.environ.get("RESEND_API_KEY"):
+                import resend
+                resend.api_key = os.environ.get("RESEND_API_KEY", "")
+                await asyncio.to_thread(resend.Emails.send, {
+                    "from": SENDER_EMAIL,
+                    "to": [email],
+                    "subject": subject,
+                    "html": html
+                })
+
+            # Track as inactivity reminder for KPI tracking
+            await db.inactivity_reminders.insert_one({
+                "id": record_id,
+                "client_id": client_doc.get("client_id", ""),
+                "client_email": email,
+                "campaign_id": campaign_id,
+                "ab_test_id": ab_test_id if ab_variants else None,
+                "ab_variant": ab_variants[i % len(ab_variants)]["name"] if ab_variants else None,
+                "level": 0,
+                "status": "sent",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            })
+            sent_count += 1
+
+        except Exception as e:
+            failed_count += 1
+            logger.error(f"Campaign {campaign_id} send error for client: {e}")
+
+    # Update campaign status
+    await db.scheduled_campaigns.update_one(
+        {"id": campaign_id},
+        {"$set": {
+            "status": "sent",
+            "recipients_count": recipients_count,
+            "sent_count": sent_count,
+            "failed_count": failed_count,
+            "executed_at": datetime.now(timezone.utc).isoformat(),
+        }}
+    )
+    logger.info(f"Campaign {campaign_id} completed: {sent_count}/{recipients_count} sent")
 
 
 async def _daily_reminder_scheduler():
