@@ -29,28 +29,33 @@ Application web complète en français pour fournir des conseils sur les maladie
 - Alertes de performance configurables
 - Tests A/B des emails
 
-### Éditeur de templates email (Complété - Feb 2026)
+### Éditeur de templates email (Complété)
 - Interface visuelle dans l'onglet "Templates" admin
 - CRUD complet (créer, modifier, dupliquer, supprimer)
 - Aperçu live du HTML de l'email
 - Toggle statut actif/brouillon
 - 3 templates par défaut : rassurant, incitatif, urgent
-- Composant séparé : `EmailTemplateEditor.jsx`
 
-### Variables dynamiques pour emails (Complété - Feb 2026)
+### Variables dynamiques pour emails (Complété)
 - 5 variables : `{{prenom}}`, `{{nom}}`, `{{completeness}}`, `{{documents_missing}}`, `{{date_inscription}}`
-- Barre d'insertion cliquable au-dessus de chaque champ texte
-- Coloration syntaxique en mode lecture (badges colorés)
+- Barre d'insertion cliquable + coloration syntaxique
 - Aperçu avec résolution automatique des variables
 - Backend : `resolve_template_variables()` + endpoint `/api/admin/email-templates/variables`
 
-### Mode test email (Complété - Feb 2026)
-- Bouton "Envoyer un test" (icône Send verte) sur chaque template
-- Dialog avec : email destinataire, valeurs éditables pour chaque variable
-- Avertissement sandbox Resend visible dans le dialog
-- Email de test préfixé `[TEST]` + bandeau "EMAIL DE TEST" dans le HTML
-- Aucune trace dans les KPIs/tracking
+### Mode test email (Complété)
+- Bouton "Envoyer un test" sur chaque template
+- Dialog avec email destinataire + valeurs éditables des variables
+- Email préfixé `[TEST]` + bandeau "EMAIL DE TEST"
 - Endpoint : `POST /api/admin/email-templates/send-test`
+
+### Historique des tests email (Complété - Feb 2026)
+- Chaque envoi de test enregistré dans `email_test_history` (template_id, email, statut, date, variables utilisées)
+- Indicateur visuel sur chaque carte template : "Test il y a Xh → email@..." ou "Jamais testé"
+- Section "Derniers tests envoyés" dans le dialog (5 derniers, défilable)
+- Points colorés : vert = envoyé, rouge = échec
+- Dates relatives en français (à l'instant, il y a Xmin, Xh, Xj)
+- Endpoint : `GET /api/admin/email-templates/{id}/test-history`
+- Rafraîchissement automatique après chaque envoi
 
 ## Tâches en attente (bloquées)
 - **HubSpot (P2):** En attente du HUBSPOT_PORTAL_ID utilisateur
@@ -59,15 +64,19 @@ Application web complète en français pour fournir des conseils sur les maladie
 
 ## Backlog / Améliorations futures
 - Refactoring AdminDashboard.jsx (fichier volumineux, ~2700 lignes)
-- Intégration complète templates ↔ A/B testing (utiliser les templates créés comme variantes)
+- Intégration complète templates ↔ A/B testing
 - Statistiques d'utilisation des templates par email envoyé
 
 ## Fichiers clés
+- `/app/frontend/src/components/EmailTemplateEditor.jsx` — Éditeur de templates complet
 - `/app/frontend/src/pages/AdminDashboard.jsx` — Dashboard admin principal
-- `/app/frontend/src/components/EmailTemplateEditor.jsx` — Éditeur de templates + variables + test
 - `/app/backend/routes/admin.py` — Endpoints admin
 - `/app/backend/utils/email.py` — Logique d'envoi, variables, résolution
 - `/app/backend/server.py` — Scheduler, tracking
+
+## Collections MongoDB
+- `email_templates` — Templates email (name, label, subject, intro, motivation, cta_text, status)
+- `email_test_history` — Historique des tests (template_id, template_name, email, subject, variables_used, status, error, sent_at)
 
 ## Credentials de test
 - Admin: `admin@accompagn-sante.fr` / `Admin2024!`
