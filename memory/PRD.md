@@ -94,6 +94,9 @@ Exécution : `cd /app/backend && python -m pytest --cov=. --cov-report=term-miss
   - Page À propos : blockquote avec guillemets dorés, fond noir, bordure #D4AF37
   - Page d'accueil : section "Le mot du fondateur" avec icône guillemet doré
   - Typographie Playfair Display serif italique, signature "FONDATEUR" en or
+- [x] Logo bouclier — Couleur noir #1a1a1a + détails or #C9A84C, taille +30% (mars 2026)
+- [x] Scanner mobile uniquement — Masqué sur desktop (sm:hidden), visible sur mobile (mars 2026)
+- [x] Timeline "Mon parcours" — 5 étapes noir et or avec icônes, badges, victoires PTIA/ITT (mars 2026)
 
 ## Éléments bloqués (action utilisateur)
 1. **Budget LLM Emergent** épuisé → Profile → Universal Key → Add Balance
