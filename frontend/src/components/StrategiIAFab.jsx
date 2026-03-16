@@ -5,8 +5,8 @@ export const StrategiIAFab = () => (
     onClick={() => window.dispatchEvent(new Event('strategiia:open'))}
     className="strategiia-fab lg:hidden fixed z-40 flex items-center gap-2 px-4 py-3 rounded-full shadow-lg border border-[#C9A84C]/30 transition-all active:scale-95"
     style={{
-      bottom: '5rem',
-      right: '1rem',
+      bottom: '5.5rem',
+      right: '1.5rem',
       background: 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)',
     }}
     data-testid="strategiia-fab"

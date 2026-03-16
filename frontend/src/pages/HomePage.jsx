@@ -386,7 +386,7 @@ export const HomePage = () => {
       </section>
 
       {/* Approche Innovante Section */}
-      <section className="section-padding bg-accent/5">
+      <section className="section-padding bg-accent/5 overflow-hidden">
         <div className="max-w-7xl mx-auto" ref={innovationRef}>
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="reveal-left">
@@ -437,7 +437,7 @@ export const HomePage = () => {
       </section>
 
       {/* Mission Section */}
-      <section className="section-padding bg-card">
+      <section className="section-padding bg-card overflow-hidden">
         <div className="max-w-7xl mx-auto" ref={missionRef}>
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div className="reveal-left">
@@ -550,7 +550,7 @@ export const HomePage = () => {
       </section>
 
       {/* Réseau Partenaires Section */}
-      <section className="section-padding bg-secondary">
+      <section className="section-padding bg-secondary overflow-hidden">
         <div className="max-w-7xl mx-auto" ref={reseauRef}>
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="reveal-left">

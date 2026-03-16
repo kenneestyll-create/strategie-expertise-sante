@@ -102,6 +102,7 @@ Exécution : `cd /app/backend && python -m pytest --cov=. --cov-report=term-miss
 - [x] Logo calligraphique — Refactorisation SVG inline (Logo.jsx), police Cormorant Garamond italic pour initiales F/S, appliqué Header + Footer (mars 2026)
 - [x] Animation shimmer doré — Reflet doré subtil au survol du logo (0.9s, hover uniquement), Header + Footer (mars 2026)
 - [x] FAB mobile StratégiIA — Bouton flottant noir et or (bottom-right), visible uniquement sur mobile, ouvre le modal StratégiIA via custom event (mars 2026)
+- [x] Fix débordement horizontal mobile — overflow-x:hidden sur html/body, overflow-hidden sur sections avec reveal-left/right, FAB repositionné à 24px des bords (mars 2026)
 
 ## Éléments bloqués (action utilisateur)
 1. **Budget LLM Emergent** épuisé → Profile → Universal Key → Add Balance
