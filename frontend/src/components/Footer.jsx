@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Mail, Phone, Gift } from 'lucide-react';
+import { LogoFull } from '@/components/Logo';
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -11,11 +12,7 @@ export const Footer = () => {
           {/* Brand */}
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center gap-0 mb-4">
-              <img 
-                src="/logo-footer.svg" 
-                alt="Stratégie & Expertise Santé — Pionnier en France" 
-                className="h-10 w-auto"
-              />
+              <LogoFull className="h-10 w-auto" textColor="#ffffff" />
             </Link>
             <p className="text-primary-foreground/70 text-sm leading-relaxed max-w-md">
               Conseil et accompagnement pour les victimes de maladies professionnelles, 

@@ -4,6 +4,7 @@ import { Menu, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { GlobalSearch } from '@/components/GlobalSearch';
 import { StrategiIA } from '@/components/StrategiIA';
+import { LogoFull } from '@/components/Logo';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -80,11 +81,7 @@ export const Header = () => {
             className="flex items-center gap-0 text-foreground hover:opacity-80 transition-opacity"
             data-testid="header-logo"
           >
-            <img 
-              src="/logo.svg" 
-              alt="Stratégie & Expertise Santé — Pionnier en France" 
-              className="h-12 w-auto flex-shrink-0"
-            />
+            <LogoFull className="h-12 w-auto flex-shrink-0" />
           </Link>
 
           {/* Desktop Navigation */}
