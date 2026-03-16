@@ -1,0 +1,77 @@
+{
+  "summary": "Iteration 55: Test email history tracking feature. Backend: 13/13 tests passed (100%). Frontend: All 11 test steps passed (100%). The feature correctly tracks test email history per template, displays 'Derniers tests envoyés' section in dialog, and shows last test indicators on template cards.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Send Test Email Dialog",
+        "issues": ["Console warning: DialogContent missing aria-describedby attribute (accessibility warning only, does not affect functionality)"]
+      }
+    ]
+  },
+  "tests_executed": {
+    "backend_tests": [
+      "test_get_test_history_endpoint_exists - PASS - GET /api/admin/email-templates/{id}/test-history returns 200",
+      "test_get_test_history_returns_proper_structure - PASS - Returns {history: array}",
+      "test_get_test_history_for_template_with_no_history - PASS - Returns empty array for templates with no tests",
+      "test_get_test_history_unauthenticated_returns_error - PASS - Returns 401/403 without auth",
+      "test_history_record_has_required_fields - PASS - Records have id, email, status, sent_at",
+      "test_history_record_has_template_info - PASS - Records have template_id",
+      "test_history_record_has_variables_used - PASS - Records have variables_used object",
+      "test_send_test_saves_to_history - PASS - POST /api/admin/email-templates/send-test saves to email_test_history",
+      "test_history_is_sorted_by_sent_at_desc - PASS - Most recent first",
+      "test_history_limited_to_10_records - PASS - Returns max 10 records",
+      "test_history_status_is_sent_or_failed - PASS - Status is sent/failed/pending",
+      "test_rassurant_has_history - PASS - Rassurant template has test history",
+      "test_rassurant_history_contains_test_example_email - PASS - History contains test emails"
+    ],
+    "frontend_tests": [
+      "Admin login at /admin/login - PASS",
+      "Navigate to Templates tab (data-testid='tab-templates') - PASS",
+      "Verify 'Ton rassurant' shows last test indicator (data-testid='last-test-rassurant') - PASS - Shows 'Test il y a 2 min → test@example.com'",
+      "Verify 'Ton incitatif' shows last test indicator (data-testid='last-test-incitatif') - PASS - Shows test email",
+      "Verify 'Ton urgent' shows 'Jamais testé' (data-testid='no-test-urgent') - PASS",
+      "Click send test button on 'Ton incitatif' (data-testid='sendtest-btn-incitatif') - PASS",
+      "Verify send test dialog opens (data-testid='send-test-dialog') - PASS",
+      "Verify test history section (data-testid='test-history-section') shows existing history - PASS",
+      "Fill email input and click send test button - PASS - Sandbox restriction toast shown (expected)",
+      "Verify 'Derniers tests envoyés' section shows new entry after send - PASS - 2 history items shown",
+      "Close dialog and verify card shows updated last test indicator - PASS"
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_email_history.py",
+    "/app/test_reports/pytest/pytest_email_history.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Backend correctly saves test email history to email_test_history collection with all required fields",
+    "GET /api/admin/email-templates/{id}/test-history returns sorted (DESC by sent_at), limited to 10 records",
+    "Frontend fetches testHistoryMap for all templates on load to display last test indicators",
+    "Frontend openSendTest() fetches specific template history when opening dialog",
+    "Frontend sendTestEmail() refreshes history after sending and updates testHistoryMap",
+    "History section correctly shows colored dots (green=sent, red=failed), email, and relative time",
+    "formatTimeAgo() correctly converts ISO dates to French relative time strings",
+    "Card indicators correctly show 'Test [time] → [email]' or 'Jamais testé' based on testHistoryMap"
+  ],
+  "updated_files": ["/app/backend/tests/test_email_history.py"],
+  "success_rate": {
+    "backend": "100% (13/13 tests passed)",
+    "frontend": "100% (11/11 steps passed)"
+  },
+  "test_credentials": "admin@accompagn-sante.fr / Admin2024!",
+  "seed_data_creation": "Used existing templates (rassurant, incitatif, urgent) and created test history entries during testing",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 55 verified test email history tracking feature. Key endpoints: GET /api/admin/email-templates/{id}/test-history returns {history: [{id, template_id, template_name, email, subject, variables_used, status, error, sent_at}], total}. POST /api/admin/email-templates/send-test saves to email_test_history collection. Frontend data-testids: last-test-{name}, no-test-{name} for card indicators; test-history-section, test-history-item-{n} for dialog history display. History is sorted by sent_at DESC, limited to 10 records. Resend sandbox mode causes status='failed' for non-verified addresses - this is EXPECTED BEHAVIOR.",
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": [],
+    "note": "Resend is in sandbox mode - test emails to non-verified addresses return status='failed' but history is still recorded. This is expected behavior."
+  }
+}

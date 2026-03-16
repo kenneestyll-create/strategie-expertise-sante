@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import {
-  FileText, Plus, Copy, Trash2, Eye, Loader2, Pencil, X, Check, RefreshCw, Code, Send
+  FileText, Plus, Copy, Trash2, Eye, Loader2, Pencil, X, Check, RefreshCw, Code, Send, Clock
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -61,6 +61,18 @@ const HighlightedText = ({ text }) => {
   );
 };
 
+const formatTimeAgo = (isoDate) => {
+  if (!isoDate) return '';
+  const diff = Date.now() - new Date(isoDate).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "à l'instant";
+  if (mins < 60) return `il y a ${mins} min`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `il y a ${hrs}h`;
+  const days = Math.floor(hrs / 24);
+  return `il y a ${days}j`;
+};
+
 export const EmailTemplateEditor = ({ token }) => {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -78,6 +90,8 @@ export const EmailTemplateEditor = ({ token }) => {
   const [sendTestTpl, setSendTestTpl] = useState(null);
   const [testForm, setTestForm] = useState({ email: '', prenom: 'Marie', nom: 'Dupont', completeness: '42', documents_missing: 'Attestation employeur, Certificat médical', date_inscription: '15/01/2026' });
   const [sending, setSending] = useState(false);
+  const [testHistory, setTestHistory] = useState([]);
+  const [testHistoryMap, setTestHistoryMap] = useState({});
 
   const subjectRef = useRef(null);
   const introRef = useRef(null);
@@ -94,7 +108,19 @@ export const EmailTemplateEditor = ({ token }) => {
     setLoading(true);
     try {
       const res = await axios.get(`${API}/admin/email-templates`, { headers });
-      setTemplates(res.data.templates || []);
+      const tpls = res.data.templates || [];
+      setTemplates(tpls);
+      // Fetch last test for each template
+      const histMap = {};
+      await Promise.all(tpls.map(async (t) => {
+        try {
+          const hRes = await axios.get(`${API}/admin/email-templates/${t.id}/test-history`, { headers });
+          if (hRes.data.history?.length > 0) {
+            histMap[t.id] = hRes.data.history[0];
+          }
+        } catch { /* ignore */ }
+      }));
+      setTestHistoryMap(histMap);
     } catch {
       toast.error('Erreur lors du chargement des templates');
     } finally {
@@ -231,9 +257,14 @@ export const EmailTemplateEditor = ({ token }) => {
     }
   };
 
-  const openSendTest = (tpl) => {
+  const openSendTest = async (tpl) => {
     setSendTestTpl(tpl);
     setTestForm(f => ({ ...f, email: f.email || '' }));
+    setTestHistory([]);
+    try {
+      const res = await axios.get(`${API}/admin/email-templates/${tpl.id}/test-history`, { headers });
+      setTestHistory(res.data.history || []);
+    } catch { /* ignore */ }
   };
 
   const sendTestEmail = async () => {
@@ -245,6 +276,8 @@ export const EmailTemplateEditor = ({ token }) => {
     setSending(true);
     try {
       const res = await axios.post(`${API}/admin/email-templates/send-test`, {
+        template_id: sendTestTpl.id,
+        template_name: sendTestTpl.name,
         email: testForm.email,
         subject: sendTestTpl.subject,
         intro: sendTestTpl.intro,
@@ -261,6 +294,10 @@ export const EmailTemplateEditor = ({ token }) => {
       } else {
         toast.error(res.data.message || "Erreur lors de l'envoi");
       }
+      // Refresh history
+      const hRes = await axios.get(`${API}/admin/email-templates/${sendTestTpl.id}/test-history`, { headers });
+      setTestHistory(hRes.data.history || []);
+      setTestHistoryMap(m => ({ ...m, [sendTestTpl.id]: hRes.data.history?.[0] }));
     } catch (err) {
       toast.error(err.response?.data?.detail || "Erreur lors de l'envoi du test");
     } finally {
@@ -354,6 +391,14 @@ export const EmailTemplateEditor = ({ token }) => {
                       >
                         {tpl.status === 'active' ? 'Actif' : 'Brouillon'}
                       </Badge>
+                      {testHistoryMap[tpl.id] ? (
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-1" data-testid={`last-test-${tpl.name}`}>
+                          <Clock className="w-3 h-3" />
+                          Test {formatTimeAgo(testHistoryMap[tpl.id].sent_at)} → {testHistoryMap[tpl.id].email}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-muted-foreground/50 italic" data-testid={`no-test-${tpl.name}`}>Jamais testé</span>
+                      )}
                     </div>
                     <div className="flex items-center gap-1">
                       {isEditing ? (
@@ -596,6 +641,25 @@ export const EmailTemplateEditor = ({ token }) => {
                   <Input value={testForm.documents_missing} onChange={e => setTestForm(f => ({ ...f, documents_missing: e.target.value }))} className="h-7 text-xs mt-0.5" data-testid="test-var-docs" />
                 </div>
               </div>
+              {/* Test History */}
+              {testHistory.length > 0 && (
+                <div className="border rounded-md p-3 space-y-2" data-testid="test-history-section">
+                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold flex items-center gap-1">
+                    <Clock className="w-3 h-3" /> Derniers tests envoyés
+                  </p>
+                  <div className="space-y-1.5 max-h-[120px] overflow-y-auto">
+                    {testHistory.slice(0, 5).map((h, i) => (
+                      <div key={h.id || i} className="flex items-center justify-between text-[11px] py-1 px-2 rounded bg-muted/40" data-testid={`test-history-item-${i}`}>
+                        <div className="flex items-center gap-2">
+                          <span className={`w-1.5 h-1.5 rounded-full ${h.status === 'sent' ? 'bg-green-500' : 'bg-red-400'}`} />
+                          <span className="text-muted-foreground">{h.email}</span>
+                        </div>
+                        <span className="text-muted-foreground/70">{formatTimeAgo(h.sent_at)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
           <DialogFooter>

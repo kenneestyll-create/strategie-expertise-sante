@@ -1106,6 +1106,8 @@ async def send_test_email_template(request: Request, admin: dict = Depends(get_c
     </html>
     """
 
+    send_status = "pending"
+    send_error = None
     try:
         import resend
         resend.api_key = os.environ.get("RESEND_API_KEY", "")
@@ -1115,6 +1117,34 @@ async def send_test_email_template(request: Request, admin: dict = Depends(get_c
             "subject": f"[TEST] {subject}",
             "html": html
         })
-        return {"success": True, "message": f"Email de test envoyé à {to_email}"}
+        send_status = "sent"
+        result = {"success": True, "message": f"Email de test envoyé à {to_email}"}
     except Exception as e:
-        return {"success": False, "message": str(e)}
+        send_status = "failed"
+        send_error = str(e)
+        result = {"success": False, "message": str(e)}
+
+    # Save to test history
+    history_record = {
+        "id": str(uuid.uuid4()),
+        "template_id": body.get("template_id", ""),
+        "template_name": body.get("template_name", ""),
+        "email": to_email,
+        "subject": f"[TEST] {subject}",
+        "variables_used": {k: ctx[k] for k in ["prenom", "nom", "completeness", "documents_missing", "date_inscription"]},
+        "status": send_status,
+        "error": send_error,
+        "sent_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.email_test_history.insert_one(history_record)
+
+    return result
+
+
+@router.get("/admin/email-templates/{template_id}/test-history")
+async def get_template_test_history(template_id: str, admin: dict = Depends(get_current_admin)):
+    """Get the test email history for a specific template."""
+    history = await db.email_test_history.find(
+        {"template_id": template_id}, {"_id": 0}
+    ).sort("sent_at", -1).limit(10).to_list(10)
+    return {"history": history, "total": len(history)}
