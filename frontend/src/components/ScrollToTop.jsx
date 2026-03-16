@@ -7,7 +7,7 @@ export const ScrollToTop = () => {
   useEffect(() => {
     // Skip auto-scroll if navigating with an anchor (search highlight)
     if (hash) return;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo(0, 0);
   }, [pathname, hash]);
 
   return null;
