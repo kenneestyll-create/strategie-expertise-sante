@@ -38,7 +38,7 @@
     "/app/test_reports/iteration_22.json"
   ],
   "action_items": [
-    "CRITICAL: Remove static <link rel='canonical' href='https://ocr-scanner-7.preview.emergentagent.com/' /> from index.html line 11 - it prevents react-helmet-async from setting per-page canonical URLs. The SEO.jsx component already handles this dynamically."
+    "CRITICAL: Remove static <link rel='canonical' href='https://engage-suite-3.preview.emergentagent.com/' /> from index.html line 11 - it prevents react-helmet-async from setting per-page canonical URLs. The SEO.jsx component already handles this dynamically."
   ],
   "critical_code_review_comments": [
     "Schema.org JSON-LD injection via useEffect in App.js is working correctly - all 3 schemas render",

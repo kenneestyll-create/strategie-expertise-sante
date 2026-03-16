@@ -9,7 +9,7 @@ import base64
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 if not BASE_URL:
-    BASE_URL = "https://ocr-scanner-7.preview.emergentagent.com"
+    BASE_URL = "https://engage-suite-3.preview.emergentagent.com"
 
 class TestStrategiIAPDFGeneration:
     """Tests for POST /api/strategiia/generate-pdf endpoint"""

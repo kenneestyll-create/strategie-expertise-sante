@@ -4,4 +4,4 @@ Disallow: /admin
 Disallow: /admin/login
 Disallow: /espace-client
 
-Sitemap: https://ocr-scanner-7.preview.emergentagent.com/sitemap.xml
+Sitemap: https://engage-suite-3.preview.emergentagent.com/sitemap.xml

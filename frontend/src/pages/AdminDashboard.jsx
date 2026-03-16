@@ -51,7 +51,8 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { BarChart3, BellRing, Download, FlaskConical } from 'lucide-react';
+import { BarChart3, BellRing, Download, FlaskConical, PenTool } from 'lucide-react';
+import { EmailTemplateEditor } from '@/components/EmailTemplateEditor';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -634,6 +635,10 @@ export const AdminDashboard = () => {
             <TabsTrigger value="notifications" className="gap-1 text-xs sm:text-sm" data-testid="tab-notifications">
               <BellRing className="w-3 h-3 sm:w-4 sm:h-4 text-amber-500" />
               Notifs
+            </TabsTrigger>
+            <TabsTrigger value="templates" className="gap-1 text-xs sm:text-sm" data-testid="tab-templates">
+              <PenTool className="w-3 h-3 sm:w-4 sm:h-4 text-violet-500" />
+              Templates
             </TabsTrigger>
           </TabsList>
 
@@ -2471,6 +2476,11 @@ export const AdminDashboard = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Templates Tab */}
+          <TabsContent value="templates" className="space-y-6" data-testid="templates-tab-content">
+            <EmailTemplateEditor token={token} />
           </TabsContent>
         </Tabs>
       </main>

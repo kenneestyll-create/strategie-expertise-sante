@@ -881,3 +881,145 @@ async def toggle_ab_test(test_id: str, request: Request, admin: dict = Depends(g
         await db.ab_tests.update_many({"status": "active"}, {"$set": {"status": "paused"}})
     await db.ab_tests.update_one({"id": test_id}, {"$set": {"status": status}})
     return {"success": True, "status": status}
+
+
+# ==================== EMAIL TEMPLATES ====================
+
+DEFAULT_TEMPLATES = [
+    {
+        "name": "rassurant",
+        "label": "Ton rassurant",
+        "subject": "Votre dossier vous attend — nous sommes là pour vous",
+        "intro": "Nous avons remarqué que votre dossier est en attente. Pas d'inquiétude, nous sommes là pour vous accompagner à chaque étape.",
+        "motivation": "En complétant votre dossier, vous profiterez d'une analyse StratégiIA précise et de recommandations personnalisées pour défendre au mieux vos droits.",
+        "cta_text": "Compléter mon dossier",
+        "status": "active",
+    },
+    {
+        "name": "incitatif",
+        "label": "Ton incitatif",
+        "subject": "Plus que quelques documents pour une analyse complète !",
+        "intro": "Bonne nouvelle ! Votre dossier avance bien. Il ne manque que quelques documents pour débloquer une analyse complète et maximiser vos résultats.",
+        "motivation": "Les clients qui complètent leur dossier obtiennent des recommandations bien plus précises. Ne manquez pas cette opportunité d'optimiser votre accompagnement !",
+        "cta_text": "Finaliser mon dossier",
+        "status": "active",
+    },
+    {
+        "name": "urgent",
+        "label": "Ton urgent",
+        "subject": "Action requise : votre dossier attend vos documents",
+        "intro": "Votre dossier est en attente depuis plusieurs jours. Sans les pièces manquantes, nous ne pouvons pas vous fournir une analyse optimale.",
+        "motivation": "Plus vous attendez, plus les délais s'allongent. Complétez votre dossier maintenant pour avancer sereinement dans vos démarches.",
+        "cta_text": "Agir maintenant",
+        "status": "active",
+    },
+]
+
+@router.post("/admin/email-templates/seed")
+async def seed_email_templates(admin: dict = Depends(get_current_admin)):
+    created = 0
+    for tpl in DEFAULT_TEMPLATES:
+        exists = await db.email_templates.find_one({"name": tpl["name"]}, {"_id": 0, "id": 1})
+        if not exists:
+            doc = {**tpl, "id": str(uuid.uuid4()), "created_at": datetime.now(timezone.utc).isoformat(), "updated_at": datetime.now(timezone.utc).isoformat()}
+            await db.email_templates.insert_one(doc)
+            created += 1
+    return {"success": True, "created": created}
+
+@router.get("/admin/email-templates")
+async def list_email_templates(admin: dict = Depends(get_current_admin)):
+    templates = await db.email_templates.find({}, {"_id": 0}).sort("created_at", 1).to_list(50)
+    return {"templates": templates}
+
+@router.post("/admin/email-templates")
+async def create_email_template(request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    now = datetime.now(timezone.utc).isoformat()
+    doc = {
+        "id": str(uuid.uuid4()),
+        "name": body.get("name", ""),
+        "label": body.get("label", body.get("name", "")),
+        "subject": body.get("subject", ""),
+        "intro": body.get("intro", ""),
+        "motivation": body.get("motivation", ""),
+        "cta_text": body.get("cta_text", "Compléter mon dossier"),
+        "status": body.get("status", "draft"),
+        "created_at": now,
+        "updated_at": now,
+    }
+    await db.email_templates.insert_one(doc)
+    doc.pop("_id", None)
+    return doc
+
+@router.put("/admin/email-templates/{template_id}")
+async def update_email_template(template_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    update = {}
+    for field in ["name", "label", "subject", "intro", "motivation", "cta_text", "status"]:
+        if field in body:
+            update[field] = body[field]
+    update["updated_at"] = datetime.now(timezone.utc).isoformat()
+    result = await db.email_templates.update_one({"id": template_id}, {"$set": update})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Template non trouvé")
+    return {"success": True, "id": template_id}
+
+@router.delete("/admin/email-templates/{template_id}")
+async def delete_email_template(template_id: str, admin: dict = Depends(get_current_admin)):
+    result = await db.email_templates.delete_one({"id": template_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Template non trouvé")
+    return {"success": True}
+
+@router.post("/admin/email-templates/{template_id}/duplicate")
+async def duplicate_email_template(template_id: str, admin: dict = Depends(get_current_admin)):
+    tpl = await db.email_templates.find_one({"id": template_id}, {"_id": 0})
+    if not tpl:
+        raise HTTPException(status_code=404, detail="Template non trouvé")
+    now = datetime.now(timezone.utc).isoformat()
+    new_doc = {**tpl, "id": str(uuid.uuid4()), "name": tpl["name"] + "_copy", "label": tpl["label"] + " (copie)", "status": "draft", "created_at": now, "updated_at": now}
+    await db.email_templates.insert_one(new_doc)
+    new_doc.pop("_id", None)
+    return new_doc
+
+@router.post("/admin/email-templates/preview")
+async def preview_email_template(request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    from config import SITE_URL
+    site_url = os.environ.get("FRONTEND_URL", SITE_URL)
+    subject = body.get("subject", "Objet de l'email")
+    intro = body.get("intro", "Introduction...")
+    motivation = body.get("motivation", "Motivation...")
+    cta_text = body.get("cta_text", "Compléter mon dossier")
+    prenom = body.get("prenom", "Marie")
+    completeness_pct = body.get("completeness_pct", 42)
+
+    html = f"""
+    <html>
+    <body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:0;background:#f5f5f5;">
+        <div style="background:#1a1a2e;color:#fff;padding:24px;text-align:center;">
+            <h1 style="margin:0;color:#d4a44a;font-size:20px;">Stratégie &amp; Expertise Santé</h1>
+            <p style="margin:8px 0 0;color:#ccc;font-size:13px;">{subject}</p>
+        </div>
+        <div style="background:#FFFFFF;padding:24px;border:1px solid #E5E0D6;">
+            <p style="font-size:16px;">Bonjour <strong>{prenom}</strong>,</p>
+            <p>{intro}</p>
+            <div style="background:#F0F7F0;padding:16px;border-radius:8px;text-align:center;margin:20px 0;">
+                <p style="margin:0;font-size:36px;font-weight:bold;color:#f59e0b;">{completeness_pct}%</p>
+                <p style="margin:4px 0 0;color:#666;font-size:13px;">de complétude</p>
+            </div>
+            <p style="color:#555;font-size:14px;">{motivation}</p>
+            <div style="text-align:center;margin:24px 0;">
+                <a href="{site_url}/espace-client?tab=documents"
+                   style="background:#1a1a2e;color:#d4a44a;padding:14px 28px;border-radius:6px;text-decoration:none;display:inline-block;font-weight:600;font-size:14px;">
+                    {cta_text}
+                </a>
+            </div>
+            <p style="color:#888;font-size:11px;text-align:center;margin-top:20px;">
+                Stratégie &amp; Expertise Santé — Cet email est envoyé automatiquement.
+            </p>
+        </div>
+    </body>
+    </html>
+    """
+    return {"html": html, "subject": subject}
