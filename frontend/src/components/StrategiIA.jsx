@@ -41,6 +41,13 @@ const REGIMES = [
 
 export const StrategiIA = () => {
   const [isOpen, setIsOpen] = useState(false);
+
+  // Allow external trigger (mobile FAB)
+  useEffect(() => {
+    const open = () => setIsOpen(true);
+    window.addEventListener('strategiia:open', open);
+    return () => window.removeEventListener('strategiia:open', open);
+  }, []);
   // Steps: form -> loading -> teaser -> basic -> premium | quota_exceeded
   const [step, setStep] = useState('form');
   const [typeDossier, setTypeDossier] = useState('');
@@ -182,7 +189,7 @@ export const StrategiIA = () => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm font-medium bg-accent/10 text-accent hover:bg-accent/20 border border-accent/20 transition-all hover:scale-[1.02]"
+        className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm font-medium bg-accent/10 text-accent hover:bg-accent/20 border border-accent/20 transition-all hover:scale-[1.02]"
         data-testid="strategiia-trigger"
       >
         <Brain className="w-4 h-4" />

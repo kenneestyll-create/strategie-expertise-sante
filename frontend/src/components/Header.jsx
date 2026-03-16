@@ -165,9 +165,12 @@ export const Header = () => {
           </div>
 
           {/* CTA Buttons - Desktop */}
+          {/* StrategiIA - rendered globally, trigger hidden on mobile */}
+          <StrategiIA />
+
+          {/* CTA Buttons - Desktop */}
           <div className="hidden lg:flex items-center gap-1.5">
             <GlobalSearch />
-            <StrategiIA />
             <Link to="/espace-client">
               <Button 
                 variant="ghost"

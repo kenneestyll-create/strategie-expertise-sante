@@ -243,6 +243,14 @@ html {
     animation: logoShimmer 0.9s ease-in-out forwards;
 }
 
+/* ── StrategiIA mobile FAB ── */
+.strategiia-fab {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 12px rgba(201,168,76,0.15);
+}
+.strategiia-fab:hover, .strategiia-fab:active {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 0 18px rgba(201,168,76,0.25);
+}
+
 
 @keyframes float {
     0%, 100% { transform: translateY(0); }
