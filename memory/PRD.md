@@ -14,7 +14,7 @@ Application web complète en français pour fournir des conseils sur les maladie
 ### Core
 - Authentification (admin + client)
 - Dashboard client avec progression du dossier
-- Dashboard admin avec 14 onglets
+- Dashboard admin avec 15 onglets
 - StratégiIA (analyse IA des dossiers)
 - Scoring qualité des dossiers
 - Forum, chatbot, calculatrice
@@ -35,8 +35,19 @@ Application web complète en français pour fournir des conseils sur les maladie
 - Aperçu live du HTML de l'email
 - Toggle statut actif/brouillon
 - 3 templates par défaut : rassurant, incitatif, urgent
-- Backend : 6 endpoints REST sous `/api/admin/email-templates`
 - Composant séparé : `EmailTemplateEditor.jsx`
+
+### Variables dynamiques pour emails (Complété - Feb 2026)
+- 5 variables supportées : `{{prenom}}`, `{{nom}}`, `{{completeness}}`, `{{documents_missing}}`, `{{date_inscription}}`
+- Barre d'insertion de variables (boutons cliquables) au-dessus de chaque champ texte en mode édition
+- Insertion à la position du curseur
+- Coloration syntaxique des variables en mode lecture (badges colorés via `HighlightedText`)
+- Carte de référence des variables disponibles avec exemples
+- Aperçu en temps réel avec résolution des variables (valeurs d'exemple)
+- Backend : `resolve_template_variables()` remplace les placeholders par les vraies données client
+- Endpoint `GET /api/admin/email-templates/variables` pour lister les variables
+- Compatible avec le système A/B testing existant
+- `_build_reminder_html()` accepte un `custom_template` avec résolution de variables
 
 ## Tâches en attente (bloquées)
 - **HubSpot (P2):** En attente du HUBSPOT_PORTAL_ID utilisateur
@@ -50,9 +61,9 @@ Application web complète en français pour fournir des conseils sur les maladie
 
 ## Fichiers clés
 - `/app/frontend/src/pages/AdminDashboard.jsx` — Dashboard admin principal
-- `/app/frontend/src/components/EmailTemplateEditor.jsx` — Éditeur de templates
-- `/app/backend/routes/admin.py` — Endpoints admin (analytics, notifs, cron, A/B, templates)
-- `/app/backend/utils/email.py` — Logique d'envoi d'emails
+- `/app/frontend/src/components/EmailTemplateEditor.jsx` — Éditeur de templates + variables
+- `/app/backend/routes/admin.py` — Endpoints admin
+- `/app/backend/utils/email.py` — Logique d'envoi, variables, résolution
 - `/app/backend/server.py` — Scheduler, tracking
 
 ## Credentials de test
