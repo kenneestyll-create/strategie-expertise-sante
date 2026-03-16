@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Calendar, FileText, Scale, Heart, Award, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, Calendar, FileText, Scale, Heart, Award, Download, ChevronLeft, ChevronRight, Shield, Trophy, Gavel, BookOpen, Users, Star } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 
 export const AboutPage = () => {
@@ -10,23 +10,47 @@ export const AboutPage = () => {
   const timeline = [
     {
       year: "Année 1",
-      title: "Le début du parcours",
-      description: "Diagnostic d'une maladie professionnelle. Début des démarches de reconnaissance auprès de la CPAM. Premiers pas dans un univers administratif complexe et souvent hostile."
+      title: "Le diagnostic et l'incompréhension",
+      description: "Diagnostic d'une maladie professionnelle. Premiers pas dans les démarches de reconnaissance auprès de la CPAM. Découverte d'un univers administratif complexe et souvent hostile, où l'on se sent seul face à la machine.",
+      icon: FileText,
+      badge: "CPAM / AT-MP",
+      color: "from-blue-600 to-blue-800"
     },
     {
       year: "Année 2",
       title: "Les expertises médicales",
-      description: "Multiplication des rendez-vous médicaux et expertises. Découverte du fonctionnement du CRRMP. Apprentissage forcé du vocabulaire médico-administratif."
+      description: "Multiplication des rendez-vous médicaux et expertises judiciaires. Découverte du fonctionnement du CRRMP. Apprentissage forcé du vocabulaire médico-administratif et des rouages du système.",
+      icon: Scale,
+      badge: "CRRMP / Expertises",
+      color: "from-amber-600 to-amber-800"
     },
     {
-      year: "Année 3",
-      title: "Les combats assurantiels",
-      description: "Face à mon assurance prévoyance, début d'un bras de fer pour faire reconnaître mes droits. PTIA, invalidité, refus, recours... Une bataille d'usure."
+      year: "Année 3-4",
+      title: "Les victoires contre les assureurs",
+      description: "Face aux grands groupes d'assurance nationaux, début d'un bras de fer pour la reconnaissance des garanties PTIA et ITT. Batailles juridiques intenses, refus successifs, recours méthodiques — et finalement, des succès déterminants.",
+      icon: Trophy,
+      badge: "PTIA / ITT",
+      badgeColor: "bg-[#C9A84C] text-[#1a1a1a]",
+      color: "from-[#C9A84C] to-[#8B7333]",
+      highlight: true
     },
     {
-      year: "Année 4+",
-      title: "La reconnaissance et le partage",
-      description: "Obtention progressive de mes droits. Décision de mettre cette expérience au service des autres. Naissance de Stratégie & Expertise Santé."
+      year: "Année 5-6",
+      title: "L'expertise MDPH et invalidité",
+      description: "Maîtrise des procédures MDPH, des demandes d'AAH, des contestations de taux d'IPP. Compréhension approfondie des barèmes, des voies de recours et des stratégies gagnantes.",
+      icon: BookOpen,
+      badge: "MDPH / AAH / IPP",
+      color: "from-emerald-600 to-emerald-800"
+    },
+    {
+      year: "Année 7+",
+      title: "Naissance de Stratégie & Expertise Santé",
+      description: "Décision de transformer ces années de combat en un service d'accompagnement unique en France. Création d'outils innovants (StratégiIA, Dossier Express, OCR intelligent) pour que personne ne vive ces épreuves seul.",
+      icon: Star,
+      badge: "Création",
+      badgeColor: "bg-[#C9A84C] text-[#1a1a1a]",
+      color: "from-[#C9A84C] to-[#8B7333]",
+      highlight: true
     }
   ];
 
@@ -90,41 +114,55 @@ export const AboutPage = () => {
         </div>
       </section>
 
-      {/* Timeline Section */}
-      <section className="section-padding">
+      {/* Timeline Section — Noir et Or */}
+      <section className="section-padding bg-[#0c0c0c]" data-testid="timeline-section">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <span className="text-sm font-medium text-accent uppercase tracking-wider">Chronologie</span>
-            <h2 className="text-3xl sm:text-4xl font-semibold mt-2">
-              7 ans de combat
+          <div className="text-center mb-14">
+            <span className="text-[#C9A84C] text-sm font-medium uppercase tracking-[0.2em]">Chronologie</span>
+            <h2 className="text-3xl sm:text-4xl font-semibold mt-3 text-[#f5f0e8]">
+              7 ans de combat, une mission
             </h2>
+            <p className="text-[#f5f0e8]/50 mt-3 max-w-xl mx-auto text-sm">
+              Chaque épreuve est devenue une expertise. Chaque obstacle, une compétence au service de mes clients.
+            </p>
           </div>
 
           <div className="relative">
-            {/* Timeline line */}
-            <div className="absolute left-0 md:left-1/2 top-0 bottom-0 w-px bg-border transform md:-translate-x-px" />
+            {/* Timeline gold line */}
+            <div className="absolute left-5 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-[#C9A84C]/60 via-[#C9A84C]/30 to-transparent transform md:-translate-x-px" />
 
             {timeline.map((item, index) => (
               <div 
                 key={index}
-                className={`relative flex flex-col md:flex-row gap-8 mb-12 last:mb-0 ${
+                className={`relative flex flex-col md:flex-row gap-6 md:gap-10 mb-14 last:mb-0 ${
                   index % 2 === 0 ? 'md:flex-row-reverse' : ''
                 }`}
                 data-testid={`timeline-item-${index}`}
               >
-                {/* Content */}
-                <div className={`flex-1 ${index % 2 === 0 ? 'md:text-right md:pr-12' : 'md:pl-12'} pl-8 md:pl-0`}>
-                  <span className="inline-block text-sm font-semibold text-accent mb-2">
-                    {item.year}
-                  </span>
-                  <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                  <p className="text-muted-foreground">{item.description}</p>
+                {/* Content card */}
+                <div className={`flex-1 ${index % 2 === 0 ? 'md:text-right md:pr-14' : 'md:pl-14'} pl-14 md:pl-0`}>
+                  <div className={`p-5 rounded-xl border ${item.highlight ? 'border-[#C9A84C]/40 bg-[#C9A84C]/5' : 'border-white/5 bg-white/[0.02]'} transition-all hover:border-[#C9A84C]/30`}>
+                    <div className={`flex items-center gap-2 mb-3 ${index % 2 === 0 ? 'md:justify-end' : ''}`}>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${item.badgeColor || 'bg-white/10 text-[#f5f0e8]/70'}`}>
+                        {item.badge}
+                      </span>
+                      <span className="text-[#C9A84C] text-xs font-semibold tracking-wider">{item.year}</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-[#f5f0e8] mb-2">{item.title}</h3>
+                    <p className="text-sm text-[#f5f0e8]/60 leading-relaxed">{item.description}</p>
+                  </div>
                 </div>
                 
-                {/* Dot */}
-                <div className="absolute left-0 md:left-1/2 top-0 w-4 h-4 bg-accent rounded-full transform -translate-x-1.5 md:-translate-x-2" />
+                {/* Icon dot */}
+                <div className={`absolute left-5 md:left-1/2 top-5 w-10 h-10 rounded-full border-2 flex items-center justify-center transform -translate-x-1/2 ${
+                  item.highlight 
+                    ? 'border-[#C9A84C] bg-[#C9A84C]/20' 
+                    : 'border-[#C9A84C]/40 bg-[#0c0c0c]'
+                }`}>
+                  <item.icon className={`w-4 h-4 ${item.highlight ? 'text-[#C9A84C]' : 'text-[#C9A84C]/60'}`} />
+                </div>
                 
-                {/* Spacer for opposite side */}
+                {/* Spacer */}
                 <div className="hidden md:block flex-1" />
               </div>
             ))}

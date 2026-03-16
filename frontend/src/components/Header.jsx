@@ -83,7 +83,7 @@ export const Header = () => {
             <img 
               src="/logo.svg" 
               alt="Stratégie & Expertise Santé — Pionnier en France" 
-              className="h-9 w-auto flex-shrink-0"
+              className="h-12 w-auto flex-shrink-0"
             />
           </Link>
 

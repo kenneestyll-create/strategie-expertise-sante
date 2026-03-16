@@ -353,7 +353,7 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
         {enableOCR && (
           <button
             onClick={(e) => { e.stopPropagation(); setShowScanner(true); }}
-            className="flex flex-col items-center justify-center gap-2 w-28 sm:w-32 rounded-xl border-2 border-dashed border-accent/40 hover:border-accent hover:bg-accent/5 transition-all cursor-pointer group"
+            className="flex sm:hidden flex-col items-center justify-center gap-2 w-28 rounded-xl border-2 border-dashed border-accent/40 hover:border-accent hover:bg-accent/5 transition-all cursor-pointer group"
             data-testid="scanner-open-btn"
           >
             <div className="w-10 h-10 rounded-full bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors">
