@@ -67,6 +67,22 @@ export const StrategiIA = () => {
   const [scoreData, setScoreData] = useState(null);
   const [stratFiles, setStratFiles] = useState([]);
   const [docChecks, setDocChecks] = useState({ readable: false, personal_info: false, dates_signatures: false });
+  const [dossierScore, setDossierScore] = useState(null);
+
+  // Fetch dossier quality score when form fields are filled
+  useEffect(() => {
+    if (step !== 'form' || !typeDossier) { setDossierScore(null); return; }
+    const timer = setTimeout(async () => {
+      try {
+        const { data } = await axios.post(`${API}/strategiia/dossier-score`, {
+          type_dossier: typeDossier, regime, situation, doc_count: stratFiles.length,
+          doc_names: stratFiles.map(f => f.name || ''),
+        });
+        setDossierScore(data);
+      } catch { setDossierScore(null); }
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [typeDossier, regime, situation, stratFiles, step]);
 
   // Fetch relevance score when we have results
   useEffect(() => {
@@ -304,6 +320,42 @@ export const StrategiIA = () => {
                     </div>
 
                     <DataConsentBox checked={consent} onChange={setConsent} />
+
+                    {/* Dossier quality score */}
+                    {dossierScore && (
+                      <div className={`p-3 rounded-lg border ${dossierScore.level_color === 'green' ? 'bg-green-50 border-green-200' : dossierScore.level_color === 'blue' ? 'bg-blue-50 border-blue-200' : dossierScore.level_color === 'orange' ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`} data-testid="dossier-quality-score">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-semibold flex items-center gap-1.5">
+                            <Target className="w-3.5 h-3.5" />
+                            Score de qualité du dossier
+                          </span>
+                          <span className={`text-sm font-bold ${dossierScore.level_color === 'green' ? 'text-green-700' : dossierScore.level_color === 'blue' ? 'text-blue-700' : dossierScore.level_color === 'orange' ? 'text-amber-700' : 'text-red-600'}`}>
+                            {dossierScore.score}/100 — {dossierScore.level_label}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 mb-2">
+                          {Object.values(dossierScore.details).map((d, i) => (
+                            <div key={i} className="text-center">
+                              <div className="h-1.5 bg-white/60 rounded-full overflow-hidden mb-1">
+                                <div className={`h-full rounded-full ${d.score >= 80 ? 'bg-green-500' : d.score >= 50 ? 'bg-amber-500' : 'bg-red-400'}`} style={{ width: `${d.score}%` }} />
+                              </div>
+                              <p className="text-[9px] text-muted-foreground">{d.label}</p>
+                            </div>
+                          ))}
+                        </div>
+                        {dossierScore.tips?.length > 0 && (
+                          <ul className="space-y-1">
+                            {dossierScore.tips.map((tip, i) => (
+                              <li key={i} className="text-[10px] text-muted-foreground flex items-start gap-1">
+                                <ArrowRight className="w-2.5 h-2.5 flex-shrink-0 mt-0.5" />
+                                {tip}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    )}
+
                     <Button onClick={handleAnalyze} className="w-full rounded-lg gap-2" disabled={!typeDossier || !situation.trim() || !consent || (stratFiles.length > 0 && !(docChecks.readable && docChecks.personal_info && docChecks.dates_signatures))} data-testid="strategiia-analyze-button">
                       <Brain className="w-4 h-4" /> Analyser mon dossier gratuitement
                     </Button>

@@ -104,9 +104,37 @@ const AnalyticsTab = ({ data, period, onPeriodChange }) => {
         <KpiCard label="Revenus" value={formatEuro(kpis.total_revenue)} sub={`${formatEuro(kpis.pending_revenue)} en attente`} color="text-emerald-600" />
         <KpiCard label="Contacts" value={kpis.total_contacts} />
         <KpiCard label="Clients inscrits" value={kpis.total_clients} sub={`Taux conversion: ${kpis.conversion_rate}%`} />
-        <KpiCard label="Analyses IA" value={kpis.total_analyses} sub={`${kpis.total_dossiers} dossiers express`} />
-        <KpiCard label="Forum" value={kpis.total_forum_users} sub={`${kpis.total_chatbot_sessions} sessions chatbot`} />
+        <KpiCard label="Analyses IA" value={kpis.total_analyses} sub={`${kpis.analyses_this_month || 0} ce mois`} />
+        <KpiCard label="Dossiers Express" value={kpis.total_dossiers} sub={`${kpis.dossiers_this_month || 0} ce mois`} />
       </div>
+
+      {/* Service utilization cards */}
+      {data.service_utilization && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3" data-testid="service-utilization">
+          {Object.entries(data.service_utilization).map(([key, svc]) => (
+            <Card key={key}>
+              <CardContent className="p-4">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">{svc.label}</p>
+                <p className="text-2xl font-bold">{svc.total}</p>
+                <div className="flex items-center gap-1 mt-1">
+                  <span className="text-xs text-accent font-medium">+{svc.this_month}</span>
+                  <span className="text-[10px] text-muted-foreground">ce mois</span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Extra KPIs row */}
+      {(kpis.active_dossiers !== undefined || kpis.total_documents !== undefined) && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <KpiCard label="Dossiers actifs" value={kpis.active_dossiers || 0} sub="en cours de traitement" color="text-blue-600" />
+          <KpiCard label="Documents" value={kpis.total_documents || 0} sub={`${kpis.pending_documents || 0} en attente`} />
+          <KpiCard label="Forum" value={kpis.total_forum_users} sub={`${kpis.total_chatbot_sessions} sessions chatbot`} />
+          <KpiCard label="Calculatrice" value={kpis.calculator_usage || 0} sub="utilisations" />
+        </div>
+      )}
 
       {/* Charts row 1: Activity over time */}
       <div className="grid lg:grid-cols-2 gap-4">

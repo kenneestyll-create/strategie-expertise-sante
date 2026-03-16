@@ -55,6 +55,65 @@ async def get_client_profile(client: dict = Depends(get_current_client)):
 
 # ==================== PROGRESS ====================
 
+# Essential documents by case type
+ESSENTIAL_DOCS = {
+    "at": [
+        {"key": "cmi", "label": "Certificat médical initial (CMI)", "category": "medical"},
+        {"key": "declaration_at", "label": "Déclaration d'accident du travail", "category": "administratif"},
+        {"key": "arret_travail", "label": "Arrêt de travail", "category": "medical"},
+        {"key": "notification_cpam", "label": "Notification CPAM", "category": "administratif"},
+        {"key": "bulletin_salaire", "label": "Bulletins de salaire", "category": "administratif"},
+    ],
+    "mp": [
+        {"key": "cmi", "label": "Certificat médical initial (CMI)", "category": "medical"},
+        {"key": "declaration_mp", "label": "Déclaration de maladie professionnelle", "category": "administratif"},
+        {"key": "attestation_exposition", "label": "Attestation d'exposition", "category": "administratif"},
+        {"key": "notification_cpam", "label": "Notification CPAM", "category": "administratif"},
+        {"key": "examens_medicaux", "label": "Examens médicaux / bilans", "category": "medical"},
+        {"key": "fiche_poste", "label": "Fiche de poste", "category": "administratif"},
+    ],
+    "mdph": [
+        {"key": "cerfa", "label": "Formulaire Cerfa MDPH", "category": "administratif"},
+        {"key": "certificat_medical", "label": "Certificat médical récent", "category": "medical"},
+        {"key": "justificatif_identite", "label": "Justificatif d'identité", "category": "administratif"},
+        {"key": "justificatif_domicile", "label": "Justificatif de domicile", "category": "administratif"},
+        {"key": "bilans_medicaux", "label": "Bilans médicaux et comptes rendus", "category": "medical"},
+    ],
+    "assurance": [
+        {"key": "contrat", "label": "Contrat d'assurance", "category": "administratif"},
+        {"key": "declaration_sinistre", "label": "Déclaration de sinistre", "category": "administratif"},
+        {"key": "courriers_assureur", "label": "Courriers de l'assureur", "category": "administratif"},
+        {"key": "certificat_medical", "label": "Certificat médical", "category": "medical"},
+        {"key": "expertise", "label": "Rapport d'expertise", "category": "medical"},
+    ],
+    "expertise": [
+        {"key": "convocation", "label": "Convocation à l'expertise", "category": "administratif"},
+        {"key": "certificat_medical", "label": "Certificats médicaux", "category": "medical"},
+        {"key": "historique_medical", "label": "Historique médical complet", "category": "medical"},
+        {"key": "notification_taux", "label": "Notification de taux IPP", "category": "administratif"},
+    ],
+}
+ESSENTIAL_DOCS["faute_inex"] = ESSENTIAL_DOCS["at"] + [{"key": "preuve_faute", "label": "Preuves de la faute de l'employeur", "category": "administratif"}]
+ESSENTIAL_DOCS["recours"] = [
+    {"key": "decision_contestee", "label": "Décision contestée", "category": "administratif"},
+    {"key": "courrier_recours", "label": "Courrier de recours", "category": "administratif"},
+    {"key": "certificat_medical", "label": "Certificat médical", "category": "medical"},
+    {"key": "pieces_justificatives", "label": "Pièces justificatives", "category": "administratif"},
+]
+
+def _match_doc_to_essential(doc_categories: list, essential_key: str, essential_category: str) -> bool:
+    """Heuristic matching: does any uploaded doc category match this essential doc?"""
+    key_lower = essential_key.lower()
+    for cat in doc_categories:
+        cat_lower = cat.lower() if cat else ""
+        if key_lower in cat_lower or cat_lower in key_lower:
+            return True
+        if essential_category == "medical" and cat_lower in ("medical", "médical", "certificat", "examen", "bilan", "expertise"):
+            return True
+        if essential_category == "administratif" and cat_lower in ("administratif", "notification", "déclaration", "courrier", "justificatif", "cerfa", "contrat"):
+            return True
+    return False
+
 @router.get("/client/progress")
 async def get_client_progress(client: dict = Depends(get_current_client)):
     cid = client["sub"]
@@ -62,11 +121,43 @@ async def get_client_progress(client: dict = Depends(get_current_client)):
 
     registration = {"id": "inscription", "label": "Inscription", "status": "completed", "detail": "Compte créé"}
 
-    docs = await db.client_documents.find({"client_id": cid}, {"_id": 0, "status": 1, "category": 1}).to_list(500)
+    docs = await db.client_documents.find({"client_id": cid}, {"_id": 0, "status": 1, "category": 1, "name": 1}).to_list(500)
     total_docs = len(docs)
     validated_docs = sum(1 for d in docs if d.get("status") == "valide")
+    pending_docs = sum(1 for d in docs if d.get("status") == "en_attente")
     illisible_docs = sum(1 for d in docs if d.get("status") == "illisible")
     min_required = 3
+
+    # Document status breakdown
+    document_status = {
+        "total": total_docs,
+        "valide": validated_docs,
+        "en_attente": pending_docs,
+        "illisible": illisible_docs,
+    }
+
+    # Detect case type from analyses or docs
+    case_type = None
+    latest_analysis = await db.strategiia_analyses.find_one({"email": email}, {"_id": 0, "type_dossier": 1}, sort=[("created_at", -1)])
+    if latest_analysis:
+        case_type = latest_analysis.get("type_dossier")
+    if not case_type:
+        latest_dossier = await db.dossier_express.find_one({"email": email}, {"_id": 0, "type_dossier": 1}, sort=[("created_at", -1)])
+        if latest_dossier:
+            case_type = latest_dossier.get("type_dossier")
+
+    # Missing essential documents
+    doc_categories = [d.get("category", "") for d in docs] + [d.get("name", "") for d in docs]
+    essential_list = ESSENTIAL_DOCS.get(case_type, ESSENTIAL_DOCS.get("at", []))
+    missing_docs = []
+    found_count = 0
+    for ed in essential_list:
+        if _match_doc_to_essential(doc_categories, ed["key"], ed["category"]):
+            found_count += 1
+        else:
+            missing_docs.append({"key": ed["key"], "label": ed["label"], "category": ed["category"]})
+
+    completeness_pct = round((found_count / len(essential_list)) * 100) if essential_list else 100
 
     if total_docs == 0:
         doc_step = {"id": "documents", "label": "Documents collectés", "status": "not_started", "detail": f"Aucun document — {min_required} recommandés", "count": 0, "required": min_required}
@@ -115,17 +206,42 @@ async def get_client_progress(client: dict = Depends(get_current_client)):
     total_weight = sum(weights.get(s["status"], 0) for s in steps)
     progress_pct = round((total_weight / len(steps)) * 100)
 
-    next_action = None
+    # Build actionable next actions list
+    next_actions = []
     for s in steps:
         if s["status"] in ("action_required", "not_started", "in_progress"):
-            next_action = {"step_id": s["id"], "label": s["label"], "detail": s["detail"], "status": s["status"]}
-            break
+            action = {"step_id": s["id"], "label": s["label"], "detail": s["detail"], "status": s["status"]}
+            if s["id"] == "documents" and missing_docs:
+                action["cta"] = "Ajouter un document"
+                action["cta_link"] = "/espace-client?tab=documents"
+            elif s["id"] == "strategiia":
+                action["cta"] = "Lancer l'analyse"
+                action["cta_link"] = "/espace-client"
+            elif s["id"] == "dossier_express":
+                action["cta"] = "Commander"
+                action["cta_link"] = "/dossier-express"
+            next_actions.append(action)
+            if len(next_actions) >= 3:
+                break
+
+    next_action = next_actions[0] if next_actions else None
 
     counts = {"completed": 0, "in_progress": 0, "action_required": 0, "not_started": 0}
     for s in steps:
         counts[s["status"]] = counts.get(s["status"], 0) + 1
 
-    return {"progress_pct": progress_pct, "steps": steps, "next_action": next_action, "counts": counts, "summary": {"total_documents": total_docs, "validated_documents": validated_docs, "analyses_ia": strat_analyses, "dossiers_express": dossiers, "analyses_premium": len(premiums)}}
+    return {
+        "progress_pct": progress_pct,
+        "steps": steps,
+        "next_action": next_action,
+        "next_actions": next_actions,
+        "counts": counts,
+        "document_status": document_status,
+        "missing_documents": missing_docs,
+        "completeness_pct": completeness_pct,
+        "case_type": case_type,
+        "summary": {"total_documents": total_docs, "validated_documents": validated_docs, "analyses_ia": strat_analyses, "dossiers_express": dossiers, "analyses_premium": len(premiums)},
+    }
 
 
 # ==================== CASES ====================

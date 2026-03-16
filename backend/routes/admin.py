@@ -154,9 +154,39 @@ async def get_analytics(period: str = "30d", admin: dict = Depends(get_current_a
     conversion_rate = round((total_clients / total_contacts * 100), 1) if total_contacts > 0 else 0
     calc_count = await db.calculator_usage.count_documents({})
 
+    # P3: Service utilization metrics
+    now = datetime.now(timezone.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+    analyses_this_month = await db.strategiia_analyses.count_documents({"created_at": {"$gte": month_start}})
+    premium_analyses_total = await db.strategiia_analyses.count_documents({"is_premium": True})
+    premium_this_month = await db.strategiia_analyses.count_documents({"is_premium": True, "created_at": {"$gte": month_start}})
+    dossiers_this_month = await db.dossier_express.count_documents({"created_at": {"$gte": month_start}})
+    active_dossiers = await db.premium_analyses.count_documents({"status": {"$in": ["en_attente", "en_cours"]}})
+
+    # Documents stats
+    total_documents = await db.client_documents.count_documents({})
+    pending_documents = await db.client_documents.count_documents({"status": "en_attente"})
+
+    # Dossier express by day
+    dossiers_all = await db.dossier_express.find({"created_at": {"$gte": cutoff}}, {"_id": 0, "created_at": 1}).to_list(1000)
+    dossiers_by_day = {}
+    for de in dossiers_all:
+        day = str(de.get("created_at", ""))[:10]
+        if day:
+            dossiers_by_day[day] = dossiers_by_day.get(day, 0) + 1
+    for ts in time_series:
+        ts["dossiers"] = dossiers_by_day.get(ts["date"], 0)
+
+    service_utilization = {
+        "strategiia": {"total": total_analyses, "this_month": analyses_this_month, "label": "StratégiIA"},
+        "dossier_express": {"total": total_dossiers, "this_month": dossiers_this_month, "label": "Dossier Express"},
+        "premium": {"total": premium_analyses_total, "this_month": premium_this_month, "label": "Analyses Premium"},
+        "chatbot": {"total": total_chatbot, "this_month": 0, "label": "Chatbot IA"},
+    }
+
     return {
-        "kpis": {"total_contacts": total_contacts, "total_clients": total_clients, "total_analyses": total_analyses, "total_dossiers": total_dossiers, "total_forum_users": total_forum_users, "total_chatbot_sessions": total_chatbot, "total_revenue": total_revenue, "pending_revenue": pending_revenue, "conversion_rate": conversion_rate, "calculator_usage": calc_count},
-        "time_series": time_series, "packages": packages, "analyse_types": analyse_types,
+        "kpis": {"total_contacts": total_contacts, "total_clients": total_clients, "total_analyses": total_analyses, "total_dossiers": total_dossiers, "total_forum_users": total_forum_users, "total_chatbot_sessions": total_chatbot, "total_revenue": total_revenue, "pending_revenue": pending_revenue, "conversion_rate": conversion_rate, "calculator_usage": calc_count, "analyses_this_month": analyses_this_month, "dossiers_this_month": dossiers_this_month, "active_dossiers": active_dossiers, "total_documents": total_documents, "pending_documents": pending_documents},
+        "time_series": time_series, "packages": packages, "analyse_types": analyse_types, "service_utilization": service_utilization,
     }
 
 

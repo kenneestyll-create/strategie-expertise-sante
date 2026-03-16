@@ -373,6 +373,111 @@ async def get_relevance_score(type_dossier: str, regime: str = ""):
     top_strategies = sorted(strategies.items(), key=lambda x: -x[1])[:3]
     return {"score": composite, "success_rate": success_rate, "avg_admin_score": avg_admin_score, "confidence": confidence, "total_cases": total, "distribution": {"favorable": favorable, "defavorable": defavorable, "en_cours": en_cours, "autre": other}, "top_strategies": [{"strategie": s, "count": c} for s, c in top_strategies], "message": f"Score basé sur {total} cas similaires ({confidence} confiance)."}
 
+
+# ==================== DOSSIER QUALITY SCORE ====================
+
+ESSENTIAL_DOCS_BY_TYPE = {
+    "at": ["Certificat médical initial", "Déclaration d'accident", "Arrêt de travail", "Notification CPAM", "Bulletins de salaire"],
+    "mp": ["Certificat médical initial", "Déclaration de maladie professionnelle", "Attestation d'exposition", "Notification CPAM", "Examens médicaux", "Fiche de poste"],
+    "mdph": ["Formulaire Cerfa", "Certificat médical récent", "Justificatif d'identité", "Justificatif de domicile", "Bilans médicaux"],
+    "assurance": ["Contrat d'assurance", "Déclaration de sinistre", "Courriers assureur", "Certificat médical", "Rapport d'expertise"],
+    "expertise": ["Convocation expertise", "Certificats médicaux", "Historique médical", "Notification taux IPP"],
+    "faute_inex": ["Certificat médical initial", "Déclaration d'accident", "Arrêt de travail", "Notification CPAM", "Preuves faute employeur"],
+    "recours": ["Décision contestée", "Courrier de recours", "Certificat médical", "Pièces justificatives"],
+}
+
+@router.post("/strategiia/dossier-score")
+async def get_dossier_score(request: Request):
+    body = await request.json()
+    type_dossier = body.get("type_dossier", "")
+    regime = body.get("regime", "")
+    situation = body.get("situation", "")
+    doc_count = body.get("doc_count", 0)
+    doc_names = body.get("doc_names", [])
+
+    essential = ESSENTIAL_DOCS_BY_TYPE.get(type_dossier, ESSENTIAL_DOCS_BY_TYPE.get("at", []))
+
+    # 1. Completeness score: documents provided vs essential
+    matched = 0
+    matched_docs = []
+    missing_docs = []
+    for ed in essential:
+        ed_lower = ed.lower()
+        found = False
+        for dn in doc_names:
+            if any(keyword in dn.lower() for keyword in ed_lower.split()):
+                found = True
+                break
+        if found or doc_count >= len(essential):
+            matched += 1
+            matched_docs.append(ed)
+        else:
+            missing_docs.append(ed)
+
+    completeness = round((matched / len(essential)) * 100) if essential else 100
+
+    # 2. Coherence score: situation detail + type match
+    coherence = 50
+    if situation:
+        word_count = len(situation.split())
+        if word_count >= 80:
+            coherence = 100
+        elif word_count >= 40:
+            coherence = 80
+        elif word_count >= 20:
+            coherence = 60
+    if type_dossier and regime:
+        coherence = min(100, coherence + 10)
+
+    # 3. Key documents presence score
+    key_doc_score = 100 if doc_count >= 3 else round((doc_count / 3) * 100)
+
+    # Composite score
+    composite = round(completeness * 0.45 + coherence * 0.30 + key_doc_score * 0.25)
+
+    # Pedagogical tips
+    tips = []
+    if completeness < 80:
+        tips.append(f"Ajoutez les documents manquants : {', '.join(missing_docs[:3])}")
+    if coherence < 70:
+        tips.append("Détaillez davantage votre situation (dates, faits, conséquences) pour une analyse plus précise")
+    if key_doc_score < 100:
+        tips.append(f"Fournissez au moins 3 pièces justificatives ({doc_count}/3 actuellement)")
+    if not tips:
+        tips.append("Votre dossier est bien constitué. L'analyse sera optimale.")
+
+    # Score level
+    if composite >= 80:
+        level = "excellent"
+        level_label = "Excellent"
+        level_color = "green"
+    elif composite >= 60:
+        level = "bon"
+        level_label = "Bon"
+        level_color = "blue"
+    elif composite >= 40:
+        level = "moyen"
+        level_label = "A compléter"
+        level_color = "orange"
+    else:
+        level = "faible"
+        level_label = "Insuffisant"
+        level_color = "red"
+
+    return {
+        "score": composite,
+        "level": level,
+        "level_label": level_label,
+        "level_color": level_color,
+        "details": {
+            "completeness": {"score": completeness, "label": "Complétude des documents", "matched": len(matched_docs), "total": len(essential)},
+            "coherence": {"score": coherence, "label": "Richesse de la description"},
+            "key_documents": {"score": key_doc_score, "label": "Pièces justificatives", "count": doc_count},
+        },
+        "missing_documents": missing_docs,
+        "tips": tips,
+    }
+
 @router.get("/strategiia/quota/{email}")
 async def strategiia_quota(email: str):
     email = email.strip().lower()
