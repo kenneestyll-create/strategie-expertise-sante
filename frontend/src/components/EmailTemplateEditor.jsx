@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import {
-  FileText, Plus, Copy, Trash2, Eye, Loader2, Pencil, X, Check, RefreshCw, Code
+  FileText, Plus, Copy, Trash2, Eye, Loader2, Pencil, X, Check, RefreshCw, Code, Send
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -75,6 +75,9 @@ export const EmailTemplateEditor = ({ token }) => {
   const [creating, setCreating] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [activeFieldRef, setActiveFieldRef] = useState(null);
+  const [sendTestTpl, setSendTestTpl] = useState(null);
+  const [testForm, setTestForm] = useState({ email: '', prenom: 'Marie', nom: 'Dupont', completeness: '42', documents_missing: 'Attestation employeur, Certificat médical', date_inscription: '15/01/2026' });
+  const [sending, setSending] = useState(false);
 
   const subjectRef = useRef(null);
   const introRef = useRef(null);
@@ -228,6 +231,43 @@ export const EmailTemplateEditor = ({ token }) => {
     }
   };
 
+  const openSendTest = (tpl) => {
+    setSendTestTpl(tpl);
+    setTestForm(f => ({ ...f, email: f.email || '' }));
+  };
+
+  const sendTestEmail = async () => {
+    if (!sendTestTpl) return;
+    if (!testForm.email.trim()) {
+      toast.error('Veuillez saisir une adresse email');
+      return;
+    }
+    setSending(true);
+    try {
+      const res = await axios.post(`${API}/admin/email-templates/send-test`, {
+        email: testForm.email,
+        subject: sendTestTpl.subject,
+        intro: sendTestTpl.intro,
+        motivation: sendTestTpl.motivation,
+        cta_text: sendTestTpl.cta_text,
+        prenom: testForm.prenom,
+        nom: testForm.nom,
+        completeness: testForm.completeness,
+        documents_missing: testForm.documents_missing,
+        date_inscription: testForm.date_inscription,
+      }, { headers });
+      if (res.data.success) {
+        toast.success(res.data.message);
+      } else {
+        toast.error(res.data.message || "Erreur lors de l'envoi");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Erreur lors de l'envoi du test");
+    } finally {
+      setSending(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16" data-testid="templates-loading">
@@ -330,6 +370,9 @@ export const EmailTemplateEditor = ({ token }) => {
                         <>
                           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => loadPreview(tpl)} data-testid={`preview-btn-${tpl.name}`}>
                             <Eye className="w-3.5 h-3.5 text-blue-500" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => openSendTest(tpl)} data-testid={`sendtest-btn-${tpl.name}`} title="Envoyer un email de test">
+                            <Send className="w-3.5 h-3.5 text-emerald-500" />
                           </Button>
                           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => startEdit(tpl)} data-testid={`edit-btn-${tpl.name}`}>
                             <Pencil className="w-3.5 h-3.5 text-amber-500" />
@@ -496,6 +539,70 @@ export const EmailTemplateEditor = ({ token }) => {
             <Button className="gap-1.5 bg-amber-600 hover:bg-amber-700" onClick={createTemplate} disabled={creating} data-testid="create-template-btn">
               {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
               Créer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Send Test Email Dialog */}
+      <Dialog open={!!sendTestTpl} onOpenChange={(open) => { if (!open) setSendTestTpl(null); }}>
+        <DialogContent className="max-w-md" data-testid="send-test-dialog">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <Send className="w-4 h-4 text-emerald-500" /> Envoyer un email de test
+            </DialogTitle>
+          </DialogHeader>
+          {sendTestTpl && (
+            <div className="grid gap-3 py-1">
+              <p className="text-xs text-muted-foreground">
+                Template : <span className="font-medium text-foreground">{sendTestTpl.label}</span>
+              </p>
+              <div className="p-2.5 rounded-md bg-amber-50 border border-amber-200">
+                <p className="text-[11px] text-amber-700">Resend est en mode sandbox. L'email ne sera livré qu'aux adresses vérifiées dans votre compte Resend.</p>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Email destinataire</label>
+                <Input
+                  type="email"
+                  value={testForm.email}
+                  onChange={e => setTestForm(f => ({ ...f, email: e.target.value }))}
+                  placeholder="votre@email.com"
+                  className="mt-1"
+                  data-testid="test-email-input"
+                />
+              </div>
+              <div className="border rounded-md p-3 space-y-2">
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Valeurs de test des variables</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] text-muted-foreground">Prénom</label>
+                    <Input value={testForm.prenom} onChange={e => setTestForm(f => ({ ...f, prenom: e.target.value }))} className="h-7 text-xs mt-0.5" data-testid="test-var-prenom" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground">Nom</label>
+                    <Input value={testForm.nom} onChange={e => setTestForm(f => ({ ...f, nom: e.target.value }))} className="h-7 text-xs mt-0.5" data-testid="test-var-nom" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground">% Complétude</label>
+                    <Input value={testForm.completeness} onChange={e => setTestForm(f => ({ ...f, completeness: e.target.value }))} className="h-7 text-xs mt-0.5" data-testid="test-var-completeness" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground">Date inscription</label>
+                    <Input value={testForm.date_inscription} onChange={e => setTestForm(f => ({ ...f, date_inscription: e.target.value }))} className="h-7 text-xs mt-0.5" data-testid="test-var-date" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground">Documents manquants</label>
+                  <Input value={testForm.documents_missing} onChange={e => setTestForm(f => ({ ...f, documents_missing: e.target.value }))} className="h-7 text-xs mt-0.5" data-testid="test-var-docs" />
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSendTestTpl(null)}>Annuler</Button>
+            <Button className="gap-1.5 bg-emerald-600 hover:bg-emerald-700" onClick={sendTestEmail} disabled={sending} data-testid="confirm-send-test-btn">
+              {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+              Envoyer le test
             </Button>
           </DialogFooter>
         </DialogContent>

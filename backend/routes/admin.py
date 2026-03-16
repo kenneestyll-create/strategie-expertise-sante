@@ -1041,3 +1041,80 @@ async def preview_email_template(request: Request, admin: dict = Depends(get_cur
     </html>
     """
     return {"html": html, "subject": subject}
+
+
+@router.post("/admin/email-templates/send-test")
+async def send_test_email_template(request: Request, admin: dict = Depends(get_current_admin)):
+    """Send a test email with resolved variables to a specified address."""
+    from utils.email import resolve_template_variables, SAMPLE_CONTEXT
+    from config import SITE_URL, RESEND_AVAILABLE, SENDER_EMAIL
+    body = await request.json()
+
+    to_email = body.get("email", "")
+    if not to_email:
+        raise HTTPException(status_code=400, detail="Adresse email requise")
+
+    if not RESEND_AVAILABLE or not os.environ.get("RESEND_API_KEY"):
+        raise HTTPException(status_code=503, detail="Resend non configuré. Impossible d'envoyer l'email de test.")
+
+    site_url = os.environ.get("FRONTEND_URL", SITE_URL)
+
+    # Build context with custom or sample values
+    ctx = {**SAMPLE_CONTEXT}
+    for key in ["prenom", "nom", "documents_missing", "date_inscription"]:
+        if body.get(key):
+            ctx[key] = body[key]
+    if body.get("completeness") is not None:
+        ctx["completeness"] = str(body["completeness"])
+
+    subject = resolve_template_variables(body.get("subject", "Email de test"), ctx)
+    intro = resolve_template_variables(body.get("intro", ""), ctx)
+    motivation = resolve_template_variables(body.get("motivation", ""), ctx)
+    cta_text = resolve_template_variables(body.get("cta_text", "Compléter mon dossier"), ctx)
+    prenom = ctx["prenom"]
+    completeness_pct = ctx["completeness"]
+
+    html = f"""
+    <html>
+    <body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:0;background:#f5f5f5;">
+        <div style="background:#1a1a2e;color:#fff;padding:24px;text-align:center;">
+            <h1 style="margin:0;color:#d4a44a;font-size:20px;">Stratégie &amp; Expertise Santé</h1>
+            <p style="margin:8px 0 0;color:#ccc;font-size:13px;">{subject}</p>
+        </div>
+        <div style="background:#fff3cd;padding:8px;text-align:center;font-size:11px;color:#856404;border:1px solid #ffc107;">
+            EMAIL DE TEST — Ce message ne sera pas comptabilisé dans les statistiques
+        </div>
+        <div style="background:#FFFFFF;padding:24px;border:1px solid #E5E0D6;">
+            <p style="font-size:16px;">Bonjour <strong>{prenom}</strong>,</p>
+            <p>{intro}</p>
+            <div style="background:#F0F7F0;padding:16px;border-radius:8px;text-align:center;margin:20px 0;">
+                <p style="margin:0;font-size:36px;font-weight:bold;color:#f59e0b;">{completeness_pct}%</p>
+                <p style="margin:4px 0 0;color:#666;font-size:13px;">de complétude</p>
+            </div>
+            <p style="color:#555;font-size:14px;">{motivation}</p>
+            <div style="text-align:center;margin:24px 0;">
+                <a href="{site_url}/espace-client?tab=documents"
+                   style="background:#1a1a2e;color:#d4a44a;padding:14px 28px;border-radius:6px;text-decoration:none;display:inline-block;font-weight:600;font-size:14px;">
+                    {cta_text}
+                </a>
+            </div>
+            <p style="color:#888;font-size:11px;text-align:center;margin-top:20px;">
+                Stratégie &amp; Expertise Santé — Cet email est envoyé automatiquement.
+            </p>
+        </div>
+    </body>
+    </html>
+    """
+
+    try:
+        import resend
+        resend.api_key = os.environ.get("RESEND_API_KEY", "")
+        await asyncio.to_thread(resend.Emails.send, {
+            "from": SENDER_EMAIL,
+            "to": [to_email],
+            "subject": f"[TEST] {subject}",
+            "html": html
+        })
+        return {"success": True, "message": f"Email de test envoyé à {to_email}"}
+    except Exception as e:
+        return {"success": False, "message": str(e)}
