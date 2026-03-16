@@ -629,6 +629,105 @@ export const HomePage = () => {
         </div>
       </section>
 
+      {/* Témoignages Clients Anonymisés */}
+      <section className="relative py-16 sm:py-20 overflow-hidden" data-testid="testimonials-section">
+        <div className="absolute inset-0 bg-[#0c0c0c]" />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <span className="text-[#C9A84C] text-sm font-medium uppercase tracking-[0.2em]">Ils ont fait confiance</span>
+            <h2 className="text-3xl sm:text-4xl font-semibold mt-3 text-[#f5f0e8]">
+              Des parcours transformés
+            </h2>
+            <p className="text-[#f5f0e8]/40 mt-3 max-w-xl mx-auto text-sm">
+              Témoignages anonymisés de personnes accompagnées par Stratégie & Expertise Santé.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              {
+                initials: "M.L.",
+                age: "52 ans",
+                type: "Accident du travail",
+                badge: "AT",
+                text: "Après 18 mois de refus par la CPAM, mon accident du travail a enfin été reconnu. Sans cet accompagnement, j'aurais abandonné les démarches. Aujourd'hui, je perçois ma rente et je peux me concentrer sur ma guérison.",
+                result: "AT reconnue — Rente obtenue"
+              },
+              {
+                initials: "P.D.",
+                age: "45 ans",
+                type: "Assurance PTIA",
+                badge: "PTIA",
+                badgeGold: true,
+                text: "Mon assureur refusait de reconnaître ma PTIA malgré l'avis de trois médecins. Grâce à une stratégie méthodique et des arguments solides, la garantie a été activée après 8 mois de recours. Un soulagement immense pour ma famille.",
+                result: "Garantie PTIA activée"
+              },
+              {
+                initials: "S.B.",
+                age: "38 ans",
+                type: "Maladie professionnelle",
+                badge: "MP",
+                text: "Ma maladie professionnelle n'était pas dans les tableaux. Le passage par le CRRMP me semblait impossible seul. L'accompagnement m'a permis de constituer un dossier solide — reconnaissance obtenue au premier passage.",
+                result: "MP hors tableau reconnue"
+              },
+              {
+                initials: "C.R.",
+                age: "61 ans",
+                type: "Contestation IPP",
+                badge: "IPP",
+                text: "Mon taux d'IPP avait été évalué à 5% alors que mes séquelles sont bien plus importantes. Après contestation et expertise judiciaire, le taux a été réévalué à 23%. La différence sur ma rente est considérable.",
+                result: "IPP réévaluée : 5% → 23%"
+              },
+              {
+                initials: "A.M.",
+                age: "34 ans",
+                type: "MDPH / AAH",
+                badge: "MDPH",
+                text: "Mes demandes MDPH étaient systématiquement refusées. Grâce à un dossier parfaitement structuré et des arguments adaptés au barème, j'ai obtenu la reconnaissance de mon handicap et l'AAH en moins de 4 mois.",
+                result: "AAH obtenue en 4 mois"
+              },
+              {
+                initials: "J.T.",
+                age: "48 ans",
+                type: "Assurance ITT",
+                badge: "ITT",
+                badgeGold: true,
+                text: "Mon assurance refusait de verser les indemnités ITT en invoquant une clause floue. L'analyse détaillée du contrat et les échanges fermes ont permis de débloquer la situation. 14 mois d'arriérés versés d'un coup.",
+                result: "ITT versée — Arriérés récupérés"
+              }
+            ].map((t, i) => (
+              <div 
+                key={i} 
+                className={`p-5 rounded-xl border ${t.badgeGold ? 'border-[#C9A84C]/30 bg-[#C9A84C]/5' : 'border-white/5 bg-white/[0.02]'} hover:border-[#C9A84C]/20 transition-all`}
+                data-testid={`testimonial-${i}`}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-full bg-[#C9A84C]/10 border border-[#C9A84C]/20 flex items-center justify-center">
+                      <span className="text-[#C9A84C] text-xs font-bold">{t.initials}</span>
+                    </div>
+                    <div>
+                      <span className="text-[#f5f0e8] text-sm font-medium">{t.initials}</span>
+                      <span className="text-[#f5f0e8]/30 text-xs ml-1.5">{t.age}</span>
+                    </div>
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${t.badgeGold ? 'bg-[#C9A84C] text-[#1a1a1a]' : 'bg-white/10 text-[#f5f0e8]/60'}`}>
+                    {t.badge}
+                  </span>
+                </div>
+                <p className="text-[#f5f0e8]/60 text-sm leading-relaxed mb-3">{t.text}</p>
+                <div className="flex items-center gap-2 pt-2 border-t border-white/5">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                  <span className="text-emerald-400 text-xs font-medium">{t.result}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-[#f5f0e8]/20 text-[10px] mt-8">
+            * Prénoms et détails modifiés pour préserver l'anonymat. Résultats réels obtenus pour nos clients.
+          </p>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="section-padding bg-foreground text-primary-foreground">
         <div className="max-w-4xl mx-auto text-center reveal" ref={ctaRef}>

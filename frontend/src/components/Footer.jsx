@@ -12,10 +12,9 @@ export const Footer = () => {
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center gap-0 mb-4">
               <img 
-                src="/logo.svg" 
+                src="/logo-footer.svg" 
                 alt="Stratégie & Expertise Santé — Pionnier en France" 
                 className="h-10 w-auto"
-                style={{ filter: 'brightness(0) invert(1)' }}
               />
             </Link>
             <p className="text-primary-foreground/70 text-sm leading-relaxed max-w-md">
