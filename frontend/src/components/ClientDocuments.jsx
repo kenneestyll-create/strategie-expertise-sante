@@ -112,7 +112,9 @@ export const ClientDocuments = ({ token, onDocumentsChange }) => {
       }
     }
 
-    toast.success(`${uploadFiles.length} document(s) uploadé(s) et analysé(s)`);
+    toast.success(`${uploadFiles.length} document(s) uploadé(s) et analysé(s)`, {
+      description: 'Votre score de dossier est en cours de mise à jour...',
+    });
     setUploadFiles([]);
     setShowUpload(false);
     setLastOcr(null);
@@ -127,6 +129,7 @@ export const ClientDocuments = ({ token, onDocumentsChange }) => {
       await axios.delete(`${API}/client/documents/${docId}`, { headers });
       toast.success('Document supprimé');
       fetchDocs();
+      if (onDocumentsChange) onDocumentsChange();
     } catch { toast.error('Erreur suppression'); }
   };
 

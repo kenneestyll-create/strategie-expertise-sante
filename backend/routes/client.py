@@ -500,6 +500,150 @@ async def get_dossier_analysis(client: dict = Depends(get_current_client)):
         "volume": {"score": min(100, total_docs * 15), "label": "Volume de pièces", "weight": 10, "count": total_docs},
     }
 
+    # 12. Recommended actions — Phase 2: prioritized, clickable CTAs
+    recommended_actions = []
+    priority = 1
+    if total_docs == 0:
+        recommended_actions.append({
+            "priority": priority, "action_id": "upload_first_doc",
+            "title": "Déposez votre premier document",
+            "description": "Commencez par les pièces les plus importantes de votre dossier.",
+            "impact": "+15% sur votre score", "cta_label": "Déposer un document",
+            "cta_target": "documents", "icon": "upload",
+            "estimated_score_gain": 15
+        })
+        priority += 1
+    elif len(missing_docs) > 0:
+        top_missing = missing_docs[0]
+        recommended_actions.append({
+            "priority": priority, "action_id": f"upload_{top_missing['key']}",
+            "title": f"Ajoutez : {top_missing['label']}",
+            "description": f"Ce document est essentiel pour votre dossier {case_type or 'AT'}. Sans lui, votre demande risque d'être fragilisée.",
+            "impact": f"+{max(5, round(40 / len(essential_list)))}% sur votre score",
+            "cta_label": "Ajouter ce document", "cta_target": "documents", "icon": "file",
+            "estimated_score_gain": max(5, round(40 / len(essential_list)))
+        })
+        priority += 1
+
+    if illisible > 0:
+        recommended_actions.append({
+            "priority": priority, "action_id": "fix_illisible",
+            "title": f"Corrigez {illisible} document(s) illisible(s)",
+            "description": "Des documents illisibles ne sont pas pris en compte. Renumérisez-les en meilleure qualité.",
+            "impact": f"+{min(10, illisible * 5)}% sur votre score",
+            "cta_label": "Voir les documents", "cta_target": "documents", "icon": "scan",
+            "estimated_score_gain": min(10, illisible * 5)
+        })
+        priority += 1
+
+    if strat_count == 0:
+        recommended_actions.append({
+            "priority": priority, "action_id": "launch_strategiia",
+            "title": "Lancez une analyse StratégiIA",
+            "description": "L'IA analysera votre situation et identifiera les forces et faiblesses de votre dossier.",
+            "impact": "+25% sur votre score", "cta_label": "Lancer l'analyse",
+            "cta_target": "strategiia", "icon": "brain",
+            "estimated_score_gain": 25
+        })
+        priority += 1
+
+    if dossier_count == 0 and strat_count > 0:
+        recommended_actions.append({
+            "priority": priority, "action_id": "dossier_express",
+            "title": "Complétez un Dossier Express",
+            "description": "Un dossier express consolide votre analyse et facilite le suivi de votre parcours.",
+            "impact": "+15% sur votre score", "cta_label": "Créer un dossier express",
+            "cta_target": "strategiia", "icon": "zap",
+            "estimated_score_gain": 15
+        })
+        priority += 1
+
+    if len(missing_docs) > 1:
+        remaining = missing_docs[1:min(4, len(missing_docs))]
+        for md in remaining:
+            recommended_actions.append({
+                "priority": priority, "action_id": f"upload_{md['key']}",
+                "title": f"Ajoutez : {md['label']}",
+                "description": "Document important pour renforcer votre dossier.",
+                "impact": f"+{max(3, round(40 / len(essential_list)))}% estimé",
+                "cta_label": "Ajouter", "cta_target": "documents", "icon": "file",
+                "estimated_score_gain": max(3, round(40 / len(essential_list)))
+            })
+            priority += 1
+
+    # 13. Predictive refusal logic — Phase 3
+    predictions = []
+    REFUSAL_PATTERNS = {
+        "at": [
+            {"condition": "no_cmi", "check": "cmi" in missing_keys,
+             "title": "Risque de contestation de la matérialité",
+             "detail": "Sans certificat médical initial, la CPAM pourrait contester la réalité de l'accident en invoquant l'absence de preuve médicale contemporaine des faits.",
+             "probability": "Élevée", "consequence": "Rejet de la prise en charge ou contestation lors de la phase amiable."},
+            {"condition": "no_declaration", "check": "declaration_at" in missing_keys,
+             "title": "Risque de forclusion pour déclaration tardive",
+             "detail": "La déclaration d'AT doit être faite dans les 48h. Un retard important peut être invoqué pour remettre en cause le lien avec le travail.",
+             "probability": "Moyenne", "consequence": "L'employeur ou la CPAM peut argumenter que le délai prouve l'absence de lien professionnel."},
+        ],
+        "mp": [
+            {"condition": "no_attestation", "check": "attestation_exposition" in missing_keys,
+             "title": "Risque de refus pour défaut de preuve d'exposition",
+             "detail": "Le CRRMP exige des preuves d'exposition professionnelle. Sans attestation, la reconnaissance hors tableau devient très difficile.",
+             "probability": "Élevée", "consequence": "Refus de reconnaissance de la maladie professionnelle par le CRRMP."},
+            {"condition": "no_fiche_poste", "check": "fiche_poste" in missing_keys,
+             "title": "Risque de sous-évaluation du lien causal",
+             "detail": "Sans description précise du poste, le médecin conseil peut minimiser l'exposition aux risques professionnels.",
+             "probability": "Moyenne", "consequence": "Taux d'IPP inférieur à la réalité ou refus de reconnaissance."},
+        ],
+        "mdph": [
+            {"condition": "no_cerfa", "check": "cerfa" in missing_keys,
+             "title": "Irrecevabilité de la demande",
+             "detail": "Le formulaire Cerfa est une condition de recevabilité. Sans lui, la MDPH ne peut pas instruire votre demande.",
+             "probability": "Certaine", "consequence": "Retour du dossier sans instruction. Perte de temps de plusieurs mois."},
+        ],
+        "assurance": [
+            {"condition": "no_contrat", "check": "contrat" in missing_keys,
+             "title": "Application d'exclusions non vérifiées",
+             "detail": "Sans le contrat, il est impossible de vérifier si l'assureur applique correctement les garanties et exclusions.",
+             "probability": "Moyenne", "consequence": "Refus de prise en charge basé sur des exclusions potentiellement inapplicables."},
+        ],
+        "expertise": [
+            {"condition": "no_historique", "check": "historique_medical" in missing_keys,
+             "title": "Sous-évaluation du taux d'IPP",
+             "detail": "L'expert médical se fonde sur les documents présentés. Un dossier médical incomplet mène systématiquement à une évaluation inférieure.",
+             "probability": "Élevée", "consequence": "Taux d'IPP et indemnisation inférieurs à ce que votre état justifie."},
+        ],
+        "recours": [
+            {"condition": "no_decision", "check": "decision_contestee" in missing_keys,
+             "title": "Recours mal fondé ou irrecevable",
+             "detail": "Sans la décision contestée, il est impossible de construire une argumentation juridique ciblée et pertinente.",
+             "probability": "Élevée", "consequence": "Rejet du recours pour défaut de motivation ou irrecevabilité."},
+        ],
+    }
+    case_predictions = REFUSAL_PATTERNS.get(case_type, REFUSAL_PATTERNS.get("at", []))
+    for pred in case_predictions:
+        if pred["check"]:
+            predictions.append({
+                "title": pred["title"],
+                "detail": pred["detail"],
+                "probability": pred["probability"],
+                "consequence": pred["consequence"],
+            })
+
+    # 14. Premium CTA — Phase 3
+    premium_cta = {
+        "show": composite < 85 and premium_count == 0,
+        "title": "Analyse Expert Personnalisée",
+        "subtitle": "Faites examiner votre dossier par un expert en droit social",
+        "features": [
+            "Audit complet de votre dossier par un spécialiste",
+            "Identification des points forts et axes d'amélioration",
+            "Recommandations personnalisées et stratégie sur mesure",
+            "Rapport détaillé avec plan d'action concret",
+        ],
+        "cta_label": "Demander une analyse expert",
+        "score_context": f"Votre dossier est à {composite}%. Un expert peut vous aider à atteindre un niveau optimal.",
+    }
+
     return {
         "score": composite,
         "dynamic_message": dynamic_message,
@@ -510,6 +654,9 @@ async def get_dossier_analysis(client: dict = Depends(get_current_client)):
         "found_documents": [{"key": d["key"], "label": d["label"], "category": d["category"]} for d in found_docs],
         "actionable_count": actionable_count,
         "case_type": case_type,
+        "recommended_actions": recommended_actions,
+        "predictions": predictions,
+        "premium_cta": premium_cta,
         "summary": {
             "total_documents": total_docs,
             "validated": validated,
