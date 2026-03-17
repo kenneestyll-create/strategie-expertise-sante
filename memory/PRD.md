@@ -40,7 +40,11 @@ Application web complète en français pour fournir des conseils sur les maladie
 - StrategiIA simplifié : retiré DocumentUploader, OCR, dossier quality score
 - Navbar score gated derrière `has_dossier_express`
 
-### Analyse de dossier — Phases 1/2/3 (Feb-Mar 2026)
+### Dossier Express — OCR Phase 2 intégré (Mar 2026)
+- DocumentUploader avec `enableOCR=true` dans le formulaire Dossier Express
+- Auto-remplissage des champs (type_dossier, régime, nom, situation) via OCR + GPT-4o
+- Pipeline : image → Tesseract OCR → GPT-4o enhancement → auto-fill
+- Bug fix : suppression de la dépendance `docChecks` des boutons submit/checkout
 - Score composite (complétude 40%, qualité 20%, cohérence, analyses 15%, progression 15%, volume 10%)
 - Messages dynamiques (5 seuils), points de fragilité, alertes de risque
 - Actions recommandées priorisées (max 3) avec badges couleur
