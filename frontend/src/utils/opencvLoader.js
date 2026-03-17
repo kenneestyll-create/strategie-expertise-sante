@@ -1,7 +1,6 @@
 /**
- * Scanner Worker Manager — Stateful pattern
- * Worker keeps image in memory. Operations don't re-transfer data.
- * API: initScanWorker → scanDocument → filter/rotate/crop/adjust → save
+ * Scanner Worker Manager — Stateful pattern with mandatory timeouts
+ * Every promise MUST resolve or reject. No hanging allowed.
  */
 
 let worker = null;
@@ -10,27 +9,33 @@ let initFailed = false;
 let msgId = 0;
 const pending = new Map();
 
+/* ── Timeout built into sendMessage — no promise hangs ever ── */
+
 function getWorker() {
   if (worker) return worker;
   try {
-    worker = new Worker('/scanner.worker.js?v=4');
+    worker = new Worker('/scanner.worker.js?v=5');
     worker.onmessage = (e) => {
-      const { id } = e.data;
+      const { id, type } = e.data;
+      console.log(`[ScanWorker] RECV type=${type} id=${id}`);
       const cb = pending.get(id);
       if (cb) {
         pending.delete(id);
         cb(e.data);
       }
-      if (e.data.type === 'init') {
+      if (type === 'init') {
         ready = e.data.success;
         if (!ready) initFailed = true;
-        console.log(ready ? '[ScanWorker] Scanner prêt' : '[ScanWorker] Scanner init échoué');
+        console.log(ready ? '[ScanWorker] INIT OK' : '[ScanWorker] INIT FAIL');
       }
     };
     worker.onerror = (err) => {
-      console.error('[ScanWorker] Worker error:', err.message);
+      console.error('[ScanWorker] WORKER CRASH:', err.message);
       initFailed = true;
-      for (const [, cb] of pending) cb({ type: 'error', error: 'Worker crashed' });
+      for (const [id, cb] of pending) {
+        console.error(`[ScanWorker] Rejecting pending id=${id}`);
+        cb({ type: 'error', error: 'Worker crashed' });
+      }
       pending.clear();
     };
     return worker;
@@ -42,11 +47,17 @@ function getWorker() {
 }
 
 function sendMessage(data, transfer = [], timeoutMs = 8000) {
+  const label = data.type || 'unknown';
+  console.log(`[ScanWorker] SEND type=${label}`);
   return new Promise((resolve, reject) => {
     const w = getWorker();
     if (!w) return reject(new Error('No worker'));
     const id = ++msgId;
-    const timer = setTimeout(() => { pending.delete(id); reject(new Error('Worker timeout')); }, timeoutMs);
+    const timer = setTimeout(() => {
+      pending.delete(id);
+      console.error(`[ScanWorker] TIMEOUT ${timeoutMs}ms on ${label} id=${id}`);
+      reject(new Error(`Timeout ${timeoutMs}ms on ${label}`));
+    }, timeoutMs);
     pending.set(id, (response) => {
       clearTimeout(timer);
       if (response.type === 'error') reject(new Error(response.error));
@@ -72,14 +83,16 @@ function parsePreview(res) {
 
 /* ══════════════════════ PUBLIC API ══════════════════════ */
 
-/** Initialize worker (call once, non-blocking) */
 export async function initScanWorker() {
-  if (ready) return true;
-  if (initFailed) return false;
+  if (ready) { console.log('[ScanWorker] Already ready'); return true; }
+  if (initFailed) { console.log('[ScanWorker] Already failed'); return false; }
+  console.log('INIT START');
   try {
     const res = await sendMessage({ type: 'init' }, [], 10000);
+    console.log('INIT DONE success=' + res.success);
     return res.success;
-  } catch {
+  } catch (err) {
+    console.error('INIT FAIL:', err.message);
     initFailed = true;
     return false;
   }
@@ -88,79 +101,97 @@ export async function initScanWorker() {
 export function isScanReady() { return ready; }
 export function isScanFailed() { return initFailed; }
 
-/**
- * SCAN — Send image to worker for auto-detection + perspective correction
- * This is the initial capture. Image is stored in worker memory.
- * @param {ImageData} imageData - from canvas.getImageData()
- * @param {string} filter - 'document' | 'bw' | 'original'
- */
 export async function scanDocument(imageData, filter = 'document') {
-  const buffer = imageData.data.buffer.slice(0);
-  const res = await sendMessage(
-    { type: 'scan', imageData: buffer, width: imageData.width, height: imageData.height, filter },
-    [buffer],
-    15000
-  );
-  return parsePreview(res);
+  console.log('SCAN START');
+  try {
+    const buffer = imageData.data.buffer.slice(0);
+    const res = await sendMessage(
+      { type: 'scan', imageData: buffer, width: imageData.width, height: imageData.height, filter },
+      [buffer],
+      15000
+    );
+    console.log('SCAN DONE');
+    return parsePreview(res);
+  } catch (err) {
+    console.error('SCAN FAIL:', err.message);
+    throw err;
+  }
 }
 
-/**
- * FILTER — Change filter on stored image (no data transfer)
- * @param {string} filter - 'document' | 'bw' | 'original'
- */
 export async function applyFilter(filter = 'document') {
-  const res = await sendMessage({ type: 'filter', filter });
-  return parsePreview(res);
+  console.log('FILTER START:', filter);
+  try {
+    const res = await sendMessage({ type: 'filter', filter }, [], 5000);
+    console.log('FILTER DONE');
+    return parsePreview(res);
+  } catch (err) {
+    console.error('FILTER FAIL:', err.message);
+    throw err;
+  }
 }
 
-/**
- * ROTATE — Rotate stored image 90° left or right
- * @param {string} direction - 'left' | 'right'
- */
 export async function rotateImage(direction = 'right') {
-  const res = await sendMessage({ type: 'rotate', direction });
-  return parsePreview(res);
+  console.log('ROTATE START:', direction);
+  try {
+    const res = await sendMessage({ type: 'rotate', direction }, [], 5000);
+    console.log('ROTATE DONE');
+    return parsePreview(res);
+  } catch (err) {
+    console.error('ROTATE FAIL:', err.message);
+    throw err;
+  }
 }
 
-/**
- * CROP — Crop with rectangle {x0,y0,x1,y1} or 4-point {corners:[...]}
- * Coordinates are normalized [0..1] relative to original image.
- * @param {object} coords - { x0, y0, x1, y1 } or { corners: [{x,y},...] }
- */
 export async function cropImage(coords) {
-  const res = await sendMessage({ type: 'crop', coords });
-  return parsePreview(res);
+  console.log('CROP START');
+  try {
+    const res = await sendMessage({ type: 'crop', coords }, [], 5000);
+    console.log('CROP DONE');
+    return parsePreview(res);
+  } catch (err) {
+    console.error('CROP FAIL:', err.message);
+    throw err;
+  }
 }
 
-/**
- * ADJUST — Brightness/Contrast on stored image (no data transfer)
- * @param {number} brightness - [-100, 100]
- * @param {number} contrast - [-100, 100]
- */
 export async function adjustImage(brightness = 0, contrast = 0) {
-  const res = await sendMessage({ type: 'adjust', brightness, contrast });
-  return parsePreview(res);
+  console.log('ADJUST START b=' + brightness + ' c=' + contrast);
+  try {
+    const res = await sendMessage({ type: 'adjust', brightness, contrast }, [], 5000);
+    console.log('ADJUST DONE');
+    return parsePreview(res);
+  } catch (err) {
+    console.error('ADJUST FAIL:', err.message);
+    throw err;
+  }
 }
 
-/**
- * SAVE — Finalize and return the current image
- * @returns {Promise<{imageData: ImageData, width, height}>}
- */
 export async function saveImage() {
-  const res = await sendMessage({ type: 'save' });
-  return {
-    imageData: new ImageData(new Uint8ClampedArray(res.imageData), res.width, res.height),
-    width: res.width,
-    height: res.height,
-  };
+  console.log('SAVE START');
+  try {
+    const res = await sendMessage({ type: 'save' }, [], 5000);
+    console.log('SAVE DONE');
+    return {
+      imageData: new ImageData(new Uint8ClampedArray(res.imageData), res.width, res.height),
+      width: res.width,
+      height: res.height,
+    };
+  } catch (err) {
+    console.error('SAVE FAIL:', err.message);
+    throw err;
+  }
 }
 
-/** Terminate worker and release memory */
 export function terminateScanWorker() {
+  console.log('[ScanWorker] TERMINATE');
   if (worker) {
     worker.terminate();
     worker = null;
     ready = false;
+    for (const [id, cb] of pending) {
+      console.log(`[ScanWorker] Cancelling pending id=${id}`);
+      cb({ type: 'error', error: 'Worker terminated' });
+    }
     pending.clear();
   }
 }

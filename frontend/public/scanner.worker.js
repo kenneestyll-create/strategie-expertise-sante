@@ -522,57 +522,66 @@ function handleSave() {
 self.onmessage = (e) => {
   const { type, id } = e.data;
   const t0 = performance.now();
+  console.log('[Worker] RECV type=' + type + ' id=' + id);
   try {
     switch (type) {
       case 'init': {
-        console.log('[Worker] Init — Pure JS scanner ready');
+        console.log('[Worker] INIT START');
+        console.log('[Worker] INIT DONE');
         self.postMessage({ id, type: 'init', success: true });
         return;
       }
       case 'scan': {
+        console.log('[Worker] SCAN START');
         const { imageData, width, height, filter } = e.data;
         const result = handleScan(imageData, width, height, filter);
-        console.log('[Worker] Scan done in', Math.round(performance.now() - t0), 'ms — detected:', result.autoDetected);
+        console.log('[Worker] SCAN DONE in', Math.round(performance.now() - t0), 'ms — detected:', result.autoDetected);
         self.postMessage({ id, type: 'preview', ...result }, [result.imageData]);
         return;
       }
       case 'filter': {
+        console.log('[Worker] FILTER START:', e.data.filter);
         const result = handleFilter(e.data.filter);
-        console.log('[Worker] Filter done in', Math.round(performance.now() - t0), 'ms');
+        console.log('[Worker] FILTER DONE in', Math.round(performance.now() - t0), 'ms');
         self.postMessage({ id, type: 'preview', ...result }, [result.imageData]);
         return;
       }
       case 'rotate': {
+        console.log('[Worker] ROTATE START:', e.data.direction);
         const result = handleRotate(e.data.direction || 'right');
-        console.log('[Worker] Rotate done in', Math.round(performance.now() - t0), 'ms');
+        console.log('[Worker] ROTATE DONE in', Math.round(performance.now() - t0), 'ms');
         self.postMessage({ id, type: 'preview', ...result }, [result.imageData]);
         return;
       }
       case 'crop': {
+        console.log('[Worker] CROP START');
         const result = handleCrop(e.data.coords);
-        console.log('[Worker] Crop done in', Math.round(performance.now() - t0), 'ms');
+        console.log('[Worker] CROP DONE in', Math.round(performance.now() - t0), 'ms');
         self.postMessage({ id, type: 'preview', ...result }, [result.imageData]);
         return;
       }
       case 'adjust': {
+        console.log('[Worker] ADJUST START b=' + (e.data.brightness||0) + ' c=' + (e.data.contrast||0));
         const result = handleAdjust(e.data.brightness || 0, e.data.contrast || 0);
-        console.log('[Worker] Adjust done in', Math.round(performance.now() - t0), 'ms');
+        console.log('[Worker] ADJUST DONE in', Math.round(performance.now() - t0), 'ms');
         self.postMessage({ id, type: 'preview', ...result }, [result.imageData]);
         return;
       }
       case 'save': {
+        console.log('[Worker] SAVE START');
         const result = handleSave();
-        console.log('[Worker] Save done in', Math.round(performance.now() - t0), 'ms');
+        console.log('[Worker] SAVE DONE in', Math.round(performance.now() - t0), 'ms');
         self.postMessage({ id, type: 'saved', ...result }, [result.imageData]);
         return;
       }
       default:
+        console.error('[Worker] UNKNOWN type=' + type);
         self.postMessage({ id, type: 'error', error: 'Unknown: ' + type });
     }
   } catch (err) {
-    console.error('[Worker] Error:', err.message, err.stack);
+    console.error('[Worker] ERROR on type=' + type + ':', err.message, err.stack);
     self.postMessage({ id, type: 'error', error: err.message });
   }
 };
 
-console.log('[Worker] Pure-JS stateful scanner worker ready');
+console.log('[Worker] Pure-JS stateful scanner worker ready v5');
