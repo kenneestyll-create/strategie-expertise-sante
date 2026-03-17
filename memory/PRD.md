@@ -17,13 +17,13 @@ Application web complète en français pour fournir des conseils sur les maladie
 - Résultat textuel avec email gate pour rapport complet
 - Bouton "Analyser mon dossier gratuitement"
 
-### Dossier Express (PAYANT — 97€)
+### Dossier Express IA (PAYANT — 97€)
 - Score de solidité du dossier (XX/100) avec ring SVG animé
 - 3 métriques clés : Complétude, Qualité, Cohérence
 - Points de fragilité, alertes de risque, prédictions
 - Actions recommandées priorisées (max 3)
 - Indicateur navbar compact — uniquement pour clients payants
-- **Gating:** Clients sans Dossier Express voient un teaser flouté avec CTA
+- **Gating:** Clients sans Dossier Express IA voient un teaser flouté avec CTA
 
 ## Fonctionnalités implémentées
 
@@ -36,7 +36,7 @@ Application web complète en français pour fournir des conseils sur les maladie
 - P3: Documents sécurisés (auth + propriété)
 - Headers de sécurité (X-Content-Type-Options, X-Frame-Options, etc.)
 
-### Optimisation Tunnel de Conversion Dossier Express (Mar 2026) ✅
+### Optimisation Tunnel de Conversion Dossier Express IA (Mar 2026) ✅
 - **Landing page refonte:**
   - Compteur hebdomadaire en temps réel ("X dossiers analysés cette semaine")
   - Titre orienté valeur : "Votre rapport d'analyse complet et personnalisé"
@@ -61,7 +61,13 @@ Application web complète en français pour fournir des conseils sur les maladie
   - `payment_config` exposé dans `/api/admin/analytics` (mode, configured)
   - Switch instantané : remplacer `STRIPE_API_KEY` dans .env suffit
 
-### Système complet StratégiIA / Dossier Express (Phases 1-3)
+### Renommage Dossier Express → Dossier Express IA (Mar 2026) ✅
+- Renommage complet sur tout le site (frontend, backend, emails, PDFs)
+- Cohérence branding avec StratégiIA
+- Routes, collections DB et variables inchangées
+- Validé par 13 tests + 4 vérifications grep
+
+### Système complet StratégiIA / Dossier Express IA (Phases 1-3)
 - Analyse IA, scoring, OCR, auto-remplissage, notifications, PDF
 
 ## Fichiers clés
