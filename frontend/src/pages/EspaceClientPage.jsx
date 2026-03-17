@@ -33,6 +33,7 @@ import axios from 'axios';
 import { DataConsentBox } from '@/components/DataConsentBox';
 import { ClientDocuments } from '@/components/ClientDocuments';
 import { ProgressDashboard } from '@/components/ProgressDashboard';
+import { DossierAnalysis } from '@/components/DossierAnalysis';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -435,6 +436,9 @@ const ClientDashboard = ({ token, clientName, logout }) => {
               <TabsContent value="dossiers">
                 {/* Progress Dashboard */}
                 <ProgressDashboard token={token} />
+
+                {/* Dossier Analysis - StratégiIA Phase 1 */}
+                <DossierAnalysis token={token} />
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

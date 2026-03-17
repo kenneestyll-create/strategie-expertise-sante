@@ -244,6 +244,284 @@ async def get_client_progress(client: dict = Depends(get_current_client)):
     }
 
 
+
+# ==================== DOSSIER ANALYSIS (StratégiIA Phase 1) ====================
+
+# Risk alerts by case type — specific, actionable warnings
+RISK_ALERTS = {
+    "at": [
+        {"key": "cmi", "condition": "missing", "severity": "critical",
+         "message": "Sans certificat médical initial (CMI), la CPAM peut rejeter votre demande de prise en charge. Ce document est la pierre angulaire de votre dossier.",
+         "action": "Consultez votre médecin traitant pour obtenir un CMI décrivant précisément les lésions et leur lien avec l'accident."},
+        {"key": "declaration_at", "condition": "missing", "severity": "critical",
+         "message": "L'absence de déclaration d'accident du travail peut être utilisée pour contester la matérialité de l'accident. Le délai légal est de 48h.",
+         "action": "Vérifiez que votre employeur a bien effectué la déclaration. À défaut, vous pouvez la faire vous-même auprès de la CPAM."},
+        {"key": "notification_cpam", "condition": "missing", "severity": "warning",
+         "message": "Sans notification CPAM, il est impossible de connaître la décision prise sur votre dossier et les voies de recours disponibles.",
+         "action": "Contactez votre CPAM pour obtenir la notification de décision si vous ne l'avez pas reçue."},
+    ],
+    "mp": [
+        {"key": "cmi", "condition": "missing", "severity": "critical",
+         "message": "Le certificat médical initial est indispensable pour établir le lien entre votre pathologie et votre activité professionnelle.",
+         "action": "Faites établir un CMI par votre médecin mentionnant explicitement le lien avec votre activité professionnelle."},
+        {"key": "attestation_exposition", "condition": "missing", "severity": "critical",
+         "message": "L'attestation d'exposition est un élément clé. Son absence fragilise considérablement la reconnaissance de la maladie professionnelle, surtout hors tableau.",
+         "action": "Demandez à votre employeur ou médecin du travail une attestation d'exposition aux risques professionnels."},
+        {"key": "fiche_poste", "condition": "missing", "severity": "warning",
+         "message": "La fiche de poste permet de démontrer l'exposition aux risques. Sans elle, le CRRMP peut avoir des difficultés à établir le lien causal.",
+         "action": "Récupérez votre fiche de poste auprès de votre employeur ou des ressources humaines."},
+    ],
+    "mdph": [
+        {"key": "cerfa", "condition": "missing", "severity": "critical",
+         "message": "Le formulaire Cerfa est obligatoire pour toute demande MDPH. Sans lui, votre dossier ne peut pas être instruit.",
+         "action": "Téléchargez le formulaire Cerfa n°15692*01 sur le site service-public.fr ou retirez-le à votre MDPH."},
+        {"key": "certificat_medical", "condition": "missing", "severity": "critical",
+         "message": "Le certificat médical MDPH (Cerfa n°15695*01) est obligatoire. Il doit être rempli par votre médecin et dater de moins de 6 mois.",
+         "action": "Prenez rendez-vous avec votre médecin pour remplir le certificat médical MDPH."},
+    ],
+    "assurance": [
+        {"key": "contrat", "condition": "missing", "severity": "critical",
+         "message": "Sans votre contrat d'assurance, il est impossible de vérifier les garanties souscrites et les exclusions applicables.",
+         "action": "Demandez une copie de votre contrat à votre assureur ou courtier."},
+        {"key": "declaration_sinistre", "condition": "missing", "severity": "critical",
+         "message": "La déclaration de sinistre doit être faite dans les délais contractuels (généralement 5 jours). Un retard peut justifier un refus de prise en charge.",
+         "action": "Effectuez votre déclaration de sinistre par lettre recommandée avec AR dès que possible."},
+    ],
+    "expertise": [
+        {"key": "convocation", "condition": "missing", "severity": "warning",
+         "message": "La convocation à l'expertise contient des informations essentielles sur le médecin expert et les modalités de l'examen.",
+         "action": "Vérifiez vos courriers ou contactez l'organisme qui a ordonné l'expertise."},
+        {"key": "historique_medical", "condition": "missing", "severity": "critical",
+         "message": "Un historique médical incomplet peut conduire à une sous-évaluation de votre taux d'IPP. L'expert se base sur les documents fournis.",
+         "action": "Rassemblez tous vos comptes rendus médicaux, imageries et prescriptions depuis l'accident/maladie."},
+    ],
+    "faute_inex": [
+        {"key": "preuve_faute", "condition": "missing", "severity": "critical",
+         "message": "La reconnaissance de la faute inexcusable repose sur la preuve que l'employeur avait conscience du danger et n'a pas pris les mesures nécessaires.",
+         "action": "Rassemblez tout élément prouvant la connaissance du risque par l'employeur : alertes CHSCT/CSE, courriers, témoignages, PV d'inspection."},
+    ],
+    "recours": [
+        {"key": "decision_contestee", "condition": "missing", "severity": "critical",
+         "message": "La décision contestée est indispensable pour identifier les motifs de refus et construire votre argumentation.",
+         "action": "Retrouvez la notification de décision ou demandez-en une copie à l'organisme concerné."},
+        {"key": "courrier_recours", "condition": "missing", "severity": "warning",
+         "message": "Le courrier de recours doit être envoyé dans les délais légaux (2 mois pour la CRA, 2 mois pour le tribunal). Un dépassement peut rendre le recours irrecevable.",
+         "action": "Rédigez votre courrier de recours en mentionnant les références de la décision et vos arguments."},
+    ],
+}
+
+# Dynamic messages based on score thresholds
+def _get_dynamic_message(score: int, case_type: str) -> dict:
+    if score < 30:
+        return {
+            "title": "Votre dossier nécessite une attention immédiate",
+            "message": "Plusieurs éléments essentiels sont manquants. Sans action rapide, votre dossier risque d'être rejeté ou considérablement affaibli.",
+            "tone": "urgent",
+            "color": "red"
+        }
+    elif score < 50:
+        return {
+            "title": "Votre dossier est en cours de structuration",
+            "message": "Les bases sont posées mais des documents clés manquent encore. Concentrez-vous sur les éléments critiques identifiés ci-dessous.",
+            "tone": "attention",
+            "color": "orange"
+        }
+    elif score < 70:
+        return {
+            "title": "Votre dossier progresse bien",
+            "message": "Vous êtes sur la bonne voie. Quelques éléments supplémentaires permettront de consolider significativement votre position.",
+            "tone": "encouraging",
+            "color": "amber"
+        }
+    elif score < 85:
+        return {
+            "title": "Votre dossier est solide",
+            "message": "La majorité des éléments essentiels sont réunis. Les derniers ajustements renforceront encore votre dossier pour un résultat optimal.",
+            "tone": "positive",
+            "color": "blue"
+        }
+    else:
+        return {
+            "title": "Votre dossier atteint un niveau expert",
+            "message": "Votre dossier est particulièrement bien constitué. Vous disposez d'un socle solide pour faire valoir vos droits.",
+            "tone": "excellent",
+            "color": "green"
+        }
+
+
+@router.get("/client/dossier-analysis")
+async def get_dossier_analysis(client: dict = Depends(get_current_client)):
+    """Comprehensive dossier analysis: score, weak points, risk alerts, dynamic messages."""
+    cid = client["sub"]
+    email = client.get("email", "")
+
+    # 1. Fetch all client data
+    docs = await db.client_documents.find(
+        {"client_id": cid},
+        {"_id": 0, "status": 1, "category": 1, "filename": 1, "tags": 1, "created_at": 1}
+    ).to_list(500)
+
+    total_docs = len(docs)
+    validated = sum(1 for d in docs if d.get("status") == "valide")
+    pending = sum(1 for d in docs if d.get("status") == "en_attente")
+    illisible = sum(1 for d in docs if d.get("status") == "illisible")
+
+    # Detect case type
+    case_type = None
+    latest_analysis = await db.strategiia_analyses.find_one(
+        {"email": email}, {"_id": 0, "type_dossier": 1}, sort=[("created_at", -1)]
+    )
+    if latest_analysis:
+        case_type = latest_analysis.get("type_dossier")
+    if not case_type:
+        latest_dossier = await db.dossier_express.find_one(
+            {"email": email}, {"_id": 0, "type_dossier": 1}, sort=[("created_at", -1)]
+        )
+        if latest_dossier:
+            case_type = latest_dossier.get("type_dossier")
+
+    essential_list = ESSENTIAL_DOCS.get(case_type, ESSENTIAL_DOCS.get("at", []))
+
+    # 2. Document completeness analysis
+    doc_categories = [d.get("category", "") for d in docs] + [d.get("filename", "") for d in docs]
+    found_docs = []
+    missing_docs = []
+    for ed in essential_list:
+        if _match_doc_to_essential(doc_categories, ed["key"], ed["category"]):
+            found_docs.append(ed)
+        else:
+            missing_docs.append(ed)
+
+    completeness_score = round((len(found_docs) / len(essential_list)) * 100) if essential_list else 100
+
+    # 3. Document quality score
+    if total_docs == 0:
+        quality_score = 0
+    else:
+        quality_score = round(((validated * 1.0 + pending * 0.5) / total_docs) * 100)
+
+    # 4. StrategiIA analysis richness
+    strat_count = await db.strategiia_analyses.count_documents({"email": email})
+    dossier_count = await db.dossier_express.count_documents({"email": email})
+    premium_count = await db.premium_analyses.count_documents({"email": email})
+
+    analysis_score = min(100, strat_count * 25 + dossier_count * 40 + premium_count * 35)
+
+    # 5. Overall progress (steps)
+    cases = await db.client_cases.find({"client_id": cid}, {"_id": 0, "status": 1}).to_list(50)
+    completed_cases = sum(1 for c in cases if c.get("status") == "termine")
+    progress_score = min(100, 20 + completed_cases * 30 + (30 if strat_count > 0 else 0) + (30 if total_docs >= 3 else total_docs * 10))
+
+    # 6. Composite score: Solidité du dossier
+    composite = round(
+        completeness_score * 0.40 +
+        quality_score * 0.20 +
+        analysis_score * 0.15 +
+        progress_score * 0.15 +
+        min(100, total_docs * 15) * 0.10  # raw document count bonus
+    )
+    composite = min(100, max(0, composite))
+
+    # 7. Weak points detection
+    weak_points = []
+    if completeness_score < 60:
+        weak_points.append({
+            "id": "low_completeness",
+            "severity": "critical",
+            "title": "Documents essentiels manquants",
+            "detail": f"Seulement {len(found_docs)}/{len(essential_list)} documents essentiels sont présents dans votre dossier.",
+            "impact": "Cela réduit significativement vos chances de succès."
+        })
+    if illisible > 0:
+        weak_points.append({
+            "id": "illisible_docs",
+            "severity": "critical",
+            "title": f"{illisible} document(s) illisible(s)",
+            "detail": "Des documents illisibles ne peuvent pas être pris en compte dans l'analyse de votre dossier.",
+            "impact": "Renvoyez une version lisible pour éviter tout rejet."
+        })
+    if total_docs > 0 and validated == 0:
+        weak_points.append({
+            "id": "no_validated",
+            "severity": "warning",
+            "title": "Aucun document validé",
+            "detail": "Tous vos documents sont en attente de validation.",
+            "impact": "La validation permet de s'assurer que les documents sont exploitables."
+        })
+    if strat_count == 0 and total_docs >= 1:
+        weak_points.append({
+            "id": "no_analysis",
+            "severity": "info",
+            "title": "Aucune analyse IA réalisée",
+            "detail": "Lancez une analyse StratégiIA pour obtenir une évaluation stratégique de votre situation.",
+            "impact": "L'analyse permet d'identifier les forces et faiblesses de votre dossier."
+        })
+    if total_docs == 0:
+        weak_points.append({
+            "id": "no_documents",
+            "severity": "critical",
+            "title": "Aucun document déposé",
+            "detail": "Votre dossier ne contient aucun document. Sans pièces justificatives, aucune démarche ne peut aboutir.",
+            "impact": "Commencez par déposer vos documents les plus importants."
+        })
+
+    # 8. Risk alerts — case-type specific
+    risk_alerts = []
+    case_risks = RISK_ALERTS.get(case_type, RISK_ALERTS.get("at", []))
+    missing_keys = {d["key"] for d in missing_docs}
+    for risk in case_risks:
+        if risk["condition"] == "missing" and risk["key"] in missing_keys:
+            risk_alerts.append({
+                "severity": risk["severity"],
+                "message": risk["message"],
+                "action": risk["action"]
+            })
+
+    # Add quality-based risk alerts
+    if illisible > 0:
+        risk_alerts.append({
+            "severity": "warning",
+            "message": f"{illisible} document(s) marqué(s) comme illisible(s). Ces documents ne seront pas pris en compte lors de l'examen de votre dossier.",
+            "action": "Renumérisez les documents concernés avec une meilleure résolution et renvoyez-les."
+        })
+
+    # 9. Dynamic message
+    dynamic_message = _get_dynamic_message(composite, case_type)
+
+    # 10. Actionable count
+    actionable_count = len(missing_docs) + illisible + (1 if strat_count == 0 and total_docs >= 1 else 0)
+
+    # 11. Score breakdown for UI
+    score_breakdown = {
+        "completeness": {"score": completeness_score, "label": "Complétude documentaire", "weight": 40, "found": len(found_docs), "total": len(essential_list)},
+        "quality": {"score": quality_score, "label": "Qualité des documents", "weight": 20, "validated": validated, "pending": pending, "illisible": illisible},
+        "analysis": {"score": analysis_score, "label": "Analyses réalisées", "weight": 15, "strategiia": strat_count, "dossier_express": dossier_count, "premium": premium_count},
+        "progress": {"score": progress_score, "label": "Progression globale", "weight": 15},
+        "volume": {"score": min(100, total_docs * 15), "label": "Volume de pièces", "weight": 10, "count": total_docs},
+    }
+
+    return {
+        "score": composite,
+        "dynamic_message": dynamic_message,
+        "score_breakdown": score_breakdown,
+        "weak_points": weak_points,
+        "risk_alerts": risk_alerts,
+        "missing_documents": [{"key": d["key"], "label": d["label"], "category": d["category"]} for d in missing_docs],
+        "found_documents": [{"key": d["key"], "label": d["label"], "category": d["category"]} for d in found_docs],
+        "actionable_count": actionable_count,
+        "case_type": case_type,
+        "summary": {
+            "total_documents": total_docs,
+            "validated": validated,
+            "pending": pending,
+            "illisible": illisible,
+            "analyses_ia": strat_count,
+            "dossier_express": dossier_count,
+            "premium": premium_count,
+        },
+    }
+
+
 # ==================== CASES ====================
 
 @router.get("/client/cases")
