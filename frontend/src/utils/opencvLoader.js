@@ -1,67 +1,91 @@
 /**
- * Lazy loader for OpenCV.js — loaded only when scanner opens
+ * Non-blocking lazy loader for OpenCV.js
+ * Loads in background, never blocks UI
  */
-let cvReady = false;
-let cvPromise = null;
+let cvInstance = null;
+let loadPromise = null;
+let loadFailed = false;
 
 export function loadOpenCV() {
-  if (cvReady && window.cv) return Promise.resolve(window.cv);
-  if (cvPromise) return cvPromise;
+  if (cvInstance) return Promise.resolve(cvInstance);
+  if (loadFailed) return Promise.reject(new Error('OpenCV load failed'));
+  if (loadPromise) return loadPromise;
 
-  cvPromise = new Promise((resolve, reject) => {
-    // Check if already loaded
+  loadPromise = new Promise((resolve, reject) => {
+    // Already available
     if (window.cv && window.cv.Mat) {
-      cvReady = true;
-      resolve(window.cv);
-      return;
+      cvInstance = window.cv;
+      return resolve(cvInstance);
     }
+
+    const TIMEOUT = 12000;
+    let resolved = false;
+
+    const done = (cv) => {
+      if (resolved) return;
+      resolved = true;
+      cvInstance = cv;
+      resolve(cv);
+    };
+
+    const fail = (reason) => {
+      if (resolved) return;
+      resolved = true;
+      loadFailed = true;
+      loadPromise = null;
+      reject(new Error(reason));
+    };
+
+    // Timeout
+    const timer = setTimeout(() => fail('Délai dépassé'), TIMEOUT);
+
+    // onRuntimeInitialized is the correct OpenCV.js callback
+    window.Module = window.Module || {};
+    window.Module.onRuntimeInitialized = () => {
+      clearTimeout(timer);
+      if (window.cv && window.cv.Mat) {
+        done(window.cv);
+      } else {
+        fail('cv.Mat indisponible après init');
+      }
+    };
 
     const script = document.createElement('script');
     script.src = 'https://docs.opencv.org/4.9.0/opencv.js';
     script.async = true;
 
-    // OpenCV.js sets window.cv and calls onOpenCvReady when ready
-    window.onOpenCvReady = () => {
-      cvReady = true;
-      resolve(window.cv);
-    };
-
     script.onerror = () => {
-      cvPromise = null;
-      reject(new Error('Impossible de charger OpenCV.js'));
+      clearTimeout(timer);
+      fail('Échec réseau');
     };
 
-    // Timeout fallback (OpenCV.js can take time on mobile)
-    const timeout = setTimeout(() => {
-      if (!cvReady) {
-        // Check if cv is available even without callback
-        if (window.cv && window.cv.Mat) {
-          cvReady = true;
-          resolve(window.cv);
-        }
-      }
-    }, 15000);
-
+    // Polling fallback (some builds skip onRuntimeInitialized)
     script.onload = () => {
-      // Some builds don't use onOpenCvReady callback
-      const check = setInterval(() => {
+      let attempts = 0;
+      const poll = setInterval(() => {
+        attempts++;
         if (window.cv && window.cv.Mat) {
-          clearInterval(check);
-          clearTimeout(timeout);
-          cvReady = true;
-          resolve(window.cv);
+          clearInterval(poll);
+          clearTimeout(timer);
+          done(window.cv);
+        } else if (attempts > 60) {
+          clearInterval(poll);
+          clearTimeout(timer);
+          fail('Init timeout après chargement');
         }
-      }, 100);
-      // Give up after 20s
-      setTimeout(() => { clearInterval(check); clearTimeout(timeout); }, 20000);
+      }, 200);
     };
 
     document.head.appendChild(script);
   });
 
-  return cvPromise;
+  return loadPromise;
 }
 
 export function isOpenCVReady() {
-  return cvReady && !!window.cv;
+  return !!cvInstance;
+}
+
+export function getCV() {
+  return cvInstance;
 }

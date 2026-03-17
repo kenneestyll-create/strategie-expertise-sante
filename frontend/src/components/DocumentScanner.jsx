@@ -7,7 +7,7 @@ import {
   RotateCw, Wand2, Crop, Contrast, ScanLine, AlertCircle
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
-import { loadOpenCV } from '@/utils/opencvLoader';
+import { loadOpenCV, isOpenCVReady, getCV } from '@/utils/opencvLoader';
 import { processDocument, reprocessWithCorners } from '@/utils/documentProcessor';
 
 /* ── PDF builder ── */
@@ -129,7 +129,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
   const streamRef = useRef(null);
   const adjustImgRef = useRef(null);
 
-  const [phase, setPhase] = useState('loading');
+  const [phase, setPhase] = useState('guide');
   const [pages, setPages] = useState([]);
   const [rawCapture, setRawCapture] = useState(null);
   const [processedCapture, setProcessedCapture] = useState(null);
@@ -141,29 +141,18 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [facingMode, setFacingMode] = useState('environment');
   const [error, setError] = useState('');
-  const [cvRef, setCvRef] = useState(null);
-  const [loadProgress, setLoadProgress] = useState('Chargement du moteur de scan...');
+  const [cvReady, setCvReady] = useState(isOpenCVReady());
+  const [cvLoading, setCvLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
 
-  /* ── Load OpenCV.js on mount ── */
+  /* ── Load OpenCV in background (non-blocking) ── */
   useEffect(() => {
-    let cancelled = false;
+    if (cvReady) return;
+    setCvLoading(true);
     loadOpenCV()
-      .then(cv => {
-        if (!cancelled) {
-          setCvRef(cv);
-          setPhase('guide');
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setLoadProgress('');
-          setError("Impossible de charger le moteur de scan. Vérifiez votre connexion.");
-          setPhase('guide'); // Allow use without OpenCV (manual mode only)
-        }
-      });
-    return () => { cancelled = true; };
-  }, []);
+      .then(() => { setCvReady(true); setCvLoading(false); })
+      .catch(() => { setCvLoading(false); });
+  }, [cvReady]);
 
   /* ── Camera lifecycle ── */
   const startCamera = useCallback(async () => {
@@ -223,16 +212,15 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
     setRawCapture(dataUrl);
     stopCamera();
 
-    // Auto-process with OpenCV
-    if (cvRef) {
+    const cv = getCV();
+    if (cv) {
       setPhase('processing');
       setProcessing(true);
       try {
-        const result = await processDocument(cvRef, dataUrl, filter);
+        const result = await processDocument(cv, dataUrl, filter);
         setProcessedCapture(result.resultDataUrl);
         setAutoDetected(result.autoDetected);
         if (result.corners) {
-          // Convert pixel corners to normalized (0-1) for manual adjustment
           const img = new Image();
           img.src = dataUrl;
           await new Promise(r => { img.onload = r; });
@@ -249,37 +237,38 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
         setShowManualMode(false);
         setPhase('preview');
       } catch (e) {
-        console.error('Processing error:', e);
+        console.warn('OpenCV processing error:', e);
         setProcessedCapture(dataUrl);
         setAutoDetected(false);
         setPhase('preview');
       }
       setProcessing(false);
     } else {
-      // No OpenCV — use raw image
+      // No OpenCV — use raw image directly
       setProcessedCapture(dataUrl);
       setAutoDetected(false);
+      setManualCorners(null);
       setPhase('preview');
     }
-  }, [stopCamera, cvRef, filter]);
+  }, [stopCamera, filter]);
 
   /* ── Re-process with different filter ── */
   const applyFilter = useCallback(async (newFilter) => {
     setFilter(newFilter);
-    if (!cvRef || !rawCapture) return;
+    const cv = getCV();
+    if (!cv || !rawCapture) return;
     setProcessing(true);
     try {
-      const result = await processDocument(cvRef, rawCapture, newFilter);
+      const result = await processDocument(cv, rawCapture, newFilter);
       setProcessedCapture(result.resultDataUrl);
-    } catch {
-      // Keep current
-    }
+    } catch { /* keep current */ }
     setProcessing(false);
-  }, [cvRef, rawCapture]);
+  }, [rawCapture]);
 
   /* ── Manual corner re-process ── */
   const applyManualCorners = useCallback(async () => {
-    if (!cvRef || !rawCapture || !manualCorners) return;
+    const cv = getCV();
+    if (!cv || !rawCapture || !manualCorners) return;
     setProcessing(true);
     try {
       const img = new Image();
@@ -289,15 +278,13 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
         x: Math.round(c.x * img.width),
         y: Math.round(c.y * img.height),
       }));
-      const resultUrl = await reprocessWithCorners(cvRef, rawCapture, pixelCorners, filter);
+      const resultUrl = await reprocessWithCorners(cv, rawCapture, pixelCorners, filter);
       setProcessedCapture(resultUrl);
       setShowManualMode(false);
       setAutoDetected(true);
-    } catch {
-      // Keep current
-    }
+    } catch { /* keep current */ }
     setProcessing(false);
-  }, [cvRef, rawCapture, manualCorners, filter]);
+  }, [rawCapture, manualCorners, filter]);
 
   /* ── Page management ── */
   const addPageAndContinue = useCallback(() => {
@@ -380,15 +367,6 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
         <PageStrip pages={pages} activeIndex={-1} onSelect={() => setPhase('pages')} onRemove={() => {}} />
       )}
 
-      {/* ====== LOADING OPENCV ====== */}
-      {phase === 'loading' && (
-        <div className="flex-1 flex flex-col items-center justify-center gap-4 px-6">
-          <Loader2 className="w-12 h-12 text-accent animate-spin" />
-          <p className="text-white text-sm">{loadProgress}</p>
-          <p className="text-white/40 text-xs">Première utilisation : ~5 secondes</p>
-        </div>
-      )}
-
       {/* ====== GUIDE ====== */}
       {phase === 'guide' && (
         <div className="flex-1 flex flex-col items-center justify-center px-6 gap-5">
@@ -397,7 +375,9 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
           </div>
           <div className="text-center">
             <h2 className="text-white text-lg font-semibold mb-1" data-testid="scanner-title">Scanner un document</h2>
-            <p className="text-white/50 text-sm">Détection et recadrage automatiques</p>
+            <p className="text-white/50 text-sm">
+              {cvReady ? 'Détection et recadrage automatiques' : cvLoading ? 'Moteur de scan en préparation...' : 'Mode capture simple'}
+            </p>
           </div>
           <div className="w-full max-w-xs space-y-2.5">
             {[
@@ -412,16 +392,27 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
               </div>
             ))}
           </div>
+
+          {/* Loading indicator (non-blocking) */}
+          {cvLoading && (
+            <div className="w-full max-w-xs flex items-center gap-2 p-2.5 rounded-xl bg-accent/10 border border-accent/20">
+              <Loader2 className="w-4 h-4 text-accent animate-spin flex-shrink-0" />
+              <span className="text-accent/80 text-xs">Chargement du moteur de scan avancé...</span>
+            </div>
+          )}
+
+          {/* OpenCV ready indicator */}
+          {cvReady && (
+            <div className="w-full max-w-xs flex items-center gap-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20" data-testid="opencv-ready-badge">
+              <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <span className="text-emerald-400/80 text-xs">Détection automatique activée</span>
+            </div>
+          )}
+
           <div className="w-full max-w-xs space-y-2 pt-2">
             <Button onClick={startCamera} className="w-full gap-2 h-12 text-base" data-testid="scanner-start-btn">
               <Camera className="w-5 h-5" /> Ouvrir la caméra
             </Button>
-            {!cvRef && (
-              <p className="text-amber-400/70 text-xs text-center flex items-center justify-center gap-1">
-                <AlertCircle className="w-3 h-3" />
-                Moteur de scan indisponible — mode basique
-              </p>
-            )}
           </div>
           {error && <p className="text-red-400 text-sm text-center max-w-xs" data-testid="scanner-error">{error}</p>}
         </div>
