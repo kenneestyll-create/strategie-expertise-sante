@@ -6,7 +6,7 @@ import {
   Eye, Maximize2, ZapOff, Loader2, Plus,
   FileText, ChevronLeft, ChevronRight, Layers,
   Crop, Contrast, ScanLine, AlertCircle,
-  RotateCw, SunMedium
+  RotateCw, SunMedium, ImageUp
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import {
@@ -51,8 +51,8 @@ async function buildPdf(pages) {
 }
 
 const FILTERS = [
-  { id: 'document', label: 'Document', icon: Contrast },
-  { id: 'bw', label: 'N&B', icon: FileText },
+  { id: 'bw', label: 'Noir & Blanc', icon: FileText },
+  { id: 'document', label: 'Contraste+', icon: Contrast },
   { id: 'original', label: 'Original', icon: Eye },
 ];
 
@@ -111,6 +111,8 @@ const CornerAdjuster = ({ corners, setCorners, imageRef }) => {
 export const DocumentScanner = ({ onCapture, onClose }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const previewCanvasRef = useRef(null);
+  const fileInputRef = useRef(null);
   const streamRef = useRef(null);
   const adjustImgRef = useRef(null);
 
@@ -149,6 +151,74 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
     });
     return () => terminateScanWorker();
   }, [workerReady, workerFailed]);
+
+  /* ── Draw processedUrl onto preview canvas ── */
+  useEffect(() => {
+    if (!processedUrl || !previewCanvasRef.current || showManualMode) return;
+    const img = new Image();
+    img.onload = () => {
+      const c = previewCanvasRef.current;
+      if (!c) return;
+      c.width = img.width;
+      c.height = img.height;
+      c.getContext('2d').drawImage(img, 0, 0);
+    };
+    img.src = processedUrl;
+  }, [processedUrl, showManualMode]);
+
+  /* ── Handle file input (choose photo from gallery) ── */
+  const handleFileInput = useCallback(async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+
+    const img = new Image();
+    img.onload = async () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      setRawDataUrl(canvas.toDataURL('image/jpeg', 0.95));
+
+      if (simpleMode || !isScanReady()) {
+        console.log('[Scanner] Mode simple — fichier');
+        setStepLog('Image chargée (mode simple)');
+        setProcessedUrl(lightEnhance(canvas));
+        setAutoDetected(false); setManualCorners(null);
+        setPhase('preview');
+        return;
+      }
+
+      setPhase('processing');
+      setProcessing(true);
+      setStepLog('Analyse de l\'image...');
+      try {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const t0 = performance.now();
+        const result = await scanDocument(imageData, filter);
+        const elapsed = Math.round(performance.now() - t0);
+        setProcessedUrl(imageDataToUrl(result.imageData));
+        setAutoDetected(result.autoDetected);
+        if (result.corners) {
+          setManualCorners(result.corners.map(c => ({ x: c.x / result.originalWidth, y: c.y / result.originalHeight })));
+        } else {
+          setManualCorners([{ x: 0.05, y: 0.05 }, { x: 0.95, y: 0.05 }, { x: 0.95, y: 0.95 }, { x: 0.05, y: 0.95 }]);
+        }
+        setStepLog(result.autoDetected ? `Document détecté (${elapsed}ms)` : `Traité (${elapsed}ms)`);
+        setPhase('preview');
+      } catch (err) {
+        console.warn('[Scanner] File scan failed:', err.message);
+        setProcessedUrl(lightEnhance(canvas));
+        setAutoDetected(false);
+        setStepLog('Fallback: amélioration légère');
+        setPhase('preview');
+      }
+      setProcessing(false);
+    };
+    img.src = URL.createObjectURL(file);
+  }, [filter, simpleMode]);
 
   /* ── Camera ── */
   const startCamera = useCallback(async () => {
@@ -434,6 +504,10 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
             <Button onClick={startCamera} className="w-full gap-2 h-14 text-base font-semibold" data-testid="scanner-start-btn">
               <Camera className="w-5 h-5" /> Ouvrir la caméra
             </Button>
+            <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="w-full gap-2 h-12 text-sm border-white/20 text-white hover:bg-white/10" data-testid="scanner-file-btn" aria-label="Choisir une photo depuis la galerie">
+              <ImageUp className="w-5 h-5" /> Choisir une photo
+            </Button>
+            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileInput} className="hidden" data-testid="scanner-file-input" />
             {workerReady && (
               <button onClick={() => setSimpleMode(p => !p)} className="w-full text-center text-white/40 text-xs py-3 min-h-[44px] hover:text-white/60 transition-colors" data-testid="toggle-simple-mode">
                 {simpleMode ? 'Réactiver le mode automatique' : 'Utiliser le mode simple (sans détection)'}
@@ -495,7 +569,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
                 {manualCorners && <CornerAdjuster corners={manualCorners} setCorners={setManualCorners} imageRef={adjustImgRef} />}
               </div>
             ) : (
-              <img src={processedUrl} alt="Document scanné" className="max-w-full max-h-full object-contain rounded-lg" data-testid="preview-image" />
+              <canvas ref={previewCanvasRef} className="max-w-full max-h-full object-contain rounded-lg" data-testid="preview-canvas" style={{ imageRendering: 'auto' }} />
             )}
             <div className="absolute top-2 left-2 flex flex-col gap-1.5">
               {processing && <span className="bg-amber-500/90 text-white text-[11px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1.5"><Loader2 className="w-3 h-3 animate-spin" /> Traitement...</span>}
@@ -506,46 +580,45 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
           </div>
 
           <div className="bg-black/90 border-t border-white/10 flex-shrink-0">
-            {/* Toolbar */}
+            {/* Toolbar: N&B | Contraste+ | Original | Rotation ← | Rotation → | Recadrer | Réglages */}
             <div className="flex items-center gap-1.5 px-3 py-2 border-b border-white/5 overflow-x-auto">
               {FILTERS.map(f => (
                 <button key={f.id} onClick={() => handleFilter(f.id)} disabled={processing || simpleMode}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all min-h-[40px] ${filter === f.id && !simpleMode ? 'bg-emerald-500 text-white' : 'bg-white/8 text-white/60 hover:bg-white/15'} ${simpleMode ? 'opacity-40' : ''}`}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all min-h-[40px] whitespace-nowrap ${filter === f.id && !simpleMode ? 'bg-emerald-500 text-white' : 'bg-white/8 text-white/60 hover:bg-white/15'} ${simpleMode ? 'opacity-40' : ''}`}
                   data-testid={`filter-${f.id}`} aria-label={`Filtre ${f.label}`}>
                   <f.icon className="w-3.5 h-3.5" /> {f.label}
                 </button>
               ))}
               <div className="w-px h-7 bg-white/10 mx-0.5 flex-shrink-0" />
-              <button onClick={() => handleRotate('right')} disabled={processing || !isScanReady()}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 min-h-[40px] disabled:opacity-30"
-                data-testid="rotate-btn" aria-label="Rotation 90 degrés">
-                <RotateCw className="w-3.5 h-3.5" /> Rotation
+              <button onClick={() => handleRotate('left')} disabled={processing || !isScanReady()}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 min-h-[40px] disabled:opacity-30 whitespace-nowrap"
+                data-testid="rotate-left-btn" aria-label="Rotation gauche">
+                <RotateCcw className="w-3.5 h-3.5" />
               </button>
+              <button onClick={() => handleRotate('right')} disabled={processing || !isScanReady()}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 min-h-[40px] disabled:opacity-30 whitespace-nowrap"
+                data-testid="rotate-right-btn" aria-label="Rotation droite">
+                <RotateCw className="w-3.5 h-3.5" />
+              </button>
+              <div className="w-px h-7 bg-white/10 mx-0.5 flex-shrink-0" />
               {!showManualMode ? (
                 <button onClick={() => setShowManualMode(true)} disabled={!isScanReady() || simpleMode}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 disabled:opacity-30 min-h-[40px]"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 disabled:opacity-30 min-h-[40px] whitespace-nowrap"
                   data-testid="manual-crop-btn" aria-label="Recadrer manuellement">
                   <Crop className="w-3.5 h-3.5" /> Recadrer
                 </button>
               ) : (
                 <button onClick={applyManualCorners} disabled={processing}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-emerald-500 text-white min-h-[40px]"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-emerald-500 text-white min-h-[40px] whitespace-nowrap"
                   data-testid="apply-crop-btn" aria-label="Appliquer le recadrage">
                   <Check className="w-3.5 h-3.5" /> Appliquer
                 </button>
               )}
               <button onClick={() => setShowAdjust(p => !p)} disabled={!isScanReady() || simpleMode}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium min-h-[40px] ${showAdjust ? 'bg-blue-500 text-white' : 'bg-white/8 text-white/60 hover:bg-white/15'} ${(!isScanReady() || simpleMode) ? 'opacity-30' : ''}`}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium min-h-[40px] whitespace-nowrap ${showAdjust ? 'bg-blue-500 text-white' : 'bg-white/8 text-white/60 hover:bg-white/15'} ${(!isScanReady() || simpleMode) ? 'opacity-30' : ''}`}
                 data-testid="adjust-toggle-btn" aria-label="Réglages luminosité et contraste">
                 <SunMedium className="w-3.5 h-3.5" /> Réglages
               </button>
-              {!simpleMode && workerReady && (
-                <button onClick={switchToSimple}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-amber-400/70 hover:bg-white/15 min-h-[40px]"
-                  data-testid="switch-simple-btn" aria-label="Passer en mode simple">
-                  <ZapOff className="w-3.5 h-3.5" /> Simple
-                </button>
-              )}
             </div>
 
             {/* Sliders */}
@@ -571,23 +644,23 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
 
             {/* Actions */}
             <div className="p-3 space-y-2">
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={retake} className="flex-1 gap-2 h-12 border-white/20 text-white hover:bg-white/10 text-sm min-h-[48px]" data-testid="preview-retake-btn" aria-label="Reprendre la photo">
-                  <RotateCcw className="w-4 h-4" /> Reprendre
-                </Button>
-                <Button onClick={addPageAndContinue} className="flex-1 gap-2 h-12 bg-blue-600 hover:bg-blue-700 text-sm min-h-[48px]" data-testid="preview-add-page-btn" aria-label="Page suivante">
-                  <Plus className="w-4 h-4" /> Page suivante
-                </Button>
-              </div>
               {pages.length === 0 ? (
                 <Button onClick={confirmSingle} disabled={processing} className="w-full gap-2 h-14 text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 min-h-[56px]" data-testid="preview-confirm-btn" aria-label="Valider ce document">
-                  <Check className="w-5 h-5" /> Valider ce document
+                  <Check className="w-5 h-5" /> Valider / Sauvegarder
                 </Button>
               ) : (
                 <Button onClick={addPageAndFinish} disabled={processing} className="w-full gap-2 h-14 text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 min-h-[56px]" data-testid="preview-finish-btn" aria-label={`Terminer avec ${pages.length + 1} pages`}>
                   <Layers className="w-5 h-5" /> Terminer ({pages.length + 1} pages)
                 </Button>
               )}
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={retake} className="flex-1 gap-2 h-12 border-white/20 text-white hover:bg-white/10 text-sm min-h-[48px]" data-testid="preview-retake-btn" aria-label="Reprendre la photo">
+                  <RotateCcw className="w-4 h-4" /> Reprendre
+                </Button>
+                <Button variant="outline" onClick={addPageAndContinue} className="flex-1 gap-2 h-12 border-white/20 text-white hover:bg-white/10 text-sm min-h-[48px]" data-testid="preview-add-page-btn" aria-label="Page suivante">
+                  <Plus className="w-4 h-4" /> Page suivante
+                </Button>
+              </div>
             </div>
           </div>
         </div>
