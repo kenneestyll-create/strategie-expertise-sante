@@ -25,7 +25,8 @@ Application web complète en français pour fournir des conseils sur les maladie
 - **Détail du score:** Ventilation interactive avec barres de progression par critère
 - **Documents manquants:** Liste avec boutons "Ajouter" redirigeant vers l'espace documents
 - **Frontend:** Composant `DossierAnalysis.jsx` avec score ring SVG animé, cartes extensibles, design responsive
-- **Fichiers:** `/app/backend/routes/client.py` (endpoint), `/app/frontend/src/components/DossierAnalysis.jsx` (UI)
+- **Indicateur navbar:** Score compact dans la barre de navigation avec mini-ring, couleurs (rouge <50%, jaune 50-80%, vert >80%), clic → scroll vers analyse, mise à jour temps réel via événement `dossier:refresh`, micro-indicateur "+X%" après progression, version mobile compacte
+- **Fichiers:** `/app/backend/routes/client.py` (endpoint), `/app/frontend/src/components/DossierAnalysis.jsx` (UI), `/app/frontend/src/pages/EspaceClientPage.jsx` (navbar indicator)
 
 ### Système de notifications
 - Emails complétion (50/80/100%) + relances inactivité (J+7/14/21)
