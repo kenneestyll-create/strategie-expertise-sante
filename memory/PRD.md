@@ -67,23 +67,24 @@ Application web complète en français pour fournir des conseils sur les maladie
 - Routes, collections DB et variables inchangées
 - Validé par 13 tests + 4 vérifications grep
 
-### Scanner Documents CamScanner-like (Mar 2026) ✅ — REFACTORÉ
-- **Architecture Pure JS** : OpenCV.js WASM remplacé par algorithmes JavaScript natifs dans Web Worker
-- Aucun WASM, aucune dépendance externe, init instantané (67ms avg, <100ms)
-- Pipeline automatique : Capture → Canny edge detection → Contour finding → Perspective warp (DLT) → Enhancement
+### Scanner Documents CamScanner-like (Mar 2026) ✅ — STATEFUL PURE JS
+- **Architecture Stateful Pure JS** : Worker garde l'image en mémoire, opérations enchaînées sans retransfert
+  - Pipeline: `scan` (envoi unique) → `filter` / `rotate` / `crop` / `adjust` (stateful, 0 transfert) → `save`
+  - Init: ~90ms, Scan: ~50ms, Filter: 3ms, Rotate: 1ms, Adjust: 2ms, Crop: 3ms
+- **Détection automatique** : Canny edge detection → Contour finding → Perspective warp (DLT)
 - **Mode CamScanner complet** :
   - Branding "CamScanner" dans l'en-tête
-  - Détection automatique des contours + correction perspective
-  - 3 filtres : Document (normalisation fond + unsharp mask), N&B (seuillage adaptatif), Original
-  - Rotation 90° (bouton dédié)
-  - Sliders luminosité/contraste (optionnels, debounced)
-  - Recadrage manuel avec poignées draggables si détection auto échoue
+  - 3 filtres : Document / N&B / Original
+  - Rotation 90° (gauche/droite)
+  - Sliders luminosité/contraste (debounced, dans panneau extensible)
+  - Recadrage manuel (poignées draggables) + rectangle crop ({x0,y0,x1,y1})
   - "Mode Simple" explicite (toggle dans guide + bouton dans preview)
   - Multi-pages avec fusion PDF (jsPDF)
+  - `save` finalise et retourne l'image courante
 - **Accessibilité** : boutons min-h 44-56px, aria-labels, labels explicites
-- **Logs détaillés** : chaque étape (init, detection, warp, rotate, adjust) logguée avec timing
+- **Logs détaillés** : chaque étape logguée avec timing
 - Mobile uniquement (bouton scanner visible uniquement en mobile)
-- Fichiers : `/app/frontend/public/scanner.worker.js` (Pure JS) + `/app/frontend/src/utils/opencvLoader.js` (manager)
+- Fichiers : `/app/frontend/public/scanner.worker.js` + `/app/frontend/src/utils/opencvLoader.js` + `DocumentScanner.jsx`
 
 ### Section Partenaires Footer (Mar 2026) ✅
 - Formulaire dédié inline (Nom, Société, Email, Type de partenariat, Message)
