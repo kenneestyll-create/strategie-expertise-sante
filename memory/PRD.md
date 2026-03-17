@@ -68,12 +68,12 @@ Application web complète en français pour fournir des conseils sur les maladie
 - Validé par 13 tests + 4 vérifications grep
 
 ### Scanner Documents CamScanner-like (Mar 2026) ✅
-- Phase d'ajustement post-capture : filtres (Original/Document/N&B), rotation 90°, recadrage manuel avec poignées draggables
-- Bouton "Ajustement auto" (optionnel), validation directe possible sans manipulation
-- Crop overlay SVG avec 4 poignées tactiles (44px touch targets), masque SVG
-- Amélioration image : contraste + unsharp mask (mode Document), binarisation adaptative (mode N&B)
-- Interface accessible : libellés simples, texte "les ajustements sont optionnels"
-- Fix caméra mobile : timing stream/video corrigé (useEffect), double overlay supprimé
+- OpenCV.js chargé en lazy loading (~8Mo, CDN uniquement lors du scan)
+- Pipeline automatique : Capture → Détection Canny multi-seuils → Perspective warp → Enhancement
+- 3 filtres : Document (suppression ombres + contraste), N&B (binarisation adaptative), Original
+- Fallback manuel : poignées draggables si détection auto échoue
+- Multi-pages avec fusion PDF
+- Mode basique si OpenCV indisponible (connexion, etc.)
 
 ### Section Partenaires Footer (Mar 2026) ✅
 - Formulaire dédié inline (Nom, Société, Email, Type de partenariat, Message)
