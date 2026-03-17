@@ -10,12 +10,13 @@ import axios from 'axios';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const PARTNER_TYPES = [
-  "Professionnel de santé",
-  "Avocat / Juriste",
-  "Expert judiciaire",
-  "Association",
-  "Sponsor / Mécène",
-  "Autre",
+  "Sponsoring événementiel",
+  "Partenariat stratégique / commercial",
+  "Partenaire technologique / API",
+  "Collaboration éditoriale / contenu",
+  "Programme ambassadeur / influence",
+  "Recherche & développement",
+  "Autre (précisez dans le champ texte)",
 ];
 
 export const Footer = () => {
@@ -142,11 +143,12 @@ export const Footer = () => {
                     <select
                       value={form.partner_type}
                       onChange={e => setForm(p => ({...p, partner_type: e.target.value}))}
-                      className="flex h-9 w-full rounded-md border border-primary-foreground/15 bg-transparent px-3 py-1 text-xs text-primary-foreground focus:outline-none focus:border-accent/50"
+                      className="flex h-9 w-full rounded-md border border-primary-foreground/15 bg-[#1a1a1a] px-3 py-1 text-xs text-primary-foreground focus:outline-none focus:border-accent/50 appearance-none cursor-pointer"
+                      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center' }}
                       data-testid="partner-type-select"
                     >
-                      <option value="" className="text-foreground">Sélectionnez...</option>
-                      {PARTNER_TYPES.map(t => <option key={t} value={t} className="text-foreground">{t}</option>)}
+                      <option value="" style={{ background: '#1a1a1a', color: '#aaa' }}>Sélectionnez...</option>
+                      {PARTNER_TYPES.map(t => <option key={t} value={t} style={{ background: '#1a1a1a', color: '#eee' }}>{t}</option>)}
                     </select>
                   </div>
                   <div className="space-y-1">
