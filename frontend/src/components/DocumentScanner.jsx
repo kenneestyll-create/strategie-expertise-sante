@@ -12,7 +12,7 @@ import { jsPDF } from 'jspdf';
 import {
   initScanWorker, isScanReady, isScanFailed,
   scanDocument, applyFilter as workerFilter, rotateImage as workerRotate,
-  cropImage as workerCrop, adjustImage as workerAdjust, saveImage as workerSave,
+  cropImage as workerCrop, adjustImage as workerAdjust,
   terminateScanWorker
 } from '@/utils/opencvLoader';
 
@@ -233,13 +233,13 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
   /* ── Camera ── */
   const startCamera = useCallback(async () => {
     setError(''); setStepLog(''); setBrightness(0); setContrast(0); setShowAdjust(false); setShowManualMode(false);
+    setPhase('camera');
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
       streamRef.current = stream;
-      setPhase('camera');
     } catch (err) {
-      if (err.name === 'NotAllowedError') setError("Autorisez l'accès à la caméra dans les paramètres.");
-      else if (err.name === 'NotFoundError') setError('Aucune caméra détectée.');
+      if (err.name === 'NotAllowedError') setError("Autorisez l'accès à la caméra dans les paramètres. Vous pouvez aussi choisir une photo depuis la galerie.");
+      else if (err.name === 'NotFoundError') setError('Aucune caméra détectée. Utilisez le bouton galerie ci-dessous.');
       else setError(`Erreur caméra : ${err.message}`);
     }
   }, [facingMode]);
@@ -391,38 +391,33 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
   }, [rawDataUrl]);
 
   /* ── Save + page management ── */
-  const saveAndGetUrl = useCallback(async () => {
-    if (!isScanReady() || simpleMode) return processedUrl;
-    try {
-      const result = await workerSave();
-      return imageDataToUrl(result.imageData);
-    } catch {
-      return processedUrl;
-    }
-  }, [processedUrl, simpleMode]);
-
   const addPageAndContinue = useCallback(async () => {
     if (!processedUrl) return;
-    const url = await saveAndGetUrl();
-    setPages(p => [...p, url]); setActivePageIndex(pages.length);
-    setProcessedUrl(null); setRawDataUrl(null); startCamera();
-  }, [processedUrl, pages.length, startCamera, saveAndGetUrl]);
+    setPages(p => [...p, processedUrl]);
+    setActivePageIndex(pages.length);
+    setProcessedUrl(null); setRawDataUrl(null); setShowManualMode(false); setShowAdjust(false); setBrightness(0); setContrast(0);
+    startCamera();
+  }, [processedUrl, pages.length, startCamera]);
 
   const addPageAndFinish = useCallback(async () => {
     if (!processedUrl) return;
-    const url = await saveAndGetUrl();
-    setPages(p => [...p, url]); setActivePageIndex(0);
+    setPages(p => [...p, processedUrl]);
+    setActivePageIndex(0);
     setProcessedUrl(null); setPhase('pages');
-  }, [processedUrl, saveAndGetUrl]);
+  }, [processedUrl]);
 
   const confirmSingle = useCallback(async () => {
     if (!processedUrl) return;
     setPhase('finalizing');
-    const url = await saveAndGetUrl();
-    const r = await fetch(url);
-    const b = await r.blob();
-    onCapture(new File([b], `scan_${Date.now()}.jpg`, { type: 'image/jpeg' }));
-  }, [processedUrl, onCapture, saveAndGetUrl]);
+    try {
+      const r = await fetch(processedUrl);
+      const b = await r.blob();
+      onCapture(new File([b], `scan_${Date.now()}.jpg`, { type: 'image/jpeg' }));
+    } catch {
+      setError('Erreur lors de la sauvegarde');
+      setPhase('preview');
+    }
+  }, [processedUrl, onCapture]);
 
   const removePage = useCallback((i) => {
     const np = pages.filter((_, j) => j !== i);
@@ -544,6 +539,11 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
               </span>
             </div>
           </div>
+          {error && (
+            <div className="absolute top-1/2 left-0 right-0 -translate-y-1/2 px-6 text-center" data-testid="camera-error">
+              <p className="text-red-400 text-sm bg-black/80 rounded-xl p-4">{error}</p>
+            </div>
+          )}
           <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-6 pb-8 pt-4 bg-gradient-to-t from-black/80 to-transparent">
             <div className="flex flex-col items-center gap-1.5">
               <Button variant="ghost" size="sm" onClick={switchCamera} className="text-white hover:bg-white/10 rounded-full w-14 h-14 min-h-[56px]" data-testid="scanner-switch-camera" aria-label="Changer de caméra">
