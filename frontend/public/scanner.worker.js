@@ -584,4 +584,4 @@ self.onmessage = (e) => {
   }
 };
 
-console.log('[Worker] Pure-JS stateful scanner worker ready v5');
+console.log('[Worker] Pure-JS stateful scanner worker ready v6');

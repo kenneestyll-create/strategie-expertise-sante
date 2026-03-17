@@ -1,6 +1,6 @@
 /**
- * Scanner Worker Manager — Stateful pattern with mandatory timeouts
- * Every promise MUST resolve or reject. No hanging allowed.
+ * Scanner Worker Manager — Timeouts obligatoires 2s max
+ * Chaque promesse DOIT résoudre ou rejeter. Zéro blocage.
  */
 
 let worker = null;
@@ -9,12 +9,12 @@ let initFailed = false;
 let msgId = 0;
 const pending = new Map();
 
-/* ── Timeout built into sendMessage — no promise hangs ever ── */
+const TIMEOUT_MS = 2000; // 2 secondes max pour TOUTE opération
 
 function getWorker() {
   if (worker) return worker;
   try {
-    worker = new Worker('/scanner.worker.js?v=5');
+    worker = new Worker('/scanner.worker.js?v=6');
     worker.onmessage = (e) => {
       const { id, type } = e.data;
       console.log(`[ScanWorker] RECV type=${type} id=${id}`);
@@ -33,7 +33,6 @@ function getWorker() {
       console.error('[ScanWorker] WORKER CRASH:', err.message);
       initFailed = true;
       for (const [id, cb] of pending) {
-        console.error(`[ScanWorker] Rejecting pending id=${id}`);
         cb({ type: 'error', error: 'Worker crashed' });
       }
       pending.clear();
@@ -46,9 +45,9 @@ function getWorker() {
   }
 }
 
-function sendMessage(data, transfer = [], timeoutMs = 8000) {
+function sendMessage(data, transfer = [], timeoutMs = TIMEOUT_MS) {
   const label = data.type || 'unknown';
-  console.log(`[ScanWorker] SEND type=${label}`);
+  console.log(`[ScanWorker] SEND ${label}`);
   return new Promise((resolve, reject) => {
     const w = getWorker();
     if (!w) return reject(new Error('No worker'));
@@ -56,7 +55,7 @@ function sendMessage(data, transfer = [], timeoutMs = 8000) {
     const timer = setTimeout(() => {
       pending.delete(id);
       console.error(`[ScanWorker] TIMEOUT ${timeoutMs}ms on ${label} id=${id}`);
-      reject(new Error(`Timeout ${timeoutMs}ms on ${label}`));
+      reject(new Error(`Timeout ${label}`));
     }, timeoutMs);
     pending.set(id, (response) => {
       clearTimeout(timer);
@@ -67,7 +66,6 @@ function sendMessage(data, transfer = [], timeoutMs = 8000) {
   });
 }
 
-/** Parse preview response → ImageData + metadata */
 function parsePreview(res) {
   return {
     imageData: new ImageData(new Uint8ClampedArray(res.imageData), res.width, res.height),
@@ -84,12 +82,12 @@ function parsePreview(res) {
 /* ══════════════════════ PUBLIC API ══════════════════════ */
 
 export async function initScanWorker() {
-  if (ready) { console.log('[ScanWorker] Already ready'); return true; }
-  if (initFailed) { console.log('[ScanWorker] Already failed'); return false; }
+  if (ready) return true;
+  if (initFailed) return false;
   console.log('INIT START');
   try {
-    const res = await sendMessage({ type: 'init' }, [], 10000);
-    console.log('INIT DONE success=' + res.success);
+    const res = await sendMessage({ type: 'init' }, [], TIMEOUT_MS);
+    console.log('INIT DONE');
     return res.success;
   } catch (err) {
     console.error('INIT FAIL:', err.message);
@@ -103,83 +101,53 @@ export function isScanFailed() { return initFailed; }
 
 export async function scanDocument(imageData, filter = 'document') {
   console.log('SCAN START');
-  try {
-    const buffer = imageData.data.buffer.slice(0);
-    const res = await sendMessage(
-      { type: 'scan', imageData: buffer, width: imageData.width, height: imageData.height, filter },
-      [buffer],
-      15000
-    );
-    console.log('SCAN DONE');
-    return parsePreview(res);
-  } catch (err) {
-    console.error('SCAN FAIL:', err.message);
-    throw err;
-  }
+  const buffer = imageData.data.buffer.slice(0);
+  const res = await sendMessage(
+    { type: 'scan', imageData: buffer, width: imageData.width, height: imageData.height, filter },
+    [buffer],
+    TIMEOUT_MS
+  );
+  console.log('SCAN DONE');
+  return parsePreview(res);
 }
 
 export async function applyFilter(filter = 'document') {
   console.log('FILTER START:', filter);
-  try {
-    const res = await sendMessage({ type: 'filter', filter }, [], 5000);
-    console.log('FILTER DONE');
-    return parsePreview(res);
-  } catch (err) {
-    console.error('FILTER FAIL:', err.message);
-    throw err;
-  }
+  const res = await sendMessage({ type: 'filter', filter }, [], TIMEOUT_MS);
+  console.log('FILTER DONE');
+  return parsePreview(res);
 }
 
 export async function rotateImage(direction = 'right') {
   console.log('ROTATE START:', direction);
-  try {
-    const res = await sendMessage({ type: 'rotate', direction }, [], 5000);
-    console.log('ROTATE DONE');
-    return parsePreview(res);
-  } catch (err) {
-    console.error('ROTATE FAIL:', err.message);
-    throw err;
-  }
+  const res = await sendMessage({ type: 'rotate', direction }, [], TIMEOUT_MS);
+  console.log('ROTATE DONE');
+  return parsePreview(res);
 }
 
 export async function cropImage(coords) {
   console.log('CROP START');
-  try {
-    const res = await sendMessage({ type: 'crop', coords }, [], 5000);
-    console.log('CROP DONE');
-    return parsePreview(res);
-  } catch (err) {
-    console.error('CROP FAIL:', err.message);
-    throw err;
-  }
+  const res = await sendMessage({ type: 'crop', coords }, [], TIMEOUT_MS);
+  console.log('CROP DONE');
+  return parsePreview(res);
 }
 
 export async function adjustImage(brightness = 0, contrast = 0) {
   console.log('ADJUST START b=' + brightness + ' c=' + contrast);
-  try {
-    const res = await sendMessage({ type: 'adjust', brightness, contrast }, [], 5000);
-    console.log('ADJUST DONE');
-    return parsePreview(res);
-  } catch (err) {
-    console.error('ADJUST FAIL:', err.message);
-    throw err;
-  }
+  const res = await sendMessage({ type: 'adjust', brightness, contrast }, [], TIMEOUT_MS);
+  console.log('ADJUST DONE');
+  return parsePreview(res);
 }
 
 export async function saveImage() {
   console.log('SAVE START');
-  try {
-    const res = await sendMessage({ type: 'save' }, [], 5000);
-    console.log('SAVE DONE');
-    return {
-      imageData: new ImageData(new Uint8ClampedArray(res.imageData), res.width, res.height),
-      width: res.width,
-      height: res.height,
-    };
-  } catch (err) {
-    console.error('SAVE FAIL:', err.message);
-    throw err;
-  }
+  const res = await sendMessage({ type: 'save' }, [], TIMEOUT_MS);
+  console.log('SAVE DONE');
+  return {
+    imageData: new ImageData(new Uint8ClampedArray(res.imageData), res.width, res.height),
+    width: res.width,
+    height: res.height,
+  };
 }
 
 export function terminateScanWorker() {
@@ -188,8 +156,7 @@ export function terminateScanWorker() {
     worker.terminate();
     worker = null;
     ready = false;
-    for (const [id, cb] of pending) {
-      console.log(`[ScanWorker] Cancelling pending id=${id}`);
+    for (const [, cb] of pending) {
       cb({ type: 'error', error: 'Worker terminated' });
     }
     pending.clear();
