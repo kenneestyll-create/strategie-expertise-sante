@@ -6,7 +6,7 @@ Application web complète en français pour fournir des conseils sur les maladie
 ## Architecture
 - **Frontend:** React + Shadcn/UI + Tailwind CSS + Recharts
 - **Backend:** FastAPI + MongoDB
-- **Thème:** Noir et Or
+- **Thème:** Noir et Or (warm neutral: Manrope + Playfair Display)
 - **Intégrations:** Stripe (test), PayPal (test), Claude Sonnet 4.5 (Emergent LLM Key), Resend (sandbox), apscheduler (cron), fpdf2 (PDF)
 
 ## Fonctionnalités implémentées
@@ -14,6 +14,18 @@ Application web complète en français pour fournir des conseils sur les maladie
 ### Core
 - Authentification (admin + client), Dashboard client/admin (15 onglets)
 - StratégiIA (analyse IA), Scoring qualité, Forum, chatbot, calculatrices
+
+### StratégiIA Phase 1 — Analyse de dossier (Feb 2026)
+- **Endpoint:** `GET /api/client/dossier-analysis` (authenticated)
+- **Score composite "Solidité du dossier":** 0-100, basé sur complétude (40%), qualité docs (20%), analyses réalisées (15%), progression globale (15%), volume de pièces (10%)
+- **Messages dynamiques:** 5 seuils (<30%=urgent, 30-50%=attention, 50-70%=encourageant, 70-85%=positif, >85%=expert)
+- **Points de fragilité:** Détection automatique (documents manquants, illisibles, pas de validation, pas d'analyse IA, aucun document)
+- **Alertes de risque:** Spécifiques par type de dossier (AT, MP, MDPH, assurance, expertise, faute inexcusable, recours) avec messages détaillés et actions recommandées
+- **Compteur d'actions:** "X éléments à traiter pour renforcer votre dossier"
+- **Détail du score:** Ventilation interactive avec barres de progression par critère
+- **Documents manquants:** Liste avec boutons "Ajouter" redirigeant vers l'espace documents
+- **Frontend:** Composant `DossierAnalysis.jsx` avec score ring SVG animé, cartes extensibles, design responsive
+- **Fichiers:** `/app/backend/routes/client.py` (endpoint), `/app/frontend/src/components/DossierAnalysis.jsx` (UI)
 
 ### Système de notifications
 - Emails complétion (50/80/100%) + relances inactivité (J+7/14/21)
@@ -36,12 +48,20 @@ Application web complète en français pour fournir des conseils sur les maladie
 - Tableau de bord avec statuts colorés et actions
 
 ### Guides PDF téléchargeables (Bug fix - Feb 2026)
-- CORRIGÉ : Les boutons "Télécharger le PDF" affichaient "Ce guide sera bientôt disponible" au lieu de télécharger
-- 6 guides PDF générés à la volée via fpdf2 avec branding (header noir/or)
+- 6 guides PDF générés à la volée via fpdf2 avec branding
 - Endpoint public : `GET /api/resources/pdf/{guide_id}`
-- Contenu riche : guide_mp, guide_expertise, guide_mdph, guide_recours, guide_ipp, guide_assurance
-- Tracking des téléchargements dans `resource_downloads`
-- Fichier : `/app/backend/utils/pdf_guides.py`
+
+## Tâches à venir
+
+### Phase 2: StratégiIA — Feedback temps réel & Recommandations (P1)
+- Feedback temps réel après actions utilisateur (upload, analyse)
+- Section "Prochaines actions recommandées" avec CTAs cliquables priorisés
+
+### Phase 3: StratégiIA — Fonctionnalités avancées (P2)
+- Logique prédictive anticipant les motifs de refus
+- Enrichissement du dashboard client avec données StratégiIA
+- Notifications intelligentes non intrusives
+- CTA premium "Analyse Expert"
 
 ## Tâches en attente (bloquées)
 - **HubSpot (P2):** En attente du HUBSPOT_PORTAL_ID
@@ -50,21 +70,21 @@ Application web complète en français pour fournir des conseils sur les maladie
 
 ## Backlog
 - Refactoring AdminDashboard.jsx (~2700 lignes)
-- Intégration templates ↔ A/B testing (variantes depuis l'éditeur)
+- Refactoring EmailTemplateEditor.jsx (monolithique)
+- Intégration templates ↔ A/B testing
 - Statistiques d'utilisation par template
-- Campagnes récurrentes (hebdomadaire, mensuelle)
+- Campagnes récurrentes
 
 ## Fichiers clés
-- `/app/frontend/src/components/EmailTemplateEditor.jsx` — Éditeur templates
-- `/app/frontend/src/components/CampaignsDashboard.jsx` — Tableau campagnes
-- `/app/frontend/src/pages/AdminDashboard.jsx` — Dashboard admin
-- `/app/frontend/src/pages/ResourcesPage.jsx` — Page ressources
+- `/app/frontend/src/components/DossierAnalysis.jsx` — Analyse de dossier Phase 1
+- `/app/frontend/src/components/ProgressDashboard.jsx` — Dashboard progression
+- `/app/frontend/src/pages/EspaceClientPage.jsx` — Espace client
+- `/app/frontend/src/components/StrategiIA.jsx` — Modal StrategiIA
+- `/app/backend/routes/client.py` — Endpoints client + dossier-analysis
+- `/app/backend/routes/strategiia.py` — Endpoints StrategiIA/Dossier Express
 - `/app/backend/routes/admin.py` — Endpoints admin
-- `/app/backend/routes/misc.py` — Endpoints publics (PDF, booking, FAQ)
-- `/app/backend/utils/email.py` — Logique d'envoi, variables
-- `/app/backend/utils/pdf_guides.py` — Génération PDF des guides
-- `/app/backend/server.py` — Schedulers
+- `/app/backend/utils/pdf_guides.py` — Génération PDF
 
 ## Credentials de test
 - Admin: `admin@accompagn-sante.fr` / `Admin2024!`
-- Client: `demo@test.com` / `Password123!`
+- Client: `test-analysis@test.com` / `Password123!`
