@@ -43,6 +43,8 @@ EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
 
 # Stripe
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', '')
+STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
+STRIPE_MODE = 'live' if STRIPE_API_KEY.startswith('sk_live_') else 'test'
 
 # PayPal
 PAYPAL_CLIENT_ID = os.environ.get('PAYPAL_CLIENT_ID', '')

@@ -5,7 +5,7 @@ import asyncio
 import uuid
 import os
 
-from config import db, logger, limiter
+from config import db, logger, limiter, STRIPE_API_KEY, STRIPE_MODE, PAYPAL_CLIENT_ID, PAYPAL_MODE
 from models import (
     ContactRequest, ContactRequestUpdate,
     FAQItem, FAQItemCreate,
@@ -188,6 +188,7 @@ async def get_analytics(period: str = "30d", admin: dict = Depends(get_current_a
     return {
         "kpis": {"total_contacts": total_contacts, "total_clients": total_clients, "total_analyses": total_analyses, "total_dossiers": total_dossiers, "total_forum_users": total_forum_users, "total_chatbot_sessions": total_chatbot, "total_revenue": total_revenue, "pending_revenue": pending_revenue, "conversion_rate": conversion_rate, "calculator_usage": calc_count, "analyses_this_month": analyses_this_month, "dossiers_this_month": dossiers_this_month, "active_dossiers": active_dossiers, "total_documents": total_documents, "pending_documents": pending_documents},
         "time_series": time_series, "packages": packages, "analyse_types": analyse_types, "service_utilization": service_utilization,
+        "payment_config": {"stripe_mode": STRIPE_MODE, "paypal_mode": PAYPAL_MODE, "stripe_configured": bool(STRIPE_API_KEY), "paypal_configured": bool(PAYPAL_CLIENT_ID)},
     }
 
 

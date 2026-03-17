@@ -1,0 +1,117 @@
+{
+  "summary": "Iteration 65: Dossier Express Conversion Tunnel Optimization - ALL TESTS PASSED. Verified landing page (hero, 4-step visual, 6 features, 3 testimonials, final CTA), form view (step indicator, value sidebar, form fields, options pricing), backend APIs (weekly-count, checkout, analytics payment_config), and DossierAnalysis upsell component. Stripe uses test key.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Form view", "issues": ["Minor: Console shows hydration warning for <span> in <select> - likely from dev tools instrumentation, not affecting functionality"]}
+    ]
+  },
+  "tests_executed": {
+    "backend_tests": [
+      "TestWeeklyCountAPI::test_weekly_count_returns_count - PASS (count: 13)",
+      "TestWeeklyCountAPI::test_weekly_count_includes_base_count - PASS (12 + real)",
+      "TestAdminAnalyticsPaymentConfig::test_analytics_returns_payment_config - PASS (stripe_mode: test)",
+      "TestDossierExpressCheckout::test_checkout_requires_stripe - PASS",
+      "TestDossierExpressCheckout::test_checkout_calculates_total_with_options - PASS",
+      "TestDossierExpressSubmit::test_submit_requires_payment - PASS (402 returned)",
+      "TestDossierExpressSubmit::test_submit_requires_email_and_situation - PASS",
+      "TestDossierExpressStatus::test_status_not_found_for_invalid_id - PASS",
+      "TestStripeWebhook::test_webhook_endpoint_exists - PASS",
+      "TestConfigVerification::test_stripe_mode_from_api_key_prefix - PASS",
+      "TestAdminDossierExpressList::test_admin_can_list_dossier_express - PASS"
+    ],
+    "frontend_tests": [
+      "Landing page - Weekly counter badge: PASS (13 dossiers analysés cette semaine)",
+      "Landing page - Hero title: PASS (Votre rapport d'analyse complet et personnalisé)",
+      "Landing page - Badge: PASS (Rapport sous 2 heures)",
+      "Landing page - CTA button 97€: PASS (Analyser mon dossier — 97 €)",
+      "Landing page - Trust signals: PASS (Paiement sécurisé, RGPD, Satisfait)",
+      "Landing page - 4-step visual: PASS (all 4 steps visible)",
+      "Landing page - 6 feature cards: PASS",
+      "Landing page - 3 testimonial cards: PASS",
+      "Landing page - Disclaimer: PASS",
+      "Landing page - Bottom CTA: PASS (Commencer — 97 €)",
+      "Form view - Step indicator: PASS (1 Informations, 2 Paiement, 3 Analyse)",
+      "Form view - Value sidebar: PASS (desktop)",
+      "Form view - Name input: PASS",
+      "Form view - Email input: PASS",
+      "Form view - Type dossier select: PASS",
+      "Form view - Regime select: PASS",
+      "Form view - Situation textarea: PASS",
+      "Form view - Premium PDF option (+19€): PASS",
+      "Form view - Analyse Premium option (+49€): PASS",
+      "Form view - Checkout button disabled when empty: PASS",
+      "Form view - Checkout button shows 97€: PASS",
+      "Form view - Price updates to 116€ with PDF option: PASS",
+      "Form view - Back button returns to landing: PASS",
+      "DossierAnalysis upsell - Component visible: PASS",
+      "DossierAnalysis upsell - Title 'Débloquez votre analyse complète': PASS",
+      "DossierAnalysis upsell - CTA button 'Dossier Express — 97€': PASS",
+      "DossierAnalysis upsell - Trust signals (2h, Stratégie, Actions): PASS",
+      "DossierAnalysis upsell - Teaser score card (blurred): PASS",
+      "DossierAnalysis upsell - Score ring component: PASS",
+      "Client area - Commander button redirects to /dossier-express: PASS"
+    ]
+  },
+  "conversion_tunnel_verification": {
+    "landing_page": {
+      "hero_section": "PASS - Dark gradient background, weekly counter (13), title, 4-step visual, CTA 97€, trust signals",
+      "features_section": "PASS - 6 feature cards with icons and descriptions",
+      "testimonials_section": "PASS - 3 testimonials with ratings, names, types",
+      "disclaimer_section": "PASS - Legal notice about IA analysis",
+      "final_cta_section": "PASS - Dark card with Brain icon, CTA 97€, trust signals"
+    },
+    "form_view": {
+      "step_indicator": "PASS - Shows step 1 when not paid, will show step 3 after payment",
+      "value_sidebar": "PASS - Desktop only, shows rapport contents and trust signals",
+      "form_fields": "PASS - name, email, type_dossier, regime, situation, documents, consent",
+      "pricing": "PASS - Base 97€ + 19€ (PDF) + 49€ (Analyse Premium)",
+      "checkout_validation": "PASS - Button disabled without name/email/consent"
+    },
+    "upsell_component": "PASS - Amber CTA with trust signals (Rapport sous 2h, Stratégie personnalisée, Actions concrètes)"
+  },
+  "payment_config_verification": {
+    "stripe_mode": "test (sk_test_emergent key)",
+    "paypal_mode": "sandbox",
+    "stripe_configured": true,
+    "paypal_configured": true,
+    "webhook_endpoint": "POST /api/webhook/stripe - exists and validates"
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_conversion_tunnel.py",
+    "/app/test_reports/pytest/pytest_conversion_tunnel.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Weekly count API adds base of 12 to real count for social proof (strategiia.py:320)",
+    "STRIPE_MODE derived from API key prefix (config.py:47)",
+    "Payment verification uses both DB lookup and live Stripe check for race condition handling (strategiia.py:147-180)",
+    "Form validation requires name, email, and consent before checkout button enables"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_conversion_tunnel.py"
+  ],
+  "success_rate": {
+    "backend": "100% (11/11 tests passed)",
+    "frontend": "100% (30 UI checks passed)"
+  },
+  "test_credentials": {
+    "admin": "admin@accompagn-sante.fr / Admin2024!",
+    "client": "test-analysis@test.com / Password123!"
+  },
+  "seed_data_creation": "None - used existing test data",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 65 verified the full Dossier Express conversion tunnel optimization. The landing page has social proof (weekly counter + testimonials), trust signals, 4-step visual, 6 features, and final CTA. The form view has step indicator (1,2,3), value sidebar on desktop, all form fields, options for premium PDF (+19€) and analyse premium (+49€). The DossierAnalysis component shows an upsell for non-premium users with blurred teaser. Stripe is in test mode.",
+  "mocked_apis": {
+    "has_mocked_apis": true,
+    "mocked_apis_list": [
+      "Stripe uses test key sk_test_emergent - checkout redirects to Stripe but cannot complete real payment"
+    ]
+  }
+}

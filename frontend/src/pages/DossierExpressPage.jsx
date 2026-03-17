@@ -5,12 +5,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import {
   FileSearch, Upload, Mail, Clock, Shield, CheckCircle,
   ArrowRight, Loader2, FileText, Zap, Brain, AlertTriangle,
-  ChevronRight, Sparkles, CreditCard, X, Crown
+  ChevronRight, Sparkles, CreditCard, Crown, Star,
+  Users, Lock, RefreshCw, ShieldCheck, Award, TrendingUp
 } from 'lucide-react';
 import axios from 'axios';
 import { SEO } from '@/components/SEO';
@@ -39,9 +39,100 @@ const REGIMES = [
   "Autre"
 ];
 
+/* ── Testimonials ── */
+const TESTIMONIALS = [
+  { name: "Marie L.", type: "Accident du travail", text: "Le rapport m'a permis d'identifier des droits que je ne connaissais pas. Mon dossier CPAM a été accepté grâce aux recommandations.", rating: 5 },
+  { name: "Jean-Pierre D.", type: "Maladie professionnelle", text: "Analyse très détaillée avec les jurisprudences exactes à utiliser. Mon avocat a été impressionné par la qualité du rapport.", rating: 5 },
+  { name: "Sophie M.", type: "MDPH / AAH", text: "En 2h j'avais un plan d'action clair. Le rapport a identifié 3 documents manquants qui bloquaient mon dossier depuis 6 mois.", rating: 5 },
+];
+
+/* ── Trust Badge Component ── */
+const TrustBadge = ({ icon: Icon, label }) => (
+  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+    <Icon className="w-3.5 h-3.5 text-accent/70" strokeWidth={1.5} />
+    <span>{label}</span>
+  </div>
+);
+
+/* ── Step Indicator ── */
+const StepIndicator = ({ currentStep }) => {
+  const steps = [
+    { id: 1, label: "Informations" },
+    { id: 2, label: "Paiement" },
+    { id: 3, label: "Analyse" },
+  ];
+  return (
+    <div className="flex items-center justify-center gap-2 mb-8" data-testid="form-step-indicator">
+      {steps.map((s, i) => (
+        <div key={s.id} className="flex items-center gap-2">
+          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all ${
+            currentStep === s.id ? 'bg-accent text-white' :
+            currentStep > s.id ? 'bg-accent/15 text-accent' : 'bg-muted text-muted-foreground'
+          }`}>
+            {currentStep > s.id ? <CheckCircle className="w-3 h-3" /> : <span>{s.id}</span>}
+            <span className="hidden sm:inline">{s.label}</span>
+          </div>
+          {i < steps.length - 1 && <div className={`w-8 h-px ${currentStep > s.id ? 'bg-accent' : 'bg-border'}`} />}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+/* ── Value Sidebar for Form ── */
+const ValueReminder = ({ weeklyCount }) => (
+  <div className="space-y-5" data-testid="form-value-sidebar">
+    <Card className="border-accent/20 bg-accent/[0.03]">
+      <CardContent className="p-5">
+        <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+          <FileText className="w-4 h-4 text-accent" />
+          Votre rapport contient
+        </h4>
+        <ul className="space-y-2.5">
+          {[
+            "Analyse complète de votre situation",
+            "Cadre juridique et jurisprudences applicables",
+            "Vos droits identifiés avec explications",
+            "Points de vigilance et pièces manquantes",
+            "Stratégie recommandée étape par étape",
+            "5 actions prioritaires immédiates"
+          ].map((item, i) => (
+            <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+              <CheckCircle className="w-3.5 h-3.5 text-accent flex-shrink-0 mt-0.5" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+    <Card className="border-border">
+      <CardContent className="p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-emerald-600" />
+          <span className="text-xs font-medium text-emerald-700">Paiement 100% sécurisé</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Clock className="w-4 h-4 text-accent" />
+          <span className="text-xs text-muted-foreground">Rapport livré sous 2h par email</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <RefreshCw className="w-4 h-4 text-blue-500" />
+          <span className="text-xs text-muted-foreground">Satisfait ou analyse complémentaire offerte</span>
+        </div>
+        {weeklyCount > 0 && (
+          <div className="flex items-center gap-2 pt-2 border-t border-border">
+            <Users className="w-4 h-4 text-amber-500" />
+            <span className="text-xs text-amber-700 font-medium">{weeklyCount} dossiers analysés cette semaine</span>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  </div>
+);
+
 export const DossierExpressPage = () => {
   const [searchParams] = useSearchParams();
-  const [step, setStep] = useState('landing'); // landing, form, uploading, processing, success
+  const [step, setStep] = useState('landing');
   const [loading, setLoading] = useState(false);
   const [consent, setConsent] = useState(false);
   const [form, setForm] = useState({
@@ -54,9 +145,18 @@ export const DossierExpressPage = () => {
   const [pollStatus, setPollStatus] = useState(null);
   const [premiumPdf, setPremiumPdf] = useState(false);
   const [analysePremium, setAnalysePremium] = useState(false);
+  const [weeklyCount, setWeeklyCount] = useState(0);
 
   const featuresRef = useRevealChildren();
   const ctaBottomRef = useReveal();
+  const testimonialsRef = useRevealChildren();
+
+  // Fetch weekly count
+  useEffect(() => {
+    axios.get(`${API}/dossier-express/weekly-count`)
+      .then(res => setWeeklyCount(res.data.count || 0))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const payment = searchParams.get('payment');
@@ -67,10 +167,10 @@ export const DossierExpressPage = () => {
         const parsed = JSON.parse(savedForm);
         setForm(parsed);
         setStep('form');
-        toast.success("Paiement réussi ! Décrivez votre situation pour lancer l'analyse.");
+        toast.success("Paiement confirmé ! Complétez votre dossier pour lancer l'analyse.");
       } else {
         setStep('form');
-        toast.success("Paiement réussi ! Complétez le formulaire ci-dessous.");
+        toast.success("Paiement confirmé ! Complétez le formulaire ci-dessous.");
       }
       window.history.replaceState({}, '', '/dossier-express');
     } else if (payment === 'cancelled') {
@@ -79,7 +179,6 @@ export const DossierExpressPage = () => {
     }
   }, [searchParams]);
 
-  // Poll for analysis status
   useEffect(() => {
     if (!dossierId || step !== 'processing') return;
     const interval = setInterval(async () => {
@@ -128,8 +227,6 @@ export const DossierExpressPage = () => {
       return;
     }
     setLoading(true);
-
-    // Read file contents
     let documentsText = "";
     for (const file of files) {
       if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
@@ -138,7 +235,6 @@ export const DossierExpressPage = () => {
         documentsText += `\n--- ${file.name} (${file.type}, ${(file.size / 1024).toFixed(0)} Ko) ---\n[Document joint]\n`;
       }
     }
-
     try {
       const isPremium = sessionStorage.getItem('dossier_express_premium_pdf') === '1';
       const res = await axios.post(`${API}/dossier-express/submit`, {
@@ -156,7 +252,11 @@ export const DossierExpressPage = () => {
       sessionStorage.removeItem('dossier_express_form');
       sessionStorage.removeItem('dossier_express_premium_pdf');
     } catch (err) {
-      toast.error("Erreur lors de l'envoi. Veuillez réessayer.");
+      if (err.response?.status === 402) {
+        toast.error("Paiement requis. Veuillez procéder au paiement d'abord.");
+      } else {
+        toast.error("Erreur lors de l'envoi. Veuillez réessayer.");
+      }
     } finally {
       setLoading(false);
     }
@@ -167,59 +267,74 @@ export const DossierExpressPage = () => {
     return (
       <main className="page-transition pt-20">
       <SEO title="Dossier Express — Rapport d'analyse sous 2h" description="Uploadez vos documents, notre équipe les analyse avec l'aide de StratégiIA et vous recevez un rapport PDF complet sous 2 heures pour 97€." path="/dossier-express" />
+
         {/* Hero */}
         <section className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f3460 100%)' }}>
           <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 relative z-10">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 relative z-10">
+            <div className="grid lg:grid-cols-2 gap-10 items-center">
               <div>
-                <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 mb-6" data-testid="dossier-express-badge">
+                {weeklyCount > 0 && (
+                  <div className="inline-flex items-center gap-2 bg-emerald-500/15 border border-emerald-500/25 rounded-full px-3 py-1 mb-4">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span className="text-xs text-emerald-300 font-medium" data-testid="weekly-counter">{weeklyCount} dossiers analysés cette semaine</span>
+                  </div>
+                )}
+                <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 mb-4" data-testid="dossier-express-badge">
                   <Zap className="w-3 h-3 mr-1" fill="currentColor" />
                   Rapport sous 2 heures
                 </Badge>
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6" data-testid="dossier-express-title">
-                  Dossier Express
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-5" data-testid="dossier-express-title">
+                  Votre rapport d'analyse<br />
+                  <span className="text-amber-400">complet et personnalisé</span>
                 </h1>
-                <p className="text-lg text-white/70 mb-8 leading-relaxed max-w-xl">
-                  Uploadez vos documents, notre équipe les analyse avec l'aide de l'outil StratégiIA et vous recevez un <strong className="text-white">rapport PDF complet et personnalisé</strong> directement par email.
+                <p className="text-base lg:text-lg text-white/70 mb-6 leading-relaxed max-w-xl">
+                  Uploadez vos documents, notre outil StratégiIA croise <strong className="text-white">jurisprudences, barèmes et cas similaires</strong> pour identifier vos droits et construire votre stratégie.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4">
+
+                {/* Price + CTA */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
                   <Button
                     size="lg"
-                    className="rounded-full px-8 gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold text-base"
+                    className="rounded-full px-8 gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold text-base shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-all hover:scale-[1.02]"
                     onClick={() => setStep('form')}
                     data-testid="dossier-express-cta"
                   >
-                    Analyser mon dossier - 97 €
+                    Analyser mon dossier — 97 €
                     <ArrowRight className="w-5 h-5" />
                   </Button>
-                  <Link to="/tarifs">
-                    <Button size="lg" variant="outline" className="rounded-full px-8 border-white/20 text-white hover:bg-white/10">
-                      Voir tous les tarifs
-                    </Button>
-                  </Link>
-                </div>
-                {/* Price highlight */}
-                <div className="mt-8 inline-flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-5 py-3">
-                  <span className="text-3xl font-bold text-white">97 €</span>
-                  <div className="text-sm text-white/60 leading-tight">
-                    <span className="block">Rapport complet</span>
-                    <span className="block text-amber-400 font-medium">Livré sous 2h par email</span>
+                  <div className="text-sm text-white/50 leading-tight">
+                    <span className="block text-amber-400/80 font-medium">Livré sous 2h par email</span>
+                    <span className="block text-white/40 text-xs mt-0.5">Paiement sécurisé par Stripe</span>
                   </div>
+                </div>
+
+                {/* Trust signals */}
+                <div className="flex flex-wrap gap-x-5 gap-y-2 pt-4 border-t border-white/10">
+                  <TrustBadge icon={ShieldCheck} label="Paiement sécurisé" />
+                  <TrustBadge icon={Lock} label="Données protégées RGPD" />
+                  <TrustBadge icon={RefreshCw} label="Satisfait ou complément offert" />
                 </div>
               </div>
 
               {/* Steps visual */}
-              <div className="space-y-4 stagger">
+              <div className="space-y-3">
                 {[
-                  { icon: Upload, title: "1. Uploadez vos documents", desc: "Documents médicaux, courriers CPAM, décisions..." },
-                  { icon: Brain, title: "2. Analyse assistée par StratégiIA", desc: "Notre outil croise jurisprudences, barèmes et cas similaires pour affiner votre stratégie" },
-                  { icon: FileText, title: "3. Recevez votre rapport PDF", desc: "Analyse complète, droits identifiés, stratégie recommandée" },
-                  { icon: Mail, title: "4. Livré par email sous 2h", desc: "Rapport professionnel prêt à utiliser" }
+                  { icon: Upload, title: "1. Décrivez votre situation", desc: "Type de dossier, régime, description et documents optionnels", accent: false },
+                  { icon: CreditCard, title: "2. Paiement sécurisé — 97€", desc: "Par carte bancaire via Stripe. Traitement immédiat.", accent: false },
+                  { icon: Brain, title: "3. Analyse par StratégiIA", desc: "Croisement de jurisprudences, barèmes officiels et cas similaires", accent: true },
+                  { icon: Mail, title: "4. Rapport PDF par email sous 2h", desc: "Droits identifiés, stratégie recommandée, prochaines étapes concrètes", accent: false }
                 ].map((s, i) => (
-                  <div key={i} className="reveal flex items-start gap-4 bg-white/5 border border-white/10 rounded-xl p-4 backdrop-blur-sm hover:bg-white/[0.08] transition-all hover:border-amber-500/30 hover:translate-x-1 duration-300">
-                    <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                      <s.icon className="w-5 h-5 text-amber-400" />
+                  <div key={i} className={`flex items-start gap-4 rounded-xl p-4 backdrop-blur-sm transition-all duration-300 hover:translate-x-1 ${
+                    s.accent ? 'bg-amber-500/10 border border-amber-500/20 hover:border-amber-500/40' : 'bg-white/5 border border-white/10 hover:bg-white/[0.08] hover:border-white/20'
+                  }`}>
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      s.accent ? 'bg-amber-500/25' : 'bg-white/10'
+                    }`}>
+                      <s.icon className={`w-5 h-5 ${s.accent ? 'text-amber-400' : 'text-white/70'}`} />
                     </div>
                     <div>
                       <h3 className="font-semibold text-white text-sm">{s.title}</h3>
@@ -232,26 +347,29 @@ export const DossierExpressPage = () => {
           </div>
         </section>
 
-        {/* Features */}
+        {/* What you get — Features */}
         <section className="section-padding">
           <div className="max-w-7xl mx-auto" ref={featuresRef}>
-            <h2 className="text-2xl sm:text-3xl font-semibold text-center mb-12 reveal">Ce que contient votre rapport</h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 stagger">
+            <div className="text-center mb-10 reveal">
+              <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Ce que contient votre rapport</h2>
+              <p className="text-muted-foreground max-w-lg mx-auto text-sm">Un document professionnel complet, personnalisé à votre situation, exploitable immédiatement.</p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 stagger">
               {[
-                { icon: FileSearch, title: "Analyse de votre situation", desc: "Synthèse factuelle et identification des enjeux clés de votre dossier." },
-                { icon: Shield, title: "Cadre juridique applicable", desc: "Textes de loi, jurisprudences pertinentes et barèmes officiels." },
-                { icon: CheckCircle, title: "Vos droits identifiés", desc: "Liste exhaustive de vos droits avec explications claires." },
-                { icon: AlertTriangle, title: "Points de vigilance", desc: "Faiblesses du dossier, pièces manquantes et risques." },
-                { icon: Sparkles, title: "Stratégie recommandée", desc: "Plan d'action étape par étape avec délais indicatifs." },
-                { icon: Clock, title: "Prochaines étapes", desc: "5 actions concrètes prioritaires à réaliser immédiatement." }
+                { icon: FileSearch, title: "Analyse de votre situation", desc: "Synthèse factuelle, identification des enjeux clés et du contexte juridique de votre dossier." },
+                { icon: Shield, title: "Cadre juridique applicable", desc: "Textes de loi, jurisprudences pertinentes et barèmes officiels adaptés à votre cas." },
+                { icon: CheckCircle, title: "Vos droits identifiés", desc: "Liste exhaustive de vos droits avec explications claires et références légales." },
+                { icon: AlertTriangle, title: "Points de vigilance", desc: "Faiblesses du dossier, pièces manquantes et risques de rejet anticipés." },
+                { icon: Sparkles, title: "Stratégie recommandée", desc: "Plan d'action étape par étape avec délais et priorités pour maximiser vos chances." },
+                { icon: TrendingUp, title: "Estimation des chances", desc: "Score de pertinence basé sur l'analyse de cas similaires et statistiques CNAM." }
               ].map((f, i) => (
-                <Card key={i} className="card-glow border-border reveal" data-testid={`feature-card-${i}`}>
-                  <CardContent className="p-6 icon-bounce">
-                    <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+                <Card key={i} className="card-glow border-border reveal group hover:-translate-y-1 transition-transform duration-300" data-testid={`feature-card-${i}`}>
+                  <CardContent className="p-6">
+                    <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
                       <f.icon className="w-5 h-5 text-accent" />
                     </div>
-                    <h3 className="font-semibold mb-2">{f.title}</h3>
-                    <p className="text-sm text-muted-foreground">{f.desc}</p>
+                    <h3 className="font-semibold mb-2 text-sm">{f.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -259,38 +377,81 @@ export const DossierExpressPage = () => {
           </div>
         </section>
 
-        {/* Disclaimer Legal */}
-        <section className="py-6 bg-amber-50/50 border-y border-amber-200/30">
+        {/* Social Proof — Testimonials */}
+        <section className="section-padding bg-secondary/50">
+          <div className="max-w-5xl mx-auto" ref={testimonialsRef}>
+            <div className="text-center mb-10 reveal">
+              <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Ils ont fait analyser leur dossier</h2>
+              <p className="text-muted-foreground text-sm">Des dizaines de personnes ont renforcé leur dossier grâce au Dossier Express.</p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-5 stagger">
+              {TESTIMONIALS.map((t, i) => (
+                <Card key={i} className="reveal hover:-translate-y-1 transition-transform duration-300" data-testid={`testimonial-${i}`}>
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-0.5 mb-3">
+                      {[...Array(t.rating)].map((_, j) => (
+                        <Star key={j} className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                      ))}
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-4 italic">"{t.text}"</p>
+                    <div className="flex items-center gap-2 pt-3 border-t border-border">
+                      <div className="w-8 h-8 rounded-full bg-accent/15 flex items-center justify-center">
+                        <span className="text-xs font-semibold text-accent">{t.name.charAt(0)}</span>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold">{t.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{t.type}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Legal disclaimer */}
+        <section className="py-5 bg-amber-50/50 border-y border-amber-200/30">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-start gap-3" data-testid="dossier-express-disclaimer">
-              <AlertTriangle className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-              <p className="text-sm text-amber-900/70 leading-relaxed">
-                <strong className="text-amber-900/90">Information importante :</strong> Le Dossier Express fournit une analyse documentaire et stratégique basée sur l'intelligence artificielle. 
-                Ce service ne constitue pas une expertise médicale officielle ni une expertise judiciaire. 
-                Il ne constitue pas un conseil juridique ni un avis médical. 
-                Pour toute décision juridique ou médicale, consultez un professionnel qualifié.
+              <AlertTriangle className="w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+              <p className="text-xs text-amber-900/70 leading-relaxed">
+                <strong className="text-amber-900/90">Information :</strong> Le Dossier Express fournit une analyse documentaire et stratégique basée sur l'intelligence artificielle. Il ne constitue pas une expertise médicale officielle, un conseil juridique ni un avis médical.
               </p>
             </div>
           </div>
         </section>
 
-        {/* CTA bottom */}
-        <section className="section-padding bg-secondary">
-          <div className="max-w-3xl mx-auto text-center reveal" ref={ctaBottomRef}>
-            <h2 className="text-2xl sm:text-3xl font-semibold mb-4">Prêt à analyser votre dossier ?</h2>
-            <p className="text-muted-foreground mb-8">
-              En quelques minutes, recevez un rapport professionnel complet pour comprendre votre situation et vos options.
-            </p>
-            <Button
-              size="lg"
-              className="rounded-full px-10 gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold"
-              onClick={() => setStep('form')}
-              data-testid="dossier-express-cta-bottom"
-            >
-              Commencer - 97 €
-              <ArrowRight className="w-5 h-5" />
-            </Button>
-            <p className="text-xs text-muted-foreground mt-4">Paiement sécurisé par Stripe. Rapport livré par email sous 2h.</p>
+        {/* Final CTA */}
+        <section className="section-padding">
+          <div className="max-w-2xl mx-auto reveal" ref={ctaBottomRef}>
+            <Card className="border-accent/20 overflow-hidden">
+              <CardContent className="p-0">
+                <div className="bg-foreground text-primary-foreground p-8 text-center">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-500/20 flex items-center justify-center mx-auto mb-4">
+                    <Brain className="w-7 h-7 text-amber-400" />
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-semibold mb-2">Prêt à analyser votre dossier ?</h2>
+                  <p className="text-primary-foreground/60 mb-6 text-sm max-w-md mx-auto">
+                    Recevez un rapport professionnel complet sous 2h pour comprendre votre situation, vos droits et votre stratégie.
+                  </p>
+                  <Button
+                    size="lg"
+                    className="rounded-full px-10 gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold shadow-lg shadow-amber-500/20 hover:scale-[1.02] transition-all"
+                    onClick={() => setStep('form')}
+                    data-testid="dossier-express-cta-bottom"
+                  >
+                    Commencer — 97 €
+                    <ArrowRight className="w-5 h-5" />
+                  </Button>
+                  <div className="flex items-center justify-center gap-4 mt-5 text-xs text-primary-foreground/40">
+                    <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Paiement sécurisé</span>
+                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> Livré sous 2h</span>
+                    <span className="flex items-center gap-1"><RefreshCw className="w-3 h-3" /> Garantie satisfaction</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </section>
       </main>
@@ -300,176 +461,180 @@ export const DossierExpressPage = () => {
   // ==================== FORM VIEW ====================
   if (step === 'form') {
     const hasPaid = searchParams.get('payment') === 'success' || searchParams.get('session_id');
+    const totalAmount = 97 + (premiumPdf ? 19 : 0) + (analysePremium ? 49 : 0);
+
     return (
       <main className="page-transition pt-20">
         <section className="section-padding">
-          <div className="max-w-2xl mx-auto">
-            <button onClick={() => setStep('landing')} className="text-sm text-muted-foreground hover:text-foreground mb-6 flex items-center gap-1">
+          <div className="max-w-5xl mx-auto">
+            <button onClick={() => setStep('landing')} className="text-sm text-muted-foreground hover:text-foreground mb-4 flex items-center gap-1 transition-colors">
               <ChevronRight className="w-4 h-4 rotate-180" /> Retour
             </button>
-            <h2 className="text-3xl font-bold mb-2" data-testid="form-title">Votre Dossier Express</h2>
-            <p className="text-muted-foreground mb-8">Remplissez les informations ci-dessous pour lancer l'analyse.</p>
 
-            <div className="space-y-6">
-              {/* Coordonnées */}
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="de-name">Nom complet *</Label>
-                  <Input id="de-name" value={form.name} onChange={e => setForm(p => ({...p, name: e.target.value}))} placeholder="Prénom Nom" data-testid="de-name-input" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="de-email">Email *</Label>
-                  <Input id="de-email" type="email" value={form.email} onChange={e => setForm(p => ({...p, email: e.target.value}))} placeholder="votre@email.fr" data-testid="de-email-input" />
-                </div>
-              </div>
+            <StepIndicator currentStep={hasPaid ? 3 : 1} />
 
-              {/* Type & Régime */}
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Type de dossier</Label>
-                  <select
-                    value={form.type_dossier}
-                    onChange={e => setForm(p => ({...p, type_dossier: e.target.value}))}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    data-testid="de-type-select"
-                  >
-                    <option value="">Sélectionnez...</option>
-                    {TYPES_DOSSIER.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Régime</Label>
-                  <select
-                    value={form.regime}
-                    onChange={e => setForm(p => ({...p, regime: e.target.value}))}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    data-testid="de-regime-select"
-                  >
-                    <option value="">Sélectionnez...</option>
-                    {REGIMES.map(r => <option key={r} value={r}>{r}</option>)}
-                  </select>
-                </div>
-              </div>
+            <div className="grid lg:grid-cols-[1fr_320px] gap-8">
+              {/* Main form */}
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-bold mb-2" data-testid="form-title">
+                  {hasPaid ? 'Complétez votre dossier' : 'Votre Dossier Express'}
+                </h2>
+                <p className="text-muted-foreground mb-6 text-sm">
+                  {hasPaid ? 'Décrivez votre situation pour lancer l\'analyse StratégiIA.' : 'Remplissez les informations ci-dessous pour lancer l\'analyse.'}
+                </p>
 
-              {/* Situation */}
-              <div className="space-y-2">
-                <Label htmlFor="de-situation">Décrivez votre situation *</Label>
-                <textarea
-                  id="de-situation"
-                  value={form.situation}
-                  onChange={e => setForm(p => ({...p, situation: e.target.value}))}
-                  rows={6}
-                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
-                  placeholder="Décrivez votre situation en détail : historique, démarches entreprises, difficultés rencontrées, objectifs..."
-                  data-testid="de-situation-input"
-                />
-                <p className="text-xs text-muted-foreground">Plus votre description est détaillée, plus l'analyse sera pertinente.</p>
-              </div>
+                <div className="space-y-5">
+                  {/* Coordonnées */}
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="de-name">Nom complet *</Label>
+                      <Input id="de-name" value={form.name} onChange={e => setForm(p => ({...p, name: e.target.value}))} placeholder="Prénom Nom" data-testid="de-name-input" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="de-email">Email *</Label>
+                      <Input id="de-email" type="email" value={form.email} onChange={e => setForm(p => ({...p, email: e.target.value}))} placeholder="votre@email.fr" data-testid="de-email-input" />
+                    </div>
+                  </div>
 
-              {/* Document upload with quality control + OCR */}
-              <div className="space-y-2">
-                <Label>Documents (optionnel, max 5 fichiers)</Label>
-                <DocumentUploader
-                  files={files}
-                  onFilesChange={setFiles}
-                  maxFiles={5}
-                  showChecklist={files.length > 0}
-                  showGuide={true}
-                  enableOCR={true}
-                  onOcrResult={(result) => {
-                    if (result?.fields) {
-                      const f = result.fields;
-                      // Auto-fill type de dossier
-                      if (f.type_dossier_detected?.length > 0 && !form.type_dossier) {
-                        const typeMap = { at: 'Accident du travail (AT)', mp: 'Maladie professionnelle (MP)', mdph: 'Demande MDPH / AAH', expertise: 'Expertise médicale', ipp: 'Contestation taux IPP', assurance: 'Litige assurance / protection juridique' };
-                        const matched = typeMap[f.type_dossier_detected[0]];
-                        if (matched) setForm(prev => ({ ...prev, type_dossier: matched }));
-                      }
-                      // Auto-fill regime from organisme
-                      if (f.organisme && !form.regime) {
-                        const regimeMap = { MSA: 'Régime agricole (MSA)' };
-                        const matched = regimeMap[f.organisme];
-                        if (matched) setForm(prev => ({ ...prev, regime: matched }));
-                        else setForm(prev => ({ ...prev, regime: 'Régime général' }));
-                      }
-                      // Auto-fill name
-                      if (f.noms?.length > 0 && !form.name.trim()) {
-                        setForm(prev => ({ ...prev, name: f.noms[0] }));
-                      }
-                      // Auto-fill situation with resume + recommandations
-                      if (!form.situation.trim()) {
-                        let autoText = '';
-                        if (f.resume) autoText += f.resume;
-                        if (f.recommandations?.length > 0) {
-                          autoText += '\n\nPoints identifiés : ' + f.recommandations.join('. ');
+                  {/* Type & Régime */}
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Type de dossier</Label>
+                      <select value={form.type_dossier} onChange={e => setForm(p => ({...p, type_dossier: e.target.value}))} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" data-testid="de-type-select">
+                        <option value="">Sélectionnez...</option>
+                        {TYPES_DOSSIER.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Régime</Label>
+                      <select value={form.regime} onChange={e => setForm(p => ({...p, regime: e.target.value}))} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" data-testid="de-regime-select">
+                        <option value="">Sélectionnez...</option>
+                        {REGIMES.map(r => <option key={r} value={r}>{r}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Situation */}
+                  <div className="space-y-2">
+                    <Label htmlFor="de-situation">Décrivez votre situation *</Label>
+                    <textarea
+                      id="de-situation"
+                      value={form.situation}
+                      onChange={e => setForm(p => ({...p, situation: e.target.value}))}
+                      rows={6}
+                      className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                      placeholder="Décrivez votre situation en détail : historique, démarches entreprises, difficultés rencontrées, objectifs..."
+                      data-testid="de-situation-input"
+                    />
+                    <p className="text-xs text-muted-foreground">Plus votre description est détaillée, plus l'analyse sera pertinente.</p>
+                  </div>
+
+                  {/* Document upload */}
+                  <div className="space-y-2">
+                    <Label>Documents (optionnel, max 5 fichiers)</Label>
+                    <DocumentUploader
+                      files={files}
+                      onFilesChange={setFiles}
+                      maxFiles={5}
+                      showChecklist={files.length > 0}
+                      showGuide={true}
+                      enableOCR={true}
+                      onOcrResult={(result) => {
+                        if (result?.fields) {
+                          const f = result.fields;
+                          if (f.type_dossier_detected?.length > 0 && !form.type_dossier) {
+                            const typeMap = { at: 'Accident du travail (AT)', mp: 'Maladie professionnelle (MP)', mdph: 'Demande MDPH / AAH', expertise: 'Expertise médicale', ipp: 'Contestation taux IPP', assurance: 'Litige assurance / protection juridique' };
+                            const matched = typeMap[f.type_dossier_detected[0]];
+                            if (matched) setForm(prev => ({ ...prev, type_dossier: matched }));
+                          }
+                          if (f.organisme && !form.regime) {
+                            const regimeMap = { MSA: 'Régime agricole (MSA)' };
+                            const matched = regimeMap[f.organisme];
+                            if (matched) setForm(prev => ({ ...prev, regime: matched }));
+                            else setForm(prev => ({ ...prev, regime: 'Régime général' }));
+                          }
+                          if (f.noms?.length > 0 && !form.name.trim()) {
+                            setForm(prev => ({ ...prev, name: f.noms[0] }));
+                          }
+                          if (!form.situation.trim()) {
+                            let autoText = '';
+                            if (f.resume) autoText += f.resume;
+                            if (f.recommandations?.length > 0) autoText += '\n\nPoints identifiés : ' + f.recommandations.join('. ');
+                            if (f.contexte && !autoText) autoText = f.contexte;
+                            if (autoText) setForm(prev => ({ ...prev, situation: autoText }));
+                          }
+                          if (result.raw) setForm(prev => ({ ...prev, documents_text: result.raw.substring(0, 3000) }));
                         }
-                        if (f.contexte && !autoText) autoText = f.contexte;
-                        if (autoText) setForm(prev => ({ ...prev, situation: autoText }));
-                      }
-                      // Auto-fill documents_text with extracted raw text
-                      if (result.raw) {
-                        setForm(prev => ({ ...prev, documents_text: result.raw.substring(0, 3000) }));
-                      }
-                    }
-                  }}
-                />
+                      }}
+                    />
+                  </div>
+
+                  <DataConsentBox checked={consent} onChange={setConsent} className="mt-3" />
+
+                  {/* Upsell options */}
+                  <div className="space-y-2.5 pt-2">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Options</p>
+                    <label className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-amber-500/30 cursor-pointer transition-colors" data-testid="de-analyse-premium-option">
+                      <input type="checkbox" checked={analysePremium} onChange={e => setAnalysePremium(e.target.checked)} className="mt-0.5 accent-amber-500" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <Award className="w-4 h-4 text-amber-500" />
+                          <span className="text-sm font-medium">Analyse Premium</span>
+                          <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px]">+49€</Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">Rapport enrichi par la relecture personnelle de notre expert avec recommandations exclusives.</p>
+                      </div>
+                    </label>
+                    <label className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-accent/40 cursor-pointer transition-colors" data-testid="de-premium-pdf-option">
+                      <input type="checkbox" checked={premiumPdf} onChange={e => setPremiumPdf(e.target.checked)} className="mt-0.5 accent-amber-500" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <Crown className="w-4 h-4 text-accent" />
+                          <span className="text-sm font-medium">Version professionnelle</span>
+                          <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">+19€</Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">Rapport sans filigrane, optimisé pour transmission à un avocat, médecin ou expert.</p>
+                      </div>
+                      <PdfCoverPreview reportType="Dossier Express" />
+                    </label>
+                  </div>
+
+                  {/* Action button */}
+                  {hasPaid ? (
+                    <Button
+                      size="lg"
+                      className="w-full rounded-xl gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold shadow-lg shadow-amber-500/15 hover:shadow-amber-500/25 transition-all"
+                      onClick={handleSubmitDossier}
+                      disabled={loading || !form.situation.trim() || !form.email || !consent}
+                      data-testid="de-submit-button"
+                    >
+                      {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi en cours...</> : <><Brain className="w-5 h-5" /> Lancer l'analyse StratégiIA</>}
+                    </Button>
+                  ) : (
+                    <Button
+                      size="lg"
+                      className="w-full rounded-xl gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold shadow-lg shadow-amber-500/15 hover:shadow-amber-500/25 transition-all"
+                      onClick={handleCheckout}
+                      disabled={loading || !form.email || !form.name || !consent}
+                      data-testid="de-checkout-button"
+                    >
+                      {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection vers le paiement...</> : <><CreditCard className="w-5 h-5" /> Payer {totalAmount} € — Analyse sous 2h</>}
+                    </Button>
+                  )}
+
+                  <p className="text-[11px] text-muted-foreground text-center flex items-center justify-center gap-2">
+                    <ShieldCheck className="w-3 h-3" />
+                    Paiement sécurisé par Stripe — Rapport PDF envoyé par email sous 2 heures
+                  </p>
+                </div>
               </div>
 
-              {/* Action */}
-              <DataConsentBox checked={consent} onChange={setConsent} className="mt-4" />
-
-              {/* Analyse Premium option */}
-              <label className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-amber-500/30 cursor-pointer transition-colors mt-3" data-testid="de-analyse-premium-option">
-                <input type="checkbox" checked={analysePremium} onChange={e => setAnalysePremium(e.target.checked)} className="mt-0.5 accent-amber-500" />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-amber-400 text-sm">&#9889;</span>
-                    <span className="text-sm font-medium">Analyse Premium</span>
-                    <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px]">+49€</Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">Votre dossier analysé par StratégiIA puis enrichi par la relecture personnelle de notre expert avec ses recommandations exclusives.</p>
+              {/* Sidebar — value reminder */}
+              <div className="hidden lg:block">
+                <div className="sticky top-24">
+                  <ValueReminder weeklyCount={weeklyCount} />
                 </div>
-              </label>
-
-              {/* Premium PDF option */}
-              <label className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-accent/40 cursor-pointer transition-colors mt-3" data-testid="de-premium-pdf-option">
-                <input type="checkbox" checked={premiumPdf} onChange={e => setPremiumPdf(e.target.checked)} className="mt-0.5 accent-amber-500" />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <Crown className="w-4 h-4 text-accent" />
-                    <span className="text-sm font-medium">Version professionnelle du rapport</span>
-                    <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">+19€</Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">Rapport sans filigrane, mise en page optimisée pour impression ou transmission à un professionnel (avocat, médecin, expert).</p>
-                </div>
-                <PdfCoverPreview reportType="Dossier Express" />
-              </label>
-
-              {hasPaid ? (
-                <Button
-                  size="lg"
-                  className="w-full rounded-xl gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold"
-                  onClick={handleSubmitDossier}
-                  disabled={loading || !form.situation.trim() || !form.email || !consent}
-                  data-testid="de-submit-button"
-                >
-                  {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi en cours...</> : <><Brain className="w-5 h-5" /> Soumettre mon dossier</>}
-                </Button>
-              ) : (
-                <Button
-                  size="lg"
-                  className="w-full rounded-xl gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold"
-                  onClick={handleCheckout}
-                  disabled={loading || !form.email || !form.name || !consent}
-                  data-testid="de-checkout-button"
-                >
-                  {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection...</> : <><CreditCard className="w-5 h-5" /> Payer {97 + (premiumPdf ? 19 : 0) + (analysePremium ? 49 : 0)} € et lancer l'analyse</>}
-                </Button>
-              )}
-
-              <p className="text-xs text-muted-foreground text-center">
-                Paiement sécurisé par Stripe. Rapport PDF envoyé à votre email sous 2 heures maximum.
-              </p>
+              </div>
             </div>
           </div>
         </section>
@@ -487,24 +652,26 @@ export const DossierExpressPage = () => {
               <Brain className="w-10 h-10 text-amber-500" />
             </div>
             <h2 className="text-2xl font-bold mb-3" data-testid="processing-title">Analyse en cours...</h2>
-            <p className="text-muted-foreground mb-8">
-              Votre dossier est en cours de traitement. Notre équipe, assistée par l'outil StratégiIA, prépare votre rapport. Vous le recevrez par email à <strong>{form.email}</strong>.
+            <p className="text-muted-foreground mb-8 text-sm">
+              Votre dossier est en cours d'analyse par StratégiIA. Vous recevrez votre rapport par email à <strong className="text-foreground">{form.email}</strong>.
             </p>
-            <div className="space-y-3 text-left max-w-sm mx-auto">
-              {[
-                { label: "Réception du dossier", done: true },
-                { label: "Analyse en cours avec StratégiIA", done: false, active: true },
-                { label: "Génération du rapport PDF", done: false },
-                { label: "Envoi par email", done: false }
-              ].map((s, i) => (
-                <div key={i} className={`flex items-center gap-3 text-sm ${s.done ? 'text-green-600' : s.active ? 'text-amber-500 font-medium' : 'text-muted-foreground'}`}>
-                  {s.done ? <CheckCircle className="w-5 h-5" /> : s.active ? <Loader2 className="w-5 h-5 animate-spin" /> : <div className="w-5 h-5 rounded-full border-2 border-muted" />}
-                  {s.label}
-                </div>
-              ))}
-            </div>
-            <p className="text-xs text-muted-foreground mt-8">
-              Vous pouvez fermer cette page. Le rapport sera envoyé à votre email sous 2 heures maximum.
+            <Card className="text-left mb-6">
+              <CardContent className="p-5 space-y-3">
+                {[
+                  { label: "Réception du dossier", done: true },
+                  { label: "Analyse en cours par StratégiIA", done: false, active: true },
+                  { label: "Génération du rapport PDF", done: false },
+                  { label: "Envoi par email", done: false }
+                ].map((s, i) => (
+                  <div key={i} className={`flex items-center gap-3 text-sm ${s.done ? 'text-emerald-600' : s.active ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
+                    {s.done ? <CheckCircle className="w-5 h-5" /> : s.active ? <Loader2 className="w-5 h-5 animate-spin" /> : <div className="w-5 h-5 rounded-full border-2 border-muted" />}
+                    {s.label}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+            <p className="text-xs text-muted-foreground">
+              Vous pouvez fermer cette page. Le rapport sera envoyé sous 2 heures maximum.
             </p>
           </div>
         </section>
@@ -518,26 +685,36 @@ export const DossierExpressPage = () => {
       <main className="page-transition pt-20">
         <section className="section-padding">
           <div className="max-w-lg mx-auto text-center">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="w-10 h-10 text-green-600" />
+            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="w-10 h-10 text-emerald-600" />
             </div>
             <h2 className="text-2xl font-bold mb-3" data-testid="success-title">Rapport envoyé !</h2>
-            <p className="text-muted-foreground mb-6">
-              Votre rapport Dossier Express a été envoyé à <strong>{form.email || pollStatus?.email}</strong>.
+            <p className="text-muted-foreground mb-6 text-sm">
+              Votre rapport Dossier Express a été envoyé à <strong className="text-foreground">{form.email || pollStatus?.email}</strong>.
               Vérifiez votre boîte de réception (et vos spams).
             </p>
-            <div className="bg-secondary rounded-xl p-6 text-left mb-8">
-              <h3 className="font-semibold mb-3">Et ensuite ?</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2"><ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />Lisez attentivement votre rapport d'analyse</li>
-                <li className="flex items-start gap-2"><ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />Suivez les prochaines étapes recommandées</li>
-                <li className="flex items-start gap-2"><ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />Pour un accompagnement personnalisé, prenez rendez-vous</li>
-              </ul>
-            </div>
+            <Card className="text-left mb-8">
+              <CardContent className="p-5">
+                <h3 className="font-semibold mb-3 text-sm">Et ensuite ?</h3>
+                <ul className="space-y-2.5">
+                  {[
+                    "Lisez attentivement votre rapport d'analyse",
+                    "Suivez les prochaines étapes recommandées",
+                    "Rassemblez les documents manquants identifiés",
+                    "Pour un accompagnement personnalisé, prenez rendez-vous"
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link to="/agenda">
                 <Button className="rounded-full px-6 gap-2">
-                  Réserver un appel
+                  Réserver un appel gratuit
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>

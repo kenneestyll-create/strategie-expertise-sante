@@ -105,7 +105,7 @@ const DossierExpressUpsell = ({ score, dynamic_message }) => {
               <p className="text-xs font-semibold mt-2 text-center">Solidité du dossier</p>
             </div>
             <div className="flex-1 p-5 md:p-6">
-              <div className="blur-sm opacity-50 pointer-events-none">
+              <div className="blur-sm opacity-50 pointer-events-none select-none">
                 <div className="flex gap-4 p-3 rounded-lg bg-muted/30 border border-border/50 mb-3">
                   <div className="flex-1"><div className="h-1.5 bg-muted rounded-full mb-1" /><div className="h-3 bg-muted rounded w-16" /></div>
                   <div className="flex-1"><div className="h-1.5 bg-muted rounded-full mb-1" /><div className="h-3 bg-muted rounded w-16" /></div>
@@ -118,22 +118,28 @@ const DossierExpressUpsell = ({ score, dynamic_message }) => {
                 </div>
               </div>
               {/* Overlay lock */}
-              <div className="absolute inset-0 flex items-center justify-center bg-background/40 backdrop-blur-[2px]">
+              <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[3px]">
                 <div className="text-center p-6 max-w-sm">
-                  <div className="w-14 h-14 rounded-full bg-accent/15 flex items-center justify-center mx-auto mb-3">
-                    <Lock className="w-7 h-7 text-accent" />
+                  <div className="w-14 h-14 rounded-2xl bg-amber-500/15 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-amber-500/10">
+                    <Zap className="w-7 h-7 text-amber-500" />
                   </div>
                   <h4 className="font-bold text-base mb-1" data-testid="upsell-title">Débloquez votre analyse complète</h4>
-                  <p className="text-sm text-muted-foreground mb-4">
+                  <p className="text-sm text-muted-foreground mb-2">
                     Score de solidité, points de fragilité, alertes de risque, anticipation des refus et actions recommandées.
                   </p>
+                  <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground mb-4">
+                    <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3 text-emerald-500" />Rapport sous 2h</span>
+                    <span className="flex items-center gap-1"><Shield className="w-3 h-3 text-blue-500" />Stratégie personnalisée</span>
+                    <span className="flex items-center gap-1"><Target className="w-3 h-3 text-accent" />Actions concrètes</span>
+                  </div>
                   <Link to="/dossier-express">
-                    <Button className="gap-2 rounded-full bg-accent hover:bg-accent/90 shadow-lg" data-testid="upsell-dossier-express-btn">
+                    <Button className="gap-2 rounded-full bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold shadow-lg shadow-amber-500/20 hover:scale-[1.02] transition-all" data-testid="upsell-dossier-express-btn">
                       <FileText className="w-4 h-4" /> Dossier Express — 97€
+                      <ArrowRight className="w-4 h-4" />
                     </Button>
                   </Link>
-                  <p className="text-[11px] text-muted-foreground mt-3">
-                    Rapport complet + analyse documentaire + stratégie personnalisée
+                  <p className="text-[10px] text-muted-foreground mt-3">
+                    Paiement sécurisé — Satisfait ou complément offert
                   </p>
                 </div>
               </div>
