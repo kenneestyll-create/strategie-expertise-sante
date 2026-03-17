@@ -1,18 +1,55 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Phone, Gift, Handshake, ArrowRight, Linkedin, Send } from 'lucide-react';
+import { Mail, Phone, Gift, Handshake, Linkedin, Send, CheckCircle, Loader2, Building2, User } from 'lucide-react';
 import { LogoFull } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
+import axios from 'axios';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+const PARTNER_TYPES = [
+  "Professionnel de santé",
+  "Avocat / Juriste",
+  "Expert judiciaire",
+  "Association",
+  "Sponsor / Mécène",
+  "Autre",
+];
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const [form, setForm] = useState({ name: '', company: '', email: '', partner_type: '', message: '' });
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.name.trim() || !form.email.trim() || !form.partner_type) {
+      toast.error("Veuillez remplir les champs obligatoires");
+      return;
+    }
+    setLoading(true);
+    try {
+      await axios.post(`${API}/partner-request`, form);
+      setSubmitted(true);
+      toast.success("Demande envoyée avec succès !");
+    } catch {
+      toast.error("Erreur lors de l'envoi. Veuillez réessayer.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <footer className="bg-foreground text-primary-foreground">
-      {/* Partner / Sponsor CTA Band */}
+      {/* Partner / Sponsor Section */}
       <div className="border-b border-primary-foreground/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8 lg:gap-12" data-testid="footer-partner-section">
-            <div className="flex-1 min-w-0">
+          <div className="grid lg:grid-cols-[1fr_380px] gap-10 lg:gap-16 items-start" data-testid="footer-partner-section">
+            {/* Left — description */}
+            <div>
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center flex-shrink-0">
                   <Handshake className="w-5 h-5 text-accent" strokeWidth={1.5} />
@@ -21,32 +58,12 @@ export const Footer = () => {
                   Devenez partenaire
                 </h3>
               </div>
-              <p className="text-sm text-primary-foreground/60 leading-relaxed max-w-2xl">
+              <p className="text-sm text-primary-foreground/60 leading-relaxed max-w-xl mb-5">
                 Vous êtes professionnel de santé, avocat, expert ou association ?
                 Rejoignez notre réseau pour collaborer, sponsoriser nos actions ou contribuer à améliorer
                 l'accompagnement des victimes de maladies professionnelles.
               </p>
-            </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-shrink-0">
-              <a href="mailto:partenaires@strategie-expertise-sante.fr?subject=Demande%20de%20partenariat">
-                <Button
-                  className="rounded-full gap-2 bg-accent hover:bg-accent/90 text-white font-medium px-6 shadow-lg shadow-accent/15 hover:shadow-accent/25 hover:scale-[1.02] transition-all"
-                  data-testid="partner-cta-button"
-                >
-                  <Send className="w-4 h-4" />
-                  Contactez-nous
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
-              </a>
-              <div className="flex items-center gap-2">
-                <a
-                  href="mailto:partenaires@strategie-expertise-sante.fr"
-                  className="w-9 h-9 rounded-full border border-primary-foreground/15 flex items-center justify-center text-primary-foreground/50 hover:text-accent hover:border-accent/40 transition-all"
-                  title="Email partenariat"
-                  data-testid="partner-email-icon"
-                >
-                  <Mail className="w-4 h-4" strokeWidth={1.5} />
-                </a>
+              <div className="flex items-center gap-3">
                 <a
                   href="https://www.linkedin.com/company/strategie-expertise-sante"
                   target="_blank"
@@ -57,7 +74,103 @@ export const Footer = () => {
                 >
                   <Linkedin className="w-4 h-4" strokeWidth={1.5} />
                 </a>
+                <a
+                  href="mailto:partenaires@strategie-expertise-sante.fr"
+                  className="w-9 h-9 rounded-full border border-primary-foreground/15 flex items-center justify-center text-primary-foreground/50 hover:text-accent hover:border-accent/40 transition-all"
+                  title="Email partenariat"
+                  data-testid="partner-email-icon"
+                >
+                  <Mail className="w-4 h-4" strokeWidth={1.5} />
+                </a>
               </div>
+            </div>
+
+            {/* Right — form */}
+            <div>
+              {submitted ? (
+                <div className="rounded-xl border border-primary-foreground/10 bg-primary-foreground/[0.04] p-6 text-center" data-testid="partner-form-success">
+                  <CheckCircle className="w-10 h-10 text-emerald-400 mx-auto mb-3" />
+                  <p className="font-semibold text-sm mb-1">Demande envoyée !</p>
+                  <p className="text-xs text-primary-foreground/50">Nous reviendrons vers vous rapidement.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="rounded-xl border border-primary-foreground/10 bg-primary-foreground/[0.04] p-5 space-y-3" data-testid="partner-form">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[11px] text-primary-foreground/50 font-medium">Nom *</label>
+                      <div className="relative">
+                        <User className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary-foreground/30" />
+                        <Input
+                          value={form.name}
+                          onChange={e => setForm(p => ({...p, name: e.target.value}))}
+                          placeholder="Votre nom"
+                          className="h-9 text-xs pl-8 bg-transparent border-primary-foreground/15 text-primary-foreground placeholder:text-primary-foreground/30 focus:border-accent/50"
+                          data-testid="partner-name-input"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[11px] text-primary-foreground/50 font-medium">Société</label>
+                      <div className="relative">
+                        <Building2 className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary-foreground/30" />
+                        <Input
+                          value={form.company}
+                          onChange={e => setForm(p => ({...p, company: e.target.value}))}
+                          placeholder="Votre société"
+                          className="h-9 text-xs pl-8 bg-transparent border-primary-foreground/15 text-primary-foreground placeholder:text-primary-foreground/30 focus:border-accent/50"
+                          data-testid="partner-company-input"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-primary-foreground/50 font-medium">Email *</label>
+                    <div className="relative">
+                      <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary-foreground/30" />
+                      <Input
+                        type="email"
+                        value={form.email}
+                        onChange={e => setForm(p => ({...p, email: e.target.value}))}
+                        placeholder="votre@email.fr"
+                        className="h-9 text-xs pl-8 bg-transparent border-primary-foreground/15 text-primary-foreground placeholder:text-primary-foreground/30 focus:border-accent/50"
+                        data-testid="partner-email-input"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-primary-foreground/50 font-medium">Type de partenariat *</label>
+                    <select
+                      value={form.partner_type}
+                      onChange={e => setForm(p => ({...p, partner_type: e.target.value}))}
+                      className="flex h-9 w-full rounded-md border border-primary-foreground/15 bg-transparent px-3 py-1 text-xs text-primary-foreground focus:outline-none focus:border-accent/50"
+                      data-testid="partner-type-select"
+                    >
+                      <option value="" className="text-foreground">Sélectionnez...</option>
+                      {PARTNER_TYPES.map(t => <option key={t} value={t} className="text-foreground">{t}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-primary-foreground/50 font-medium">Message (optionnel)</label>
+                    <textarea
+                      value={form.message}
+                      onChange={e => setForm(p => ({...p, message: e.target.value}))}
+                      rows={2}
+                      placeholder="Décrivez brièvement votre projet de collaboration..."
+                      className="flex w-full rounded-md border border-primary-foreground/15 bg-transparent px-3 py-2 text-xs text-primary-foreground placeholder:text-primary-foreground/30 resize-none focus:outline-none focus:border-accent/50"
+                      data-testid="partner-message-input"
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full rounded-full gap-2 bg-accent hover:bg-accent/90 text-white font-medium h-9 text-xs shadow-lg shadow-accent/15 hover:shadow-accent/25 hover:scale-[1.01] transition-all"
+                    data-testid="partner-submit-button"
+                  >
+                    {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                    {loading ? 'Envoi...' : 'Envoyer ma demande'}
+                  </Button>
+                </form>
+              )}
             </div>
           </div>
         </div>

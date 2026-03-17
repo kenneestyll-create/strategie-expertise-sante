@@ -68,10 +68,10 @@ Application web complète en français pour fournir des conseils sur les maladie
 - Validé par 13 tests + 4 vérifications grep
 
 ### Section Partenaires Footer (Mar 2026) ✅
-- Bandeau "Devenez partenaire" intégré avant le footer principal
-- CTA mailto partenaires@strategie-expertise-sante.fr
-- Icônes contact rapide (email + LinkedIn)
-- Responsive (empilé mobile, aligné desktop)
+- Formulaire dédié inline (Nom, Société, Email, Type de partenariat, Message)
+- Endpoint `POST /api/partner-request` → stockage MongoDB + notification email
+- Types : Professionnel de santé, Avocat/Juriste, Expert, Association, Sponsor, Autre
+- Icônes contact rapide (LinkedIn + email), responsive 2 colonnes desktop
 
 ### Système complet StratégiIA / Dossier Express IA (Phases 1-3)
 - Analyse IA, scoring, OCR, auto-remplissage, notifications, PDF

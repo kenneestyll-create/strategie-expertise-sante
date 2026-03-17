@@ -151,3 +151,37 @@ async def record_client_order(email: str, name: Optional[str] = None):
         upsert=True
     )
     return {"success": True}
+
+
+
+# ── Partner / Sponsor requests ──
+@router.post("/partner-request")
+async def submit_partner_request(data: dict):
+    name = (data.get("name") or "").strip()
+    company = (data.get("company") or "").strip()
+    email = (data.get("email") or "").strip()
+    partner_type = (data.get("partner_type") or "").strip()
+    message = (data.get("message") or "").strip()
+    if not name or not email or not partner_type:
+        raise HTTPException(status_code=400, detail="Nom, email et type de partenariat requis")
+    now = datetime.now(timezone.utc).isoformat()
+    entry = {
+        "id": str(uuid.uuid4()),
+        "name": name,
+        "company": company,
+        "email": email,
+        "partner_type": partner_type,
+        "message": message,
+        "status": "new",
+        "created_at": now,
+    }
+    await db.partner_requests.insert_one(entry)
+    try:
+        await send_notification_email(
+            to_email="contact@strategie-expertise-sante.fr",
+            subject=f"Nouvelle demande de partenariat — {name}",
+            body=f"Nom : {name}\nSociété : {company}\nEmail : {email}\nType : {partner_type}\nMessage : {message}"
+        )
+    except Exception:
+        pass
+    return {"success": True, "message": "Votre demande a bien été envoyée. Nous vous recontacterons rapidement."}
