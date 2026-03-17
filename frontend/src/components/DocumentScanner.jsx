@@ -311,11 +311,13 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
     if (!isScanReady() || simpleMode) return;
     setProcessing(true);
     setStepLog('Application du filtre...');
+    const t0 = performance.now();
     try {
       const result = await workerFilter(newFilter);
       setProcessedUrl(imageDataToUrl(result.imageData));
-      setStepLog('Filtre appliqué');
-    } catch { /* keep current */ }
+      const label = newFilter === 'bw' ? 'Noir & Blanc' : newFilter === 'original' ? 'Original' : 'Contraste+';
+      setStepLog(`Filtre ${label} appliqué (${Math.round(performance.now() - t0)}ms)`);
+    } catch { setStepLog('Erreur filtre — image conservée'); }
     setProcessing(false);
   }, [simpleMode]);
 
@@ -323,12 +325,13 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
   const handleRotate = useCallback(async (direction = 'right') => {
     if (!isScanReady()) return;
     setProcessing(true);
-    setStepLog('Rotation...');
+    setStepLog(direction === 'left' ? 'Rotation gauche...' : 'Rotation droite...');
+    const t0 = performance.now();
     try {
       const result = await workerRotate(direction);
       setProcessedUrl(imageDataToUrl(result.imageData));
-      setStepLog('Rotation appliquée');
-    } catch { /* keep current */ }
+      setStepLog(`Rotation ${direction === 'left' ? 'gauche' : 'droite'} appliquée (${Math.round(performance.now() - t0)}ms)`);
+    } catch { setStepLog('Erreur rotation — image conservée'); }
     setProcessing(false);
   }, []);
 
@@ -337,16 +340,16 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
     if (!isScanReady() || !manualCorners) return;
     setProcessing(true);
     setStepLog('Recadrage manuel...');
+    const t0 = performance.now();
     try {
-      // Send normalized corners as rectangle crop
       const xs = manualCorners.map(c => c.x);
       const ys = manualCorners.map(c => c.y);
       const result = await workerCrop({ x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) });
       setProcessedUrl(imageDataToUrl(result.imageData));
       setShowManualMode(false);
       setAutoDetected(true);
-      setStepLog('Recadrage appliqué');
-    } catch { /* keep current */ }
+      setStepLog(`Recadrage appliqué (${Math.round(performance.now() - t0)}ms)`);
+    } catch { setStepLog('Erreur recadrage — image conservée'); }
     setProcessing(false);
   }, [manualCorners]);
 
@@ -354,9 +357,11 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
   const adjustTimeoutRef = useRef(null);
   const handleAdjust = useCallback(async (b, c) => {
     if (!isScanReady()) return;
+    const t0 = performance.now();
     try {
       const result = await workerAdjust(b, c);
       setProcessedUrl(imageDataToUrl(result.imageData));
+      setStepLog(`Luminosité ${b > 0 ? '+' : ''}${b} / Contraste ${c > 0 ? '+' : ''}${c} (${Math.round(performance.now() - t0)}ms)`);
     } catch { /* keep current */ }
   }, []);
 
@@ -587,8 +592,8 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
             {/* Toolbar: N&B | Contraste+ | Original | Rotation ← | Rotation → | Recadrer | Réglages */}
             <div className="flex items-center gap-1.5 px-3 py-2 border-b border-white/5 overflow-x-auto">
               {FILTERS.map(f => (
-                <button key={f.id} onClick={() => handleFilter(f.id)} disabled={processing || simpleMode}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all min-h-[40px] whitespace-nowrap ${filter === f.id && !simpleMode ? 'bg-emerald-500 text-white' : 'bg-white/8 text-white/60 hover:bg-white/15'} ${simpleMode ? 'opacity-40' : ''}`}
+                <button key={f.id} onClick={() => handleFilter(f.id)} disabled={processing || simpleMode || !workerReady}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all min-h-[40px] whitespace-nowrap ${filter === f.id && !simpleMode && workerReady ? 'bg-emerald-500 text-white' : 'bg-white/8 text-white/60 hover:bg-white/15'} ${(simpleMode || !workerReady) ? 'opacity-40' : ''}`}
                   data-testid={`filter-${f.id}`} aria-label={`Filtre ${f.label}`}>
                   <f.icon className="w-3.5 h-3.5" /> {f.label}
                 </button>
