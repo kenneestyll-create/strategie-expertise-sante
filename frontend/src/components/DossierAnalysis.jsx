@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Shield, AlertTriangle, AlertCircle, CheckCircle, ChevronDown, ChevronUp,
   ArrowRight, FileText, Brain, Upload, Zap, Target, TrendingUp, Info,
-  ScanLine, Star, Crown, Sparkles, Eye, ChevronRight
+  ScanLine, Star, Crown, Sparkles, Eye, ChevronRight, Lock
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -34,13 +35,13 @@ const PRIORITY_BADGE = {
 const ACTION_ICONS = { upload: Upload, file: FileText, brain: Brain, zap: Zap, scan: ScanLine };
 
 /* ── Score Ring ── */
-const ScoreRing = ({ score, color }) => {
+const ScoreRing = ({ score, color, blurred }) => {
   const r = 54, c = 2 * Math.PI * r;
   const colors = SCORE_COLORS[color] || SCORE_COLORS.blue;
   const stopA = color === 'green' ? '#10b981' : color === 'blue' ? '#3b82f6' : color === 'amber' ? '#f59e0b' : color === 'orange' ? '#f97316' : '#ef4444';
   const stopB = color === 'green' ? '#22c55e' : color === 'blue' ? '#6366f1' : color === 'amber' ? '#eab308' : color === 'orange' ? '#fb923c' : '#f87171';
   return (
-    <div className="relative w-36 h-36 flex-shrink-0" data-testid="dossier-score-ring">
+    <div className={`relative w-36 h-36 flex-shrink-0 ${blurred ? 'blur-sm opacity-60' : ''}`} data-testid="dossier-score-ring">
       <svg className="w-full h-full -rotate-90" viewBox="0 0 128 128">
         <circle cx="64" cy="64" r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
         <circle cx="64" cy="64" r={r} fill="none" stroke="url(#scoreGrad)" strokeWidth="8" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c - (score / 100) * c} className="transition-all duration-1000 ease-out" />
@@ -71,7 +72,7 @@ const KeyMetric = ({ label, value }) => {
   );
 };
 
-/* ── Breakdown Bar (detail toggle) ── */
+/* ── Breakdown Bar ── */
 const BreakdownBar = ({ label, score, weight }) => {
   const barColor = score >= 80 ? 'bg-emerald-500' : score >= 60 ? 'bg-blue-500' : score >= 40 ? 'bg-amber-500' : 'bg-red-400';
   return (
@@ -86,6 +87,60 @@ const BreakdownBar = ({ label, score, weight }) => {
       <div className="h-1.5 bg-muted rounded-full overflow-hidden">
         <div className={`h-full rounded-full transition-all duration-700 ${barColor}`} style={{ width: `${score}%` }} />
       </div>
+    </div>
+  );
+};
+
+/* ── Upsell CTA for non-Dossier Express clients ── */
+const DossierExpressUpsell = ({ score, dynamic_message }) => {
+  const msgColor = SCORE_COLORS[dynamic_message?.color] || SCORE_COLORS.blue;
+  return (
+    <div className="space-y-4 mb-6" data-testid="dossier-analysis-upsell">
+      {/* Teaser score card - blurred */}
+      <Card className={`overflow-hidden border-2 ${msgColor.border} relative`} data-testid="dossier-score-card-teaser">
+        <CardContent className="p-0">
+          <div className="flex flex-col md:flex-row">
+            <div className={`flex flex-col items-center justify-center p-6 md:border-r border-border ${msgColor.bg}`}>
+              <ScoreRing score={score} color={dynamic_message?.color || 'blue'} blurred />
+              <p className="text-xs font-semibold mt-2 text-center">Solidité du dossier</p>
+            </div>
+            <div className="flex-1 p-5 md:p-6">
+              <div className="blur-sm opacity-50 pointer-events-none">
+                <div className="flex gap-4 p-3 rounded-lg bg-muted/30 border border-border/50 mb-3">
+                  <div className="flex-1"><div className="h-1.5 bg-muted rounded-full mb-1" /><div className="h-3 bg-muted rounded w-16" /></div>
+                  <div className="flex-1"><div className="h-1.5 bg-muted rounded-full mb-1" /><div className="h-3 bg-muted rounded w-16" /></div>
+                  <div className="flex-1"><div className="h-1.5 bg-muted rounded-full mb-1" /><div className="h-3 bg-muted rounded w-16" /></div>
+                </div>
+                <div className="space-y-2">
+                  <div className="h-4 bg-muted rounded w-3/4" />
+                  <div className="h-3 bg-muted rounded w-full" />
+                  <div className="h-3 bg-muted rounded w-5/6" />
+                </div>
+              </div>
+              {/* Overlay lock */}
+              <div className="absolute inset-0 flex items-center justify-center bg-background/40 backdrop-blur-[2px]">
+                <div className="text-center p-6 max-w-sm">
+                  <div className="w-14 h-14 rounded-full bg-accent/15 flex items-center justify-center mx-auto mb-3">
+                    <Lock className="w-7 h-7 text-accent" />
+                  </div>
+                  <h4 className="font-bold text-base mb-1" data-testid="upsell-title">Débloquez votre analyse complète</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Score de solidité, points de fragilité, alertes de risque, anticipation des refus et actions recommandées.
+                  </p>
+                  <Link to="/dossier-express">
+                    <Button className="gap-2 rounded-full bg-accent hover:bg-accent/90 shadow-lg" data-testid="upsell-dossier-express-btn">
+                      <FileText className="w-4 h-4" /> Dossier Express — 97€
+                    </Button>
+                  </Link>
+                  <p className="text-[11px] text-muted-foreground mt-3">
+                    Rapport complet + analyse documentaire + stratégie personnalisée
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
@@ -107,7 +162,6 @@ export const DossierAnalysis = ({ token }) => {
         headers: { Authorization: `Bearer ${token}` }
       });
       const newScore = res.data.score;
-      // Show feedback if score changed
       if (prevScoreRef.current !== null && newScore !== prevScoreRef.current) {
         const delta = newScore - prevScoreRef.current;
         if (delta > 0) {
@@ -154,6 +208,12 @@ export const DossierAnalysis = ({ token }) => {
   }
   if (!data) return null;
 
+  // ── FREE client: show upsell teaser ──
+  if (!data.has_dossier_express) {
+    return <DossierExpressUpsell score={data.score} dynamic_message={data.dynamic_message} />;
+  }
+
+  // ── DOSSIER EXPRESS client: full premium analysis ──
   const { score, key_metrics, dynamic_message, score_breakdown, weak_points, risk_alerts, missing_documents, actionable_count, recommended_actions, predictions, premium_cta } = data;
   const msgColor = SCORE_COLORS[dynamic_message.color] || SCORE_COLORS.blue;
   const displayedRisks = showAllRisks ? risk_alerts : risk_alerts.slice(0, 3);
@@ -170,12 +230,8 @@ export const DossierAnalysis = ({ token }) => {
           <div className="flex-1">
             {feedback.type === 'up' ? (
               <>
-                <p className="text-sm font-semibold text-emerald-800">
-                  Votre score a augmenté de +{feedback.delta}%
-                </p>
-                <p className="text-xs text-emerald-600">
-                  Cette action renforce significativement votre dossier — Solidité : <span className="font-bold">{feedback.newScore}%</span>
-                </p>
+                <p className="text-sm font-semibold text-emerald-800">Votre score a augmenté de +{feedback.delta}%</p>
+                <p className="text-xs text-emerald-600">Cette action renforce significativement votre dossier — Solidité : <span className="font-bold">{feedback.newScore}%</span></p>
               </>
             ) : (
               <p className="text-sm text-blue-700">{feedback.message}</p>
@@ -189,13 +245,10 @@ export const DossierAnalysis = ({ token }) => {
       <Card className={`overflow-hidden border-2 ${msgColor.border}`} data-testid="dossier-score-card">
         <CardContent className="p-0">
           <div className="flex flex-col md:flex-row">
-            {/* Score Ring */}
             <div className={`flex flex-col items-center justify-center p-6 md:border-r border-border ${msgColor.bg}`}>
               <ScoreRing score={score} color={dynamic_message.color} />
               <p className="text-xs font-semibold mt-2 text-center" data-testid="dossier-score-label">Solidité du dossier</p>
             </div>
-
-            {/* Dynamic Message + Key Metrics */}
             <div className="flex-1 p-5 md:p-6 flex flex-col justify-between">
               <div>
                 <div className="flex items-start gap-2 mb-2">
@@ -208,8 +261,6 @@ export const DossierAnalysis = ({ token }) => {
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed" data-testid="dossier-dynamic-message">{dynamic_message.message}</p>
               </div>
-
-              {/* 1️⃣ Key Metrics — always visible */}
               {key_metrics && (
                 <div className="flex gap-4 mt-4 p-3 rounded-lg bg-muted/30 border border-border/50" data-testid="key-metrics">
                   <KeyMetric label="Complétude" value={key_metrics.completeness} />
@@ -217,13 +268,10 @@ export const DossierAnalysis = ({ token }) => {
                   <KeyMetric label="Cohérence" value={key_metrics.coherence} />
                 </div>
               )}
-
               {actionable_count > 0 && (
                 <div className={`mt-3 flex items-center gap-3 p-3 rounded-lg ${msgColor.bg} border ${msgColor.border}`} data-testid="actionable-count">
                   <Zap className={`w-4 h-4 ${msgColor.text} flex-shrink-0`} />
-                  <p className={`text-sm font-medium ${msgColor.text}`}>
-                    <span className="font-bold">{actionable_count}</span> {actionable_count === 1 ? 'élément à traiter' : 'éléments à traiter'} pour renforcer votre dossier
-                  </p>
+                  <p className={`text-sm font-medium ${msgColor.text}`}><span className="font-bold">{actionable_count}</span> {actionable_count === 1 ? 'élément à traiter' : 'éléments à traiter'} pour renforcer votre dossier</p>
                 </div>
               )}
               <button onClick={() => setShowBreakdown(!showBreakdown)} className="mt-3 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors" data-testid="toggle-breakdown">
@@ -232,8 +280,6 @@ export const DossierAnalysis = ({ token }) => {
               </button>
             </div>
           </div>
-
-          {/* Full breakdown (toggle) */}
           {showBreakdown && score_breakdown && (
             <div className="border-t border-border p-5 space-y-3 bg-muted/10" data-testid="score-breakdown">
               {Object.values(score_breakdown).map((item, i) => (
@@ -244,7 +290,7 @@ export const DossierAnalysis = ({ token }) => {
         </CardContent>
       </Card>
 
-      {/* ── 3️⃣ Recommended Actions (max 3, with priority badges) ── */}
+      {/* ── Recommended Actions (max 3) ── */}
       {recommended_actions && recommended_actions.length > 0 && (
         <Card className="border-accent/20" data-testid="recommended-actions-section">
           <CardContent className="p-5">
@@ -257,31 +303,18 @@ export const DossierAnalysis = ({ token }) => {
                 const Icon = ACTION_ICONS[action.icon] || FileText;
                 const priorityCfg = PRIORITY_BADGE[action.priority_level] || PRIORITY_BADGE.moyenne;
                 return (
-                  <button
-                    key={i}
-                    onClick={() => handleActionClick(action)}
-                    className="w-full text-left p-3 rounded-lg border border-border hover:border-accent/40 hover:bg-accent/5 transition-all group"
-                    data-testid={`recommended-action-${action.action_id}`}
-                  >
+                  <button key={i} onClick={() => handleActionClick(action)} className="w-full text-left p-3 rounded-lg border border-border hover:border-accent/40 hover:bg-accent/5 transition-all group" data-testid={`recommended-action-${action.action_id}`}>
                     <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0 group-hover:bg-accent/20 transition-colors">
-                        <Icon className="w-4 h-4 text-accent" />
-                      </div>
+                      <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0 group-hover:bg-accent/20 transition-colors"><Icon className="w-4 h-4 text-accent" /></div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-xs font-semibold">{action.title}</span>
-                          <Badge variant="outline" className={`text-[8px] px-1.5 ${priorityCfg.className}`} data-testid={`priority-badge-${action.priority_level}`}>
-                            {priorityCfg.label}
-                          </Badge>
+                          <Badge variant="outline" className={`text-[8px] px-1.5 ${priorityCfg.className}`} data-testid={`priority-badge-${action.priority_level}`}>{priorityCfg.label}</Badge>
                         </div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <p className="text-[11px] text-muted-foreground line-clamp-1">{action.description}</p>
-                        </div>
+                        <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">{action.description}</p>
                       </div>
                       <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                        <Badge variant="outline" className="text-[8px] px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200 whitespace-nowrap">
-                          {action.impact}
-                        </Badge>
+                        <Badge variant="outline" className="text-[8px] px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200 whitespace-nowrap">{action.impact}</Badge>
                         <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-accent transition-colors" />
                       </div>
                     </div>
@@ -350,10 +383,7 @@ export const DossierAnalysis = ({ token }) => {
                     </button>
                     {isExpanded && (
                       <div className="px-3 py-2.5 bg-white border-t border-border/50">
-                        <p className="text-xs text-muted-foreground flex items-start gap-2">
-                          <ArrowRight className="w-3 h-3 text-accent flex-shrink-0 mt-0.5" />
-                          <span><strong className="text-foreground">Action recommandée :</strong> {alert.action}</span>
-                        </p>
+                        <p className="text-xs text-muted-foreground flex items-start gap-2"><ArrowRight className="w-3 h-3 text-accent flex-shrink-0 mt-0.5" /><span><strong className="text-foreground">Action recommandée :</strong> {alert.action}</span></p>
                       </div>
                     )}
                   </div>
@@ -387,21 +417,13 @@ export const DossierAnalysis = ({ token }) => {
                   <div key={i} className="rounded-lg border border-purple-100 overflow-hidden" data-testid={`prediction-${i}`}>
                     <button onClick={() => setExpandedPrediction(isExpanded ? null : i)} className="w-full text-left p-3 bg-purple-50/50 flex items-start gap-2.5 hover:bg-purple-50 transition-colors">
                       <AlertCircle className="w-4 h-4 text-purple-500 flex-shrink-0 mt-0.5" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs font-semibold text-purple-900">{pred.title}</span>
-                          <Badge variant="outline" className={`text-[8px] px-1.5 ${probColor}`}>{pred.probability}</Badge>
-                        </div>
-                      </div>
+                      <div className="flex-1 min-w-0"><div className="flex items-center gap-2 flex-wrap"><span className="text-xs font-semibold text-purple-900">{pred.title}</span><Badge variant="outline" className={`text-[8px] px-1.5 ${probColor}`}>{pred.probability}</Badge></div></div>
                       {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 mt-0.5" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />}
                     </button>
                     {isExpanded && (
                       <div className="px-3 py-3 bg-white border-t border-purple-100 space-y-2">
                         <p className="text-xs text-muted-foreground leading-relaxed">{pred.detail}</p>
-                        <div className="flex items-start gap-2 p-2 rounded bg-red-50 border border-red-100">
-                          <AlertTriangle className="w-3 h-3 text-red-500 flex-shrink-0 mt-0.5" />
-                          <p className="text-[11px] text-red-700"><strong>Conséquence :</strong> {pred.consequence}</p>
-                        </div>
+                        <div className="flex items-start gap-2 p-2 rounded bg-red-50 border border-red-100"><AlertTriangle className="w-3 h-3 text-red-500 flex-shrink-0 mt-0.5" /><p className="text-[11px] text-red-700"><strong>Conséquence :</strong> {pred.consequence}</p></div>
                       </div>
                     )}
                   </div>
@@ -426,10 +448,7 @@ export const DossierAnalysis = ({ token }) => {
                 <div key={i} className="flex items-center justify-between gap-2 p-2.5 rounded-lg border border-border hover:border-accent/30 transition-colors bg-background" data-testid={`missing-doc-${doc.key}`}>
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="w-7 h-7 rounded-md bg-muted flex items-center justify-center flex-shrink-0"><FileText className="w-3.5 h-3.5 text-muted-foreground" /></div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium truncate">{doc.label}</p>
-                      <p className="text-[10px] text-muted-foreground capitalize">{doc.category}</p>
-                    </div>
+                    <div className="min-w-0"><p className="text-xs font-medium truncate">{doc.label}</p><p className="text-[10px] text-muted-foreground capitalize">{doc.category}</p></div>
                   </div>
                   <Button size="sm" variant="outline" className="h-7 px-2.5 text-[10px] gap-1 rounded-full border-accent/30 text-accent hover:bg-accent/10" data-testid={`upload-doc-${doc.key}`}
                     onClick={() => { const tabBtn = document.querySelector('[data-testid="tab-documents"]'); if (tabBtn) tabBtn.click(); }}>
@@ -442,20 +461,6 @@ export const DossierAnalysis = ({ token }) => {
         </Card>
       )}
 
-      {/* ── CTA: Launch analysis ── */}
-      {data.summary.analyses_ia === 0 && data.summary.total_documents >= 1 && (
-        <Card className="border-accent/30 bg-gradient-to-r from-accent/5 to-transparent" data-testid="cta-launch-analysis">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0"><Brain className="w-6 h-6 text-accent" /></div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold">Lancez votre analyse StratégiIA</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Obtenez une analyse stratégique personnalisée de votre dossier.</p>
-            </div>
-            <Button size="sm" className="gap-1.5 rounded-full whitespace-nowrap" onClick={() => window.dispatchEvent(new Event('strategiia:open'))} data-testid="cta-launch-strategiia">Analyser <ArrowRight className="w-3.5 h-3.5" /></Button>
-          </CardContent>
-        </Card>
-      )}
-
       {/* ── Premium Expert CTA ── */}
       {premium_cta && premium_cta.show && (
         <Card className="border-amber-300/50 bg-gradient-to-br from-amber-50/80 via-white to-orange-50/40 overflow-hidden relative" data-testid="premium-expert-cta">
@@ -464,15 +469,10 @@ export const DossierAnalysis = ({ token }) => {
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-200/50"><Crown className="w-6 h-6 text-white" /></div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h4 className="text-sm font-bold text-amber-900">{premium_cta.title}</h4>
-                  <Badge className="text-[8px] bg-amber-100 text-amber-800 border-amber-300">Premium</Badge>
-                </div>
+                <div className="flex items-center gap-2 mb-1"><h4 className="text-sm font-bold text-amber-900">{premium_cta.title}</h4><Badge className="text-[8px] bg-amber-100 text-amber-800 border-amber-300">Premium</Badge></div>
                 <p className="text-xs text-amber-700/80 mb-3">{premium_cta.subtitle}</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mb-4">
-                  {premium_cta.features.map((f, i) => (
-                    <div key={i} className="flex items-center gap-1.5"><Star className="w-3 h-3 text-amber-500 flex-shrink-0" /><span className="text-[11px] text-amber-800">{f}</span></div>
-                  ))}
+                  {premium_cta.features.map((f, i) => (<div key={i} className="flex items-center gap-1.5"><Star className="w-3 h-3 text-amber-500 flex-shrink-0" /><span className="text-[11px] text-amber-800">{f}</span></div>))}
                 </div>
                 <div className="flex items-center gap-3 flex-wrap">
                   <Button size="sm" className="gap-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-md shadow-amber-200/50 text-xs" data-testid="premium-cta-button"><Crown className="w-3.5 h-3.5" />{premium_cta.cta_label}</Button>

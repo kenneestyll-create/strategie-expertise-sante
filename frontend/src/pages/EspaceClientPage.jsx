@@ -271,8 +271,8 @@ const ClientDashboard = ({ token, clientName, logout }) => {
               <p className="font-semibold">Bonjour, {clientName}</p>
             </div>
 
-            {/* Navbar Score Indicator */}
-            {navScore && (
+            {/* Navbar Score Indicator — only for Dossier Express clients */}
+            {navScore && navScore.has_dossier_express && (
               <button
                 onClick={() => {
                   setActiveTab('dossiers');
@@ -315,8 +315,8 @@ const ClientDashboard = ({ token, clientName, logout }) => {
                 )}
               </button>
             )}
-            {/* Mobile score - compact */}
-            {navScore && (
+            {/* Mobile score - compact — only for Dossier Express */}
+            {navScore && navScore.has_dossier_express && (
               <button
                 onClick={() => {
                   setActiveTab('dossiers');

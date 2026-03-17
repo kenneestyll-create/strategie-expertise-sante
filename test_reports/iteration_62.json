@@ -1,0 +1,120 @@
+{
+  "summary": "Iteration 62: Testing FREE vs PREMIUM separation for StratégiIA/Dossier Express - ALL TESTS PASSED. Backend: 18/18 pytest tests passed confirming free clients get limited response (no premium fields). Frontend: All UI elements verified - free client sees upsell card with blurred score and 97€ CTA, no navbar score indicator, simplified StrategiIA modal without DocumentUploader/OCR.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "EspaceClientPage",
+        "issues": [
+          "Non-breaking: recharts console warnings about chart width/height -1 on initial render"
+        ]
+      }
+    ]
+  },
+  "tests_executed": {
+    "backend_tests": [
+      "TestFreeClientDossierAnalysis::test_has_dossier_express_is_false - PASS",
+      "TestFreeClientDossierAnalysis::test_score_field_present - PASS",
+      "TestFreeClientDossierAnalysis::test_dynamic_message_present - PASS",
+      "TestFreeClientDossierAnalysis::test_actionable_count_present - PASS",
+      "TestFreeClientDossierAnalysis::test_case_type_present - PASS",
+      "TestFreeClientDossierAnalysis::test_summary_present - PASS",
+      "TestFreeClientDossierAnalysis::test_only_expected_fields_returned - PASS",
+      "TestPremiumFieldsNotInFreeResponse::test_key_metrics_not_present - PASS",
+      "TestPremiumFieldsNotInFreeResponse::test_score_breakdown_not_present - PASS",
+      "TestPremiumFieldsNotInFreeResponse::test_weak_points_not_present - PASS",
+      "TestPremiumFieldsNotInFreeResponse::test_risk_alerts_not_present - PASS",
+      "TestPremiumFieldsNotInFreeResponse::test_predictions_not_present - PASS",
+      "TestPremiumFieldsNotInFreeResponse::test_recommended_actions_not_present - PASS",
+      "TestPremiumFieldsNotInFreeResponse::test_premium_cta_not_present - PASS",
+      "TestPremiumFieldsNotInFreeResponse::test_missing_documents_not_present - PASS",
+      "TestPremiumFieldsNotInFreeResponse::test_found_documents_not_present - PASS",
+      "TestFreeClientResponseIntegrity::test_dynamic_message_has_required_keys - PASS",
+      "TestFreeClientResponseIntegrity::test_summary_has_required_keys - PASS"
+    ],
+    "frontend_tests": [
+      "Login as free client (test-analysis@test.com) - PASS",
+      "dossier-analysis-upsell card visible - PASS",
+      "Score ring with blur effect - PASS",
+      "Lock icon in upsell card - PASS",
+      "Upsell title 'Débloquez votre analyse complète' - PASS",
+      "CTA button 'Dossier Express — 97€' - PASS",
+      "Full dossier-analysis NOT visible - PASS",
+      "navbar-score-indicator NOT present for free client - PASS",
+      "navbar-score-mobile NOT present for free client - PASS",
+      "StrategiIA modal opens - PASS",
+      "StrategiIA form has type_dossier select - PASS",
+      "StrategiIA form has regime select - PASS",
+      "StrategiIA form has situation textarea - PASS",
+      "StrategiIA analyze button text 'Analyser mon dossier gratuitement' - PASS",
+      "DocumentUploader NOT present in StrategiIA - PASS",
+      "Dossier quality score NOT present in StrategiIA - PASS",
+      "OCR component NOT present in StrategiIA - PASS"
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration62_free_premium_separation.py",
+    "/app/test_reports/pytest/pytest_iteration62_free_premium.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Backend correctly gates premium fields behind has_dossier_express check (client.py lines 360-364, 679-696)",
+    "Free client response only contains: has_dossier_express, score, dynamic_message, actionable_count, case_type, summary",
+    "Premium fields (key_metrics, score_breakdown, weak_points, risk_alerts, predictions, recommended_actions, premium_cta, missing_documents, found_documents) correctly excluded from free response",
+    "Frontend DossierAnalysis.jsx correctly shows DossierExpressUpsell component when has_dossier_express=false",
+    "Upsell card has blurred score, lock icon, and 97€ CTA linking to /dossier-express",
+    "Navbar score indicator correctly gated behind navScore.has_dossier_express (EspaceClientPage.jsx lines 275-339)",
+    "StrategiIA.jsx simplified - no DocumentUploader, no OCR, no dossier quality score",
+    "StrategiIA form retains: type_dossier select, regime select, situation textarea, consent checkbox, analyze button"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration62_free_premium_separation.py"
+  ],
+  "success_rate": {
+    "backend": "100% (18/18 tests passed)",
+    "frontend": "100% (17/17 UI checks passed)"
+  },
+  "test_credentials": {
+    "free_client": "test-analysis@test.com / Password123!",
+    "note": "This client has NO completed dossier_express entries, so has_dossier_express=false"
+  },
+  "seed_data_creation": "None - used existing test user",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 62 tested FREE vs PREMIUM separation. Test user test-analysis@test.com has has_dossier_express=false (no completed entries in dossier_express collection). Free response contains only 6 fields: has_dossier_express, score, dynamic_message, actionable_count, case_type, summary. Premium fields are excluded. Frontend shows upsell card with blurred score for free users. StrategiIA modal is simplified (no DocumentUploader/OCR). To test premium client, need to add a dossier_express entry with status='completed' for the test user.",
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  },
+  "feature_verification": {
+    "backend_free_client_gating": {
+      "status": "PASS",
+      "details": "GET /api/client/dossier-analysis returns has_dossier_express:false and only 6 fields for free client"
+    },
+    "frontend_upsell_card": {
+      "status": "PASS",
+      "details": "Free client sees dossier-analysis-upsell with blurred score, lock icon, 'Débloquez votre analyse complète' title, 'Dossier Express — 97€' CTA"
+    },
+    "frontend_full_analysis_hidden": {
+      "status": "PASS",
+      "details": "data-testid='dossier-analysis' NOT visible for free client"
+    },
+    "frontend_navbar_score_hidden": {
+      "status": "PASS",
+      "details": "data-testid='navbar-score-indicator' and 'navbar-score-mobile' NOT present for free client"
+    },
+    "strategiia_simplified": {
+      "status": "PASS",
+      "details": "StrategiIA modal has type_dossier, regime, situation, consent, analyze button. NO DocumentUploader, NO OCR, NO dossier quality score"
+    },
+    "strategiia_button_text": {
+      "status": "PASS",
+      "details": "Analyze button text is 'Analyser mon dossier gratuitement'"
+    }
+  }
+}

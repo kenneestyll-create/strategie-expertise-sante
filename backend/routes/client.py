@@ -351,9 +351,17 @@ def _get_dynamic_message(score: int, case_type: str) -> dict:
 
 @router.get("/client/dossier-analysis")
 async def get_dossier_analysis(client: dict = Depends(get_current_client)):
-    """Comprehensive dossier analysis: score, weak points, risk alerts, dynamic messages."""
+    """Comprehensive dossier analysis: score, weak points, risk alerts, dynamic messages.
+    Full data only for clients with a completed Dossier Express."""
     cid = client["sub"]
     email = client.get("email", "")
+
+    # Check if client has a completed Dossier Express (paid service)
+    dossier_express_entry = await db.dossier_express.find_one(
+        {"email": email, "status": "completed"},
+        {"_id": 0, "id": 1}
+    )
+    has_dossier_express = dossier_express_entry is not None
 
     # 1. Fetch all client data
     docs = await db.client_documents.find(
@@ -668,7 +676,28 @@ async def get_dossier_analysis(client: dict = Depends(get_current_client)):
         "score_context": f"Votre dossier est à {composite}%. Un expert peut vous aider à atteindre un niveau optimal.",
     }
 
+    # If client has no Dossier Express, return limited data with upsell
+    if not has_dossier_express:
+        return {
+            "has_dossier_express": False,
+            "score": composite,
+            "dynamic_message": dynamic_message,
+            "actionable_count": actionable_count,
+            "case_type": case_type,
+            "summary": {
+                "total_documents": total_docs,
+                "validated": validated,
+                "pending": pending,
+                "illisible": illisible,
+                "analyses_ia": strat_count,
+                "dossier_express": dossier_count,
+                "premium": premium_count,
+            },
+        }
+
+    # Full data for Dossier Express clients
     return {
+        "has_dossier_express": True,
         "score": composite,
         "key_metrics": key_metrics,
         "dynamic_message": dynamic_message,
