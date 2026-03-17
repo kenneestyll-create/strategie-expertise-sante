@@ -1,91 +1,69 @@
 /**
- * Non-blocking lazy loader for OpenCV.js
- * Loads in background, never blocks UI
+ * OpenCV.js — Robust non-blocking lazy loader
+ * Timeout 5s, full fallback, console logging
  */
 let cvInstance = null;
 let loadPromise = null;
-let loadFailed = false;
 
 export function loadOpenCV() {
   if (cvInstance) return Promise.resolve(cvInstance);
-  if (loadFailed) return Promise.reject(new Error('OpenCV load failed'));
   if (loadPromise) return loadPromise;
 
   loadPromise = new Promise((resolve, reject) => {
-    // Already available
+    // Already loaded from a previous session
     if (window.cv && window.cv.Mat) {
+      console.log('[OpenCV] Déjà chargé, réutilisation');
       cvInstance = window.cv;
       return resolve(cvInstance);
     }
 
-    const TIMEOUT = 12000;
-    let resolved = false;
+    const TIMEOUT_MS = 5000;
 
-    const done = (cv) => {
-      if (resolved) return;
-      resolved = true;
-      cvInstance = cv;
-      resolve(cv);
-    };
-
-    const fail = (reason) => {
-      if (resolved) return;
-      resolved = true;
-      loadFailed = true;
+    const timeout = setTimeout(() => {
+      console.warn('[OpenCV] Timeout après 5s — fallback mode simple');
       loadPromise = null;
-      reject(new Error(reason));
-    };
+      reject(new Error('OpenCV load timeout'));
+    }, TIMEOUT_MS);
 
-    // Timeout
-    const timer = setTimeout(() => fail('Délai dépassé'), TIMEOUT);
+    const script = document.createElement('script');
+    script.src = 'https://docs.opencv.org/4.x/opencv.js';
+    script.async = true;
 
-    // onRuntimeInitialized is the correct OpenCV.js callback
-    window.Module = window.Module || {};
-    window.Module.onRuntimeInitialized = () => {
-      clearTimeout(timer);
-      if (window.cv && window.cv.Mat) {
-        done(window.cv);
+    script.onload = () => {
+      console.log('[OpenCV] Script chargé, attente initialisation runtime...');
+      // cv is now a global but runtime may not be initialized yet
+      if (typeof cv !== 'undefined') {
+        cv['onRuntimeInitialized'] = () => {
+          clearTimeout(timeout);
+          console.log('[OpenCV] Runtime initialisé avec succès');
+          cvInstance = cv;
+          resolve(cv);
+        };
       } else {
-        fail('cv.Mat indisponible après init');
+        clearTimeout(timeout);
+        console.error('[OpenCV] cv non défini après chargement script');
+        loadPromise = null;
+        reject(new Error('cv undefined after script load'));
       }
     };
 
-    const script = document.createElement('script');
-    script.src = 'https://docs.opencv.org/4.9.0/opencv.js';
-    script.async = true;
-
     script.onerror = () => {
-      clearTimeout(timer);
-      fail('Échec réseau');
+      clearTimeout(timeout);
+      console.error('[OpenCV] Échec chargement script (réseau/CDN)');
+      loadPromise = null;
+      reject(new Error('OpenCV script load error'));
     };
 
-    // Polling fallback (some builds skip onRuntimeInitialized)
-    script.onload = () => {
-      let attempts = 0;
-      const poll = setInterval(() => {
-        attempts++;
-        if (window.cv && window.cv.Mat) {
-          clearInterval(poll);
-          clearTimeout(timer);
-          done(window.cv);
-        } else if (attempts > 60) {
-          clearInterval(poll);
-          clearTimeout(timer);
-          fail('Init timeout après chargement');
-        }
-      }, 200);
-    };
-
-    document.head.appendChild(script);
+    document.body.appendChild(script);
   });
 
   return loadPromise;
 }
 
-export function isOpenCVReady() {
-  return !!cvInstance;
-}
-
 export function getCV() {
   return cvInstance;
+}
+
+export function isOpenCVReady() {
+  return !!cvInstance;
 }

@@ -10,6 +10,23 @@ import { jsPDF } from 'jspdf';
 import { loadOpenCV, isOpenCVReady, getCV } from '@/utils/opencvLoader';
 import { processDocument, reprocessWithCorners } from '@/utils/documentProcessor';
 
+/* ── Lightweight canvas fallback (no OpenCV) ── */
+function lightEnhance(canvas) {
+  const ctx = canvas.getContext('2d');
+  const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const d = img.data;
+  // Simple contrast + brightness boost for document readability
+  const contrast = 1.3, brightness = 12;
+  for (let i = 0; i < d.length; i += 4) {
+    d[i]     = Math.min(255, Math.max(0, (d[i]     - 128) * contrast + 128 + brightness));
+    d[i + 1] = Math.min(255, Math.max(0, (d[i + 1] - 128) * contrast + 128 + brightness));
+    d[i + 2] = Math.min(255, Math.max(0, (d[i + 2] - 128) * contrast + 128 + brightness));
+  }
+  ctx.putImageData(img, 0, 0);
+  return canvas.toDataURL('image/jpeg', 0.92);
+}
+
+
 /* ── PDF builder ── */
 async function buildPdf(pages) {
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -143,15 +160,24 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
   const [error, setError] = useState('');
   const [cvReady, setCvReady] = useState(isOpenCVReady());
   const [cvLoading, setCvLoading] = useState(false);
+  const [cvFailed, setCvFailed] = useState(false);
   const [processing, setProcessing] = useState(false);
 
-  /* ── Load OpenCV in background (non-blocking) ── */
+  /* ── Load OpenCV in background (non-blocking, 5s timeout) ── */
   useEffect(() => {
     if (cvReady) return;
     setCvLoading(true);
     loadOpenCV()
-      .then(() => { setCvReady(true); setCvLoading(false); })
-      .catch(() => { setCvLoading(false); });
+      .then(() => {
+        console.log('[Scanner] OpenCV prêt — mode avancé activé');
+        setCvReady(true);
+        setCvLoading(false);
+      })
+      .catch((err) => {
+        console.warn('[Scanner] OpenCV indisponible:', err.message, '— fallback mode simple');
+        setCvLoading(false);
+        setCvFailed(true);
+      });
   }, [cvReady]);
 
   /* ── Camera lifecycle ── */
@@ -244,8 +270,10 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
       }
       setProcessing(false);
     } else {
-      // No OpenCV — use raw image directly
-      setProcessedCapture(dataUrl);
+      // No OpenCV — lightweight canvas enhancement fallback
+      console.log('[Scanner] Mode simple — amélioration légère canvas');
+      const enhanced = lightEnhance(canvas);
+      setProcessedCapture(enhanced);
       setAutoDetected(false);
       setManualCorners(null);
       setPhase('preview');
@@ -376,7 +404,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
           <div className="text-center">
             <h2 className="text-white text-lg font-semibold mb-1" data-testid="scanner-title">Scanner un document</h2>
             <p className="text-white/50 text-sm">
-              {cvReady ? 'Détection et recadrage automatiques' : cvLoading ? 'Moteur de scan en préparation...' : 'Mode capture simple'}
+              {cvReady ? 'Détection et recadrage automatiques' : cvFailed ? 'Mode capture simple' : cvLoading ? 'Moteur de scan en préparation...' : 'Mode capture simple'}
             </p>
           </div>
           <div className="w-full max-w-xs space-y-2.5">
@@ -393,19 +421,25 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
             ))}
           </div>
 
-          {/* Loading indicator (non-blocking) */}
+          {/* Status indicator (non-blocking) */}
           {cvLoading && (
             <div className="w-full max-w-xs flex items-center gap-2 p-2.5 rounded-xl bg-accent/10 border border-accent/20">
               <Loader2 className="w-4 h-4 text-accent animate-spin flex-shrink-0" />
-              <span className="text-accent/80 text-xs">Chargement du moteur de scan avancé...</span>
+              <span className="text-accent/80 text-xs">Chargement du moteur avancé (5s max)...</span>
             </div>
           )}
 
-          {/* OpenCV ready indicator */}
           {cvReady && (
             <div className="w-full max-w-xs flex items-center gap-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20" data-testid="opencv-ready-badge">
               <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
               <span className="text-emerald-400/80 text-xs">Détection automatique activée</span>
+            </div>
+          )}
+
+          {cvFailed && (
+            <div className="w-full max-w-xs flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20" data-testid="opencv-failed-badge">
+              <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+              <span className="text-amber-400/80 text-xs">Mode avancé indisponible, passage en mode simple</span>
             </div>
           )}
 
