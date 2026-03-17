@@ -372,7 +372,7 @@ export const MentionsLegalesPage = () => {
                 <p>
                   <strong>Absence de conseil juridique et médical :</strong> Les informations, analyses et stratégies 
                   fournies par Stratégie & Expertise Santé, y compris celles générées par les outils d'intelligence 
-                  artificielle (StratégiIA, Dossier Express), ont un caractère exclusivement informationnel et 
+                  artificielle (StratégiIA, Dossier Express IA), ont un caractère exclusivement informationnel et 
                   pédagogique. Elles ne constituent en aucun cas :
                 </p>
                 <ul className="list-disc list-inside space-y-1 pl-2">
@@ -388,7 +388,7 @@ export const MentionsLegalesPage = () => {
                 </p>
                 <p>
                   <strong>Outils d'aide à l'analyse :</strong> Les analyses produites avec l'aide de StratégiIA et 
-                  du Dossier Express utilisent des modèles d'intelligence artificielle comme outil d'assistance. 
+                  du Dossier Express IA utilisent des modèles d'intelligence artificielle comme outil d'assistance. 
                   Ces résultats constituent une pré-analyse qui vient enrichir l'accompagnement humain. Ils sont indicatifs 
                   et peuvent contenir des imprécisions. L'intelligence artificielle est utilisée comme outil de précision 
                   au service de l'expertise humaine, et ne se substitue pas à l'accompagnement d'un professionnel 

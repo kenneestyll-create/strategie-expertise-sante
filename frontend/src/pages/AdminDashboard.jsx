@@ -1606,7 +1606,7 @@ export const AdminDashboard = () => {
                               <Badge variant={item.status === 'en_attente' ? 'warning' : item.status === 'en_cours' ? 'default' : 'success'} className={`text-[10px] ${item.status === 'en_attente' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : item.status === 'en_cours' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' : 'bg-green-500/10 text-green-600 border-green-500/20'}`}>
                                 {item.status === 'en_attente' ? 'En attente' : item.status === 'en_cours' ? 'En cours' : 'Terminée'}
                               </Badge>
-                              <Badge variant="outline" className="text-[10px]">{item.type === 'strategiia' ? 'StrategiIA' : 'Dossier Express'}</Badge>
+                              <Badge variant="outline" className="text-[10px]">{item.type === 'strategiia' ? 'StrategiIA' : 'Dossier Express IA'}</Badge>
                               {item.premium_pdf && <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">PDF Pro</Badge>}
                               <span className="text-xs text-muted-foreground">{item.amount}€</span>
                             </div>

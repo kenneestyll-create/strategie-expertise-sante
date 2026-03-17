@@ -91,7 +91,7 @@ const BreakdownBar = ({ label, score, weight }) => {
   );
 };
 
-/* ── Upsell CTA for non-Dossier Express clients ── */
+/* ── Upsell CTA for non-Dossier Express IA clients ── */
 const DossierExpressUpsell = ({ score, dynamic_message }) => {
   const msgColor = SCORE_COLORS[dynamic_message?.color] || SCORE_COLORS.blue;
   return (
@@ -134,7 +134,7 @@ const DossierExpressUpsell = ({ score, dynamic_message }) => {
                   </div>
                   <Link to="/dossier-express">
                     <Button className="gap-2 rounded-full bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold shadow-lg shadow-amber-500/20 hover:scale-[1.02] transition-all" data-testid="upsell-dossier-express-btn">
-                      <FileText className="w-4 h-4" /> Dossier Express — 97€
+                      <FileText className="w-4 h-4" /> Dossier Express IA — 97€
                       <ArrowRight className="w-4 h-4" />
                     </Button>
                   </Link>

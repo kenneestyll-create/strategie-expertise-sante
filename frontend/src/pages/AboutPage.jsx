@@ -45,7 +45,7 @@ export const AboutPage = () => {
     {
       year: "Année 7+",
       title: "Naissance de Stratégie & Expertise Santé",
-      description: "Décision de transformer ces années de combat en un service d'accompagnement unique en France. Création d'outils innovants (StratégiIA, Dossier Express, OCR intelligent) pour que personne ne vive ces épreuves seul.",
+      description: "Décision de transformer ces années de combat en un service d'accompagnement unique en France. Création d'outils innovants (StratégiIA, Dossier Express IA, OCR intelligent) pour que personne ne vive ces épreuves seul.",
       icon: Star,
       badge: "Création",
       badgeColor: "bg-[#C9A84C] text-[#1a1a1a]",

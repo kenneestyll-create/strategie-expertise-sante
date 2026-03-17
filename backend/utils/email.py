@@ -92,7 +92,7 @@ async def notify_admin_premium_analysis(analysis_type: str, email: str, name: st
     if not RESEND_AVAILABLE or not os.environ.get('RESEND_API_KEY') or not NOTIFICATION_EMAIL:
         logger.info("Premium analysis notification skipped - Resend not configured")
         return
-    type_label = "StrategiIA" if analysis_type == "strategiia" else "Dossier Express"
+    type_label = "StrategiIA" if analysis_type == "strategiia" else "Dossier Express IA"
     html_content = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">

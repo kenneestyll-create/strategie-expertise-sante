@@ -271,7 +271,7 @@ const ClientDashboard = ({ token, clientName, logout }) => {
               <p className="font-semibold">Bonjour, {clientName}</p>
             </div>
 
-            {/* Navbar Score Indicator — only for Dossier Express clients */}
+            {/* Navbar Score Indicator — only for Dossier Express IA clients */}
             {navScore && navScore.has_dossier_express && (
               <button
                 onClick={() => {
@@ -315,7 +315,7 @@ const ClientDashboard = ({ token, clientName, logout }) => {
                 )}
               </button>
             )}
-            {/* Mobile score - compact — only for Dossier Express */}
+            {/* Mobile score - compact — only for Dossier Express IA */}
             {navScore && navScore.has_dossier_express && (
               <button
                 onClick={() => {

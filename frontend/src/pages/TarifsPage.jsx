@@ -151,7 +151,7 @@ export const TarifsPage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Tarifs et prestations" description="Découvrez nos tarifs : pré-analyse gratuite assistée par StratégiIA, Dossier Express 97€, accompagnement personnalisé 150-500€. Premier échange gratuit." path="/tarifs" />
+      <SEO title="Tarifs et prestations" description="Découvrez nos tarifs : pré-analyse gratuite assistée par StratégiIA, Dossier Express IA 97€, accompagnement personnalisé 150-500€. Premier échange gratuit." path="/tarifs" />
       {/* Hero */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
@@ -239,7 +239,7 @@ export const TarifsPage = () => {
         </div>
       </section>
 
-      {/* ==================== ÉTAPE 2 : Dossier Express ==================== */}
+      {/* ==================== ÉTAPE 2 : Dossier Express IA ==================== */}
       <section className="section-padding bg-secondary pt-2" id="tarif-dossier-express">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-3 mb-8">
@@ -256,7 +256,7 @@ export const TarifsPage = () => {
                 <div>
                   <div className="flex items-center gap-2 mb-3">
                     <FileText className="w-6 h-6 text-amber-500" />
-                    <h3 className="text-xl font-semibold">Dossier Express</h3>
+                    <h3 className="text-xl font-semibold">Dossier Express IA</h3>
                     <Badge className="bg-amber-100 text-amber-700 border-amber-200">
                       <Zap className="w-3 h-3 mr-1" fill="currentColor" />
                       Sous 2h

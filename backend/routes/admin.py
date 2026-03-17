@@ -180,7 +180,7 @@ async def get_analytics(period: str = "30d", admin: dict = Depends(get_current_a
 
     service_utilization = {
         "strategiia": {"total": total_analyses, "this_month": analyses_this_month, "label": "StratégiIA"},
-        "dossier_express": {"total": total_dossiers, "this_month": dossiers_this_month, "label": "Dossier Express"},
+        "dossier_express": {"total": total_dossiers, "this_month": dossiers_this_month, "label": "Dossier Express IA"},
         "premium": {"total": premium_analyses_total, "this_month": premium_this_month, "label": "Analyses Premium"},
         "chatbot": {"total": total_chatbot, "this_month": 0, "label": "Chatbot IA"},
     }
@@ -349,7 +349,7 @@ async def update_premium_analysis(analysis_id: str, request: Request, admin: dic
     analysis = await db.premium_analyses.find_one({"id": analysis_id}, {"_id": 0})
     if analysis:
         email = analysis.get("email", "")
-        type_label = "StrategiIA" if analysis.get("type") == "strategiia" else "Dossier Express"
+        type_label = "StrategiIA" if analysis.get("type") == "strategiia" else "Dossier Express IA"
         client_user = await db.client_users.find_one({"email": email.lower()}, {"_id": 0, "id": 1}) if email else None
         if client_user:
             if new_status == "en_cours":
@@ -367,7 +367,7 @@ async def notify_client_premium(analysis_id: str, request: Request, admin: dict 
     custom_message = body.get("message", "")
     notif_type = body.get("type", "analyse_premium_ready")
     email = analysis.get("email", "")
-    type_label = "StrategiIA" if analysis.get("type") == "strategiia" else "Dossier Express"
+    type_label = "StrategiIA" if analysis.get("type") == "strategiia" else "Dossier Express IA"
     client_user = await db.client_users.find_one({"email": email.lower()}, {"_id": 0, "id": 1}) if email else None
     notif_messages = {
         "analyse_premium_ready": {"title": "Votre Analyse Premium est prête", "message": custom_message or f"Votre Analyse Premium ({type_label}) a été finalisée par notre expert. Consultez votre rapport dans votre espace client."},

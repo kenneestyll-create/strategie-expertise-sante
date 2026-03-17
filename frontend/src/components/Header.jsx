@@ -31,7 +31,7 @@ export const Header = () => {
 
   const servicesItems = [
     { name: 'Tarifs', href: '/tarifs' },
-    { name: 'Dossier Express', href: '/dossier-express' },
+    { name: 'Dossier Express IA', href: '/dossier-express' },
     { name: 'Simulateur', href: '/simulateur' },
     { name: 'Calculatrice IPP', href: '/calculatrice-ipp' },
     { name: 'Calculatrice AAH', href: '/calculatrice-aah' },

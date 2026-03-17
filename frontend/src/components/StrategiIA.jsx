@@ -515,7 +515,7 @@ export const StrategiIA = () => {
                     <div className="space-y-3">
                       <Link to="/dossier-express" onClick={handleClose}>
                         <Button className="w-full rounded-lg gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold" data-testid="strategiia-quota-dossier-express">
-                          <FileText className="w-4 h-4" /> Dossier Express — Rapport complet 97€
+                          <FileText className="w-4 h-4" /> Dossier Express IA — Rapport complet 97€
                         </Button>
                       </Link>
                       <Link to="/tarifs" onClick={handleClose}>

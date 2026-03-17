@@ -54,7 +54,7 @@ PAYPAL_BASE_URL = "https://api-m.sandbox.paypal.com" if PAYPAL_MODE == "sandbox"
 
 # Payment packages
 PAYMENT_PACKAGES = {
-    "dossier_express": {"name": "Dossier Express StratégiIA", "amount": 97.00, "currency": "eur"},
+    "dossier_express": {"name": "Dossier Express IA", "amount": 97.00, "currency": "eur"},
     "analyse_dossier": {"name": "Analyse de dossier", "amount": 150.00, "currency": "eur"},
     "preparation_expertise": {"name": "Préparation expertise médicale", "amount": 250.00, "currency": "eur"},
     "accompagnement_mdph": {"name": "Accompagnement MDPH", "amount": 200.00, "currency": "eur"},

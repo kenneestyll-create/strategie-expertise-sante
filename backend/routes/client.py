@@ -180,9 +180,9 @@ async def get_client_progress(client: dict = Depends(get_current_client)):
 
     dossiers = await db.dossier_express.count_documents({"email": email})
     if dossiers > 0:
-        dossier_step = {"id": "dossier_express", "label": "Dossier Express", "status": "completed", "detail": f"{dossiers} dossier(s) traité(s)"}
+        dossier_step = {"id": "dossier_express", "label": "Dossier Express IA", "status": "completed", "detail": f"{dossiers} dossier(s) traité(s)"}
     else:
-        dossier_step = {"id": "dossier_express", "label": "Dossier Express", "status": "not_started", "detail": "Analyse approfondie de votre dossier par IA"}
+        dossier_step = {"id": "dossier_express", "label": "Dossier Express IA", "status": "not_started", "detail": "Analyse approfondie de votre dossier par IA"}
 
     premiums = await db.premium_analyses.find({"email": email}, {"_id": 0, "status": 1, "type": 1}).to_list(20)
     premium_done = sum(1 for p in premiums if p.get("status") == "termine")
@@ -354,11 +354,11 @@ def _get_dynamic_message(score: int, case_type: str) -> dict:
 @router.get("/client/dossier-analysis")
 async def get_dossier_analysis(client: dict = Depends(get_current_client)):
     """Comprehensive dossier analysis: score, weak points, risk alerts, dynamic messages.
-    Full data only for clients with a completed Dossier Express."""
+    Full data only for clients with a completed Dossier Express IA."""
     cid = client["sub"]
     email = client.get("email", "")
 
-    # Check if client has a completed AND payment-verified Dossier Express (paid service)
+    # Check if client has a completed AND payment-verified Dossier Express IA (paid service)
     dossier_express_entry = await db.dossier_express.find_one(
         {"email": email, "status": "completed", "payment_verified": {"$ne": False}},
         {"_id": 0, "id": 1}
@@ -581,7 +581,7 @@ async def get_dossier_analysis(client: dict = Depends(get_current_client)):
     if dossier_count == 0 and strat_count > 0:
         all_actions.append({
             "priority": priority, "priority_level": "faible", "action_id": "dossier_express",
-            "title": "Complétez un Dossier Express",
+            "title": "Complétez un Dossier Express IA",
             "description": "Un dossier express consolide votre analyse et facilite le suivi de votre parcours.",
             "impact": "+15% sur votre score", "cta_label": "Créer un dossier express",
             "cta_target": "strategiia", "icon": "zap",
@@ -678,7 +678,7 @@ async def get_dossier_analysis(client: dict = Depends(get_current_client)):
         "score_context": f"Votre dossier est à {composite}%. Un expert peut vous aider à atteindre un niveau optimal.",
     }
 
-    # If client has no Dossier Express, return limited data with upsell
+    # If client has no Dossier Express IA, return limited data with upsell
     if not has_dossier_express:
         return {
             "has_dossier_express": False,
@@ -697,7 +697,7 @@ async def get_dossier_analysis(client: dict = Depends(get_current_client)):
             },
         }
 
-    # Full data for Dossier Express clients
+    # Full data for Dossier Express IA clients
     return {
         "has_dossier_express": True,
         "score": composite,

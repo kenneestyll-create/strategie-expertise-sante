@@ -209,7 +209,7 @@ export const ChatBot = () => {
                 </Link>
                 <Link to="/dossier-express" onClick={() => setIsOpen(false)}>
                   <Button size="sm" variant="outline" className="w-full rounded-lg gap-2 text-xs mt-1" data-testid="chatbot-quota-dossier">
-                    <FileText className="w-3 h-3" /> Dossier Express — 97€
+                    <FileText className="w-3 h-3" /> Dossier Express IA — 97€
                   </Button>
                 </Link>
                 <Link to="/tarifs" onClick={() => setIsOpen(false)}>

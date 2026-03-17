@@ -22,7 +22,7 @@ async def chatbot_message(chat_input: ChatMessage):
             response="Vous avez atteint la limite de 5 questions gratuites pour cette session.\n\n"
                      "Pour aller plus loin dans votre démarche :\n"
                      "- [Réservez un appel gratuit](/agenda) avec notre expert\n"
-                     "- [Découvrez le Dossier Express](/dossier-express) pour une analyse complète\n"
+                     "- [Découvrez le Dossier Express IA](/dossier-express) pour une analyse complète\n"
                      "- [Consultez nos tarifs](/tarifs) pour un accompagnement personnalisé\n\n"
                      "Premier échange toujours gratuit et sans engagement.",
             is_faq=False,

@@ -24,7 +24,7 @@ export const PolitiqueConfidentialitePage = () => {
       content: null,
       list: [
         "Analyse de votre situation dans le cadre de l'accompagnement administratif et stratégique",
-        "Fourniture des services StratégiIA et Dossier Express (pré-analyse assistée par intelligence artificielle)",
+        "Fourniture des services StratégiIA et Dossier Express IA (pré-analyse assistée par intelligence artificielle)",
         "Communication avec vous concernant votre dossier",
         "Envoi d'informations relatives à nos services (avec votre consentement)",
         "Amélioration de nos services et de l'expérience utilisateur",

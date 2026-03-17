@@ -33,7 +33,7 @@ const professionalServiceSchema = {
     "name": "Prestations",
     "itemListElement": [
       { "@type": "Offer", "name": "Pré-analyse StratégiIA", "price": "0", "priceCurrency": "EUR", "description": "Pré-analyse assistée par notre outil StratégiIA" },
-      { "@type": "Offer", "name": "Dossier Express", "price": "97", "priceCurrency": "EUR", "description": "Rapport PDF complet livré sous 2h" },
+      { "@type": "Offer", "name": "Dossier Express IA", "price": "97", "priceCurrency": "EUR", "description": "Rapport PDF complet livré sous 2h" },
       { "@type": "Offer", "name": "Analyse de dossier", "price": "150", "priceCurrency": "EUR", "description": "Étude personnalisée du dossier médical et administratif" },
       { "@type": "Offer", "name": "Accompagnement complet", "price": "500", "priceCurrency": "EUR", "description": "Suivi global des démarches" }
     ]
@@ -62,7 +62,7 @@ const faqPageSchema = {
     {
       "@type": "Question",
       "name": "Combien coûte un accompagnement en maladie professionnelle ?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Les tarifs varient de la pré-analyse gratuite assistée par StratégiIA au Dossier Express à 97€, jusqu'à l'accompagnement complet à 500€. Le premier échange est toujours gratuit et sans engagement." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Les tarifs varient de la pré-analyse gratuite assistée par StratégiIA au Dossier Express IA à 97€, jusqu'à l'accompagnement complet à 500€. Le premier échange est toujours gratuit et sans engagement." }
     }
   ]
 };

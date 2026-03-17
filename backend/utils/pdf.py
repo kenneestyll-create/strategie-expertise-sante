@@ -10,7 +10,7 @@ def generate_report_number():
 
 def generate_secured_pdf(
     analysis: str,
-    report_type: str = "Dossier Express",
+    report_type: str = "Dossier Express IA",
     name: str = "",
     email: str = "",
     type_dossier: str = "",
@@ -227,7 +227,7 @@ def generate_secured_pdf(
 def generate_dossier_pdf(name: str, email: str, type_dossier: str, regime: str, analysis: str, premium_pdf: bool = False) -> bytes:
     return generate_secured_pdf(
         analysis=analysis,
-        report_type="Dossier Express",
+        report_type="Dossier Express IA",
         name=name,
         email=email,
         type_dossier=type_dossier,

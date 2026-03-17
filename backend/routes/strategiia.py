@@ -169,15 +169,15 @@ async def dossier_express_submit(request: Request):
                             {"session_id": session_id},
                             {"$set": {"payment_status": "paid", "status": status.status, "updated_at": datetime.now(timezone.utc).isoformat()}}
                         )
-                        logger.info(f"Dossier Express: live Stripe check confirmed payment for session {session_id}")
+                        logger.info(f"Dossier Express IA: live Stripe check confirmed payment for session {session_id}")
                 except Exception as e:
-                    logger.warning(f"Dossier Express: live Stripe check failed for session {session_id}: {e}")
+                    logger.warning(f"Dossier Express IA: live Stripe check failed for session {session_id}: {e}")
 
     if not payment_verified:
         if STRIPE_API_KEY:
             raise HTTPException(status_code=402, detail="Paiement requis. Veuillez compléter le paiement avant de soumettre votre dossier.")
         else:
-            logger.warning(f"Dossier Express submitted without payment verification (Stripe not configured) for {email}")
+            logger.warning(f"Dossier Express IA submitted without payment verification (Stripe not configured) for {email}")
 
     dossier_id = str(uuid.uuid4())
     dossier = {
@@ -195,7 +195,7 @@ async def dossier_express_submit(request: Request):
 async def _process_dossier_express(dossier_id: str, email: str, name: str, situation: str, type_dossier: str, regime: str, documents_text: str, premium_pdf: bool = False):
     try:
         if not EMERGENT_LLM_KEY:
-            logger.error("Dossier Express: EMERGENT_LLM_KEY not available")
+            logger.error("Dossier Express IA: EMERGENT_LLM_KEY not available")
             await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"status": "error", "error": "Service IA non disponible"}})
             return
 
@@ -236,9 +236,9 @@ CONTENU DES DOCUMENTS FOURNIS :
                 resend.Emails.send({
                     "from": SENDER_EMAIL,
                     "to": [email],
-                    "subject": "Votre Rapport Dossier Express - Stratégie & Expertise Santé",
+                    "subject": "Votre Rapport Dossier Express IA - Stratégie & Expertise Santé",
                     "html": f"""<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                        <h1 style="color: #1a1a2e;">Votre Rapport Dossier Express</h1>
+                        <h1 style="color: #1a1a2e;">Votre Rapport Dossier Express IA</h1>
                         <p>Bonjour {name or 'Madame, Monsieur'},</p>
                         <p>Merci pour votre confiance. Veuillez trouver ci-joint votre rapport d'analyse complet réalisé par notre outil StratégiIA.</p>
                         <p>Ce rapport contient :</p><ul><li>L'analyse détaillée de votre situation</li><li>Le cadre juridique applicable</li><li>Vos droits identifiés</li><li>La stratégie recommandée</li><li>Les prochaines étapes à suivre</li></ul>
@@ -249,13 +249,13 @@ CONTENU DES DOCUMENTS FOURNIS :
                     "attachments": [{"filename": f"Rapport_Dossier_Express_{dossier_id[:8]}.pdf", "content": list(pdf_bytes)}]
                 })
                 email_sent = True
-                logger.info(f"Dossier Express {dossier_id}: email sent to {email}")
+                logger.info(f"Dossier Express IA {dossier_id}: email sent to {email}")
             except Exception as e:
-                logger.error(f"Dossier Express email error: {e}")
+                logger.error(f"Dossier Express IA email error: {e}")
 
         await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"status": "completed", "analysis": analysis[:5000], "email_sent": email_sent, "completed_at": datetime.now(timezone.utc).isoformat()}})
     except Exception as e:
-        logger.error(f"Dossier Express processing error: {e}")
+        logger.error(f"Dossier Express IA processing error: {e}")
         await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"status": "error", "error": str(e)}})
 
 
@@ -287,7 +287,7 @@ async def dossier_express_checkout(request: Request):
         tag = "dossier_express_pdf_pro"
     elif analyse_premium:
         tag = "dossier_express_analyse_premium"
-    checkout_request = CheckoutSessionRequest(amount=amount, currency="eur", success_url=success_url, cancel_url=cancel_url, metadata={"package_id": tag, "package_name": f"Dossier Express ({amount:.0f}€)", "customer_email": email, "customer_name": name, "premium_pdf": "1" if premium_pdf else "0", "analyse_premium": "1" if analyse_premium else "0"})
+    checkout_request = CheckoutSessionRequest(amount=amount, currency="eur", success_url=success_url, cancel_url=cancel_url, metadata={"package_id": tag, "package_name": f"Dossier Express IA ({amount:.0f}€)", "customer_email": email, "customer_name": name, "premium_pdf": "1" if premium_pdf else "0", "analyse_premium": "1" if analyse_premium else "0"})
     if analyse_premium:
         await db.premium_analyses.insert_one({"id": str(uuid.uuid4()), "type": "dossier_express", "email": email, "name": name, "status": "en_attente", "premium_pdf": premium_pdf, "amount": amount, "created_at": datetime.now(timezone.utc).isoformat()})
         asyncio.create_task(notify_admin_premium_analysis("dossier_express", email, name, amount))
@@ -295,7 +295,7 @@ async def dossier_express_checkout(request: Request):
         session = await stripe_checkout.create_checkout_session(checkout_request)
         return {"success": True, "url": session.url, "session_id": session.session_id}
     except Exception as e:
-        logger.error(f"Dossier Express checkout error: {e}")
+        logger.error(f"Dossier Express IA checkout error: {e}")
         raise HTTPException(status_code=500, detail="Erreur de paiement")
 
 @router.get("/dossier-express/status/{dossier_id}")
@@ -340,7 +340,7 @@ async def strategiia_analyze(request: Request):
         month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
         usage_count = await db.strategiia_analyses.count_documents({"email": email, "is_premium": False, "created_at": {"$gte": month_start}})
         if usage_count >= 3:
-            return {"success": False, "quota_exceeded": True, "remaining": 0, "message": "Vous avez utilisé vos 3 analyses gratuites ce mois-ci. Passez au Dossier Express pour une analyse complète."}
+            return {"success": False, "quota_exceeded": True, "remaining": 0, "message": "Vous avez utilisé vos 3 analyses gratuites ce mois-ci. Passez au Dossier Express IA pour une analyse complète."}
 
     similar_cases = []
     if type_dossier:

@@ -266,7 +266,7 @@ export const DossierExpressPage = () => {
   if (step === 'landing') {
     return (
       <main className="page-transition pt-20">
-      <SEO title="Dossier Express — Rapport d'analyse sous 2h" description="Uploadez vos documents, notre équipe les analyse avec l'aide de StratégiIA et vous recevez un rapport PDF complet sous 2 heures pour 97€." path="/dossier-express" />
+      <SEO title="Dossier Express IA — Rapport d'analyse sous 2h" description="Uploadez vos documents, notre équipe les analyse avec l'aide de StratégiIA et vous recevez un rapport PDF complet sous 2 heures pour 97€." path="/dossier-express" />
 
         {/* Hero */}
         <section className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f3460 100%)' }}>
@@ -382,7 +382,7 @@ export const DossierExpressPage = () => {
           <div className="max-w-5xl mx-auto" ref={testimonialsRef}>
             <div className="text-center mb-10 reveal">
               <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Ils ont fait analyser leur dossier</h2>
-              <p className="text-muted-foreground text-sm">Des dizaines de personnes ont renforcé leur dossier grâce au Dossier Express.</p>
+              <p className="text-muted-foreground text-sm">Des dizaines de personnes ont renforcé leur dossier grâce au Dossier Express IA.</p>
             </div>
             <div className="grid md:grid-cols-3 gap-5 stagger">
               {TESTIMONIALS.map((t, i) => (
@@ -416,7 +416,7 @@ export const DossierExpressPage = () => {
             <div className="flex items-start gap-3" data-testid="dossier-express-disclaimer">
               <AlertTriangle className="w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
               <p className="text-xs text-amber-900/70 leading-relaxed">
-                <strong className="text-amber-900/90">Information :</strong> Le Dossier Express fournit une analyse documentaire et stratégique basée sur l'intelligence artificielle. Il ne constitue pas une expertise médicale officielle, un conseil juridique ni un avis médical.
+                <strong className="text-amber-900/90">Information :</strong> Le Dossier Express IA fournit une analyse documentaire et stratégique basée sur l'intelligence artificielle. Il ne constitue pas une expertise médicale officielle, un conseil juridique ni un avis médical.
               </p>
             </div>
           </div>
@@ -477,7 +477,7 @@ export const DossierExpressPage = () => {
               {/* Main form */}
               <div>
                 <h2 className="text-2xl sm:text-3xl font-bold mb-2" data-testid="form-title">
-                  {hasPaid ? 'Complétez votre dossier' : 'Votre Dossier Express'}
+                  {hasPaid ? 'Complétez votre dossier' : 'Votre Dossier Express IA'}
                 </h2>
                 <p className="text-muted-foreground mb-6 text-sm">
                   {hasPaid ? 'Décrivez votre situation pour lancer l\'analyse StratégiIA.' : 'Remplissez les informations ci-dessous pour lancer l\'analyse.'}
@@ -595,7 +595,7 @@ export const DossierExpressPage = () => {
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">Rapport sans filigrane, optimisé pour transmission à un avocat, médecin ou expert.</p>
                       </div>
-                      <PdfCoverPreview reportType="Dossier Express" />
+                      <PdfCoverPreview reportType="Dossier Express IA" />
                     </label>
                   </div>
 
@@ -690,7 +690,7 @@ export const DossierExpressPage = () => {
             </div>
             <h2 className="text-2xl font-bold mb-3" data-testid="success-title">Rapport envoyé !</h2>
             <p className="text-muted-foreground mb-6 text-sm">
-              Votre rapport Dossier Express a été envoyé à <strong className="text-foreground">{form.email || pollStatus?.email}</strong>.
+              Votre rapport Dossier Express IA a été envoyé à <strong className="text-foreground">{form.email || pollStatus?.email}</strong>.
               Vérifiez votre boîte de réception (et vos spams).
             </p>
             <Card className="text-left mb-8">

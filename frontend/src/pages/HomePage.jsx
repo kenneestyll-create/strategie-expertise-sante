@@ -264,7 +264,7 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* Dossier Express — Urgent Banner */}
+      {/* Dossier Express IA — Urgent Banner */}
       <section className="relative overflow-hidden urgent-glow" data-testid="dossier-express-banner" ref={bannerRef}>
         <div className="absolute inset-0 bg-gradient-to-r from-red-700 via-red-600 to-red-700" />
         <div className="absolute inset-0 shimmer" />
@@ -300,7 +300,7 @@ export const HomePage = () => {
                 data-testid="dossier-express-banner-cta"
               >
                 <Zap className="w-4 h-4" />
-                Accéder au Dossier Express
+                Accéder au Dossier Express IA
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
