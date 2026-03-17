@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Shield, AlertTriangle, AlertCircle, CheckCircle, ChevronDown, ChevronUp,
   ArrowRight, FileText, Brain, Upload, Zap, Target, TrendingUp, Info,
-  ScanLine, Star, Crown, Sparkles, Eye, ChevronRight, Clock
+  ScanLine, Star, Crown, Sparkles, Eye, ChevronRight
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -18,39 +18,33 @@ const SEVERITY_CONFIG = {
 };
 
 const SCORE_COLORS = {
-  red: { gradient: 'from-red-500 to-red-400', text: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', ring: 'ring-red-200' },
-  orange: { gradient: 'from-orange-500 to-amber-400', text: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-200', ring: 'ring-orange-200' },
-  amber: { gradient: 'from-amber-500 to-yellow-400', text: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200', ring: 'ring-amber-200' },
-  blue: { gradient: 'from-blue-500 to-indigo-400', text: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', ring: 'ring-blue-200' },
-  green: { gradient: 'from-emerald-500 to-green-400', text: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200', ring: 'ring-emerald-200' },
+  red: { text: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200' },
+  orange: { text: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-200' },
+  amber: { text: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' },
+  blue: { text: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' },
+  green: { text: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+};
+
+const PRIORITY_BADGE = {
+  haute: { label: 'Priorité haute', className: 'bg-red-100 text-red-700 border-red-200' },
+  moyenne: { label: 'Priorité moyenne', className: 'bg-amber-100 text-amber-700 border-amber-200' },
+  faible: { label: 'Priorité faible', className: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
 };
 
 const ACTION_ICONS = { upload: Upload, file: FileText, brain: Brain, zap: Zap, scan: ScanLine };
 
+/* ── Score Ring ── */
 const ScoreRing = ({ score, color }) => {
-  const radius = 54;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (score / 100) * circumference;
+  const r = 54, c = 2 * Math.PI * r;
   const colors = SCORE_COLORS[color] || SCORE_COLORS.blue;
-
+  const stopA = color === 'green' ? '#10b981' : color === 'blue' ? '#3b82f6' : color === 'amber' ? '#f59e0b' : color === 'orange' ? '#f97316' : '#ef4444';
+  const stopB = color === 'green' ? '#22c55e' : color === 'blue' ? '#6366f1' : color === 'amber' ? '#eab308' : color === 'orange' ? '#fb923c' : '#f87171';
   return (
     <div className="relative w-36 h-36 flex-shrink-0" data-testid="dossier-score-ring">
       <svg className="w-full h-full -rotate-90" viewBox="0 0 128 128">
-        <circle cx="64" cy="64" r={radius} fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
-        <circle
-          cx="64" cy="64" r={radius} fill="none"
-          stroke="url(#scoreGradient)" strokeWidth="8"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          className="transition-all duration-1000 ease-out"
-        />
-        <defs>
-          <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={color === 'green' ? '#10b981' : color === 'blue' ? '#3b82f6' : color === 'amber' ? '#f59e0b' : color === 'orange' ? '#f97316' : '#ef4444'} />
-            <stop offset="100%" stopColor={color === 'green' ? '#22c55e' : color === 'blue' ? '#6366f1' : color === 'amber' ? '#eab308' : color === 'orange' ? '#fb923c' : '#f87171'} />
-          </linearGradient>
-        </defs>
+        <circle cx="64" cy="64" r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
+        <circle cx="64" cy="64" r={r} fill="none" stroke="url(#scoreGrad)" strokeWidth="8" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c - (score / 100) * c} className="transition-all duration-1000 ease-out" />
+        <defs><linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor={stopA} /><stop offset="100%" stopColor={stopB} /></linearGradient></defs>
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className={`text-3xl font-bold ${colors.text}`} data-testid="dossier-score-value">{score}</span>
@@ -60,14 +54,32 @@ const ScoreRing = ({ score, color }) => {
   );
 };
 
+/* ── Key Metric Mini Bar ── */
+const KeyMetric = ({ label, value }) => {
+  const barColor = value >= 80 ? 'bg-emerald-500' : value >= 50 ? 'bg-amber-500' : 'bg-red-400';
+  const textColor = value >= 80 ? 'text-emerald-600' : value >= 50 ? 'text-amber-600' : 'text-red-500';
+  return (
+    <div className="flex-1 min-w-0" data-testid={`key-metric-${label.toLowerCase()}`}>
+      <div className="flex items-baseline justify-between mb-1">
+        <span className="text-[11px] text-muted-foreground truncate">{label}</span>
+        <span className={`text-xs font-bold ml-1 ${textColor}`}>{value}%</span>
+      </div>
+      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+        <div className={`h-full rounded-full transition-all duration-700 ${barColor}`} style={{ width: `${value}%` }} />
+      </div>
+    </div>
+  );
+};
+
+/* ── Breakdown Bar (detail toggle) ── */
 const BreakdownBar = ({ label, score, weight }) => {
   const barColor = score >= 80 ? 'bg-emerald-500' : score >= 60 ? 'bg-blue-500' : score >= 40 ? 'bg-amber-500' : 'bg-red-400';
   return (
-    <div className="space-y-1" data-testid={`breakdown-${label.toLowerCase().replace(/\s+/g, '-')}`}>
+    <div className="space-y-1">
       <div className="flex items-center justify-between">
         <span className="text-xs text-muted-foreground">{label}</span>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-muted-foreground/60">{weight}%</span>
+          {weight > 0 && <span className="text-[10px] text-muted-foreground/60">{weight}%</span>}
           <span className={`text-xs font-semibold ${score >= 80 ? 'text-emerald-600' : score >= 60 ? 'text-blue-600' : score >= 40 ? 'text-amber-600' : 'text-red-500'}`}>{score}</span>
         </div>
       </div>
@@ -78,6 +90,7 @@ const BreakdownBar = ({ label, score, weight }) => {
   );
 };
 
+/* ── Main Component ── */
 export const DossierAnalysis = ({ token }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -85,30 +98,34 @@ export const DossierAnalysis = ({ token }) => {
   const [showAllRisks, setShowAllRisks] = useState(false);
   const [expandedRisk, setExpandedRisk] = useState(null);
   const [expandedPrediction, setExpandedPrediction] = useState(null);
-  const [showAllActions, setShowAllActions] = useState(false);
   const [feedback, setFeedback] = useState(null);
+  const prevScoreRef = useRef(null);
 
   const fetchAnalysis = useCallback(async () => {
     try {
       const res = await axios.get(`${API}/client/dossier-analysis`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      // Check for score change and show feedback
-      if (data && res.data.score !== data.score) {
-        const delta = res.data.score - data.score;
+      const newScore = res.data.score;
+      // Show feedback if score changed
+      if (prevScoreRef.current !== null && newScore !== prevScoreRef.current) {
+        const delta = newScore - prevScoreRef.current;
         if (delta > 0) {
-          setFeedback({ type: 'up', delta, newScore: res.data.score });
-          setTimeout(() => setFeedback(null), 6000);
+          setFeedback({ type: 'up', delta, newScore });
+        } else if (delta < 0) {
+          setFeedback({ type: 'info', delta: 0, newScore, message: 'Score recalculé après modification.' });
         }
+        setTimeout(() => setFeedback(null), 6000);
       }
+      prevScoreRef.current = newScore;
       setData(res.data);
     } catch {
       setData(null);
     }
     setLoading(false);
-  }, [token, data]);
+  }, [token]);
 
-  useEffect(() => { fetchAnalysis(); }, [token]);
+  useEffect(() => { fetchAnalysis(); }, [token, fetchAnalysis]);
 
   useEffect(() => {
     const handleRefresh = () => { fetchAnalysis(); };
@@ -118,12 +135,8 @@ export const DossierAnalysis = ({ token }) => {
 
   const handleActionClick = (action) => {
     if (action.cta_target === 'documents') {
-      // Dispatch event to switch tab, then click the tab trigger after delay
       const tabBtn = document.querySelector('[data-testid="tab-documents"]');
-      if (tabBtn) {
-        tabBtn.click();
-        tabBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+      if (tabBtn) { tabBtn.click(); tabBtn.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
     } else if (action.cta_target === 'strategiia') {
       window.dispatchEvent(new Event('strategiia:open'));
     }
@@ -139,40 +152,50 @@ export const DossierAnalysis = ({ token }) => {
       </CardContent></Card>
     );
   }
-
   if (!data) return null;
 
-  const { score, dynamic_message, score_breakdown, weak_points, risk_alerts, missing_documents, actionable_count, recommended_actions, predictions, premium_cta } = data;
+  const { score, key_metrics, dynamic_message, score_breakdown, weak_points, risk_alerts, missing_documents, actionable_count, recommended_actions, predictions, premium_cta } = data;
   const msgColor = SCORE_COLORS[dynamic_message.color] || SCORE_COLORS.blue;
   const displayedRisks = showAllRisks ? risk_alerts : risk_alerts.slice(0, 3);
-  const displayedActions = showAllActions ? (recommended_actions || []) : (recommended_actions || []).slice(0, 3);
 
   return (
     <div className="space-y-4 mb-6" data-testid="dossier-analysis">
-      {/* Real-time Feedback Toast — Phase 2 */}
+
+      {/* ── Real-time Feedback ── */}
       {feedback && (
-        <div className="animate-in slide-in-from-top-2 duration-300 p-3 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center gap-3" data-testid="score-feedback-toast">
-          <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-            <TrendingUp className="w-4 h-4 text-emerald-600" />
+        <div className={`animate-in slide-in-from-top-2 duration-300 p-3.5 rounded-lg flex items-center gap-3 ${feedback.type === 'up' ? 'bg-emerald-50 border border-emerald-200' : 'bg-blue-50 border border-blue-200'}`} data-testid="score-feedback-toast">
+          <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${feedback.type === 'up' ? 'bg-emerald-100' : 'bg-blue-100'}`}>
+            <TrendingUp className={`w-4.5 h-4.5 ${feedback.type === 'up' ? 'text-emerald-600' : 'text-blue-600'}`} />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-semibold text-emerald-800">Score mis à jour !</p>
-            <p className="text-xs text-emerald-600">
-              Votre dossier a gagné <span className="font-bold">+{feedback.delta}%</span> — Solidité : <span className="font-bold">{feedback.newScore}%</span>
-            </p>
+            {feedback.type === 'up' ? (
+              <>
+                <p className="text-sm font-semibold text-emerald-800">
+                  Votre score a augmenté de +{feedback.delta}%
+                </p>
+                <p className="text-xs text-emerald-600">
+                  Cette action renforce significativement votre dossier — Solidité : <span className="font-bold">{feedback.newScore}%</span>
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-blue-700">{feedback.message}</p>
+            )}
           </div>
-          <Sparkles className="w-5 h-5 text-emerald-400 animate-pulse" />
+          {feedback.type === 'up' && <Sparkles className="w-5 h-5 text-emerald-400 animate-pulse flex-shrink-0" />}
         </div>
       )}
 
-      {/* Main Score Card */}
+      {/* ── Main Score Card + Key Metrics ── */}
       <Card className={`overflow-hidden border-2 ${msgColor.border}`} data-testid="dossier-score-card">
         <CardContent className="p-0">
           <div className="flex flex-col md:flex-row">
+            {/* Score Ring */}
             <div className={`flex flex-col items-center justify-center p-6 md:border-r border-border ${msgColor.bg}`}>
               <ScoreRing score={score} color={dynamic_message.color} />
               <p className="text-xs font-semibold mt-2 text-center" data-testid="dossier-score-label">Solidité du dossier</p>
             </div>
+
+            {/* Dynamic Message + Key Metrics */}
             <div className="flex-1 p-5 md:p-6 flex flex-col justify-between">
               <div>
                 <div className="flex items-start gap-2 mb-2">
@@ -185,8 +208,18 @@ export const DossierAnalysis = ({ token }) => {
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed" data-testid="dossier-dynamic-message">{dynamic_message.message}</p>
               </div>
+
+              {/* 1️⃣ Key Metrics — always visible */}
+              {key_metrics && (
+                <div className="flex gap-4 mt-4 p-3 rounded-lg bg-muted/30 border border-border/50" data-testid="key-metrics">
+                  <KeyMetric label="Complétude" value={key_metrics.completeness} />
+                  <KeyMetric label="Qualité" value={key_metrics.quality} />
+                  <KeyMetric label="Cohérence" value={key_metrics.coherence} />
+                </div>
+              )}
+
               {actionable_count > 0 && (
-                <div className={`mt-4 flex items-center gap-3 p-3 rounded-lg ${msgColor.bg} border ${msgColor.border}`} data-testid="actionable-count">
+                <div className={`mt-3 flex items-center gap-3 p-3 rounded-lg ${msgColor.bg} border ${msgColor.border}`} data-testid="actionable-count">
                   <Zap className={`w-4 h-4 ${msgColor.text} flex-shrink-0`} />
                   <p className={`text-sm font-medium ${msgColor.text}`}>
                     <span className="font-bold">{actionable_count}</span> {actionable_count === 1 ? 'élément à traiter' : 'éléments à traiter'} pour renforcer votre dossier
@@ -195,10 +228,12 @@ export const DossierAnalysis = ({ token }) => {
               )}
               <button onClick={() => setShowBreakdown(!showBreakdown)} className="mt-3 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors" data-testid="toggle-breakdown">
                 {showBreakdown ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                {showBreakdown ? 'Masquer le détail' : 'Voir le détail du score'}
+                {showBreakdown ? 'Masquer le détail complet' : 'Voir le détail complet du score'}
               </button>
             </div>
           </div>
+
+          {/* Full breakdown (toggle) */}
           {showBreakdown && score_breakdown && (
             <div className="border-t border-border p-5 space-y-3 bg-muted/10" data-testid="score-breakdown">
               {Object.values(score_breakdown).map((item, i) => (
@@ -209,20 +244,18 @@ export const DossierAnalysis = ({ token }) => {
         </CardContent>
       </Card>
 
-      {/* Phase 2: Recommended Actions */}
+      {/* ── 3️⃣ Recommended Actions (max 3, with priority badges) ── */}
       {recommended_actions && recommended_actions.length > 0 && (
         <Card className="border-accent/20" data-testid="recommended-actions-section">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Sparkles className="w-4.5 h-4.5 text-accent" />
               <h4 className="text-sm font-semibold">Prochaines actions recommandées</h4>
-              <Badge variant="outline" className="text-[9px] bg-accent/10 text-accent border-accent/20 ml-auto">
-                Priorité
-              </Badge>
             </div>
             <div className="space-y-2.5">
-              {displayedActions.map((action, i) => {
+              {recommended_actions.map((action, i) => {
                 const Icon = ACTION_ICONS[action.icon] || FileText;
+                const priorityCfg = PRIORITY_BADGE[action.priority_level] || PRIORITY_BADGE.moyenne;
                 return (
                   <button
                     key={i}
@@ -237,29 +270,30 @@ export const DossierAnalysis = ({ token }) => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-xs font-semibold">{action.title}</span>
-                          <Badge variant="outline" className="text-[8px] px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200">
-                            {action.impact}
+                          <Badge variant="outline" className={`text-[8px] px-1.5 ${priorityCfg.className}`} data-testid={`priority-badge-${action.priority_level}`}>
+                            {priorityCfg.label}
                           </Badge>
                         </div>
-                        <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{action.description}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <p className="text-[11px] text-muted-foreground line-clamp-1">{action.description}</p>
+                        </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-accent flex-shrink-0 mt-0.5 transition-colors" />
+                      <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                        <Badge variant="outline" className="text-[8px] px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200 whitespace-nowrap">
+                          {action.impact}
+                        </Badge>
+                        <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-accent transition-colors" />
+                      </div>
                     </div>
                   </button>
                 );
               })}
             </div>
-            {(recommended_actions || []).length > 3 && (
-              <button onClick={() => setShowAllActions(!showAllActions)} className="mt-3 text-xs text-accent hover:text-accent/80 transition-colors flex items-center gap-1" data-testid="toggle-all-actions">
-                {showAllActions ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                {showAllActions ? 'Voir moins' : `Voir toutes les actions (${recommended_actions.length})`}
-              </button>
-            )}
           </CardContent>
         </Card>
       )}
 
-      {/* Weak Points */}
+      {/* ── Weak Points ── */}
       {weak_points.length > 0 && (
         <Card data-testid="weak-points-section">
           <CardContent className="p-5">
@@ -293,16 +327,14 @@ export const DossierAnalysis = ({ token }) => {
         </Card>
       )}
 
-      {/* Risk Alerts */}
+      {/* ── Risk Alerts ── */}
       {risk_alerts.length > 0 && (
         <Card data-testid="risk-alerts-section">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <AlertTriangle className="w-4.5 h-4.5 text-red-500" />
               <h4 className="text-sm font-semibold">Alertes de risque</h4>
-              <Badge variant="outline" className="text-[9px] bg-red-50 text-red-600 border-red-200 ml-auto">
-                {risk_alerts.length} alerte{risk_alerts.length > 1 ? 's' : ''}
-              </Badge>
+              <Badge variant="outline" className="text-[9px] bg-red-50 text-red-600 border-red-200 ml-auto">{risk_alerts.length} alerte{risk_alerts.length > 1 ? 's' : ''}</Badge>
             </div>
             <div className="space-y-3">
               {displayedRisks.map((alert, i) => {
@@ -310,7 +342,7 @@ export const DossierAnalysis = ({ token }) => {
                 const IconC = config.icon;
                 const isExpanded = expandedRisk === i;
                 return (
-                  <div key={i} className={`rounded-lg border ${config.border} overflow-hidden transition-all`} data-testid={`risk-alert-${i}`}>
+                  <div key={i} className={`rounded-lg border ${config.border} overflow-hidden`} data-testid={`risk-alert-${i}`}>
                     <button onClick={() => setExpandedRisk(isExpanded ? null : i)} className={`w-full text-left p-3 ${config.bg} flex items-start gap-2.5 hover:opacity-90 transition-opacity`}>
                       <IconC className={`w-4 h-4 ${config.text} flex-shrink-0 mt-0.5`} />
                       <p className="text-xs leading-relaxed flex-1">{alert.message}</p>
@@ -338,23 +370,19 @@ export const DossierAnalysis = ({ token }) => {
         </Card>
       )}
 
-      {/* Phase 3: Predictive Refusal Alerts */}
+      {/* ── Predictions ── */}
       {predictions && predictions.length > 0 && (
         <Card className="border-purple-200" data-testid="predictions-section">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Eye className="w-4.5 h-4.5 text-purple-600" />
               <h4 className="text-sm font-semibold">Anticipation des motifs de refus</h4>
-              <Badge variant="outline" className="text-[9px] bg-purple-50 text-purple-700 border-purple-200 ml-auto">
-                Prédictif
-              </Badge>
+              <Badge variant="outline" className="text-[9px] bg-purple-50 text-purple-700 border-purple-200 ml-auto">Prédictif</Badge>
             </div>
             <div className="space-y-3">
               {predictions.map((pred, i) => {
                 const isExpanded = expandedPrediction === i;
-                const probColor = pred.probability === 'Certaine' || pred.probability === 'Élevée'
-                  ? 'bg-red-100 text-red-700 border-red-200'
-                  : 'bg-amber-100 text-amber-700 border-amber-200';
+                const probColor = pred.probability === 'Certaine' || pred.probability === 'Élevée' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-amber-100 text-amber-700 border-amber-200';
                 return (
                   <div key={i} className="rounded-lg border border-purple-100 overflow-hidden" data-testid={`prediction-${i}`}>
                     <button onClick={() => setExpandedPrediction(isExpanded ? null : i)} className="w-full text-left p-3 bg-purple-50/50 flex items-start gap-2.5 hover:bg-purple-50 transition-colors">
@@ -362,9 +390,7 @@ export const DossierAnalysis = ({ token }) => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-xs font-semibold text-purple-900">{pred.title}</span>
-                          <Badge variant="outline" className={`text-[8px] px-1.5 ${probColor}`}>
-                            {pred.probability}
-                          </Badge>
+                          <Badge variant="outline" className={`text-[8px] px-1.5 ${probColor}`}>{pred.probability}</Badge>
                         </div>
                       </div>
                       {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 mt-0.5" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />}
@@ -386,38 +412,27 @@ export const DossierAnalysis = ({ token }) => {
         </Card>
       )}
 
-      {/* Missing Documents */}
+      {/* ── Missing Documents ── */}
       {missing_documents.length > 0 && (
         <Card className="border-accent/20" data-testid="missing-docs-actions">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <FileText className="w-4.5 h-4.5 text-accent" />
               <h4 className="text-sm font-semibold">Documents à fournir</h4>
-              <Badge variant="outline" className="text-[9px] bg-accent/10 text-accent border-accent/20 ml-auto">
-                {missing_documents.length} manquant{missing_documents.length > 1 ? 's' : ''}
-              </Badge>
+              <Badge variant="outline" className="text-[9px] bg-accent/10 text-accent border-accent/20 ml-auto">{missing_documents.length} manquant{missing_documents.length > 1 ? 's' : ''}</Badge>
             </div>
             <div className="space-y-2">
               {missing_documents.map((doc, i) => (
                 <div key={i} className="flex items-center justify-between gap-2 p-2.5 rounded-lg border border-border hover:border-accent/30 transition-colors bg-background" data-testid={`missing-doc-${doc.key}`}>
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-7 h-7 rounded-md bg-muted flex items-center justify-center flex-shrink-0">
-                      <FileText className="w-3.5 h-3.5 text-muted-foreground" />
-                    </div>
+                    <div className="w-7 h-7 rounded-md bg-muted flex items-center justify-center flex-shrink-0"><FileText className="w-3.5 h-3.5 text-muted-foreground" /></div>
                     <div className="min-w-0">
                       <p className="text-xs font-medium truncate">{doc.label}</p>
                       <p className="text-[10px] text-muted-foreground capitalize">{doc.category}</p>
                     </div>
                   </div>
-                  <Button
-                    size="sm" variant="outline"
-                    className="h-7 px-2.5 text-[10px] gap-1 rounded-full border-accent/30 text-accent hover:bg-accent/10"
-                    data-testid={`upload-doc-${doc.key}`}
-                    onClick={() => {
-                      const tabBtn = document.querySelector('[data-testid="tab-documents"]');
-                      if (tabBtn) tabBtn.click();
-                    }}
-                  >
+                  <Button size="sm" variant="outline" className="h-7 px-2.5 text-[10px] gap-1 rounded-full border-accent/30 text-accent hover:bg-accent/10" data-testid={`upload-doc-${doc.key}`}
+                    onClick={() => { const tabBtn = document.querySelector('[data-testid="tab-documents"]'); if (tabBtn) tabBtn.click(); }}>
                     <Upload className="w-3 h-3" />Ajouter
                   </Button>
                 </div>
@@ -427,33 +442,27 @@ export const DossierAnalysis = ({ token }) => {
         </Card>
       )}
 
-      {/* CTA: Launch analysis if none done */}
+      {/* ── CTA: Launch analysis ── */}
       {data.summary.analyses_ia === 0 && data.summary.total_documents >= 1 && (
         <Card className="border-accent/30 bg-gradient-to-r from-accent/5 to-transparent" data-testid="cta-launch-analysis">
           <CardContent className="p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0">
-              <Brain className="w-6 h-6 text-accent" />
-            </div>
+            <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0"><Brain className="w-6 h-6 text-accent" /></div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold">Lancez votre analyse StratégiIA</p>
               <p className="text-xs text-muted-foreground mt-0.5">Obtenez une analyse stratégique personnalisée de votre dossier.</p>
             </div>
-            <Button size="sm" className="gap-1.5 rounded-full whitespace-nowrap" onClick={() => window.dispatchEvent(new Event('strategiia:open'))} data-testid="cta-launch-strategiia">
-              Analyser <ArrowRight className="w-3.5 h-3.5" />
-            </Button>
+            <Button size="sm" className="gap-1.5 rounded-full whitespace-nowrap" onClick={() => window.dispatchEvent(new Event('strategiia:open'))} data-testid="cta-launch-strategiia">Analyser <ArrowRight className="w-3.5 h-3.5" /></Button>
           </CardContent>
         </Card>
       )}
 
-      {/* Phase 3: Premium Expert Analysis CTA */}
+      {/* ── Premium Expert CTA ── */}
       {premium_cta && premium_cta.show && (
         <Card className="border-amber-300/50 bg-gradient-to-br from-amber-50/80 via-white to-orange-50/40 overflow-hidden relative" data-testid="premium-expert-cta">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-amber-200/20 to-transparent rounded-bl-full" />
           <CardContent className="p-5 relative">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-200/50">
-                <Crown className="w-6 h-6 text-white" />
-              </div>
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-200/50"><Crown className="w-6 h-6 text-white" /></div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <h4 className="text-sm font-bold text-amber-900">{premium_cta.title}</h4>
@@ -462,16 +471,11 @@ export const DossierAnalysis = ({ token }) => {
                 <p className="text-xs text-amber-700/80 mb-3">{premium_cta.subtitle}</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mb-4">
                   {premium_cta.features.map((f, i) => (
-                    <div key={i} className="flex items-center gap-1.5">
-                      <Star className="w-3 h-3 text-amber-500 flex-shrink-0" />
-                      <span className="text-[11px] text-amber-800">{f}</span>
-                    </div>
+                    <div key={i} className="flex items-center gap-1.5"><Star className="w-3 h-3 text-amber-500 flex-shrink-0" /><span className="text-[11px] text-amber-800">{f}</span></div>
                   ))}
                 </div>
                 <div className="flex items-center gap-3 flex-wrap">
-                  <Button size="sm" className="gap-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-md shadow-amber-200/50 text-xs" data-testid="premium-cta-button">
-                    <Crown className="w-3.5 h-3.5" />{premium_cta.cta_label}
-                  </Button>
+                  <Button size="sm" className="gap-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-md shadow-amber-200/50 text-xs" data-testid="premium-cta-button"><Crown className="w-3.5 h-3.5" />{premium_cta.cta_label}</Button>
                   <span className="text-[10px] text-amber-600/70">{premium_cta.score_context}</span>
                 </div>
               </div>

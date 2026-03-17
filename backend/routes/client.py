@@ -407,6 +407,19 @@ async def get_dossier_analysis(client: dict = Depends(get_current_client)):
 
     analysis_score = min(100, strat_count * 25 + dossier_count * 40 + premium_count * 35)
 
+    # 3b. Cohérence score — alignment between docs, case type, and analyses
+    coherence_parts = []
+    if case_type and total_docs > 0:
+        matching_cats = sum(1 for d in docs if d.get("category", "") == case_type or d.get("tags", {}).get("type_document") == case_type)
+        cat_ratio = min(1.0, matching_cats / max(1, total_docs) + 0.3) if total_docs > 0 else 0
+        coherence_parts.append(cat_ratio * 40)
+        coherence_parts.append(30 if strat_count > 0 else 0)
+        coherence_parts.append((len(found_docs) / max(1, len(essential_list))) * 30)
+    elif total_docs > 0:
+        coherence_parts.append(20)
+        coherence_parts.append(15 if strat_count > 0 else 0)
+    coherence_score = min(100, round(sum(coherence_parts))) if coherence_parts else 0
+
     # 5. Overall progress (steps)
     cases = await db.client_cases.find({"client_id": cid}, {"_id": 0, "status": 1}).to_list(50)
     completed_cases = sum(1 for c in cases if c.get("status") == "termine")
@@ -495,17 +508,25 @@ async def get_dossier_analysis(client: dict = Depends(get_current_client)):
     score_breakdown = {
         "completeness": {"score": completeness_score, "label": "Complétude documentaire", "weight": 40, "found": len(found_docs), "total": len(essential_list)},
         "quality": {"score": quality_score, "label": "Qualité des documents", "weight": 20, "validated": validated, "pending": pending, "illisible": illisible},
+        "coherence": {"score": coherence_score, "label": "Cohérence du dossier", "weight": 0},
         "analysis": {"score": analysis_score, "label": "Analyses réalisées", "weight": 15, "strategiia": strat_count, "dossier_express": dossier_count, "premium": premium_count},
         "progress": {"score": progress_score, "label": "Progression globale", "weight": 15},
         "volume": {"score": min(100, total_docs * 15), "label": "Volume de pièces", "weight": 10, "count": total_docs},
     }
 
-    # 12. Recommended actions — Phase 2: prioritized, clickable CTAs
-    recommended_actions = []
+    # Top-level key metrics visible without expanding
+    key_metrics = {
+        "completeness": completeness_score,
+        "quality": quality_score,
+        "coherence": coherence_score,
+    }
+
+    # 12. Recommended actions — Phase 2: prioritized, clickable CTAs (max 3)
+    all_actions = []
     priority = 1
     if total_docs == 0:
-        recommended_actions.append({
-            "priority": priority, "action_id": "upload_first_doc",
+        all_actions.append({
+            "priority": priority, "priority_level": "haute", "action_id": "upload_first_doc",
             "title": "Déposez votre premier document",
             "description": "Commencez par les pièces les plus importantes de votre dossier.",
             "impact": "+15% sur votre score", "cta_label": "Déposer un document",
@@ -515,8 +536,8 @@ async def get_dossier_analysis(client: dict = Depends(get_current_client)):
         priority += 1
     elif len(missing_docs) > 0:
         top_missing = missing_docs[0]
-        recommended_actions.append({
-            "priority": priority, "action_id": f"upload_{top_missing['key']}",
+        all_actions.append({
+            "priority": priority, "priority_level": "haute", "action_id": f"upload_{top_missing['key']}",
             "title": f"Ajoutez : {top_missing['label']}",
             "description": f"Ce document est essentiel pour votre dossier {case_type or 'AT'}. Sans lui, votre demande risque d'être fragilisée.",
             "impact": f"+{max(5, round(40 / len(essential_list)))}% sur votre score",
@@ -526,8 +547,8 @@ async def get_dossier_analysis(client: dict = Depends(get_current_client)):
         priority += 1
 
     if illisible > 0:
-        recommended_actions.append({
-            "priority": priority, "action_id": "fix_illisible",
+        all_actions.append({
+            "priority": priority, "priority_level": "haute", "action_id": "fix_illisible",
             "title": f"Corrigez {illisible} document(s) illisible(s)",
             "description": "Des documents illisibles ne sont pas pris en compte. Renumérisez-les en meilleure qualité.",
             "impact": f"+{min(10, illisible * 5)}% sur votre score",
@@ -537,8 +558,8 @@ async def get_dossier_analysis(client: dict = Depends(get_current_client)):
         priority += 1
 
     if strat_count == 0:
-        recommended_actions.append({
-            "priority": priority, "action_id": "launch_strategiia",
+        all_actions.append({
+            "priority": priority, "priority_level": "moyenne", "action_id": "launch_strategiia",
             "title": "Lancez une analyse StratégiIA",
             "description": "L'IA analysera votre situation et identifiera les forces et faiblesses de votre dossier.",
             "impact": "+25% sur votre score", "cta_label": "Lancer l'analyse",
@@ -548,8 +569,8 @@ async def get_dossier_analysis(client: dict = Depends(get_current_client)):
         priority += 1
 
     if dossier_count == 0 and strat_count > 0:
-        recommended_actions.append({
-            "priority": priority, "action_id": "dossier_express",
+        all_actions.append({
+            "priority": priority, "priority_level": "faible", "action_id": "dossier_express",
             "title": "Complétez un Dossier Express",
             "description": "Un dossier express consolide votre analyse et facilite le suivi de votre parcours.",
             "impact": "+15% sur votre score", "cta_label": "Créer un dossier express",
@@ -561,8 +582,8 @@ async def get_dossier_analysis(client: dict = Depends(get_current_client)):
     if len(missing_docs) > 1:
         remaining = missing_docs[1:min(4, len(missing_docs))]
         for md in remaining:
-            recommended_actions.append({
-                "priority": priority, "action_id": f"upload_{md['key']}",
+            all_actions.append({
+                "priority": priority, "priority_level": "faible", "action_id": f"upload_{md['key']}",
                 "title": f"Ajoutez : {md['label']}",
                 "description": "Document important pour renforcer votre dossier.",
                 "impact": f"+{max(3, round(40 / len(essential_list)))}% estimé",
@@ -570,6 +591,9 @@ async def get_dossier_analysis(client: dict = Depends(get_current_client)):
                 "estimated_score_gain": max(3, round(40 / len(essential_list)))
             })
             priority += 1
+
+    # Limit to top 3 actions only
+    recommended_actions = all_actions[:3]
 
     # 13. Predictive refusal logic — Phase 3
     predictions = []
@@ -646,6 +670,7 @@ async def get_dossier_analysis(client: dict = Depends(get_current_client)):
 
     return {
         "score": composite,
+        "key_metrics": key_metrics,
         "dynamic_message": dynamic_message,
         "score_breakdown": score_breakdown,
         "weak_points": weak_points,
