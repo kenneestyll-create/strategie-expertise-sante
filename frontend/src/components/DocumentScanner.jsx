@@ -116,10 +116,6 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
         audio: false,
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
       setPhase('camera');
     } catch (err) {
       if (err.name === 'NotAllowedError') setError('Accès caméra refusé. Autorisez l\'accès dans les paramètres du navigateur.');
@@ -127,6 +123,15 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
       else setError(`Erreur caméra : ${err.message}`);
     }
   }, [facingMode]);
+
+  // Connect stream to video element after both are available
+  useEffect(() => {
+    if (phase === 'camera' && streamRef.current && videoRef.current) {
+      const video = videoRef.current;
+      video.srcObject = streamRef.current;
+      video.play().catch(() => {});
+    }
+  }, [phase]);
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -236,8 +241,14 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
   const switchCamera = useCallback(() => {
     stopCamera();
     setFacingMode(prev => prev === 'environment' ? 'user' : 'environment');
-    setTimeout(() => startCamera(), 100);
-  }, [stopCamera, startCamera]);
+  }, [stopCamera]);
+
+  // Restart camera when facingMode changes (from switchCamera)
+  useEffect(() => {
+    if (phase === 'camera' && !streamRef.current) {
+      startCamera();
+    }
+  }, [facingMode, phase, startCamera]);
 
   return (
     <div className="fixed inset-0 z-50 bg-black/95 flex flex-col" data-testid="document-scanner">
@@ -294,7 +305,6 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
           <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" data-testid="scanner-video" />
           {/* Guide overlay */}
           <div className="absolute inset-0 pointer-events-none" data-testid="scanner-overlay">
-            <div className="absolute inset-0 bg-black/40" />
             <div className="absolute inset-[8%] sm:inset-[12%] rounded-2xl border-2 border-white/80 bg-transparent" style={{ boxShadow: '0 0 0 9999px rgba(0,0,0,0.4)' }} />
             <div className="absolute top-[8%] left-[8%] sm:top-[12%] sm:left-[12%] w-8 h-8 border-t-4 border-l-4 border-accent rounded-tl-lg" />
             <div className="absolute top-[8%] right-[8%] sm:top-[12%] sm:right-[12%] w-8 h-8 border-t-4 border-r-4 border-accent rounded-tr-lg" />
