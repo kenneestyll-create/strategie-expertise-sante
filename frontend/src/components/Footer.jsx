@@ -4,6 +4,7 @@ import { Mail, Phone, Gift, Handshake, Linkedin, Send, CheckCircle, Loader2, Bui
 import { LogoFull } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { toast } from 'sonner';
 import axios from 'axios';
 
@@ -140,16 +141,16 @@ export const Footer = () => {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[11px] text-primary-foreground/50 font-medium">Type de partenariat *</label>
-                    <select
-                      value={form.partner_type}
-                      onChange={e => setForm(p => ({...p, partner_type: e.target.value}))}
-                      className="flex h-9 w-full rounded-md border border-primary-foreground/15 bg-[#1a1a1a] px-3 py-1 text-xs text-primary-foreground focus:outline-none focus:border-accent/50 appearance-none cursor-pointer"
-                      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center' }}
-                      data-testid="partner-type-select"
-                    >
-                      <option value="" style={{ background: '#1a1a1a', color: '#aaa' }}>Sélectionnez...</option>
-                      {PARTNER_TYPES.map(t => <option key={t} value={t} style={{ background: '#1a1a1a', color: '#eee' }}>{t}</option>)}
-                    </select>
+                    <Select value={form.partner_type} onValueChange={v => setForm(p => ({...p, partner_type: v}))} data-testid="partner-type-select">
+                      <SelectTrigger className="h-9 text-xs bg-[#1a1a1a] border-primary-foreground/15 text-primary-foreground data-[placeholder]:text-primary-foreground/30" data-testid="partner-type-trigger">
+                        <SelectValue placeholder="Sélectionnez..." />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#1a1a1a] border-primary-foreground/15 text-primary-foreground">
+                        {PARTNER_TYPES.map(t => (
+                          <SelectItem key={t} value={t} className="text-xs text-primary-foreground/80 focus:bg-accent/20 focus:text-primary-foreground cursor-pointer" data-testid={`partner-type-option-${t.substring(0,10).replace(/\s/g,'-').toLowerCase()}`}>{t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-1">
                     <label className="text-[11px] text-primary-foreground/50 font-medium">Message (optionnel)</label>
