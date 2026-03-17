@@ -68,26 +68,33 @@ Application web complète en français pour fournir des conseils sur les maladie
 - Validé par 13 tests + 4 vérifications grep
 
 ### Scanner Documents CamScanner-like (Mar 2026) ✅ — STATEFUL PURE JS
-- **Architecture Stateful Pure JS** : Worker garde l'image en mémoire, opérations enchaînées sans retransfert
+- **Architecture Stateful Pure JS** : Worker garde l'image en mémoire (originalImage + baseImage + currentImage), opérations enchaînées sans retransfert
   - Pipeline: `scan` (envoi unique) → `filter` / `rotate` / `crop` / `adjust` (stateful, 0 transfert) → `save`
-  - Init: ~110ms, Scan: ~35ms, Filter: ~8ms, Rotate: ~4ms, Crop: ~14ms
+  - Init: ~140ms, Scan: ~100ms, Filter: ~30ms, Rotate: ~11ms, Crop: ~52ms, Adjust: ~15ms
+- **Timeouts obligatoires** : Chaque promesse a un timeout (init=10s, scan=15s, autres=5s). Aucune promesse ne peut rester pendante.
+- **Logs obligatoires** : START/DONE pour chaque opération (INIT, SCAN, FILTER, ROTATE, CROP, ADJUST, SAVE) côté worker ET manager
 - **Détection automatique** : Canny edge detection → Contour finding → Perspective warp (DLT)
 - **Canvas de prévisualisation** (remplace `<img>`) pour rendu interactif
 - **Interface CamScanner complète — TOUS CONTRÔLES ACTIFS** :
   - Branding "CamScanner" dans l'en-tête
-  - **2 modes capture** : "Ouvrir la caméra" + "Choisir une photo" (input file)
+  - **2 modes capture** : "Ouvrir la caméra" + "Choisir une photo" (input file + galerie en phase caméra)
   - 3 filtres : Noir & Blanc | Contraste+ | Original — **fonctionnels**
   - Rotation gauche + droite (boutons séparés) — **fonctionnelle**
   - Sliders luminosité/contraste (debounced, panneau extensible) — **fonctionnels**
   - Recadrage manuel (poignées draggables) + rectangle crop — **fonctionnel**
   - "Mode Simple" toggle (guide + preview)
-  - Multi-pages avec fusion PDF (jsPDF)
+  - Multi-pages avec fusion PDF (jsPDF) — **fonctionnel** (galerie accessible en phase caméra)
   - Bouton "Valider / Sauvegarder" proéminent en vert
-- **Bug fix Mar 2026** : Séparation useEffect cleanup (unmount-only) + utilisation React state `workerReady` dans les props disabled au lieu de `isScanReady()` non-réactif
+- **Bugs corrigés** :
+  - useEffect cleanup séparé (unmount-only) — worker non terminé prématurément
+  - Props disabled basées sur React state `workerReady` (réactif) au lieu de `isScanReady()`
+  - addPageAndContinue simplifié (utilise processedUrl directement, zéro promesse async)
+  - startCamera set phase='camera' AVANT getUserMedia (galerie toujours accessible)
+  - Timeouts + pending.delete sur timeout dans sendMessage
+  - terminateScanWorker rejette toutes les promesses pendantes
 - **Accessibilité** : boutons min-h 44-56px, aria-labels, labels explicites
-- **Logs détaillés** : chaque étape logguée avec timing
 - Mobile uniquement (bouton scanner visible en mobile)
-- Fichiers : `scanner.worker.js` + `opencvLoader.js` + `DocumentScanner.jsx`
+- Fichiers : `scanner.worker.js` (v5) + `opencvLoader.js` + `DocumentScanner.jsx`
 
 ### Section Partenaires Footer (Mar 2026) ✅
 - Formulaire dédié inline (Nom, Société, Email, Type de partenariat, Message)
