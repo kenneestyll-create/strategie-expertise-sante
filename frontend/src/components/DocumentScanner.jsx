@@ -470,7 +470,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
             {workerReady && (
               <button
                 onClick={() => setSimpleMode(prev => !prev)}
-                className="w-full text-center text-white/40 text-xs py-2 hover:text-white/60 transition-colors"
+                className="w-full text-center text-white/40 text-xs py-3 min-h-[44px] hover:text-white/60 transition-colors"
                 data-testid="toggle-simple-mode"
               >
                 {simpleMode ? 'Réactiver le mode automatique' : 'Utiliser le mode simple (sans détection)'}

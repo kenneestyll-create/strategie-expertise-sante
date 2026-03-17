@@ -69,12 +69,20 @@ Application web complète en français pour fournir des conseils sur les maladie
 
 ### Scanner Documents CamScanner-like (Mar 2026) ✅ — REFACTORÉ
 - **Architecture Pure JS** : OpenCV.js WASM remplacé par algorithmes JavaScript natifs dans Web Worker
-- Aucun WASM, aucune dépendance externe, init instantané (87ms vs hang infini)
+- Aucun WASM, aucune dépendance externe, init instantané (67ms avg, <100ms)
 - Pipeline automatique : Capture → Canny edge detection → Contour finding → Perspective warp (DLT) → Enhancement
-- 3 filtres : Document (normalisation fond + unsharp mask), N&B (seuillage adaptatif), Original
-- Fallback manuel : poignées draggables si détection auto échoue
-- Multi-pages avec fusion PDF (jsPDF)
-- Fallback mode simple si le Worker échoue
+- **Mode CamScanner complet** :
+  - Branding "CamScanner" dans l'en-tête
+  - Détection automatique des contours + correction perspective
+  - 3 filtres : Document (normalisation fond + unsharp mask), N&B (seuillage adaptatif), Original
+  - Rotation 90° (bouton dédié)
+  - Sliders luminosité/contraste (optionnels, debounced)
+  - Recadrage manuel avec poignées draggables si détection auto échoue
+  - "Mode Simple" explicite (toggle dans guide + bouton dans preview)
+  - Multi-pages avec fusion PDF (jsPDF)
+- **Accessibilité** : boutons min-h 44-56px, aria-labels, labels explicites
+- **Logs détaillés** : chaque étape (init, detection, warp, rotate, adjust) logguée avec timing
+- Mobile uniquement (bouton scanner visible uniquement en mobile)
 - Fichiers : `/app/frontend/public/scanner.worker.js` (Pure JS) + `/app/frontend/src/utils/opencvLoader.js` (manager)
 
 ### Section Partenaires Footer (Mar 2026) ✅
