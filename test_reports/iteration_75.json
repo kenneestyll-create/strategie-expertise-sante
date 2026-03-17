@@ -1,0 +1,91 @@
+{
+  "summary": "Iteration 75 - CamScanner testing. Fixed critical bug: 'Cannot access stopCamera before initialization' (moved stopCamera useCallback before handleFileInput). Tests 3-6 PASS. Tests 1-2 (Multi-page flow and PDF merge) FAIL due to pages state not being saved correctly when using file input in camera phase.",
+  "bug_fixed": {
+    "bug": "Cannot access 'stopCamera' before initialization - ReferenceError",
+    "root_cause": "stopCamera useCallback was defined AFTER handleFileInput which referenced it in its dependency array, causing a temporal dead zone error",
+    "fix": "Moved stopCamera definition to line 174 (before handleFileInput at line 179) in DocumentScanner.jsx",
+    "file_changed": "/app/frontend/src/components/DocumentScanner.jsx",
+    "verification": "Scanner now opens without errors, all single-image operations work correctly"
+  },
+  "tests_executed": {
+    "TEST_1_MULTIPAGE_FULL_FLOW": {
+      "status": "FAIL",
+      "details": "First image uploads and processes correctly. Clicking 'Page suivante' triggers the save but pages.length stays 0. Second image processes but appears as single image (no page strip, no page counter, 'Valider' button instead of 'Terminer').",
+      "console_evidence": "[Scanner] Fallback mode simple appears after clicking Page suivante - indicates isScanReady() returns false during save",
+      "suspected_cause": "State synchronization issue between workerReady React state and isScanReady() module function"
+    },
+    "TEST_2_PDF_MERGE": {
+      "status": "FAIL",
+      "details": "Blocked by TEST_1 failure - cannot reach pages view with 2+ pages to test PDF merge",
+      "note": "PDF generation code exists and uses jsPDF library"
+    },
+    "TEST_3_CHAIN_OPERATIONS": {
+      "status": "PASS",
+      "details": "Upload -> B&W filter (17ms) -> Rotate right (15ms) -> Rotate left (15ms) -> Original filter (17ms) -> Brightness +48 (3ms) -> Crop (22ms) - ALL operations succeed with timing in step log",
+      "worker_operations_verified": true
+    },
+    "TEST_4_ALL_BUTTONS_ENABLED": {
+      "status": "PASS",
+      "details": "All 10 buttons verified ENABLED after image upload: filter-bw, filter-document, filter-original, rotate-left-btn, rotate-right-btn, manual-crop-btn, adjust-toggle-btn, preview-confirm-btn, preview-retake-btn, preview-add-page-btn"
+    },
+    "TEST_5_STEP_LOG_TIMING": {
+      "status": "PASS",
+      "details": "All operations show timing in format (Xms): Document détecté (44ms), Filtre Noir & Blanc appliqué (17ms), Rotation droite appliquée (15ms), Luminosité +32 (3ms), Recadrage appliqué (22ms)"
+    },
+    "TEST_6_SIMPLE_MODE": {
+      "status": "PASS",
+      "details": "Toggle simple mode works, simple-mode-badge appears, all 5 advanced buttons disabled with opacity-40 class (filter-bw, filter-document, filter-original, manual-crop-btn, adjust-toggle-btn)"
+    }
+  },
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "critical": [
+      {
+        "component": "DocumentScanner - Multi-page flow",
+        "issue": "Pages not saved when clicking 'Page suivante'. The pages array stays empty after save operation.",
+        "root_cause_analysis": "When addPageAndContinue() is called, saveAndGetUrl() checks isScanReady() which returns false (module-level 'ready' variable out of sync with React state). This causes it to return processedUrl directly, but the pages state update doesn't persist.",
+        "console_log_evidence": "[Scanner] Fallback mode simple appears right after clicking Page suivante",
+        "suggested_fix": "Either sync isScanReady() with workerReady React state, or ensure saveAndGetUrl always returns a valid URL by removing the isScanReady() check (processedUrl is always valid at save time)"
+      }
+    ],
+    "minor": [
+      {
+        "component": "OCR Worker",
+        "issue": "DataCloneError: Failed to execute 'postMessage' on 'Worker' - unrelated to scanner",
+        "note": "This is from a separate OCR worker, not the scanner worker"
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/test_reports/iteration_75.json"],
+  "action_items": [
+    "FIX CRITICAL: Multi-page flow - investigate why pages state doesn't persist after addPageAndContinue()",
+    "Consider using workerReady React state in saveAndGetUrl() instead of isScanReady() module function",
+    "Or simplify saveAndGetUrl() to always return processedUrl when worker is unavailable"
+  ],
+  "critical_code_review_comments": [
+    "BUG FIXED: stopCamera was defined after handleFileInput causing ReferenceError",
+    "ISSUE: isScanReady() module function may be out of sync with workerReady React state during page saves",
+    "Individual scanner operations (filter, rotate, crop, adjust) all work correctly with timing",
+    "Simple mode toggle works correctly with proper button disabling"
+  ],
+  "updated_files": ["/app/frontend/src/components/DocumentScanner.jsx"],
+  "success_rate": {
+    "backend": "N/A (frontend only)",
+    "frontend": "67% - 4/6 tests passed (Tests 3,4,5,6 PASS; Tests 1,2 FAIL)"
+  },
+  "test_credentials": {
+    "client": "demo@test.com / Password123!"
+  },
+  "seed_data_creation": "Created /tmp/test_image_1.jpg (300x200 red) and /tmp/test_image_2.jpg (400x300 blue) for testing",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 75 fixed the stopCamera initialization bug. Individual scanner features (rotation, filters, crop, brightness) all work. Multi-page flow has a state sync issue - when clicking 'Page suivante', the page isn't saved to the pages array. The console shows '[Scanner] Fallback mode simple' which indicates isScanReady() returns false at save time even though the worker successfully processed images. The workerReady React state and isScanReady() module function may be out of sync.",
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  }
+}

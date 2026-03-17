@@ -170,11 +170,17 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
     img.src = processedUrl;
   }, [processedUrl, showManualMode]);
 
+  /* ── Stop camera helper (defined early for use in handleFileInput) ── */
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
+  }, []);
+
   /* ── Handle file input (choose photo from gallery) ── */
   const handleFileInput = useCallback(async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = '';
+    stopCamera(); // Stop camera if active (multi-page gallery pick)
 
     const img = new Image();
     img.onload = async () => {
@@ -222,7 +228,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
       setProcessing(false);
     };
     img.src = URL.createObjectURL(file);
-  }, [filter, simpleMode]);
+  }, [filter, simpleMode, stopCamera]);
 
   /* ── Camera ── */
   const startCamera = useCallback(async () => {
@@ -244,10 +250,6 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
       videoRef.current.play().catch(() => {});
     }
   }, [phase]);
-
-  const stopCamera = useCallback(() => {
-    if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
-  }, []);
 
   useEffect(() => () => { stopCamera(); if (pdfUrl) URL.revokeObjectURL(pdfUrl); }, [stopCamera, pdfUrl]);
 
@@ -516,7 +518,6 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
             <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="w-full gap-2 h-12 text-sm border-white/20 text-white hover:bg-white/10" data-testid="scanner-file-btn" aria-label="Choisir une photo depuis la galerie">
               <ImageUp className="w-5 h-5" /> Choisir une photo
             </Button>
-            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileInput} className="hidden" data-testid="scanner-file-input" />
             {workerReady && (
               <button onClick={() => setSimpleMode(p => !p)} className="w-full text-center text-white/40 text-xs py-3 min-h-[44px] hover:text-white/60 transition-colors" data-testid="toggle-simple-mode">
                 {simpleMode ? 'Réactiver le mode automatique' : 'Utiliser le mode simple (sans détection)'}
@@ -544,9 +545,14 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
             </div>
           </div>
           <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-6 pb-8 pt-4 bg-gradient-to-t from-black/80 to-transparent">
-            <Button variant="ghost" size="sm" onClick={switchCamera} className="text-white hover:bg-white/10 rounded-full w-14 h-14 min-h-[56px]" data-testid="scanner-switch-camera" aria-label="Changer de caméra">
-              <RotateCcw className="w-5 h-5" />
-            </Button>
+            <div className="flex flex-col items-center gap-1.5">
+              <Button variant="ghost" size="sm" onClick={switchCamera} className="text-white hover:bg-white/10 rounded-full w-14 h-14 min-h-[56px]" data-testid="scanner-switch-camera" aria-label="Changer de caméra">
+                <RotateCcw className="w-5 h-5" />
+              </Button>
+              <button onClick={() => fileInputRef.current?.click()} className="text-white/60 text-[10px] hover:text-white/80 min-h-[32px] px-2" data-testid="camera-gallery-btn" aria-label="Choisir depuis la galerie">
+                <ImageUp className="w-4 h-4 mx-auto" />
+              </button>
+            </div>
             <button onClick={capture} className="rounded-full border-4 border-white bg-white/20 hover:bg-white/40 transition-colors flex items-center justify-center active:scale-95" data-testid="scanner-capture-btn" aria-label="Prendre la photo" style={{ width: 72, height: 72 }}>
               <div className="rounded-full bg-white" style={{ width: 56, height: 56 }} />
             </button>
@@ -715,6 +721,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
       )}
 
       <canvas ref={canvasRef} className="hidden" />
+      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileInput} className="hidden" data-testid="scanner-file-input" />
     </div>
   );
 };
