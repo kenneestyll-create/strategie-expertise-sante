@@ -5,16 +5,18 @@ import {
   Camera, X, RotateCcw, Check, Smartphone, Sun,
   Eye, Maximize2, ZapOff, Loader2, Plus,
   FileText, ChevronLeft, ChevronRight, Layers,
-  Wand2, Crop, Contrast, ScanLine, AlertCircle,
-  RotateCw, SunMedium, CircleDot, Settings2
+  Crop, Contrast, ScanLine, AlertCircle,
+  RotateCw, SunMedium
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import {
   initScanWorker, isScanReady, isScanFailed,
-  processInWorker, reprocessInWorker, adjustInWorker, rotateInWorker, terminateScanWorker
+  scanDocument, applyFilter as workerFilter, rotateImage as workerRotate,
+  cropImage as workerCrop, adjustImage as workerAdjust, saveImage as workerSave,
+  terminateScanWorker
 } from '@/utils/opencvLoader';
 
-/* ── Lightweight canvas fallback (no OpenCV) ── */
+/* ── Lightweight canvas fallback (no worker) ── */
 function lightEnhance(canvas) {
   const ctx = canvas.getContext('2d');
   const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -28,32 +30,13 @@ function lightEnhance(canvas) {
   return canvas.toDataURL('image/jpeg', 0.92);
 }
 
-/* ── ImageData → dataURL helper ── */
 function imageDataToUrl(imgData) {
   const c = document.createElement('canvas');
-  c.width = imgData.width;
-  c.height = imgData.height;
+  c.width = imgData.width; c.height = imgData.height;
   c.getContext('2d').putImageData(imgData, 0, 0);
   return c.toDataURL('image/jpeg', 0.92);
 }
 
-/* ── dataURL → ImageData helper ── */
-function urlToImageData(url) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      const c = document.createElement('canvas');
-      c.width = img.width;
-      c.height = img.height;
-      const ctx = c.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      resolve(ctx.getImageData(0, 0, c.width, c.height));
-    };
-    img.src = url;
-  });
-}
-
-/* ── PDF builder ── */
 async function buildPdf(pages) {
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   for (let i = 0; i < pages.length; i++) {
@@ -86,7 +69,7 @@ const PageStrip = ({ pages, activeIndex, onSelect, onRemove }) => (
   </div>
 );
 
-/* ── Corner adjuster overlay ── */
+/* ── Corner adjuster ── */
 const CornerAdjuster = ({ corners, setCorners, imageRef }) => {
   const handleDrag = useCallback((index, e) => {
     e.preventDefault();
@@ -94,11 +77,9 @@ const CornerAdjuster = ({ corners, setCorners, imageRef }) => {
     if (!img) return;
     const rect = img.getBoundingClientRect();
     const onMove = (ev) => {
-      const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
-      const clientY = ev.touches ? ev.touches[0].clientY : ev.clientY;
-      const x = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
-      const y = Math.min(1, Math.max(0, (clientY - rect.top) / rect.height));
-      setCorners(prev => prev.map((c, i) => i === index ? { x, y } : c));
+      const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
+      const cy = ev.touches ? ev.touches[0].clientY : ev.clientY;
+      setCorners(prev => prev.map((c, i) => i === index ? { x: Math.min(1, Math.max(0, (cx - rect.left) / rect.width)), y: Math.min(1, Math.max(0, (cy - rect.top) / rect.height)) } : c));
     };
     const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onUp); };
     document.addEventListener('mousemove', onMove);
@@ -112,19 +93,11 @@ const CornerAdjuster = ({ corners, setCorners, imageRef }) => {
   return (
     <div className="absolute inset-0">
       <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1 1" preserveAspectRatio="none">
-        <polygon points={corners.map(c => `${c.x},${c.y}`).join(' ')} fill="rgba(16, 185, 129, 0.15)" stroke="rgba(16, 185, 129, 0.8)" strokeWidth="0.004" />
+        <polygon points={corners.map(c => `${c.x},${c.y}`).join(' ')} fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.8)" strokeWidth="0.004" />
       </svg>
       {corners.map((c, i) => (
-        <div
-          key={i}
-          data-testid={`corner-handle-${i}`}
-          className="absolute w-8 h-8 -translate-x-1/2 -translate-y-1/2 cursor-move touch-none"
-          style={{ left: `${c.x * 100}%`, top: `${c.y * 100}%` }}
-          onMouseDown={(e) => handleDrag(i, e)}
-          onTouchStart={(e) => handleDrag(i, e)}
-          aria-label={`Coin ${labels[i]} — glissez pour ajuster`}
-          role="slider"
-        >
+        <div key={i} data-testid={`corner-handle-${i}`} className="absolute w-9 h-9 -translate-x-1/2 -translate-y-1/2 cursor-move touch-none" style={{ left: `${c.x * 100}%`, top: `${c.y * 100}%` }}
+          onMouseDown={(e) => handleDrag(i, e)} onTouchStart={(e) => handleDrag(i, e)} aria-label={`Coin ${labels[i]}`} role="slider">
           <div className="w-full h-full rounded-full bg-emerald-500 border-2 border-white shadow-lg flex items-center justify-center">
             <span className="text-white text-[8px] font-bold">{labels[i]}</span>
           </div>
@@ -140,8 +113,6 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const adjustImgRef = useRef(null);
-  const rawImageDataRef = useRef(null);
-  const processedImageDataRef = useRef(null);
 
   const [phase, setPhase] = useState('guide');
   const [pages, setPages] = useState([]);
@@ -165,36 +136,30 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
   const [stepLog, setStepLog] = useState('');
   const [simpleMode, setSimpleMode] = useState(false);
 
-  /* ── Init worker in background (non-blocking) ── */
+  /* ── Init worker ── */
   useEffect(() => {
     if (workerReady || workerFailed) return;
     setWorkerLoading(true);
     const t0 = performance.now();
     initScanWorker().then((ok) => {
-      const elapsed = Math.round(performance.now() - t0);
       setWorkerReady(ok);
       setWorkerFailed(!ok);
       setWorkerLoading(false);
-      console.log(ok ? `[Scanner] Worker prêt (${elapsed}ms)` : '[Scanner] Worker fallback — mode simple');
+      console.log(ok ? `[Scanner] Worker prêt (${Math.round(performance.now() - t0)}ms)` : '[Scanner] Fallback mode simple');
     });
     return () => terminateScanWorker();
   }, [workerReady, workerFailed]);
 
   /* ── Camera ── */
   const startCamera = useCallback(async () => {
-    setError('');
-    setStepLog('');
-    setBrightness(0);
-    setContrast(0);
-    setShowAdjust(false);
-    setShowManualMode(false);
+    setError(''); setStepLog(''); setBrightness(0); setContrast(0); setShowAdjust(false); setShowManualMode(false);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
       streamRef.current = stream;
       setPhase('camera');
     } catch (err) {
-      if (err.name === 'NotAllowedError') setError("Autorisez l'accès à la caméra dans les paramètres de votre navigateur.");
-      else if (err.name === 'NotFoundError') setError('Aucune caméra détectée sur cet appareil.');
+      if (err.name === 'NotAllowedError') setError("Autorisez l'accès à la caméra dans les paramètres.");
+      else if (err.name === 'NotFoundError') setError('Aucune caméra détectée.');
       else setError(`Erreur caméra : ${err.message}`);
     }
   }, [facingMode]);
@@ -212,16 +177,11 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
 
   useEffect(() => () => { stopCamera(); if (pdfUrl) URL.revokeObjectURL(pdfUrl); }, [stopCamera, pdfUrl]);
 
-  const switchCamera = useCallback(() => {
-    stopCamera();
-    setFacingMode(prev => prev === 'environment' ? 'user' : 'environment');
-  }, [stopCamera]);
+  const switchCamera = useCallback(() => { stopCamera(); setFacingMode(p => p === 'environment' ? 'user' : 'environment'); }, [stopCamera]);
 
-  useEffect(() => {
-    if (phase === 'camera' && !streamRef.current) startCamera();
-  }, [facingMode, phase, startCamera]);
+  useEffect(() => { if (phase === 'camera' && !streamRef.current) startCamera(); }, [facingMode, phase, startCamera]);
 
-  /* ── Capture → process in worker or fallback ── */
+  /* ── Capture → scan in worker ── */
   const capture = useCallback(async () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -231,31 +191,27 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0);
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    rawImageDataRef.current = imageData;
-    setRawDataUrl(dataUrl);
+    setRawDataUrl(canvas.toDataURL('image/jpeg', 0.95));
     stopCamera();
 
     if (simpleMode || !isScanReady()) {
       console.log('[Scanner] Mode simple — capture directe');
       setStepLog('Capture directe (mode simple)');
       setProcessedUrl(lightEnhance(canvas));
-      setAutoDetected(false);
-      setManualCorners(null);
-      processedImageDataRef.current = null;
+      setAutoDetected(false); setManualCorners(null);
       setPhase('preview');
       return;
     }
 
+    // Send to worker — stateful scan
     setPhase('processing');
     setProcessing(true);
     setStepLog('Détection des contours...');
     try {
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const t0 = performance.now();
-      const result = await processInWorker(imageData, filter);
+      const result = await scanDocument(imageData, filter);
       const elapsed = Math.round(performance.now() - t0);
-      processedImageDataRef.current = result.imageData;
       setProcessedUrl(imageDataToUrl(result.imageData));
       setAutoDetected(result.autoDetected);
       if (result.corners) {
@@ -263,134 +219,150 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
       } else {
         setManualCorners([{ x: 0.05, y: 0.05 }, { x: 0.95, y: 0.05 }, { x: 0.95, y: 0.95 }, { x: 0.05, y: 0.95 }]);
       }
-      setShowManualMode(false);
-      setStepLog(result.autoDetected
-        ? `Document détecté et recadré (${elapsed}ms)`
-        : `Traité en mode direct (${elapsed}ms)`);
+      setStepLog(result.autoDetected ? `Document détecté et recadré (${elapsed}ms)` : `Traité en mode direct (${elapsed}ms)`);
       setPhase('preview');
     } catch (e) {
-      console.warn('[Scanner] Worker erreur:', e.message, '— fallback');
+      console.warn('[Scanner] Scan failed:', e.message);
       setProcessedUrl(lightEnhance(canvas));
       setAutoDetected(false);
-      processedImageDataRef.current = null;
       setStepLog('Fallback: amélioration légère');
       setPhase('preview');
     }
     setProcessing(false);
   }, [stopCamera, filter, simpleMode]);
 
-  /* ── Re-filter via worker ── */
-  const applyFilter = useCallback(async (newFilter) => {
+  /* ── Filter (stateful — no data transfer) ── */
+  const handleFilter = useCallback(async (newFilter) => {
     setFilter(newFilter);
-    if (!isScanReady() || !rawImageDataRef.current || simpleMode) return;
+    if (!isScanReady() || simpleMode) return;
     setProcessing(true);
     setStepLog('Application du filtre...');
     try {
-      const result = await processInWorker(rawImageDataRef.current, newFilter);
-      processedImageDataRef.current = result.imageData;
+      const result = await workerFilter(newFilter);
       setProcessedUrl(imageDataToUrl(result.imageData));
       setStepLog('Filtre appliqué');
     } catch { /* keep current */ }
     setProcessing(false);
   }, [simpleMode]);
 
-  /* ── Manual corners via worker ── */
+  /* ── Rotate (stateful — no data transfer) ── */
+  const handleRotate = useCallback(async (direction = 'right') => {
+    if (!isScanReady()) return;
+    setProcessing(true);
+    setStepLog('Rotation...');
+    try {
+      const result = await workerRotate(direction);
+      setProcessedUrl(imageDataToUrl(result.imageData));
+      setStepLog('Rotation appliquée');
+    } catch { /* keep current */ }
+    setProcessing(false);
+  }, []);
+
+  /* ── Manual corners → crop (stateful) ── */
   const applyManualCorners = useCallback(async () => {
-    if (!isScanReady() || !rawImageDataRef.current || !manualCorners) return;
+    if (!isScanReady() || !manualCorners) return;
     setProcessing(true);
     setStepLog('Recadrage manuel...');
     try {
-      const imgD = rawImageDataRef.current;
-      const pixCorners = manualCorners.map(c => ({ x: Math.round(c.x * imgD.width), y: Math.round(c.y * imgD.height) }));
-      const result = await reprocessInWorker(imgD, pixCorners, filter);
-      processedImageDataRef.current = result.imageData;
+      // Send normalized corners as rectangle crop
+      const xs = manualCorners.map(c => c.x);
+      const ys = manualCorners.map(c => c.y);
+      const result = await workerCrop({ x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) });
       setProcessedUrl(imageDataToUrl(result.imageData));
       setShowManualMode(false);
       setAutoDetected(true);
       setStepLog('Recadrage appliqué');
     } catch { /* keep current */ }
     setProcessing(false);
-  }, [manualCorners, filter]);
+  }, [manualCorners]);
 
-  /* ── Brightness/Contrast adjust ── */
-  const applyAdjustments = useCallback(async (b, c) => {
-    const baseData = processedImageDataRef.current;
-    if (!isScanReady() || !baseData) return;
-    if (b === 0 && c === 0) {
-      setProcessedUrl(imageDataToUrl(baseData));
-      return;
-    }
+  /* ── Brightness/Contrast (stateful — no data transfer) ── */
+  const adjustTimeoutRef = useRef(null);
+  const handleAdjust = useCallback(async (b, c) => {
+    if (!isScanReady()) return;
     try {
-      const result = await adjustInWorker(baseData, b, c);
+      const result = await workerAdjust(b, c);
       setProcessedUrl(imageDataToUrl(result.imageData));
     } catch { /* keep current */ }
   }, []);
 
-  // Debounce slider changes
-  const adjustTimeoutRef = useRef(null);
   const onSliderChange = useCallback((newB, newC) => {
-    setBrightness(newB);
-    setContrast(newC);
+    setBrightness(newB); setContrast(newC);
     if (adjustTimeoutRef.current) clearTimeout(adjustTimeoutRef.current);
-    adjustTimeoutRef.current = setTimeout(() => applyAdjustments(newB, newC), 200);
-  }, [applyAdjustments]);
+    adjustTimeoutRef.current = setTimeout(() => handleAdjust(newB, newC), 200);
+  }, [handleAdjust]);
 
-  /* ── Rotation ── */
-  const handleRotate = useCallback(async () => {
-    if (!processedImageDataRef.current) {
-      // Fallback: rotate the processedUrl via canvas
-      if (!processedUrl) return;
-      setProcessing(true);
-      const imgData = await urlToImageData(processedUrl);
-      if (isScanReady()) {
-        try {
-          const result = await rotateInWorker(imgData, 90);
-          processedImageDataRef.current = result.imageData;
-          setProcessedUrl(imageDataToUrl(result.imageData));
-        } catch { /* keep current */ }
-      }
-      setProcessing(false);
-      return;
-    }
-    setProcessing(true);
-    setStepLog('Rotation...');
-    try {
-      const result = await rotateInWorker(processedImageDataRef.current, 90);
-      processedImageDataRef.current = result.imageData;
-      setProcessedUrl(imageDataToUrl(result.imageData));
-      setStepLog('Rotation appliquée');
-    } catch { /* keep current */ }
-    setProcessing(false);
-  }, [processedUrl]);
-
-  /* ── Switch to simple mode mid-flow ── */
+  /* ── Simple mode switch ── */
   const switchToSimple = useCallback(() => {
     setSimpleMode(true);
     if (rawDataUrl && canvasRef.current) {
-      // Re-process with simple enhance
-      const canvas = canvasRef.current;
       const img = new Image();
       img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
+        const canvas = canvasRef.current;
+        canvas.width = img.width; canvas.height = img.height;
         canvas.getContext('2d').drawImage(img, 0, 0);
         setProcessedUrl(lightEnhance(canvas));
-        processedImageDataRef.current = null;
-        setAutoDetected(false);
-        setShowManualMode(false);
+        setAutoDetected(false); setShowManualMode(false);
         setStepLog('Mode simple activé');
       };
       img.src = rawDataUrl;
     }
   }, [rawDataUrl]);
 
-  /* ── Page mgmt ── */
-  const addPageAndContinue = useCallback(() => { if (!processedUrl) return; setPages(p => [...p, processedUrl]); setActivePageIndex(pages.length); setProcessedUrl(null); setRawDataUrl(null); rawImageDataRef.current = null; processedImageDataRef.current = null; startCamera(); }, [processedUrl, pages.length, startCamera]);
-  const addPageAndFinish = useCallback(() => { if (!processedUrl) return; setPages(p => [...p, processedUrl]); setActivePageIndex(0); setProcessedUrl(null); setPhase('pages'); }, [processedUrl]);
-  const confirmSingle = useCallback(async () => { if (!processedUrl) return; setPhase('finalizing'); const r = await fetch(processedUrl); const b = await r.blob(); onCapture(new File([b], `scan_${Date.now()}.jpg`, { type: 'image/jpeg' })); }, [processedUrl, onCapture]);
-  const removePage = useCallback((i) => { const np = pages.filter((_, j) => j !== i); setPages(np); if (!np.length) startCamera(); else setActivePageIndex(Math.min(i, np.length - 1)); }, [pages, startCamera]);
-  const confirmMulti = useCallback(async () => { setPhase('finalizing'); try { const pdf = await buildPdf(pages); const b = pdf.output('blob'); const imgs = await Promise.all(pages.map(async (u, i) => { const r = await fetch(u); const bl = await r.blob(); return new File([bl], `page${i + 1}.jpg`, { type: 'image/jpeg' }); })); stopCamera(); onCapture(new File([b], `scan_${pages.length}p_${Date.now()}.pdf`, { type: 'application/pdf' }), imgs); } catch { setError('Erreur PDF'); setPhase('pages'); } }, [pages, onCapture, stopCamera]);
-  const retake = useCallback(() => { setProcessedUrl(null); setRawDataUrl(null); rawImageDataRef.current = null; processedImageDataRef.current = null; setShowManualMode(false); setShowAdjust(false); setBrightness(0); setContrast(0); startCamera(); }, [startCamera]);
+  /* ── Save + page management ── */
+  const saveAndGetUrl = useCallback(async () => {
+    if (!isScanReady() || simpleMode) return processedUrl;
+    try {
+      const result = await workerSave();
+      return imageDataToUrl(result.imageData);
+    } catch {
+      return processedUrl;
+    }
+  }, [processedUrl, simpleMode]);
+
+  const addPageAndContinue = useCallback(async () => {
+    if (!processedUrl) return;
+    const url = await saveAndGetUrl();
+    setPages(p => [...p, url]); setActivePageIndex(pages.length);
+    setProcessedUrl(null); setRawDataUrl(null); startCamera();
+  }, [processedUrl, pages.length, startCamera, saveAndGetUrl]);
+
+  const addPageAndFinish = useCallback(async () => {
+    if (!processedUrl) return;
+    const url = await saveAndGetUrl();
+    setPages(p => [...p, url]); setActivePageIndex(0);
+    setProcessedUrl(null); setPhase('pages');
+  }, [processedUrl, saveAndGetUrl]);
+
+  const confirmSingle = useCallback(async () => {
+    if (!processedUrl) return;
+    setPhase('finalizing');
+    const url = await saveAndGetUrl();
+    const r = await fetch(url);
+    const b = await r.blob();
+    onCapture(new File([b], `scan_${Date.now()}.jpg`, { type: 'image/jpeg' }));
+  }, [processedUrl, onCapture, saveAndGetUrl]);
+
+  const removePage = useCallback((i) => {
+    const np = pages.filter((_, j) => j !== i);
+    setPages(np);
+    if (!np.length) startCamera(); else setActivePageIndex(Math.min(i, np.length - 1));
+  }, [pages, startCamera]);
+
+  const confirmMulti = useCallback(async () => {
+    setPhase('finalizing');
+    try {
+      const pdf = await buildPdf(pages);
+      const b = pdf.output('blob');
+      const imgs = await Promise.all(pages.map(async (u, i) => { const r = await fetch(u); const bl = await r.blob(); return new File([bl], `page${i + 1}.jpg`, { type: 'image/jpeg' }); }));
+      stopCamera();
+      onCapture(new File([b], `scan_${pages.length}p_${Date.now()}.pdf`, { type: 'application/pdf' }), imgs);
+    } catch { setError('Erreur PDF'); setPhase('pages'); }
+  }, [pages, onCapture, stopCamera]);
+
+  const retake = useCallback(() => {
+    setProcessedUrl(null); setRawDataUrl(null); setShowManualMode(false); setShowAdjust(false); setBrightness(0); setContrast(0); startCamera();
+  }, [startCamera]);
 
   return (
     <div className="fixed inset-0 z-50 bg-black flex flex-col" data-testid="document-scanner">
@@ -411,7 +383,6 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
         <PageStrip pages={pages} activeIndex={-1} onSelect={() => setPhase('pages')} onRemove={() => {}} />
       )}
 
-      {/* Step log */}
       {stepLog && phase !== 'guide' && phase !== 'camera' && (
         <div className="px-4 py-1.5 bg-black/60 text-center" data-testid="step-log">
           <span className="text-white/50 text-[11px]">{stepLog}</span>
@@ -426,9 +397,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
           </div>
           <div className="text-center">
             <h2 className="text-white text-lg font-semibold mb-1" data-testid="scanner-title">CamScanner</h2>
-            <p className="text-white/50 text-sm">
-              {workerReady ? 'Détection et recadrage automatiques' : workerFailed ? 'Mode capture simple' : 'Préparation...'}
-            </p>
+            <p className="text-white/50 text-sm">{workerReady ? 'Détection et recadrage automatiques' : workerFailed ? 'Mode capture simple' : 'Préparation...'}</p>
           </div>
           <div className="w-full max-w-xs space-y-2.5">
             {[
@@ -443,7 +412,6 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
               </div>
             ))}
           </div>
-
           {workerLoading && (
             <div className="w-full max-w-xs flex items-center gap-2 p-3 rounded-xl bg-accent/10 border border-accent/20">
               <Loader2 className="w-4 h-4 text-accent animate-spin flex-shrink-0" />
@@ -462,17 +430,12 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
               <span className="text-amber-400/80 text-xs font-medium">Mode simple — capture directe</span>
             </div>
           )}
-
           <div className="w-full max-w-xs pt-2 space-y-2">
             <Button onClick={startCamera} className="w-full gap-2 h-14 text-base font-semibold" data-testid="scanner-start-btn">
               <Camera className="w-5 h-5" /> Ouvrir la caméra
             </Button>
             {workerReady && (
-              <button
-                onClick={() => setSimpleMode(prev => !prev)}
-                className="w-full text-center text-white/40 text-xs py-3 min-h-[44px] hover:text-white/60 transition-colors"
-                data-testid="toggle-simple-mode"
-              >
+              <button onClick={() => setSimpleMode(p => !p)} className="w-full text-center text-white/40 text-xs py-3 min-h-[44px] hover:text-white/60 transition-colors" data-testid="toggle-simple-mode">
                 {simpleMode ? 'Réactiver le mode automatique' : 'Utiliser le mode simple (sans détection)'}
               </button>
             )}
@@ -501,7 +464,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
             <Button variant="ghost" size="sm" onClick={switchCamera} className="text-white hover:bg-white/10 rounded-full w-14 h-14 min-h-[56px]" data-testid="scanner-switch-camera" aria-label="Changer de caméra">
               <RotateCcw className="w-5 h-5" />
             </Button>
-            <button onClick={capture} className="w-18 h-18 rounded-full border-4 border-white bg-white/20 hover:bg-white/40 transition-colors flex items-center justify-center active:scale-95" data-testid="scanner-capture-btn" aria-label="Prendre la photo" style={{ width: 72, height: 72 }}>
+            <button onClick={capture} className="rounded-full border-4 border-white bg-white/20 hover:bg-white/40 transition-colors flex items-center justify-center active:scale-95" data-testid="scanner-capture-btn" aria-label="Prendre la photo" style={{ width: 72, height: 72 }}>
               <div className="rounded-full bg-white" style={{ width: 56, height: 56 }} />
             </button>
             {pages.length > 0 ? (
@@ -516,23 +479,15 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
       {/* ═══ PROCESSING ═══ */}
       {phase === 'processing' && (
         <div className="flex-1 flex flex-col items-center justify-center gap-4 px-6">
-          <div className="relative">
-            <Loader2 className="w-16 h-16 text-emerald-400 animate-spin" />
-            <ScanLine className="w-7 h-7 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-          </div>
+          <div className="relative"><Loader2 className="w-16 h-16 text-emerald-400 animate-spin" /><ScanLine className="w-7 h-7 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" /></div>
           <p className="text-white text-base font-medium">Analyse du document...</p>
-          <div className="flex flex-col items-center gap-1 text-white/40 text-xs">
-            <span>Détection des contours</span>
-            <span>Correction de perspective</span>
-            <span>Optimisation de la lisibilité</span>
-          </div>
+          <div className="flex flex-col items-center gap-1 text-white/40 text-xs"><span>Détection des contours</span><span>Correction de perspective</span><span>Optimisation lisibilité</span></div>
         </div>
       )}
 
       {/* ═══ PREVIEW ═══ */}
       {phase === 'preview' && processedUrl && (
         <div className="flex-1 flex flex-col min-h-0">
-          {/* Image preview area */}
           <div className="flex-1 relative overflow-hidden bg-neutral-900 flex items-center justify-center p-3 min-h-0">
             {showManualMode ? (
               <div className="relative max-w-full max-h-full" ref={adjustImgRef}>
@@ -542,55 +497,33 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
             ) : (
               <img src={processedUrl} alt="Document scanné" className="max-w-full max-h-full object-contain rounded-lg" data-testid="preview-image" />
             )}
-            {/* Status badges */}
             <div className="absolute top-2 left-2 flex flex-col gap-1.5">
-              {processing && (
-                <span className="bg-amber-500/90 text-white text-[11px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1.5">
-                  <Loader2 className="w-3 h-3 animate-spin" /> Traitement...
-                </span>
-              )}
-              {!processing && autoDetected && !showManualMode && (
-                <span className="bg-emerald-500/90 text-white text-[11px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1.5" data-testid="auto-detected-badge">
-                  <Check className="w-3 h-3" /> Document détecté
-                </span>
-              )}
-              {!processing && !autoDetected && !showManualMode && (
-                <span className="bg-amber-500/80 text-white text-[11px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1.5" data-testid="simple-mode-badge">
-                  <AlertCircle className="w-3 h-3" /> Mode simple
-                </span>
-              )}
-              {showManualMode && (
-                <span className="bg-blue-500/90 text-white text-[11px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1.5" data-testid="manual-mode-badge">
-                  <Crop className="w-3 h-3" /> Déplacez les coins
-                </span>
-              )}
+              {processing && <span className="bg-amber-500/90 text-white text-[11px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1.5"><Loader2 className="w-3 h-3 animate-spin" /> Traitement...</span>}
+              {!processing && autoDetected && !showManualMode && <span className="bg-emerald-500/90 text-white text-[11px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1.5" data-testid="auto-detected-badge"><Check className="w-3 h-3" /> Document détecté</span>}
+              {!processing && !autoDetected && !showManualMode && <span className="bg-amber-500/80 text-white text-[11px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1.5" data-testid="simple-mode-badge"><AlertCircle className="w-3 h-3" /> Mode simple</span>}
+              {showManualMode && <span className="bg-blue-500/90 text-white text-[11px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1.5" data-testid="manual-mode-badge"><Crop className="w-3 h-3" /> Déplacez les coins</span>}
             </div>
           </div>
 
-          {/* Controls bar */}
           <div className="bg-black/90 border-t border-white/10 flex-shrink-0">
-            {/* Filters + tools row */}
+            {/* Toolbar */}
             <div className="flex items-center gap-1.5 px-3 py-2 border-b border-white/5 overflow-x-auto">
               {FILTERS.map(f => (
-                <button key={f.id} onClick={() => applyFilter(f.id)} disabled={processing || simpleMode}
+                <button key={f.id} onClick={() => handleFilter(f.id)} disabled={processing || simpleMode}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all min-h-[40px] ${filter === f.id && !simpleMode ? 'bg-emerald-500 text-white' : 'bg-white/8 text-white/60 hover:bg-white/15'} ${simpleMode ? 'opacity-40' : ''}`}
                   data-testid={`filter-${f.id}`} aria-label={`Filtre ${f.label}`}>
                   <f.icon className="w-3.5 h-3.5" /> {f.label}
                 </button>
               ))}
               <div className="w-px h-7 bg-white/10 mx-0.5 flex-shrink-0" />
-
-              {/* Rotate button */}
-              <button onClick={handleRotate} disabled={processing}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 min-h-[40px]"
+              <button onClick={() => handleRotate('right')} disabled={processing || !isScanReady()}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 min-h-[40px] disabled:opacity-30"
                 data-testid="rotate-btn" aria-label="Rotation 90 degrés">
                 <RotateCw className="w-3.5 h-3.5" /> Rotation
               </button>
-
-              {/* Manual crop toggle */}
               {!showManualMode ? (
                 <button onClick={() => setShowManualMode(true)} disabled={!isScanReady() || simpleMode}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 disabled:opacity-30 min-h-[40px]`}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 disabled:opacity-30 min-h-[40px]"
                   data-testid="manual-crop-btn" aria-label="Recadrer manuellement">
                   <Crop className="w-3.5 h-3.5" /> Recadrer
                 </button>
@@ -601,15 +534,11 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
                   <Check className="w-3.5 h-3.5" /> Appliquer
                 </button>
               )}
-
-              {/* Brightness/Contrast toggle */}
-              <button onClick={() => setShowAdjust(prev => !prev)} disabled={!processedImageDataRef.current || simpleMode}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium min-h-[40px] ${showAdjust ? 'bg-blue-500 text-white' : 'bg-white/8 text-white/60 hover:bg-white/15'} ${(!processedImageDataRef.current || simpleMode) ? 'opacity-30' : ''}`}
+              <button onClick={() => setShowAdjust(p => !p)} disabled={!isScanReady() || simpleMode}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium min-h-[40px] ${showAdjust ? 'bg-blue-500 text-white' : 'bg-white/8 text-white/60 hover:bg-white/15'} ${(!isScanReady() || simpleMode) ? 'opacity-30' : ''}`}
                 data-testid="adjust-toggle-btn" aria-label="Réglages luminosité et contraste">
                 <SunMedium className="w-3.5 h-3.5" /> Réglages
               </button>
-
-              {/* Simple mode switch in preview */}
               {!simpleMode && workerReady && (
                 <button onClick={switchToSimple}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-amber-400/70 hover:bg-white/15 min-h-[40px]"
@@ -619,52 +548,34 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
               )}
             </div>
 
-            {/* Brightness/Contrast sliders (expandable) */}
-            {showAdjust && !simpleMode && processedImageDataRef.current && (
+            {/* Sliders */}
+            {showAdjust && !simpleMode && isScanReady() && (
               <div className="px-4 py-3 border-b border-white/5 space-y-3" data-testid="adjust-panel">
                 <div className="flex items-center gap-3">
                   <Sun className="w-4 h-4 text-amber-400 flex-shrink-0" />
                   <span className="text-white/60 text-xs w-20">Luminosité</span>
-                  <Slider
-                    min={-80} max={80} step={1}
-                    value={[brightness]}
-                    onValueChange={(v) => onSliderChange(v[0], contrast)}
-                    className="flex-1"
-                    data-testid="brightness-slider"
-                  />
+                  <Slider min={-80} max={80} step={1} value={[brightness]} onValueChange={(v) => onSliderChange(v[0], contrast)} className="flex-1" data-testid="brightness-slider" />
                   <span className="text-white/50 text-xs w-8 text-right">{brightness}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Contrast className="w-4 h-4 text-blue-400 flex-shrink-0" />
                   <span className="text-white/60 text-xs w-20">Contraste</span>
-                  <Slider
-                    min={-80} max={80} step={1}
-                    value={[contrast]}
-                    onValueChange={(v) => onSliderChange(brightness, v[0])}
-                    className="flex-1"
-                    data-testid="contrast-slider"
-                  />
+                  <Slider min={-80} max={80} step={1} value={[contrast]} onValueChange={(v) => onSliderChange(brightness, v[0])} className="flex-1" data-testid="contrast-slider" />
                   <span className="text-white/50 text-xs w-8 text-right">{contrast}</span>
                 </div>
                 {(brightness !== 0 || contrast !== 0) && (
-                  <button
-                    onClick={() => onSliderChange(0, 0)}
-                    className="text-white/40 text-xs hover:text-white/60 transition-colors"
-                    data-testid="reset-adjust-btn"
-                  >
-                    Réinitialiser
-                  </button>
+                  <button onClick={() => onSliderChange(0, 0)} className="text-white/40 text-xs hover:text-white/60 transition-colors" data-testid="reset-adjust-btn">Réinitialiser</button>
                 )}
               </div>
             )}
 
-            {/* Action buttons */}
+            {/* Actions */}
             <div className="p-3 space-y-2">
               <div className="flex gap-2">
                 <Button variant="outline" onClick={retake} className="flex-1 gap-2 h-12 border-white/20 text-white hover:bg-white/10 text-sm min-h-[48px]" data-testid="preview-retake-btn" aria-label="Reprendre la photo">
                   <RotateCcw className="w-4 h-4" /> Reprendre
                 </Button>
-                <Button onClick={addPageAndContinue} className="flex-1 gap-2 h-12 bg-blue-600 hover:bg-blue-700 text-sm min-h-[48px]" data-testid="preview-add-page-btn" aria-label="Scanner une page supplémentaire">
+                <Button onClick={addPageAndContinue} className="flex-1 gap-2 h-12 bg-blue-600 hover:bg-blue-700 text-sm min-h-[48px]" data-testid="preview-add-page-btn" aria-label="Page suivante">
                   <Plus className="w-4 h-4" /> Page suivante
                 </Button>
               </div>
@@ -707,8 +618,8 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
         <div className="flex-1 flex flex-col">
           <div className="flex-1 overflow-hidden bg-white"><iframe src={pdfUrl} title="Aperçu PDF" className="w-full h-full border-0" /></div>
           <div className="p-4 bg-black/80 flex gap-2 flex-shrink-0">
-            <Button variant="outline" onClick={() => setPhase('pages')} className="flex-1 gap-2 h-12 min-h-[48px] border-white/20 text-white hover:bg-white/10" aria-label="Retour aux pages"><ChevronLeft className="w-4 h-4" /> Retour</Button>
-            <Button onClick={confirmMulti} className="flex-1 gap-2 h-12 min-h-[48px] bg-emerald-600 hover:bg-emerald-500" aria-label="Valider le PDF"><Check className="w-4 h-4" /> Valider</Button>
+            <Button variant="outline" onClick={() => setPhase('pages')} className="flex-1 gap-2 h-12 min-h-[48px] border-white/20 text-white hover:bg-white/10" aria-label="Retour"><ChevronLeft className="w-4 h-4" /> Retour</Button>
+            <Button onClick={confirmMulti} className="flex-1 gap-2 h-12 min-h-[48px] bg-emerald-600 hover:bg-emerald-500" aria-label="Valider"><Check className="w-4 h-4" /> Valider</Button>
           </div>
         </div>
       )}

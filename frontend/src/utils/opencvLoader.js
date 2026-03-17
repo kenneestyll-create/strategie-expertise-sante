@@ -1,7 +1,7 @@
 /**
- * Scanner Worker Manager
- * Pure-JS scanner runs ONLY inside the Web Worker — never in main thread.
- * Communication via postMessage, 5s timeout per operation, guaranteed fallback.
+ * Scanner Worker Manager — Stateful pattern
+ * Worker keeps image in memory. Operations don't re-transfer data.
+ * API: initScanWorker → scanDocument → filter/rotate/crop/adjust → save
  */
 
 let worker = null;
@@ -13,16 +13,15 @@ const pending = new Map();
 function getWorker() {
   if (worker) return worker;
   try {
-    // Cache-bust to ensure latest worker version
-    worker = new Worker('/scanner.worker.js?v=2');
+    worker = new Worker('/scanner.worker.js?v=4');
     worker.onmessage = (e) => {
-      const { id, type } = e.data;
+      const { id } = e.data;
       const cb = pending.get(id);
       if (cb) {
         pending.delete(id);
         cb(e.data);
       }
-      if (type === 'init') {
+      if (e.data.type === 'init') {
         ready = e.data.success;
         if (!ready) initFailed = true;
         console.log(ready ? '[ScanWorker] Scanner prêt' : '[ScanWorker] Scanner init échoué');
@@ -31,9 +30,7 @@ function getWorker() {
     worker.onerror = (err) => {
       console.error('[ScanWorker] Worker error:', err.message);
       initFailed = true;
-      for (const [, cb] of pending) {
-        cb({ type: 'error', error: 'Worker crashed' });
-      }
+      for (const [, cb] of pending) cb({ type: 'error', error: 'Worker crashed' });
       pending.clear();
     };
     return worker;
@@ -44,28 +41,38 @@ function getWorker() {
   }
 }
 
-function sendMessage(data, transfer = [], timeoutMs = 5000) {
+function sendMessage(data, transfer = [], timeoutMs = 8000) {
   return new Promise((resolve, reject) => {
     const w = getWorker();
     if (!w) return reject(new Error('No worker'));
-
     const id = ++msgId;
-    const timer = setTimeout(() => {
-      pending.delete(id);
-      reject(new Error('Worker timeout'));
-    }, timeoutMs);
-
+    const timer = setTimeout(() => { pending.delete(id); reject(new Error('Worker timeout')); }, timeoutMs);
     pending.set(id, (response) => {
       clearTimeout(timer);
       if (response.type === 'error') reject(new Error(response.error));
       else resolve(response);
     });
-
     w.postMessage({ ...data, id }, transfer);
   });
 }
 
-/** Initialize scanner worker (non-blocking, call early) */
+/** Parse preview response → ImageData + metadata */
+function parsePreview(res) {
+  return {
+    imageData: new ImageData(new Uint8ClampedArray(res.imageData), res.width, res.height),
+    width: res.width,
+    height: res.height,
+    corners: res.corners || null,
+    autoDetected: !!res.autoDetected,
+    originalWidth: res.originalWidth,
+    originalHeight: res.originalHeight,
+    filter: res.filter,
+  };
+}
+
+/* ══════════════════════ PUBLIC API ══════════════════════ */
+
+/** Initialize worker (call once, non-blocking) */
 export async function initScanWorker() {
   if (ready) return true;
   if (initFailed) return false;
@@ -78,89 +85,69 @@ export async function initScanWorker() {
   }
 }
 
-/** Check if worker is ready */
-export function isScanReady() {
-  return ready;
-}
-
-/** Check if init was attempted and failed */
-export function isScanFailed() {
-  return initFailed;
-}
+export function isScanReady() { return ready; }
+export function isScanFailed() { return initFailed; }
 
 /**
- * Process image in worker
+ * SCAN — Send image to worker for auto-detection + perspective correction
+ * This is the initial capture. Image is stored in worker memory.
  * @param {ImageData} imageData - from canvas.getImageData()
  * @param {string} filter - 'document' | 'bw' | 'original'
- * @returns {Promise<{imageData, width, height, corners, autoDetected}>}
  */
-export async function processInWorker(imageData, filter = 'document') {
+export async function scanDocument(imageData, filter = 'document') {
   const buffer = imageData.data.buffer.slice(0);
   const res = await sendMessage(
-    { type: 'process', imageData: buffer, width: imageData.width, height: imageData.height, filter },
+    { type: 'scan', imageData: buffer, width: imageData.width, height: imageData.height, filter },
     [buffer],
-    8000
+    15000
   );
-  return {
-    imageData: new ImageData(new Uint8ClampedArray(res.imageData), res.width, res.height),
-    width: res.width,
-    height: res.height,
-    corners: res.corners,
-    autoDetected: res.autoDetected,
-    originalWidth: res.originalWidth,
-    originalHeight: res.originalHeight,
-  };
+  return parsePreview(res);
 }
 
 /**
- * Reprocess with manual corners
+ * FILTER — Change filter on stored image (no data transfer)
+ * @param {string} filter - 'document' | 'bw' | 'original'
  */
-export async function reprocessInWorker(imageData, corners, filter = 'document') {
-  const buffer = imageData.data.buffer.slice(0);
-  const res = await sendMessage(
-    { type: 'reprocess', imageData: buffer, width: imageData.width, height: imageData.height, corners, filter },
-    [buffer],
-    8000
-  );
-  return {
-    imageData: new ImageData(new Uint8ClampedArray(res.imageData), res.width, res.height),
-    width: res.width,
-    height: res.height,
-  };
+export async function applyFilter(filter = 'document') {
+  const res = await sendMessage({ type: 'filter', filter });
+  return parsePreview(res);
 }
 
 /**
- * Adjust brightness/contrast on image
- * @param {ImageData} imageData
+ * ROTATE — Rotate stored image 90° left or right
+ * @param {string} direction - 'left' | 'right'
+ */
+export async function rotateImage(direction = 'right') {
+  const res = await sendMessage({ type: 'rotate', direction });
+  return parsePreview(res);
+}
+
+/**
+ * CROP — Crop with rectangle {x0,y0,x1,y1} or 4-point {corners:[...]}
+ * Coordinates are normalized [0..1] relative to original image.
+ * @param {object} coords - { x0, y0, x1, y1 } or { corners: [{x,y},...] }
+ */
+export async function cropImage(coords) {
+  const res = await sendMessage({ type: 'crop', coords });
+  return parsePreview(res);
+}
+
+/**
+ * ADJUST — Brightness/Contrast on stored image (no data transfer)
  * @param {number} brightness - [-100, 100]
  * @param {number} contrast - [-100, 100]
  */
-export async function adjustInWorker(imageData, brightness = 0, contrast = 0) {
-  const buffer = imageData.data.buffer.slice(0);
-  const res = await sendMessage(
-    { type: 'adjust', imageData: buffer, width: imageData.width, height: imageData.height, brightness, contrast },
-    [buffer],
-    5000
-  );
-  return {
-    imageData: new ImageData(new Uint8ClampedArray(res.imageData), res.width, res.height),
-    width: res.width,
-    height: res.height,
-  };
+export async function adjustImage(brightness = 0, contrast = 0) {
+  const res = await sendMessage({ type: 'adjust', brightness, contrast });
+  return parsePreview(res);
 }
 
 /**
- * Rotate image by 90° increments
- * @param {ImageData} imageData
- * @param {number} degrees - 90, 180, 270
+ * SAVE — Finalize and return the current image
+ * @returns {Promise<{imageData: ImageData, width, height}>}
  */
-export async function rotateInWorker(imageData, degrees = 90) {
-  const buffer = imageData.data.buffer.slice(0);
-  const res = await sendMessage(
-    { type: 'rotate', imageData: buffer, width: imageData.width, height: imageData.height, degrees },
-    [buffer],
-    5000
-  );
+export async function saveImage() {
+  const res = await sendMessage({ type: 'save' });
   return {
     imageData: new ImageData(new Uint8ClampedArray(res.imageData), res.width, res.height),
     width: res.width,
@@ -168,7 +155,7 @@ export async function rotateInWorker(imageData, degrees = 90) {
   };
 }
 
-/** Terminate worker */
+/** Terminate worker and release memory */
 export function terminateScanWorker() {
   if (worker) {
     worker.terminate();
