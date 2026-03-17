@@ -149,8 +149,12 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
       setWorkerLoading(false);
       console.log(ok ? `[Scanner] Worker prêt (${Math.round(performance.now() - t0)}ms)` : '[Scanner] Fallback mode simple');
     });
-    return () => terminateScanWorker();
   }, [workerReady, workerFailed]);
+
+  /* ── Cleanup worker on unmount only ── */
+  useEffect(() => {
+    return () => terminateScanWorker();
+  }, []);
 
   /* ── Draw processedUrl onto preview canvas ── */
   useEffect(() => {
@@ -590,20 +594,20 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
                 </button>
               ))}
               <div className="w-px h-7 bg-white/10 mx-0.5 flex-shrink-0" />
-              <button onClick={() => handleRotate('left')} disabled={processing || !isScanReady()}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 min-h-[40px] disabled:opacity-30 whitespace-nowrap"
+              <button onClick={() => handleRotate('left')} disabled={processing || !workerReady}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 min-h-[40px] whitespace-nowrap ${(!workerReady) ? 'opacity-30' : ''}`}
                 data-testid="rotate-left-btn" aria-label="Rotation gauche">
                 <RotateCcw className="w-3.5 h-3.5" />
               </button>
-              <button onClick={() => handleRotate('right')} disabled={processing || !isScanReady()}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 min-h-[40px] disabled:opacity-30 whitespace-nowrap"
+              <button onClick={() => handleRotate('right')} disabled={processing || !workerReady}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 min-h-[40px] whitespace-nowrap ${(!workerReady) ? 'opacity-30' : ''}`}
                 data-testid="rotate-right-btn" aria-label="Rotation droite">
                 <RotateCw className="w-3.5 h-3.5" />
               </button>
               <div className="w-px h-7 bg-white/10 mx-0.5 flex-shrink-0" />
               {!showManualMode ? (
-                <button onClick={() => setShowManualMode(true)} disabled={!isScanReady() || simpleMode}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 disabled:opacity-30 min-h-[40px] whitespace-nowrap"
+                <button onClick={() => setShowManualMode(true)} disabled={!workerReady || simpleMode}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 min-h-[40px] whitespace-nowrap ${(!workerReady || simpleMode) ? 'opacity-30' : ''}`}
                   data-testid="manual-crop-btn" aria-label="Recadrer manuellement">
                   <Crop className="w-3.5 h-3.5" /> Recadrer
                 </button>
@@ -614,15 +618,15 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
                   <Check className="w-3.5 h-3.5" /> Appliquer
                 </button>
               )}
-              <button onClick={() => setShowAdjust(p => !p)} disabled={!isScanReady() || simpleMode}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium min-h-[40px] whitespace-nowrap ${showAdjust ? 'bg-blue-500 text-white' : 'bg-white/8 text-white/60 hover:bg-white/15'} ${(!isScanReady() || simpleMode) ? 'opacity-30' : ''}`}
+              <button onClick={() => setShowAdjust(p => !p)} disabled={!workerReady || simpleMode}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium min-h-[40px] whitespace-nowrap ${showAdjust ? 'bg-blue-500 text-white' : 'bg-white/8 text-white/60 hover:bg-white/15'} ${(!workerReady || simpleMode) ? 'opacity-30' : ''}`}
                 data-testid="adjust-toggle-btn" aria-label="Réglages luminosité et contraste">
                 <SunMedium className="w-3.5 h-3.5" /> Réglages
               </button>
             </div>
 
             {/* Sliders */}
-            {showAdjust && !simpleMode && isScanReady() && (
+            {showAdjust && !simpleMode && workerReady && (
               <div className="px-4 py-3 border-b border-white/5 space-y-3" data-testid="adjust-panel">
                 <div className="flex items-center gap-3">
                   <Sun className="w-4 h-4 text-amber-400 flex-shrink-0" />
