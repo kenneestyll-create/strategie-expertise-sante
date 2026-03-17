@@ -70,19 +70,20 @@ Application web complète en français pour fournir des conseils sur les maladie
 ### Scanner Documents CamScanner-like (Mar 2026) ✅ — STATEFUL PURE JS
 - **Architecture Stateful Pure JS** : Worker garde l'image en mémoire, opérations enchaînées sans retransfert
   - Pipeline: `scan` (envoi unique) → `filter` / `rotate` / `crop` / `adjust` (stateful, 0 transfert) → `save`
-  - Init: ~90ms, Scan: ~13ms, Filter: 2ms, Rotate: 1ms, Adjust: 1ms, Crop: 2ms
+  - Init: ~110ms, Scan: ~35ms, Filter: ~8ms, Rotate: ~4ms, Crop: ~14ms
 - **Détection automatique** : Canny edge detection → Contour finding → Perspective warp (DLT)
 - **Canvas de prévisualisation** (remplace `<img>`) pour rendu interactif
-- **Interface CamScanner complète** :
+- **Interface CamScanner complète — TOUS CONTRÔLES ACTIFS** :
   - Branding "CamScanner" dans l'en-tête
   - **2 modes capture** : "Ouvrir la caméra" + "Choisir une photo" (input file)
-  - 3 filtres : Noir & Blanc | Contraste+ | Original
-  - Rotation gauche + droite (boutons séparés)
-  - Sliders luminosité/contraste (debounced, panneau extensible)
-  - Recadrage manuel (poignées draggables) + rectangle crop
+  - 3 filtres : Noir & Blanc | Contraste+ | Original — **fonctionnels**
+  - Rotation gauche + droite (boutons séparés) — **fonctionnelle**
+  - Sliders luminosité/contraste (debounced, panneau extensible) — **fonctionnels**
+  - Recadrage manuel (poignées draggables) + rectangle crop — **fonctionnel**
   - "Mode Simple" toggle (guide + preview)
   - Multi-pages avec fusion PDF (jsPDF)
   - Bouton "Valider / Sauvegarder" proéminent en vert
+- **Bug fix Mar 2026** : Séparation useEffect cleanup (unmount-only) + utilisation React state `workerReady` dans les props disabled au lieu de `isScanReady()` non-réactif
 - **Accessibilité** : boutons min-h 44-56px, aria-labels, labels explicites
 - **Logs détaillés** : chaque étape logguée avec timing
 - Mobile uniquement (bouton scanner visible en mobile)
@@ -117,6 +118,7 @@ Application web complète en français pour fournir des conseils sur les maladie
 - Audit logging (journalisation actions sensibles — pré-production)
 - Refactoring AdminDashboard.jsx (~2700 lignes)
 - Refactoring EmailTemplateEditor.jsx (monolithique)
+- Renommer `opencvLoader.js` → `scannerManager.js` (cleanup)
 - Statistiques d'utilisation par template
 - Campagnes récurrentes
 
