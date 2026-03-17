@@ -70,21 +70,23 @@ Application web complète en français pour fournir des conseils sur les maladie
 ### Scanner Documents CamScanner-like (Mar 2026) ✅ — STATEFUL PURE JS
 - **Architecture Stateful Pure JS** : Worker garde l'image en mémoire, opérations enchaînées sans retransfert
   - Pipeline: `scan` (envoi unique) → `filter` / `rotate` / `crop` / `adjust` (stateful, 0 transfert) → `save`
-  - Init: ~90ms, Scan: ~50ms, Filter: 3ms, Rotate: 1ms, Adjust: 2ms, Crop: 3ms
+  - Init: ~90ms, Scan: ~13ms, Filter: 2ms, Rotate: 1ms, Adjust: 1ms, Crop: 2ms
 - **Détection automatique** : Canny edge detection → Contour finding → Perspective warp (DLT)
-- **Mode CamScanner complet** :
+- **Canvas de prévisualisation** (remplace `<img>`) pour rendu interactif
+- **Interface CamScanner complète** :
   - Branding "CamScanner" dans l'en-tête
-  - 3 filtres : Document / N&B / Original
-  - Rotation 90° (gauche/droite)
-  - Sliders luminosité/contraste (debounced, dans panneau extensible)
-  - Recadrage manuel (poignées draggables) + rectangle crop ({x0,y0,x1,y1})
-  - "Mode Simple" explicite (toggle dans guide + bouton dans preview)
+  - **2 modes capture** : "Ouvrir la caméra" + "Choisir une photo" (input file)
+  - 3 filtres : Noir & Blanc | Contraste+ | Original
+  - Rotation gauche + droite (boutons séparés)
+  - Sliders luminosité/contraste (debounced, panneau extensible)
+  - Recadrage manuel (poignées draggables) + rectangle crop
+  - "Mode Simple" toggle (guide + preview)
   - Multi-pages avec fusion PDF (jsPDF)
-  - `save` finalise et retourne l'image courante
+  - Bouton "Valider / Sauvegarder" proéminent en vert
 - **Accessibilité** : boutons min-h 44-56px, aria-labels, labels explicites
 - **Logs détaillés** : chaque étape logguée avec timing
-- Mobile uniquement (bouton scanner visible uniquement en mobile)
-- Fichiers : `/app/frontend/public/scanner.worker.js` + `/app/frontend/src/utils/opencvLoader.js` + `DocumentScanner.jsx`
+- Mobile uniquement (bouton scanner visible en mobile)
+- Fichiers : `scanner.worker.js` + `opencvLoader.js` + `DocumentScanner.jsx`
 
 ### Section Partenaires Footer (Mar 2026) ✅
 - Formulaire dédié inline (Nom, Société, Email, Type de partenariat, Message)
