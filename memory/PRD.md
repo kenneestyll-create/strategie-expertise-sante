@@ -67,13 +67,15 @@ Application web complète en français pour fournir des conseils sur les maladie
 - Routes, collections DB et variables inchangées
 - Validé par 13 tests + 4 vérifications grep
 
-### Scanner Documents CamScanner-like (Mar 2026) ✅
-- OpenCV.js chargé en lazy loading (~8Mo, CDN uniquement lors du scan)
-- Pipeline automatique : Capture → Détection Canny multi-seuils → Perspective warp → Enhancement
-- 3 filtres : Document (suppression ombres + contraste), N&B (binarisation adaptative), Original
+### Scanner Documents CamScanner-like (Mar 2026) ✅ — REFACTORÉ
+- **Architecture Pure JS** : OpenCV.js WASM remplacé par algorithmes JavaScript natifs dans Web Worker
+- Aucun WASM, aucune dépendance externe, init instantané (87ms vs hang infini)
+- Pipeline automatique : Capture → Canny edge detection → Contour finding → Perspective warp (DLT) → Enhancement
+- 3 filtres : Document (normalisation fond + unsharp mask), N&B (seuillage adaptatif), Original
 - Fallback manuel : poignées draggables si détection auto échoue
-- Multi-pages avec fusion PDF
-- Mode basique si OpenCV indisponible (connexion, etc.)
+- Multi-pages avec fusion PDF (jsPDF)
+- Fallback mode simple si le Worker échoue
+- Fichiers : `/app/frontend/public/scanner.worker.js` (Pure JS) + `/app/frontend/src/utils/opencvLoader.js` (manager)
 
 ### Section Partenaires Footer (Mar 2026) ✅
 - Formulaire dédié inline (Nom, Société, Email, Type de partenariat, Message)
@@ -87,6 +89,10 @@ Application web complète en français pour fournir des conseils sur les maladie
 ## Fichiers clés
 - `/app/frontend/src/pages/DossierExpressPage.jsx` — Tunnel de conversion complet
 - `/app/frontend/src/components/DossierAnalysis.jsx` — Analyse premium + upsell
+- `/app/frontend/src/components/DocumentScanner.jsx` — Scanner UI (guide, camera, preview, pages)
+- `/app/frontend/src/components/DocumentUploader.jsx` — Intègre le scanner + upload fichiers
+- `/app/frontend/public/scanner.worker.js` — Pure JS scanner worker (edge detection, perspective, enhancement)
+- `/app/frontend/src/utils/opencvLoader.js` — Worker manager (lifecycle, messaging, timeouts)
 - `/app/backend/config.py` — Configuration centralisée, JWT, rate limiter, Stripe
 - `/app/backend/routes/payments.py` — Stripe/PayPal + webhook sécurisé
 - `/app/backend/routes/strategiia.py` — StratégiIA + Dossier Express
