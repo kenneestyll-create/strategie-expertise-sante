@@ -54,7 +54,6 @@ export const DossierExpressPage = () => {
   const [pollStatus, setPollStatus] = useState(null);
   const [premiumPdf, setPremiumPdf] = useState(false);
   const [analysePremium, setAnalysePremium] = useState(false);
-  const [docChecks, setDocChecks] = useState({ readable: false, personal_info: false, dates_signatures: false });
 
   const featuresRef = useRevealChildren();
   const ctaBottomRef = useReveal();
@@ -451,7 +450,7 @@ export const DossierExpressPage = () => {
                   size="lg"
                   className="w-full rounded-xl gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold"
                   onClick={handleSubmitDossier}
-                  disabled={loading || !form.situation.trim() || !form.email || !consent || (files.length > 0 && !(docChecks.readable && docChecks.personal_info && docChecks.dates_signatures))}
+                  disabled={loading || !form.situation.trim() || !form.email || !consent}
                   data-testid="de-submit-button"
                 >
                   {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi en cours...</> : <><Brain className="w-5 h-5" /> Soumettre mon dossier</>}
@@ -461,7 +460,7 @@ export const DossierExpressPage = () => {
                   size="lg"
                   className="w-full rounded-xl gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold"
                   onClick={handleCheckout}
-                  disabled={loading || !form.email || !form.name || !consent || (files.length > 0 && !(docChecks.readable && docChecks.personal_info && docChecks.dates_signatures))}
+                  disabled={loading || !form.email || !form.name || !consent}
                   data-testid="de-checkout-button"
                 >
                   {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection...</> : <><CreditCard className="w-5 h-5" /> Payer {97 + (premiumPdf ? 19 : 0) + (analysePremium ? 49 : 0)} € et lancer l'analyse</>}

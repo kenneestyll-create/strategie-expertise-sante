@@ -1,0 +1,134 @@
+{
+  "summary": "Iteration 63: Verified OCR Phase 2 integration in Dossier Express form and confirmed all iteration 62 tests pass. Backend: 18/18 pytest tests passed. Frontend: All UI elements verified - Dossier Express form has DocumentUploader with OCR, checkout button enabled without docChecks dependency, free client sees upsell with 97€ CTA, StrategiIA modal simplified.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "EspaceClientPage",
+        "issues": [
+          "Non-breaking: recharts console warnings about chart width/height -1 on initial render (same as iteration 62)"
+        ]
+      }
+    ]
+  },
+  "tests_executed": {
+    "backend_tests": [
+      "TestFreeClientDossierAnalysis::test_has_dossier_express_is_false - PASS",
+      "TestFreeClientDossierAnalysis::test_score_field_present - PASS",
+      "TestFreeClientDossierAnalysis::test_dynamic_message_present - PASS",
+      "TestFreeClientDossierAnalysis::test_actionable_count_present - PASS",
+      "TestFreeClientDossierAnalysis::test_case_type_present - PASS",
+      "TestFreeClientDossierAnalysis::test_summary_present - PASS",
+      "TestFreeClientDossierAnalysis::test_only_expected_fields_returned - PASS",
+      "TestPremiumFieldsNotInFreeResponse::test_key_metrics_not_present - PASS",
+      "TestPremiumFieldsNotInFreeResponse::test_score_breakdown_not_present - PASS",
+      "TestPremiumFieldsNotInFreeResponse::test_weak_points_not_present - PASS",
+      "TestPremiumFieldsNotInFreeResponse::test_risk_alerts_not_present - PASS",
+      "TestPremiumFieldsNotInFreeResponse::test_predictions_not_present - PASS",
+      "TestPremiumFieldsNotInFreeResponse::test_recommended_actions_not_present - PASS",
+      "TestPremiumFieldsNotInFreeResponse::test_premium_cta_not_present - PASS",
+      "TestPremiumFieldsNotInFreeResponse::test_missing_documents_not_present - PASS",
+      "TestPremiumFieldsNotInFreeResponse::test_found_documents_not_present - PASS",
+      "TestFreeClientResponseIntegrity::test_dynamic_message_has_required_keys - PASS",
+      "TestFreeClientResponseIntegrity::test_summary_has_required_keys - PASS"
+    ],
+    "frontend_tests": [
+      "Dossier Express landing page loads with 97€ CTA - PASS",
+      "Dossier Express form has type_dossier select - PASS",
+      "Dossier Express form has regime select - PASS",
+      "Dossier Express form has situation textarea - PASS",
+      "Dossier Express form has DocumentUploader component - PASS",
+      "Dossier Express checkout button enabled with email+name+consent (no docChecks dependency) - PASS",
+      "Free client login successful - PASS",
+      "Free client sees dossier-analysis-upsell card - PASS",
+      "Upsell title: 'Débloquez votre analyse complète' - PASS",
+      "Upsell button: 'Dossier Express — 97€' - PASS",
+      "Blurred score teaser card visible for free client - PASS",
+      "Full dossier-analysis NOT visible for free client - PASS",
+      "Navbar score indicator NOT present for free client - PASS",
+      "StrategiIA modal opens - PASS",
+      "StrategiIA form has type_dossier select - PASS",
+      "StrategiIA form has regime select - PASS",
+      "StrategiIA form has situation textarea - PASS",
+      "StrategiIA analyze button: 'Analyser mon dossier gratuitement' - PASS",
+      "DocumentUploader NOT present in StrategiIA - PASS"
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration62_free_premium_separation.py",
+    "/app/test_reports/pytest/pytest_iteration63_verify_iter62.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "DossierExpressPage.jsx lines 370-416: DocumentUploader component with enableOCR=true and onOcrResult callback correctly integrated for OCR Phase 2",
+    "DossierExpressPage.jsx lines 459-468: Checkout button correctly enabled with only email+name+consent (docChecks state was removed)",
+    "OCR auto-fill flow: type_dossier, regime, name, situation fields get auto-filled from scanned document results",
+    "Free/premium separation working: has_dossier_express=false returns limited fields only",
+    "StrategiIA modal correctly simplified: no DocumentUploader, no dossier quality score",
+    "Upsell CTA correctly shows 'Dossier Express — 97€' for free clients"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "100% (18/18 tests passed)",
+    "frontend": "100% (19/19 UI checks passed)"
+  },
+  "test_credentials": {
+    "free_client": "test-analysis@test.com / Password123!",
+    "note": "This client has NO completed dossier_express entries, so has_dossier_express=false"
+  },
+  "seed_data_creation": "None - used existing test user",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 63 verified OCR Phase 2 integration in Dossier Express and confirmed iteration 62 tests still pass. DocumentUploader with enableOCR=true is in DossierExpressPage at lines 370-416. The checkout button no longer depends on docChecks (was removed). Free client test-analysis@test.com sees upsell with 97€ CTA. StrategiIA is simplified without DocumentUploader.",
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  },
+  "feature_verification": {
+    "dossier_express_landing_page": {
+      "status": "PASS",
+      "details": "Landing page loads with badge 'Rapport sous 2 heures', title 'Dossier Express', CTA 'Analyser mon dossier - 97 €'"
+    },
+    "dossier_express_form_fields": {
+      "status": "PASS",
+      "details": "Form has all required fields: name, email, type_dossier select, regime select, situation textarea"
+    },
+    "dossier_express_document_uploader_with_ocr": {
+      "status": "PASS",
+      "details": "DocumentUploader component present with enableOCR=true, onOcrResult callback for auto-filling fields"
+    },
+    "dossier_express_button_no_docChecks": {
+      "status": "PASS",
+      "details": "Checkout button is ENABLED with just email + name + consent filled (no docChecks dependency)"
+    },
+    "free_client_upsell_teaser": {
+      "status": "PASS",
+      "details": "Free client sees dossier-analysis-upsell with blurred score, lock icon, 'Débloquez votre analyse complète' title, 'Dossier Express — 97€' CTA"
+    },
+    "free_client_full_analysis_hidden": {
+      "status": "PASS",
+      "details": "data-testid='dossier-analysis' (full premium analysis) NOT visible for free client"
+    },
+    "free_client_navbar_score_hidden": {
+      "status": "PASS",
+      "details": "data-testid='navbar-score-indicator' NOT present for free client"
+    },
+    "strategiia_simplified": {
+      "status": "PASS",
+      "details": "StrategiIA modal has type_dossier, regime, situation, consent, analyze button. NO DocumentUploader, NO dossier quality score"
+    },
+    "strategiia_button_text": {
+      "status": "PASS",
+      "details": "Analyze button text is 'Analyser mon dossier gratuitement'"
+    },
+    "backend_free_client_gating": {
+      "status": "PASS",
+      "details": "GET /api/client/dossier-analysis returns has_dossier_express:false and only 6 fields for free client"
+    }
+  }
+}
