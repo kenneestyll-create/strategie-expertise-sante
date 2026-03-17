@@ -169,6 +169,33 @@ async def record_paypal_payment(request: Request):
     referral_code = body.get("referral_code")
     package = PAYMENT_PACKAGES.get(package_id, {})
 
+    # SECURITY FIX V14: Verify PayPal payment server-side
+    if PAYPAL_CLIENT_ID and PAYPAL_SECRET and order_id:
+        import httpx
+        try:
+            async with httpx.AsyncClient() as http_client:
+                token_resp = await http_client.post(
+                    f"{PAYPAL_BASE_URL}/v1/oauth2/token",
+                    data={"grant_type": "client_credentials"},
+                    auth=(PAYPAL_CLIENT_ID, PAYPAL_SECRET)
+                )
+                if token_resp.status_code == 200:
+                    access_token = token_resp.json()["access_token"]
+                    order_resp = await http_client.get(
+                        f"{PAYPAL_BASE_URL}/v2/checkout/orders/{order_id}",
+                        headers={"Authorization": f"Bearer {access_token}"}
+                    )
+                    if order_resp.status_code == 200:
+                        order_data = order_resp.json()
+                        if order_data.get("status") != "COMPLETED":
+                            raise HTTPException(status_code=402, detail="Paiement PayPal non confirmé")
+                    else:
+                        raise HTTPException(status_code=402, detail="Impossible de vérifier le paiement PayPal")
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"PayPal verification error: {e}")
+
     transaction = PaymentTransaction(
         session_id=order_id, package_id=package_id, package_name=package.get("name", package_id),
         amount=amount, currency="eur", email=customer_email, customer_name=customer_name,

@@ -4,4 +4,4 @@ Disallow: /admin
 Disallow: /admin/login
 Disallow: /espace-client
 
-Sitemap: https://file-assessment-3.preview.emergentagent.com/sitemap.xml
+Sitemap: https://secure-payment-flow-5.preview.emergentagent.com/sitemap.xml

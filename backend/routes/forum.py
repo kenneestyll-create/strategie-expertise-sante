@@ -1,9 +1,9 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from typing import Optional
 from datetime import datetime, timezone
 import uuid
 
-from config import db
+from config import db, limiter
 from models import (
     ForumUser, ForumUserRegister, ForumUserLogin, ForumTokenResponse,
     ForumCategory, ForumTopic, ForumTopicCreate,
@@ -40,7 +40,8 @@ async def get_forum_categories():
     return [cat.model_dump() for cat in FORUM_CATEGORIES]
 
 @router.post("/forum/register", response_model=ForumTokenResponse)
-async def register_forum_user(input_data: ForumUserRegister):
+@limiter.limit("5/minute")
+async def register_forum_user(request: Request, input_data: ForumUserRegister):
     existing_pseudo = await db.forum_users.find_one({"pseudo": input_data.pseudo})
     if existing_pseudo:
         raise HTTPException(status_code=400, detail="Ce pseudonyme est déjà utilisé")
@@ -65,7 +66,8 @@ async def register_forum_user(input_data: ForumUserRegister):
     return ForumTokenResponse(access_token=token, user_id=user.id, pseudo=user.pseudo, is_anonymous=user.is_anonymous)
 
 @router.post("/forum/login", response_model=ForumTokenResponse)
-async def login_forum_user(credentials: ForumUserLogin):
+@limiter.limit("5/minute")
+async def login_forum_user(request: Request, credentials: ForumUserLogin):
     user = await db.forum_users.find_one({"email": credentials.email}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")

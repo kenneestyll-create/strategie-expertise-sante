@@ -1,11 +1,16 @@
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 from pathlib import Path
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 import os
 import logging
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+# Rate limiter — SECURITY FIX V2
+limiter = Limiter(key_func=get_remote_address)
 
 # MongoDB
 mongo_url = os.environ['MONGO_URL']
@@ -25,8 +30,10 @@ if RESEND_AVAILABLE:
 SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'onboarding@resend.dev')
 NOTIFICATION_EMAIL = os.environ.get('NOTIFICATION_EMAIL', '')
 
-# JWT
-JWT_SECRET = os.environ.get('JWT_SECRET', 'accompagn-sante-secret-key-2024')
+# JWT — SECURITY FIX V1: No fallback, env var required
+JWT_SECRET = os.environ.get('JWT_SECRET')
+if not JWT_SECRET:
+    raise RuntimeError("FATAL: JWT_SECRET environment variable is not set. Server cannot start without a secure secret key.")
 JWT_ALGORITHM = 'HS256'
 JWT_EXPIRATION_HOURS = 24
 FORUM_JWT_EXPIRATION_HOURS = 168
@@ -85,7 +92,7 @@ DOCUMENT_CATEGORIES = {
 DOCUMENT_STATUSES = ["en_attente", "valide", "illisible", "corrige"]
 
 # SEO
-SITE_URL = "https://file-assessment-3.preview.emergentagent.com"
+SITE_URL = "https://secure-payment-flow-5.preview.emergentagent.com"
 SITEMAP_PAGES = [
     ("/", "1.0", "daily"),
     ("/a-propos", "0.8", "monthly"),

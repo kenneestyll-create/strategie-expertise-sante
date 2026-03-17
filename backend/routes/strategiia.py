@@ -144,12 +144,30 @@ async def dossier_express_submit(request: Request):
     if not email or not situation:
         raise HTTPException(status_code=400, detail="Email et description requis")
 
+    # SECURITY FIX V13/V14: Verify payment before processing
+    payment_verified = False
+    if session_id:
+        payment = await db.payment_transactions.find_one(
+            {"session_id": session_id, "payment_status": "paid"},
+            {"_id": 0, "session_id": 1}
+        )
+        if payment:
+            payment_verified = True
+
+    if not payment_verified:
+        # Check if Stripe is configured — if not (test mode), allow submission with warning
+        if STRIPE_API_KEY:
+            raise HTTPException(status_code=402, detail="Paiement requis. Veuillez compléter le paiement avant de soumettre votre dossier.")
+        else:
+            logger.warning(f"Dossier Express submitted without payment verification (Stripe not configured) for {email}")
+
     dossier_id = str(uuid.uuid4())
     dossier = {
         "id": dossier_id, "session_id": session_id, "email": email, "name": name,
         "situation": situation, "type_dossier": type_dossier, "regime": regime,
         "documents_text": documents_text[:10000], "premium_pdf": premium_pdf,
-        "status": "processing", "created_at": datetime.now(timezone.utc).isoformat(),
+        "status": "processing", "payment_verified": payment_verified,
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.dossier_express.insert_one(dossier)
     asyncio.create_task(_process_dossier_express(dossier_id, email, name, situation, type_dossier, regime, documents_text, premium_pdf=premium_pdf))
@@ -207,7 +225,7 @@ CONTENU DES DOCUMENTS FOURNIS :
                         <p>Merci pour votre confiance. Veuillez trouver ci-joint votre rapport d'analyse complet réalisé par notre outil StratégiIA.</p>
                         <p>Ce rapport contient :</p><ul><li>L'analyse détaillée de votre situation</li><li>Le cadre juridique applicable</li><li>Vos droits identifiés</li><li>La stratégie recommandée</li><li>Les prochaines étapes à suivre</li></ul>
                         <p>Pour un accompagnement personnalisé, n'hésitez pas à nous contacter :</p>
-                        <p><a href="https://file-assessment-3.preview.emergentagent.com/contact" style="color: #0f3460;">Prendre rendez-vous</a></p>
+                        <p><a href="https://secure-payment-flow-5.preview.emergentagent.com/contact" style="color: #0f3460;">Prendre rendez-vous</a></p>
                         <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
                         <p style="font-size: 12px; color: #666;">Ce rapport est un outil d'aide à la décision et ne constitue pas un avis juridique.<br>Stratégie & Expertise Santé</p></div>""",
                     "attachments": [{"filename": f"Rapport_Dossier_Express_{dossier_id[:8]}.pdf", "content": list(pdf_bytes)}]

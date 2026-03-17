@@ -1,26 +1,51 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Request as FastAPIRequest
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import Response, RedirectResponse
+from fastapi.responses import Response, RedirectResponse, JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
+from slowapi.errors import RateLimitExceeded
 import asyncio
 import os
 import uuid
 from datetime import datetime, timezone, timedelta, time as dtime
 
-from config import client, db, logger, SITE_URL
+from config import client, db, logger, SITE_URL, limiter
 from routes import all_routers
 
+# Rate limiter — SECURITY FIX V2
 app = FastAPI(title="Stratégie & Expertise Santé API")
+app.state.limiter = limiter
 
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: FastAPIRequest, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={"detail": "Trop de tentatives. Veuillez réessayer dans quelques minutes."}
+    )
+
+# SECURITY FIX V5 — CORS strict: only authorized origins
+ALLOWED_ORIGINS = os.environ.get('ALLOWED_ORIGINS', SITE_URL).split(',')
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# SECURITY FIX V12 — Security headers middleware
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+        return response
+
+app.add_middleware(SecurityHeadersMiddleware)
 
 api_router = APIRouter(prefix="/api")
 

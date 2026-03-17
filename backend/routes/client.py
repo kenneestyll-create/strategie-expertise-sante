@@ -5,7 +5,7 @@ import uuid
 import base64
 import logging
 
-from config import db, DOCUMENT_CATEGORIES, DOCUMENT_STATUSES
+from config import db, DOCUMENT_CATEGORIES, DOCUMENT_STATUSES, limiter
 from models import ClientUser, ClientRegister, ClientLogin, ClientCase
 from utils.auth import hash_password, verify_password, create_client_token, get_current_client
 
@@ -23,7 +23,8 @@ except Exception:
 # ==================== CLIENT AUTH ====================
 
 @router.post("/client/register")
-async def register_client(data: ClientRegister):
+@limiter.limit("5/minute")
+async def register_client(request: Request, data: ClientRegister):
     existing = await db.client_users.find_one({"email": data.email.lower()}, {"_id": 0})
     if existing:
         raise HTTPException(status_code=409, detail="Un compte existe déjà avec cet email")
@@ -35,7 +36,8 @@ async def register_client(data: ClientRegister):
     return {"access_token": token, "token_type": "bearer", "client_name": client.name, "client_id": client.id}
 
 @router.post("/client/login")
-async def login_client(data: ClientLogin):
+@limiter.limit("5/minute")
+async def login_client(request: Request, data: ClientLogin):
     client = await db.client_users.find_one({"email": data.email.lower()}, {"_id": 0})
     if not client or not verify_password(data.password, client["password_hash"]):
         raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")
@@ -356,9 +358,9 @@ async def get_dossier_analysis(client: dict = Depends(get_current_client)):
     cid = client["sub"]
     email = client.get("email", "")
 
-    # Check if client has a completed Dossier Express (paid service)
+    # Check if client has a completed AND payment-verified Dossier Express (paid service)
     dossier_express_entry = await db.dossier_express.find_one(
-        {"email": email, "status": "completed"},
+        {"email": email, "status": "completed", "payment_verified": {"$ne": False}},
         {"_id": 0, "id": 1}
     )
     has_dossier_express = dossier_express_entry is not None
@@ -752,8 +754,39 @@ async def upload_client_document(request: Request, client: dict = Depends(get_cu
 
     if not filename or not file_data:
         raise HTTPException(status_code=400, detail="Fichier requis")
+
+    # SECURITY FIX V10: File size limit (10 MB)
     if size > 10 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Fichier trop volumineux (max 10 Mo)")
+
+    # SECURITY FIX V9: MIME type whitelist
+    ALLOWED_MIMES = {
+        "application/pdf", "image/jpeg", "image/png", "image/webp", "image/heic", "image/heif",
+        "image/gif", "image/tiff", "image/bmp",
+        "text/plain", "text/csv",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/msword", "application/vnd.ms-excel",
+    }
+    ALLOWED_EXTENSIONS = {".pdf", ".jpg", ".jpeg", ".png", ".webp", ".heic", ".gif", ".tiff", ".bmp", ".txt", ".csv", ".docx", ".xlsx", ".doc", ".xls"}
+
+    file_ext = ("." + filename.rsplit(".", 1)[-1].lower()) if "." in filename else ""
+    if mime_type and mime_type not in ALLOWED_MIMES:
+        raise HTTPException(status_code=400, detail=f"Type de fichier non autorisé: {mime_type}")
+    if file_ext and file_ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail=f"Extension de fichier non autorisée: {file_ext}")
+
+    # SECURITY: Basic malicious content scan
+    try:
+        file_bytes_check = base64.b64decode(file_data[:200])
+        dangerous_signatures = [b'<%', b'<?php', b'<script', b'#!/', b'MZ']
+        for sig in dangerous_signatures:
+            if file_bytes_check[:len(sig)] == sig:
+                raise HTTPException(status_code=400, detail="Fichier potentiellement dangereux détecté")
+    except HTTPException:
+        raise
+    except Exception:
+        pass
 
     # Auto-extract with GPT-4o if no OCR fields provided and AI-extractable content exists
     ai_enhanced = False

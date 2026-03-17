@@ -5,7 +5,7 @@ import asyncio
 import uuid
 import os
 
-from config import db, logger
+from config import db, logger, limiter
 from models import (
     ContactRequest, ContactRequestUpdate,
     FAQItem, FAQItemCreate,
@@ -21,7 +21,8 @@ router = APIRouter()
 # ==================== AUTH ====================
 
 @router.post("/auth/login", response_model=TokenResponse)
-async def admin_login(credentials: AdminLogin):
+@limiter.limit("5/minute")
+async def admin_login(request: Request, credentials: AdminLogin):
     admin = await db.admins.find_one({"email": credentials.email}, {"_id": 0})
     if not admin:
         raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")
