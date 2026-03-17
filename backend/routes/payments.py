@@ -121,10 +121,19 @@ async def stripe_webhook(request: Request):
     try:
         webhook_response = await stripe_checkout.handle_webhook(body, sig_header)
         if webhook_response.session_id:
+            now = datetime.now(timezone.utc).isoformat()
             await db.payment_transactions.update_one(
                 {"session_id": webhook_response.session_id},
-                {"$set": {"status": webhook_response.event_type, "payment_status": webhook_response.payment_status, "updated_at": datetime.now(timezone.utc).isoformat()}}
+                {"$set": {"status": webhook_response.event_type, "payment_status": webhook_response.payment_status, "updated_at": now}}
             )
+            # SECURITY FIX: When payment confirmed, update related dossier_express entries
+            if webhook_response.payment_status == "paid":
+                result = await db.dossier_express.update_many(
+                    {"session_id": webhook_response.session_id, "payment_verified": False},
+                    {"$set": {"payment_verified": True, "payment_confirmed_at": now}}
+                )
+                if result.modified_count > 0:
+                    logger.info(f"Webhook: marked {result.modified_count} dossier(s) as payment_verified for session {webhook_response.session_id}")
         return {"received": True}
     except Exception as e:
         logger.error(f"Webhook error: {str(e)}")

@@ -147,15 +147,33 @@ async def dossier_express_submit(request: Request):
     # SECURITY FIX V13/V14: Verify payment before processing
     payment_verified = False
     if session_id:
+        # Step 1: Check DB for confirmed payment
         payment = await db.payment_transactions.find_one(
             {"session_id": session_id, "payment_status": "paid"},
             {"_id": 0, "session_id": 1}
         )
         if payment:
             payment_verified = True
+        else:
+            # Step 2: Live Stripe check (handles webhook race condition)
+            if STRIPE_API_KEY:
+                try:
+                    host_url = str(request.base_url).rstrip('/')
+                    webhook_url = f"{host_url}/api/webhook/stripe"
+                    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+                    status = await stripe_checkout.get_checkout_status(session_id)
+                    if status.payment_status == "paid":
+                        payment_verified = True
+                        # Update DB to reflect confirmed payment
+                        await db.payment_transactions.update_one(
+                            {"session_id": session_id},
+                            {"$set": {"payment_status": "paid", "status": status.status, "updated_at": datetime.now(timezone.utc).isoformat()}}
+                        )
+                        logger.info(f"Dossier Express: live Stripe check confirmed payment for session {session_id}")
+                except Exception as e:
+                    logger.warning(f"Dossier Express: live Stripe check failed for session {session_id}: {e}")
 
     if not payment_verified:
-        # Check if Stripe is configured — if not (test mode), allow submission with warning
         if STRIPE_API_KEY:
             raise HTTPException(status_code=402, detail="Paiement requis. Veuillez compléter le paiement avant de soumettre votre dossier.")
         else:
