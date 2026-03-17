@@ -118,8 +118,12 @@ export const DossierAnalysis = ({ token }) => {
 
   const handleActionClick = (action) => {
     if (action.cta_target === 'documents') {
+      // Dispatch event to switch tab, then click the tab trigger after delay
       const tabBtn = document.querySelector('[data-testid="tab-documents"]');
-      if (tabBtn) tabBtn.click();
+      if (tabBtn) {
+        tabBtn.click();
+        tabBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     } else if (action.cta_target === 'strategiia') {
       window.dispatchEvent(new Event('strategiia:open'));
     }

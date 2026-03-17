@@ -15,18 +15,37 @@ Application web complète en français pour fournir des conseils sur les maladie
 - Authentification (admin + client), Dashboard client/admin (15 onglets)
 - StratégiIA (analyse IA), Scoring qualité, Forum, chatbot, calculatrices
 
-### StratégiIA Phase 1 — Analyse de dossier (Feb 2026)
+### StratégiIA Phase 1 — Score & Analyse de dossier (Feb 2026)
 - **Endpoint:** `GET /api/client/dossier-analysis` (authenticated)
 - **Score composite "Solidité du dossier":** 0-100, basé sur complétude (40%), qualité docs (20%), analyses réalisées (15%), progression globale (15%), volume de pièces (10%)
-- **Messages dynamiques:** 5 seuils (<30%=urgent, 30-50%=attention, 50-70%=encourageant, 70-85%=positif, >85%=expert)
+- **Messages dynamiques:** 5 seuils (<30%, 30-50%, 50-70%, 70-85%, >85%)
 - **Points de fragilité:** Détection automatique (documents manquants, illisibles, pas de validation, pas d'analyse IA, aucun document)
 - **Alertes de risque:** Spécifiques par type de dossier (AT, MP, MDPH, assurance, expertise, faute inexcusable, recours) avec messages détaillés et actions recommandées
 - **Compteur d'actions:** "X éléments à traiter pour renforcer votre dossier"
 - **Détail du score:** Ventilation interactive avec barres de progression par critère
 - **Documents manquants:** Liste avec boutons "Ajouter" redirigeant vers l'espace documents
-- **Frontend:** Composant `DossierAnalysis.jsx` avec score ring SVG animé, cartes extensibles, design responsive
-- **Indicateur navbar:** Score compact dans la barre de navigation avec mini-ring, couleurs (rouge <50%, jaune 50-80%, vert >80%), clic → scroll vers analyse, mise à jour temps réel via événement `dossier:refresh`, micro-indicateur "+X%" après progression, version mobile compacte
-- **Fichiers:** `/app/backend/routes/client.py` (endpoint), `/app/frontend/src/components/DossierAnalysis.jsx` (UI), `/app/frontend/src/pages/EspaceClientPage.jsx` (navbar indicator)
+- **Indicateur navbar:** Score compact (mini-ring + statut coloré), version mobile compacte, clic → scroll, mise à jour temps réel, micro-indicateur "+X%"
+
+### StratégiIA Phase 2 — Feedback & Actions Recommandées (Feb 2026)
+- **Actions recommandées:** Section "Prochaines actions recommandées" avec CTAs cliquables priorisés
+  - Chaque action affiche : titre, description, badge d'impact estimé (+X%), icône, cible de navigation
+  - Actions contextuelles : upload de document, lancer analyse IA, dossier express
+  - Toggle "Voir toutes les actions" pour afficher/masquer la liste complète
+- **Feedback temps réel:** Toast de score mis à jour après chaque action (upload, suppression)
+  - Événement `dossier:refresh` déclenché après upload ET suppression de documents
+  - Animation "+X%" dans le toast de feedback
+  - Mise à jour automatique de tous les composants (navbar, DossierAnalysis)
+
+### StratégiIA Phase 3 — Prédictif & Premium (Feb 2026)
+- **Anticipation des motifs de refus:** Section "Anticipation des motifs de refus" avec badge "Prédictif"
+  - Logique prédictive par type de dossier (AT, MP, MDPH, assurance, expertise, recours)
+  - Cartes extensibles avec probabilité (Certaine/Élevée/Moyenne), détail et conséquence
+  - Conséquences affichées dans un encadré rouge pour maximum de visibilité
+- **CTA Premium "Analyse Expert":** Carte dorée avec gradient, couronne, badge Premium
+  - 4 features affichées en grille 2 colonnes
+  - Bouton doré "Demander une analyse expert"
+  - Contexte score : "Votre dossier est à X%. Un expert peut vous aider..."
+  - Affiché uniquement si score < 85 ET aucune analyse premium
 
 ### Système de notifications
 - Emails complétion (50/80/100%) + relances inactivité (J+7/14/21)
@@ -34,35 +53,21 @@ Application web complète en français pour fournir des conseils sur les maladie
 
 ### Éditeur de templates email
 - CRUD complet, aperçu live, toggle actif/brouillon, 3 templates défaut
+- Variables dynamiques, mode test, historique, campagnes programmées
 
-### Variables dynamiques
-- 5 variables : {{prenom}}, {{nom}}, {{completeness}}, {{documents_missing}}, {{date_inscription}}
-- Barre d'insertion, coloration syntaxique, résolution automatique
+### Guides PDF téléchargeables
+- 6 guides PDF générés à la volée via fpdf2 avec branding et police DejaVu Sans
 
-### Mode test email + Historique
-- Envoi test à une adresse, valeurs éditables, préfixe [TEST]
-- Historique dans email_test_history, indicateurs visuels sur cartes
-
-### Campagnes programmées
-- Dialog date/heure + cible + A/B optionnel
-- Scheduler vérifie toutes les 60s, exécution avec résolution variables
-- Tableau de bord avec statuts colorés et actions
-
-### Guides PDF téléchargeables (Bug fix - Feb 2026)
-- 6 guides PDF générés à la volée via fpdf2 avec branding
-- Endpoint public : `GET /api/resources/pdf/{guide_id}`
-
-## Tâches à venir
-
-### Phase 2: StratégiIA — Feedback temps réel & Recommandations (P1)
-- Feedback temps réel après actions utilisateur (upload, analyse)
-- Section "Prochaines actions recommandées" avec CTAs cliquables priorisés
-
-### Phase 3: StratégiIA — Fonctionnalités avancées (P2)
-- Logique prédictive anticipant les motifs de refus
-- Enrichissement du dashboard client avec données StratégiIA
-- Notifications intelligentes non intrusives
-- CTA premium "Analyse Expert"
+## Fichiers clés
+- `/app/frontend/src/components/DossierAnalysis.jsx` — Analyse complète (Phase 1+2+3)
+- `/app/frontend/src/components/ProgressDashboard.jsx` — Dashboard progression
+- `/app/frontend/src/pages/EspaceClientPage.jsx` — Espace client + navbar indicator
+- `/app/frontend/src/components/ClientDocuments.jsx` — Upload + refresh dossier
+- `/app/frontend/src/components/StrategiIA.jsx` — Modal StrategiIA
+- `/app/backend/routes/client.py` — Endpoint dossier-analysis complet
+- `/app/backend/routes/strategiia.py` — Endpoints StrategiIA/Dossier Express
+- `/app/backend/routes/admin.py` — Endpoints admin
+- `/app/backend/utils/pdf_guides.py` — Génération PDF
 
 ## Tâches en attente (bloquées)
 - **HubSpot (P2):** En attente du HUBSPOT_PORTAL_ID
@@ -75,16 +80,6 @@ Application web complète en français pour fournir des conseils sur les maladie
 - Intégration templates ↔ A/B testing
 - Statistiques d'utilisation par template
 - Campagnes récurrentes
-
-## Fichiers clés
-- `/app/frontend/src/components/DossierAnalysis.jsx` — Analyse de dossier Phase 1
-- `/app/frontend/src/components/ProgressDashboard.jsx` — Dashboard progression
-- `/app/frontend/src/pages/EspaceClientPage.jsx` — Espace client
-- `/app/frontend/src/components/StrategiIA.jsx` — Modal StrategiIA
-- `/app/backend/routes/client.py` — Endpoints client + dossier-analysis
-- `/app/backend/routes/strategiia.py` — Endpoints StrategiIA/Dossier Express
-- `/app/backend/routes/admin.py` — Endpoints admin
-- `/app/backend/utils/pdf_guides.py` — Génération PDF
 
 ## Credentials de test
 - Admin: `admin@accompagn-sante.fr` / `Admin2024!`
