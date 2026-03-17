@@ -528,25 +528,87 @@ function reprocessWithCorners(buffer, width, height, corners, filterMode) {
   };
 }
 
+/* ════════════════════ BRIGHTNESS / CONTRAST ════════════════════ */
+
+function adjustBrightnessContrast(buffer, width, height, brightness, contrast) {
+  const src = new Uint8ClampedArray(buffer);
+  const out = new Uint8ClampedArray(src.length);
+  const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+  for (let i = 0; i < src.length; i += 4) {
+    for (let c = 0; c < 3; c++) {
+      out[i + c] = Math.min(255, Math.max(0, factor * (src[i + c] - 128) + 128 + brightness));
+    }
+    out[i + 3] = src[i + 3];
+  }
+  return { imageData: out.buffer.slice(0), width, height };
+}
+
+/* ════════════════════ ROTATION ════════════════════ */
+
+function rotateImage(buffer, width, height, degrees) {
+  const src = new Uint8ClampedArray(buffer);
+  const angle = ((degrees % 360) + 360) % 360;
+  if (angle === 0) return { imageData: src.buffer.slice(0), width, height };
+
+  let outW, outH;
+  if (angle === 90 || angle === 270) { outW = height; outH = width; }
+  else { outW = width; outH = height; } // 180
+
+  const out = new Uint8ClampedArray(outW * outH * 4);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const si = (y * width + x) * 4;
+      let dx, dy;
+      if (angle === 90) { dx = height - 1 - y; dy = x; }
+      else if (angle === 180) { dx = width - 1 - x; dy = height - 1 - y; }
+      else { dx = y; dy = width - 1 - x; } // 270
+      const di = (dy * outW + dx) * 4;
+      out[di] = src[si]; out[di + 1] = src[si + 1]; out[di + 2] = src[si + 2]; out[di + 3] = src[si + 3];
+    }
+  }
+  return { imageData: out.buffer.slice(0), width: outW, height: outH };
+}
+
 /* ════════════════════ MESSAGE HANDLER ════════════════════ */
 
 self.onmessage = (e) => {
   const { type, id } = e.data;
+  const t0 = performance.now();
   try {
     if (type === 'init') {
-      // Pure JS — always ready, no loading needed
+      console.log('[Worker] Init request — Pure JS ready');
       self.postMessage({ id, type: 'init', success: true });
       return;
     }
 
     if (type === 'process') {
       const { imageData, width, height, filter } = e.data;
+      console.log('[Worker] Process', width, 'x', height, 'filter:', filter || 'document');
       const result = processImage(imageData, width, height, filter || 'document');
+      console.log('[Worker] Process done in', Math.round(performance.now() - t0), 'ms — detected:', result.autoDetected);
       self.postMessage({ id, type: 'result', ...result }, [result.imageData]);
+
     } else if (type === 'reprocess') {
       const { imageData, width, height, corners, filter } = e.data;
+      console.log('[Worker] Reprocess with corners, filter:', filter || 'document');
       const result = reprocessWithCorners(imageData, width, height, corners, filter || 'document');
+      console.log('[Worker] Reprocess done in', Math.round(performance.now() - t0), 'ms');
       self.postMessage({ id, type: 'result', ...result }, [result.imageData]);
+
+    } else if (type === 'adjust') {
+      const { imageData, width, height, brightness, contrast } = e.data;
+      console.log('[Worker] Adjust brightness:', brightness, 'contrast:', contrast);
+      const result = adjustBrightnessContrast(imageData, width, height, brightness || 0, contrast || 0);
+      console.log('[Worker] Adjust done in', Math.round(performance.now() - t0), 'ms');
+      self.postMessage({ id, type: 'result', ...result }, [result.imageData]);
+
+    } else if (type === 'rotate') {
+      const { imageData, width, height, degrees } = e.data;
+      console.log('[Worker] Rotate', degrees, 'degrees');
+      const result = rotateImage(imageData, width, height, degrees || 90);
+      console.log('[Worker] Rotate done in', Math.round(performance.now() - t0), 'ms');
+      self.postMessage({ id, type: 'result', ...result }, [result.imageData]);
+
     } else {
       self.postMessage({ id, type: 'error', error: 'Unknown type: ' + type });
     }

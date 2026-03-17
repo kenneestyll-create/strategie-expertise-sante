@@ -129,6 +129,45 @@ export async function reprocessInWorker(imageData, corners, filter = 'document')
   };
 }
 
+/**
+ * Adjust brightness/contrast on image
+ * @param {ImageData} imageData
+ * @param {number} brightness - [-100, 100]
+ * @param {number} contrast - [-100, 100]
+ */
+export async function adjustInWorker(imageData, brightness = 0, contrast = 0) {
+  const buffer = imageData.data.buffer.slice(0);
+  const res = await sendMessage(
+    { type: 'adjust', imageData: buffer, width: imageData.width, height: imageData.height, brightness, contrast },
+    [buffer],
+    5000
+  );
+  return {
+    imageData: new ImageData(new Uint8ClampedArray(res.imageData), res.width, res.height),
+    width: res.width,
+    height: res.height,
+  };
+}
+
+/**
+ * Rotate image by 90° increments
+ * @param {ImageData} imageData
+ * @param {number} degrees - 90, 180, 270
+ */
+export async function rotateInWorker(imageData, degrees = 90) {
+  const buffer = imageData.data.buffer.slice(0);
+  const res = await sendMessage(
+    { type: 'rotate', imageData: buffer, width: imageData.width, height: imageData.height, degrees },
+    [buffer],
+    5000
+  );
+  return {
+    imageData: new ImageData(new Uint8ClampedArray(res.imageData), res.width, res.height),
+    width: res.width,
+    height: res.height,
+  };
+}
+
 /** Terminate worker */
 export function terminateScanWorker() {
   if (worker) {
