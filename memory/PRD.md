@@ -7,7 +7,7 @@ Application web complète en français pour fournir des conseils sur les maladie
 - **Frontend:** React + Shadcn/UI + Tailwind CSS + Recharts
 - **Backend:** FastAPI + MongoDB
 - **Thème:** Warm neutral (Manrope + Playfair Display)
-- **Intégrations:** Stripe (test), PayPal (test), Claude Sonnet 4.5 (Emergent LLM Key), Resend (sandbox), apscheduler (cron), fpdf2 (PDF)
+- **Intégrations:** Stripe (test), PayPal (test), Claude Sonnet 4.5 (Emergent LLM Key), Resend (sandbox), apscheduler (cron), fpdf2 (PDF), slowapi (rate limiting)
 
 ## Services — Séparation gratuit/payant
 
@@ -22,34 +22,39 @@ Application web complète en français pour fournir des conseils sur les maladie
 - Score de solidité du dossier (XX/100) avec ring SVG animé
 - 3 métriques clés toujours visibles : Complétude, Qualité, Cohérence
 - Points de fragilité détectés avec sévérité
-- Alertes de risque spécifiques par type de dossier (AT, MP, MDPH, assurance, expertise, recours, faute inexcusable)
+- Alertes de risque spécifiques par type de dossier
 - Anticipation prédictive des motifs de refus
-- Actions recommandées priorisées (max 3) avec badges de priorité (haute/moyenne/faible)
+- Actions recommandées priorisées (max 3) avec badges de priorité
 - Feedback temps réel (+X% après upload/suppression)
-- Indicateur navbar compact (desktop + mobile) — uniquement pour clients Dossier Express
-- CTA Premium "Analyse Expert" pour upsell
+- Indicateur navbar compact — uniquement pour clients Dossier Express
 - **Gating:** Clients sans Dossier Express voient un teaser flouté avec CTA "Dossier Express — 97€"
 
 ## Fonctionnalités implémentées
+
+### Audit de Sécurité Complet (Mar 2026) ✅
+- **P1 - JWT Secret:** Variable d'environnement obligatoire, serveur refuse de démarrer sans
+- **P1 - Paiement sécurisé:** Vérification payment_verified + fallback live Stripe + webhook cross-update
+- **P2 - Rate Limiting:** slowapi 5/min sur tous les endpoints d'authentification
+- **P2 - Uploads sécurisés:** Whitelist MIME + extensions + limite 10Mo + scan signatures dangereuses
+- **P2 - CORS strict:** Origins depuis variable d'environnement (pas de wildcard *)
+- **P3 - Documents sécurisés:** Auth + vérification propriété sur tous les endpoints documents
+- **Bonus - Headers de sécurité:** X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy
 
 ### Séparation StratégiIA / Dossier Express (Mar 2026)
 - Backend: `has_dossier_express` flag dans `GET /api/client/dossier-analysis`
 - Free: réponse limitée (score, dynamic_message, summary uniquement)
 - Premium: réponse complète (key_metrics, predictions, risk_alerts, etc.)
-- Frontend: `DossierExpressUpsell` component pour clients gratuits (score flouté + lock + CTA 97€)
+- Frontend: `DossierExpressUpsell` component pour clients gratuits
 - StrategiIA simplifié : retiré DocumentUploader, OCR, dossier quality score
 - Navbar score gated derrière `has_dossier_express`
 
 ### Dossier Express — OCR Phase 2 intégré (Mar 2026)
 - DocumentUploader avec `enableOCR=true` dans le formulaire Dossier Express
-- Auto-remplissage des champs (type_dossier, régime, nom, situation) via OCR + GPT-4o
-- Pipeline : image → Tesseract OCR → GPT-4o enhancement → auto-fill
-- Bug fix : suppression de la dépendance `docChecks` des boutons submit/checkout
+- Auto-remplissage des champs via OCR + GPT-4o
 - Score composite (complétude 40%, qualité 20%, cohérence, analyses 15%, progression 15%, volume 10%)
-- Messages dynamiques (5 seuils), points de fragilité, alertes de risque
+- Messages dynamiques, points de fragilité, alertes de risque
 - Actions recommandées priorisées (max 3) avec badges couleur
 - Logique prédictive de refus par type de dossier
-- CTA Premium "Analyse Expert Personnalisée"
 
 ### Système de notifications
 - Emails complétion (50/80/100%) + relances inactivité (J+7/14/21)
@@ -59,16 +64,17 @@ Application web complète en français pour fournir des conseils sur les maladie
 - 6 guides PDF via fpdf2, police DejaVu Sans, branding
 
 ## Fichiers clés
+- `/app/backend/config.py` — Configuration centralisée, JWT, rate limiter
+- `/app/backend/server.py` — Middleware CORS, security headers, GZip
+- `/app/backend/routes/payments.py` — Stripe/PayPal + webhook sécurisé
+- `/app/backend/routes/strategiia.py` — StratégiIA + Dossier Express + payment verification
+- `/app/backend/routes/client.py` — Documents sécurisés + analyse dossier
 - `/app/frontend/src/components/DossierAnalysis.jsx` — Analyse premium + upsell
-- `/app/frontend/src/components/StrategiIA.jsx` — Modal StratégiIA simplifié
-- `/app/frontend/src/pages/EspaceClientPage.jsx` — Espace client + navbar gated
-- `/app/frontend/src/components/ClientDocuments.jsx` — Upload + refresh
-- `/app/backend/routes/client.py` — Endpoint dossier-analysis (free/premium)
-- `/app/backend/routes/strategiia.py` — Endpoints StrategiIA/Dossier Express
+- `/app/frontend/src/components/layout/Header.jsx` — Navbar gated score
 
 ## Tâches en attente
 - **HubSpot (P2):** En attente du HUBSPOT_PORTAL_ID
-- **Paiements production (P2):** En attente des clés Stripe/PayPal
+- **Paiements production (P2):** En attente des clés Stripe/PayPal live
 - **Contenu juridique (P3):** En attente du contenu utilisateur
 
 ## Backlog
