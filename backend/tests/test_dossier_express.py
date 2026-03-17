@@ -18,7 +18,7 @@ class TestDossierExpressAPI:
         response = requests.post(f"{BASE_URL}/api/dossier-express/checkout", json={
             "email": "test@example.com",
             "name": "Test User",
-            "origin_url": "https://secure-payment-flow-5.preview.emergentagent.com"
+            "origin_url": "https://scanner-fix-5.preview.emergentagent.com"
         })
         
         # Should return 200 with checkout url
@@ -36,7 +36,7 @@ class TestDossierExpressAPI:
     def test_dossier_express_checkout_without_email(self):
         """Test checkout still works with minimal data"""
         response = requests.post(f"{BASE_URL}/api/dossier-express/checkout", json={
-            "origin_url": "https://secure-payment-flow-5.preview.emergentagent.com"
+            "origin_url": "https://scanner-fix-5.preview.emergentagent.com"
         })
         
         # Should still succeed (email is optional for checkout creation)

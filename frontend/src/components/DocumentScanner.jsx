@@ -317,19 +317,19 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
           {workerLoading && (
             <div className="w-full max-w-xs flex items-center gap-2 p-2.5 rounded-xl bg-accent/10 border border-accent/20">
               <Loader2 className="w-4 h-4 text-accent animate-spin flex-shrink-0" />
-              <span className="text-accent/80 text-xs">Chargement du moteur avancé...</span>
+              <span className="text-accent/80 text-xs">Préparation du scanner...</span>
             </div>
           )}
           {workerReady && (
-            <div className="w-full max-w-xs flex items-center gap-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20" data-testid="opencv-ready-badge">
+            <div className="w-full max-w-xs flex items-center gap-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20" data-testid="scanner-ready-badge">
               <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-              <span className="text-emerald-400/80 text-xs">Détection automatique activée</span>
+              <span className="text-emerald-400/80 text-xs">Détection et recadrage automatiques activés</span>
             </div>
           )}
           {workerFailed && (
-            <div className="w-full max-w-xs flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20" data-testid="opencv-failed-badge">
+            <div className="w-full max-w-xs flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20" data-testid="scanner-failed-badge">
               <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0" />
-              <span className="text-amber-400/80 text-xs">Mode avancé indisponible — mode simple activé</span>
+              <span className="text-amber-400/80 text-xs">Scanner simplifié — capture directe disponible</span>
             </div>
           )}
 

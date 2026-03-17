@@ -55,7 +55,7 @@
 | Aspect | Détail |
 |--------|--------|
 | **Environnement actuel** | Preview Emergent (Kubernetes) |
-| **URL preview** | `https://secure-payment-flow-5.preview.emergentagent.com` |
+| **URL preview** | `https://scanner-fix-5.preview.emergentagent.com` |
 | **Frontend** | Port 3000 (supervisord, hot reload) |
 | **Backend** | Port 8001 (supervisord, hot reload) |
 | **Ingress** | Préfixe `/api` → backend:8001, reste → frontend:3000 |

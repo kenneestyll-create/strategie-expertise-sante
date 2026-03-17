@@ -1,7 +1,7 @@
 /**
  * Scanner Worker Manager
- * OpenCV runs ONLY inside the Web Worker — never in main thread
- * Communication via postMessage, 5s timeout, guaranteed fallback
+ * Pure-JS scanner runs ONLY inside the Web Worker — never in main thread.
+ * Communication via postMessage, 5s timeout per operation, guaranteed fallback.
  */
 
 let worker = null;
@@ -13,7 +13,8 @@ const pending = new Map();
 function getWorker() {
   if (worker) return worker;
   try {
-    worker = new Worker('/scanner.worker.js');
+    // Cache-bust to ensure latest worker version
+    worker = new Worker('/scanner.worker.js?v=2');
     worker.onmessage = (e) => {
       const { id, type } = e.data;
       const cb = pending.get(id);
@@ -24,14 +25,13 @@ function getWorker() {
       if (type === 'init') {
         ready = e.data.success;
         if (!ready) initFailed = true;
-        console.log(ready ? '[ScanWorker] OpenCV prêt dans le worker' : '[ScanWorker] OpenCV init échoué dans le worker');
+        console.log(ready ? '[ScanWorker] Scanner prêt' : '[ScanWorker] Scanner init échoué');
       }
     };
     worker.onerror = (err) => {
       console.error('[ScanWorker] Worker error:', err.message);
       initFailed = true;
-      // Reject all pending
-      for (const [id, cb] of pending) {
+      for (const [, cb] of pending) {
         cb({ type: 'error', error: 'Worker crashed' });
       }
       pending.clear();
@@ -52,7 +52,6 @@ function sendMessage(data, transfer = [], timeoutMs = 5000) {
     const id = ++msgId;
     const timer = setTimeout(() => {
       pending.delete(id);
-      console.warn(`[ScanWorker] Timeout ${timeoutMs}ms pour message ${id}`);
       reject(new Error('Worker timeout'));
     }, timeoutMs);
 
@@ -66,12 +65,12 @@ function sendMessage(data, transfer = [], timeoutMs = 5000) {
   });
 }
 
-/** Initialize OpenCV in worker (non-blocking, call early) */
+/** Initialize scanner worker (non-blocking, call early) */
 export async function initScanWorker() {
   if (ready) return true;
   if (initFailed) return false;
   try {
-    const res = await sendMessage({ type: 'init' }, [], 10000); // 10s for first load
+    const res = await sendMessage({ type: 'init' }, [], 10000);
     return res.success;
   } catch {
     initFailed = true;
@@ -79,7 +78,7 @@ export async function initScanWorker() {
   }
 }
 
-/** Check if worker+OpenCV is ready */
+/** Check if worker is ready */
 export function isScanReady() {
   return ready;
 }
@@ -96,11 +95,11 @@ export function isScanFailed() {
  * @returns {Promise<{imageData, width, height, corners, autoDetected}>}
  */
 export async function processInWorker(imageData, filter = 'document') {
-  const buffer = imageData.data.buffer.slice(0); // Copy for transfer
+  const buffer = imageData.data.buffer.slice(0);
   const res = await sendMessage(
     { type: 'process', imageData: buffer, width: imageData.width, height: imageData.height, filter },
     [buffer],
-    5000
+    8000
   );
   return {
     imageData: new ImageData(new Uint8ClampedArray(res.imageData), res.width, res.height),
@@ -121,7 +120,7 @@ export async function reprocessInWorker(imageData, corners, filter = 'document')
   const res = await sendMessage(
     { type: 'reprocess', imageData: buffer, width: imageData.width, height: imageData.height, corners, filter },
     [buffer],
-    5000
+    8000
   );
   return {
     imageData: new ImageData(new Uint8ClampedArray(res.imageData), res.width, res.height),
