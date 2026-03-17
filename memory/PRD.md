@@ -27,14 +27,22 @@ Application web complète en français pour fournir des conseils sur les maladie
 - **Indicateur navbar:** Score compact (mini-ring + statut coloré), version mobile compacte, clic → scroll, mise à jour temps réel, micro-indicateur "+X%"
 
 ### StratégiIA Phase 2 — Feedback & Actions Recommandées (Feb 2026)
-- **Actions recommandées:** Section "Prochaines actions recommandées" avec CTAs cliquables priorisés
-  - Chaque action affiche : titre, description, badge d'impact estimé (+X%), icône, cible de navigation
+- **Actions recommandées (max 3) :** Section "Prochaines actions recommandées" avec CTAs cliquables priorisés
+  - Badges de priorité colorés : haute (rouge), moyenne (ambre), faible (vert)
+  - Limité à 3 actions maximum pour guider efficacement sans surcharger
+  - Chaque action affiche : titre, description, badge d'impact estimé (+X%), badge de priorité
   - Actions contextuelles : upload de document, lancer analyse IA, dossier express
-  - Toggle "Voir toutes les actions" pour afficher/masquer la liste complète
-- **Feedback temps réel:** Toast de score mis à jour après chaque action (upload, suppression)
-  - Événement `dossier:refresh` déclenché après upload ET suppression de documents
-  - Animation "+X%" dans le toast de feedback
-  - Mise à jour automatique de tous les composants (navbar, DossierAnalysis)
+- **Feedback temps réel :** Toast animé après chaque action montrant l'impact concret
+  - "Votre score a augmenté de +X%" avec mise à jour immédiate
+  - "Cette action renforce significativement votre dossier"
+  - Événement `dossier:refresh` déclenché après upload ET suppression
+
+### Score détaillé — Métriques clés toujours visibles (Feb 2026)
+- **3 métriques clés** affichées directement dans la carte de score (sans toggle) :
+  - Complétude XX% — présence des documents essentiels
+  - Qualité XX% — ratio validé/en attente/illisible
+  - Cohérence XX% — alignement documents-dossier-analyses
+- **Objectif :** Permettre à l'utilisateur de comprendre immédiatement pourquoi il a ce score
 
 ### StratégiIA Phase 3 — Prédictif & Premium (Feb 2026)
 - **Anticipation des motifs de refus:** Section "Anticipation des motifs de refus" avec badge "Prédictif"
