@@ -86,19 +86,25 @@ export const DossierAnalysis = ({ token }) => {
   const [showAllRisks, setShowAllRisks] = useState(false);
   const [expandedRisk, setExpandedRisk] = useState(null);
 
+  const fetchAnalysis = async () => {
+    try {
+      const res = await axios.get(`${API}/client/dossier-analysis`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setData(res.data);
+    } catch {
+      setData(null);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchAnalysis(); }, [token]);
+
+  // Listen for refresh events
   useEffect(() => {
-    const fetchAnalysis = async () => {
-      try {
-        const res = await axios.get(`${API}/client/dossier-analysis`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setData(res.data);
-      } catch {
-        setData(null);
-      }
-      setLoading(false);
-    };
-    fetchAnalysis();
+    const handleRefresh = () => { fetchAnalysis(); };
+    window.addEventListener('dossier:refresh', handleRefresh);
+    return () => window.removeEventListener('dossier:refresh', handleRefresh);
   }, [token]);
 
   if (loading) {

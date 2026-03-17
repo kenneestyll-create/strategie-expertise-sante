@@ -27,7 +27,9 @@ import {
   Smartphone,
   Archive,
   BellRing,
-  Send
+  Send,
+  TrendingUp,
+  Shield
 } from 'lucide-react';
 import axios from 'axios';
 import { DataConsentBox } from '@/components/DataConsentBox';
@@ -169,11 +171,34 @@ const ClientDashboard = ({ token, clientName, logout }) => {
   const [notifSettings, setNotifSettings] = useState({ notifications_email: true, notifications_push: true });
   const [savingSettings, setSavingSettings] = useState(false);
   const [activeTab, setActiveTab] = useState('dossiers');
+  const [navScore, setNavScore] = useState(null);
+  const [scoreDelta, setScoreDelta] = useState(null);
   const push = usePushNotifications(token);
 
   const headers = { Authorization: `Bearer ${token}` };
 
-  useEffect(() => { fetchData(); }, []);
+  const fetchNavScore = async () => {
+    try {
+      const res = await axios.get(`${API}/client/dossier-analysis`, { headers });
+      const newScore = res.data.score;
+      const prev = sessionStorage.getItem('dossier_prev_score');
+      if (prev !== null && newScore > parseInt(prev, 10)) {
+        setScoreDelta(newScore - parseInt(prev, 10));
+        setTimeout(() => setScoreDelta(null), 5000);
+      }
+      sessionStorage.setItem('dossier_prev_score', String(newScore));
+      setNavScore(res.data);
+    } catch {}
+  };
+
+  useEffect(() => { fetchData(); fetchNavScore(); }, []);
+
+  // Listen for dossier refresh events (from document upload, etc.)
+  useEffect(() => {
+    const handleRefresh = () => { fetchNavScore(); };
+    window.addEventListener('dossier:refresh', handleRefresh);
+    return () => window.removeEventListener('dossier:refresh', handleRefresh);
+  }, []);
 
   const fetchData = async () => {
     setLoading(true);
@@ -240,9 +265,78 @@ const ClientDashboard = ({ token, clientName, logout }) => {
       {/* Header Bar */}
       <div className="bg-foreground text-primary-foreground py-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div>
-            <p className="text-sm text-primary-foreground/60">Espace client</p>
-            <p className="font-semibold">Bonjour, {clientName}</p>
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="min-w-0">
+              <p className="text-sm text-primary-foreground/60">Espace client</p>
+              <p className="font-semibold">Bonjour, {clientName}</p>
+            </div>
+
+            {/* Navbar Score Indicator */}
+            {navScore && (
+              <button
+                onClick={() => {
+                  setActiveTab('dossiers');
+                  setTimeout(() => {
+                    const el = document.querySelector('[data-testid="dossier-score-card"]');
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }, 100);
+                }}
+                className="hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-full border border-primary-foreground/15 bg-primary-foreground/5 hover:bg-primary-foreground/10 transition-all cursor-pointer group"
+                data-testid="navbar-score-indicator"
+              >
+                {/* Mini ring */}
+                <div className="relative w-8 h-8 flex-shrink-0">
+                  <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                    <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="3" />
+                    <circle
+                      cx="18" cy="18" r="15" fill="none"
+                      stroke={navScore.score < 50 ? '#ef4444' : navScore.score < 80 ? '#eab308' : '#22c55e'}
+                      strokeWidth="3" strokeLinecap="round"
+                      strokeDasharray={2 * Math.PI * 15}
+                      strokeDashoffset={2 * Math.PI * 15 - (navScore.score / 100) * 2 * Math.PI * 15}
+                      className="transition-all duration-700"
+                    />
+                  </svg>
+                  <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-primary-foreground">
+                    {navScore.score}
+                  </span>
+                </div>
+                <div className="flex flex-col items-start">
+                  <span className="text-[11px] font-medium text-primary-foreground/80 leading-tight">Dossier</span>
+                  <span className={`text-[10px] font-semibold leading-tight ${navScore.score < 50 ? 'text-red-400' : navScore.score < 80 ? 'text-yellow-400' : 'text-green-400'}`}>
+                    {navScore.score < 50 ? 'Fragile' : navScore.score < 80 ? 'En progression' : 'Solide'}
+                  </span>
+                </div>
+                {/* Delta indicator */}
+                {scoreDelta && scoreDelta > 0 && (
+                  <span className="flex items-center gap-0.5 text-[10px] font-bold text-green-400 animate-bounce" data-testid="navbar-score-delta">
+                    <TrendingUp className="w-3 h-3" />+{scoreDelta}%
+                  </span>
+                )}
+              </button>
+            )}
+            {/* Mobile score - compact */}
+            {navScore && (
+              <button
+                onClick={() => {
+                  setActiveTab('dossiers');
+                  setTimeout(() => {
+                    const el = document.querySelector('[data-testid="dossier-score-card"]');
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }, 100);
+                }}
+                className="sm:hidden flex items-center gap-1.5 px-2 py-1 rounded-full border border-primary-foreground/15 bg-primary-foreground/5"
+                data-testid="navbar-score-mobile"
+              >
+                <Shield className={`w-3.5 h-3.5 ${navScore.score < 50 ? 'text-red-400' : navScore.score < 80 ? 'text-yellow-400' : 'text-green-400'}`} />
+                <span className={`text-xs font-bold ${navScore.score < 50 ? 'text-red-400' : navScore.score < 80 ? 'text-yellow-400' : 'text-green-400'}`}>
+                  {navScore.score}%
+                </span>
+                {scoreDelta && scoreDelta > 0 && (
+                  <span className="text-[9px] font-bold text-green-400">+{scoreDelta}</span>
+                )}
+              </button>
+            )}
           </div>
           <div className="flex items-center gap-2">
             {/* Notifications Bell */}
@@ -557,7 +651,7 @@ const ClientDashboard = ({ token, clientName, logout }) => {
               </TabsContent>
 
               <TabsContent value="documents" data-testid="documents-tab-content">
-                <ClientDocuments token={token} onDocumentsChange={() => {}} />
+                <ClientDocuments token={token} onDocumentsChange={() => { window.dispatchEvent(new Event('dossier:refresh')); }} />
               </TabsContent>
             </Tabs>
           </>
