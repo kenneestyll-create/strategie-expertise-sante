@@ -1,0 +1,126 @@
+{
+  "summary": "Iteration 82 - Strict Mode Conditioning Testing. ALL 37 TESTS PASSED (100%). The scanner correctly implements strict conditioning of controls based on isSimpleMode boolean. Simple mode (default) shows only capture button in camera, only Valider+Reprendre+Mode avance in preview. Advanced mode shows switch camera, gallery, filters, rotation, and Page suivante. Mode toggle works bidirectionally in guide and preview phases without resetting the preview image.",
+  "tests_executed": {
+    "GUIDE_PHASE_TESTS": {
+      "TEST_01_SCANNER_OPENS": { "status": "PASS", "details": "Scanner modal opens from scanner-open-btn" },
+      "TEST_02_HEADER_SIMPLE_AMBER": { "status": "PASS", "details": "Header shows '(Simple)' in amber text-amber-400 class" },
+      "TEST_03_BADGE_SIMPLE": { "status": "PASS", "details": "Badge shows 'Mode simple — capture photo directe'" },
+      "TEST_04_TOGGLE_TEXT_SIMPLE": { "status": "PASS", "details": "Toggle button shows 'Activer le mode avance (filtres, rotation...)'" },
+      "TEST_05_HEADER_ADVANCED_GREEN": { "status": "PASS", "details": "After toggle, header shows '(Avance)' in green text-emerald-400 class" },
+      "TEST_06_BADGE_ADVANCED": { "status": "PASS", "details": "Badge shows 'Mode avance — filtres, rotation, multi-pages'" },
+      "TEST_07_TOGGLE_TEXT_ADVANCED": { "status": "PASS", "details": "Toggle button shows 'Revenir au mode simple'" }
+    },
+    "CAMERA_SIMPLE_MODE_TESTS": {
+      "TEST_08_CAMERA_TEXT_SIMPLE": { "status": "PASS", "details": "Camera shows 'Prenez la photo' in simple mode" },
+      "TEST_09_CAPTURE_EXISTS": { "status": "PASS", "details": "Capture button (scanner-capture-btn) exists in simple mode" },
+      "TEST_10_NO_SWITCH_CAMERA_SIMPLE": { "status": "PASS", "details": "CRITICAL: scanner-switch-camera NOT in DOM in simple mode" },
+      "TEST_11_NO_GALLERY_SIMPLE": { "status": "PASS", "details": "CRITICAL: camera-gallery-btn NOT in DOM in simple mode" },
+      "TEST_12_NO_PAGE_STRIP_SIMPLE": { "status": "PASS", "details": "page-strip NOT visible in simple mode" }
+    },
+    "CAMERA_ADVANCED_MODE_TESTS": {
+      "TEST_13_CAMERA_TEXT_ADVANCED": { "status": "PASS", "details": "Camera shows 'Cadrez le document' in advanced mode" },
+      "TEST_14_CAPTURE_ADVANCED": { "status": "PASS", "details": "Capture button exists in advanced mode" },
+      "TEST_15_SWITCH_CAMERA_ADVANCED": { "status": "PASS", "details": "CRITICAL: scanner-switch-camera EXISTS in advanced mode" },
+      "TEST_16_GALLERY_ADVANCED": { "status": "PASS", "details": "CRITICAL: camera-gallery-btn EXISTS in advanced mode" }
+    },
+    "PREVIEW_SIMPLE_MODE_TESTS": {
+      "TEST_17_NO_TOOLBAR_SIMPLE": { "status": "PASS", "details": "CRITICAL: advanced-toolbar NOT in DOM in simple preview" },
+      "TEST_18_NO_FILTERS_SIMPLE": { "status": "PASS", "details": "Filter buttons (filter-bw, etc) NOT in simple preview" },
+      "TEST_19_NO_ROTATION_SIMPLE": { "status": "PASS", "details": "Rotation buttons NOT in simple preview" },
+      "TEST_20_NO_ADD_PAGE_SIMPLE": { "status": "PASS", "details": "preview-add-page-btn (Page suivante) NOT in simple preview" },
+      "TEST_21_CONFIRM_EXISTS": { "status": "PASS", "details": "Valider / Sauvegarder button exists" },
+      "TEST_22_RETAKE_EXISTS": { "status": "PASS", "details": "Reprendre button exists" },
+      "TEST_23_SWITCH_ADVANCED_EXISTS": { "status": "PASS", "details": "switch-advanced-btn (Mode avance) exists in simple preview" },
+      "TEST_24_NO_SWITCH_SIMPLE_IN_SIMPLE": { "status": "PASS", "details": "switch-simple-btn NOT in simple preview" }
+    },
+    "PREVIEW_ADVANCED_MODE_TESTS": {
+      "TEST_25_TOOLBAR_ADVANCED": { "status": "PASS", "details": "advanced-toolbar EXISTS in advanced preview" },
+      "TEST_26_FILTERS_ADVANCED": { "status": "PASS", "details": "All 3 filters (filter-bw, filter-enhanced, filter-original) exist" },
+      "TEST_27_ROTATION_ADVANCED": { "status": "PASS", "details": "Both rotation buttons (rotate-left-btn, rotate-right-btn) exist" },
+      "TEST_28_ADD_PAGE_ADVANCED": { "status": "PASS", "details": "preview-add-page-btn (Page suivante) EXISTS in advanced" },
+      "TEST_29_CONFIRM_ADVANCED": { "status": "PASS", "details": "Valider button exists in advanced" },
+      "TEST_30_RETAKE_ADVANCED": { "status": "PASS", "details": "Reprendre button exists in advanced" },
+      "TEST_31_NO_SWITCH_ADVANCED_IN_ADVANCED": { "status": "PASS", "details": "switch-advanced-btn NOT in advanced preview" },
+      "TEST_32_SWITCH_SIMPLE_IN_ADVANCED": { "status": "PASS", "details": "switch-simple-btn EXISTS in advanced preview" },
+      "TEST_32B_SWITCH_SIMPLE_TEXT": { "status": "PASS", "details": "Button text is 'Revenir au mode simple'" }
+    },
+    "MODE_TOGGLE_IN_PREVIEW_TESTS": {
+      "TEST_33_PREVIEW_NOT_RESET": { "status": "PASS", "details": "Preview image (preview-image) NOT reset after mode toggle" },
+      "TEST_34_TOOLBAR_GONE_AFTER_TOGGLE": { "status": "PASS", "details": "Toolbar disappears after toggling to simple" },
+      "TEST_35_SWITCH_ADVANCED_APPEARS": { "status": "PASS", "details": "switch-advanced-btn appears after toggling to simple" },
+      "TEST_36_HEADER_SIMPLE_AFTER_TOGGLE": { "status": "PASS", "details": "Header shows (Simple) after toggling back" }
+    },
+    "SAVE_FUNCTIONALITY": {
+      "TEST_37_SAVE_SIMPLE_MODE": { "status": "PASS", "details": "Save works correctly in simple mode - scanner closes after save" }
+    }
+  },
+  "features_validated": {
+    "simple_mode_default": "Scanner opens in simple mode by default (isSimpleMode=true)",
+    "header_indicator": "Header shows '(Simple)' in amber or '(Avance)' in green",
+    "camera_simple": "Only capture button visible - NO switch camera, NO gallery shortcut",
+    "camera_advanced": "Switch camera + gallery + capture all visible",
+    "camera_text": "Simple shows 'Prenez la photo', Advanced shows 'Cadrez le document'",
+    "preview_simple": "Only Valider + Reprendre + Mode avance - NO filters, rotation, Page suivante",
+    "preview_advanced": "Full toolbar with filters (N&B, Contraste+, Original) + rotation + Page suivante + Revenir au mode simple",
+    "page_strip": "Only visible in advanced mode with pages",
+    "guide_toggle": "Works bidirectionally - switches badge text and button labels",
+    "preview_toggle": "Mode avance/Revenir toggles work without resetting preview image",
+    "save_simple": "Save works correctly in simple mode"
+  },
+  "key_test_ids": {
+    "scanner-capture-btn": "Capture button (both modes)",
+    "scanner-switch-camera": "Switch camera (advanced only)",
+    "camera-gallery-btn": "Gallery shortcut (advanced only)",
+    "advanced-toolbar": "Filters+rotation toolbar (advanced preview only)",
+    "filter-bw": "Noir & Blanc filter",
+    "filter-enhanced": "Contraste+ filter",
+    "filter-original": "Original filter",
+    "rotate-left-btn": "Rotate left",
+    "rotate-right-btn": "Rotate right",
+    "preview-add-page-btn": "Page suivante (advanced only)",
+    "switch-advanced-btn": "Mode avance button (simple preview only)",
+    "switch-simple-btn": "Revenir au mode simple (advanced preview only)",
+    "toggle-mode-btn": "Mode toggle on guide page",
+    "page-strip": "Page thumbnails strip (advanced only)"
+  },
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "notes": [
+      "A DataCloneError appeared after save related to 'recognizing text' worker - this appears to be from OCR functionality, not the scanner mode conditioning feature being tested",
+      "Scanner button (scanner-open-btn) only visible on mobile viewport due to 'flex sm:hidden' class"
+    ]
+  },
+  "test_report_links": [
+    "/app/test_reports/iteration_82.json"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Strict mode conditioning is correctly implemented using isSimpleMode ternary in camera phase",
+    "Page strip correctly wrapped in !isSimpleMode condition",
+    "Header mode indicator uses appropriate color classes (text-amber-400 for Simple, text-emerald-400 for Advanced)",
+    "Advanced preview has correct 'Revenir au mode simple' toggle (switch-simple-btn)",
+    "Mode toggle in preview does NOT reinitialize component or reset preview image - excellent UX"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend only testing)",
+    "frontend": "100% - 37/37 tests passed"
+  },
+  "test_credentials": {
+    "access_path": "/dossier-express -> click 'Commencer' -> scroll to find scanner-open-btn (mobile only)"
+  },
+  "seed_data_creation": "Used dynamically generated canvas images for testing file upload",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 82 validates STRICT mode conditioning. All controls correctly conditioned on isSimpleMode. Key findings: 1) Simple mode camera has ONLY capture button, 2) Advanced camera has switch camera + gallery + capture, 3) Simple preview has ONLY Valider/Reprendre/Mode avance, 4) Advanced preview has full toolbar + Page suivante + Revenir, 5) Mode toggles preserve preview image. Note: Unrelated DataCloneError may appear after save - from OCR worker, not scanner.",
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  }
+}

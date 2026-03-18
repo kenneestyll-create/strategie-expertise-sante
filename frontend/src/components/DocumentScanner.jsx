@@ -238,7 +238,9 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
           {pages.length > 0 && <span className="bg-accent text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full" data-testid="page-counter">{pages.length}</span>}
           <ScanLine className="w-4 h-4 text-emerald-400" />
           <span>CamScanner</span>
-          {isSimpleMode && <span className="text-[10px] text-amber-400 font-normal ml-1">(Simple)</span>}
+          <span className={`text-[10px] font-normal ml-1 ${isSimpleMode ? 'text-amber-400' : 'text-emerald-400'}`}>
+            {isSimpleMode ? '(Simple)' : '(Avance)'}
+          </span>
         </h3>
         <Button variant="ghost" size="sm" onClick={() => { stopCamera(); onClose(); }}
           className="text-white hover:bg-white/10 min-h-[44px] min-w-[44px]" data-testid="scanner-close" aria-label="Fermer le scanner">
@@ -246,7 +248,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
         </Button>
       </div>
 
-      {pages.length > 0 && (phase === 'camera' || phase === 'preview') && (
+      {!isSimpleMode && pages.length > 0 && (phase === 'camera' || phase === 'preview') && (
         <PageStrip pages={pages} activeIndex={-1} onSelect={() => setPhase('pages')} />
       )}
 
@@ -309,7 +311,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
             <div className="absolute bottom-[6%] right-[6%] w-8 h-8 border-b-4 border-r-4 border-emerald-400 rounded-br-lg" />
             <div className="absolute top-[calc(6%+12px)] left-0 right-0 text-center">
               <span className="text-white/80 text-xs bg-black/50 px-3 py-1.5 rounded-full">
-                {pages.length === 0 ? 'Cadrez le document' : `Page ${pages.length + 1}`}
+                {isSimpleMode ? 'Prenez la photo' : (pages.length === 0 ? 'Cadrez le document' : `Page ${pages.length + 1}`)}
               </span>
             </div>
           </div>
@@ -319,25 +321,41 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
             </div>
           )}
           <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-6 pb-8 pt-4 bg-gradient-to-t from-black/80 to-transparent">
-            <div className="flex flex-col items-center gap-1.5">
-              <Button variant="ghost" size="sm" onClick={switchCamera} className="text-white hover:bg-white/10 rounded-full w-14 h-14 min-h-[56px]" data-testid="scanner-switch-camera">
-                <RotateCcw className="w-5 h-5" />
-              </Button>
-              <button onClick={() => fileInputRef.current?.click()} className="text-white/60 text-[10px] hover:text-white/80 min-h-[32px] px-2" data-testid="camera-gallery-btn">
-                <ImageUp className="w-4 h-4 mx-auto" />
-              </button>
-            </div>
-            <button onClick={captureFromCamera} disabled={!videoReady}
-              className={`rounded-full border-4 border-white bg-white/20 hover:bg-white/40 transition-colors flex items-center justify-center active:scale-95 ${!videoReady ? 'opacity-40' : ''}`}
-              data-testid="scanner-capture-btn" style={{ width: 72, height: 72 }}>
-              <div className="rounded-full bg-white" style={{ width: 56, height: 56 }} />
-            </button>
-            {pages.length > 0 ? (
-              <Button variant="ghost" size="sm" onClick={() => { stopCamera(); setPhase('pages'); }}
-                className="text-white hover:bg-white/10 rounded-full w-14 h-14 min-h-[56px]">
-                <Check className="w-5 h-5" />
-              </Button>
-            ) : <div style={{ width: 56, height: 56 }} />}
+            {isSimpleMode ? (
+              /* Mode simple : uniquement le bouton capture */
+              <>
+                <div style={{ width: 56, height: 56 }} />
+                <button onClick={captureFromCamera} disabled={!videoReady}
+                  className={`rounded-full border-4 border-white bg-white/20 hover:bg-white/40 transition-colors flex items-center justify-center active:scale-95 ${!videoReady ? 'opacity-40' : ''}`}
+                  data-testid="scanner-capture-btn" style={{ width: 72, height: 72 }}>
+                  <div className="rounded-full bg-white" style={{ width: 56, height: 56 }} />
+                </button>
+                <div style={{ width: 56, height: 56 }} />
+              </>
+            ) : (
+              /* Mode avance : capture + switch camera + galerie + terminer */
+              <>
+                <div className="flex flex-col items-center gap-1.5">
+                  <Button variant="ghost" size="sm" onClick={switchCamera} className="text-white hover:bg-white/10 rounded-full w-14 h-14 min-h-[56px]" data-testid="scanner-switch-camera">
+                    <RotateCcw className="w-5 h-5" />
+                  </Button>
+                  <button onClick={() => fileInputRef.current?.click()} className="text-white/60 text-[10px] hover:text-white/80 min-h-[32px] px-2" data-testid="camera-gallery-btn">
+                    <ImageUp className="w-4 h-4 mx-auto" />
+                  </button>
+                </div>
+                <button onClick={captureFromCamera} disabled={!videoReady}
+                  className={`rounded-full border-4 border-white bg-white/20 hover:bg-white/40 transition-colors flex items-center justify-center active:scale-95 ${!videoReady ? 'opacity-40' : ''}`}
+                  data-testid="scanner-capture-btn" style={{ width: 72, height: 72 }}>
+                  <div className="rounded-full bg-white" style={{ width: 56, height: 56 }} />
+                </button>
+                {pages.length > 0 ? (
+                  <Button variant="ghost" size="sm" onClick={() => { stopCamera(); setPhase('pages'); }}
+                    className="text-white hover:bg-white/10 rounded-full w-14 h-14 min-h-[56px]">
+                    <Check className="w-5 h-5" />
+                  </Button>
+                ) : <div style={{ width: 56, height: 56 }} />}
+              </>
+            )}
           </div>
         </div>
       )}
@@ -426,6 +444,10 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
                       <Plus className="w-4 h-4" /> Page suivante
                     </Button>
                   </div>
+                  <button onClick={() => setIsSimpleMode(true)}
+                    className="w-full text-center text-white/40 text-xs py-2 min-h-[36px] hover:text-white/60 transition-colors" data-testid="switch-simple-btn">
+                    Revenir au mode simple
+                  </button>
                 </>
               )}
             </div>
