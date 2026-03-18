@@ -111,7 +111,9 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
       const video = videoRef.current;
       if (!video) return;
       video.srcObject = stream;
-      video.play();
+      video.play().catch(err => {
+        console.warn('Lecture video interrompue, recommencez si necessaire', err);
+      });
 
       video.onloadedmetadata = () => {
         const canvas = canvasRef.current;
