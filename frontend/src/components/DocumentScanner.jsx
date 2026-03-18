@@ -105,6 +105,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
   const adjustImgRef = useRef(null);
   const engineRef = useRef(new ScannerEngine());
   const adjustTimeoutRef = useRef(null);
+  const animFrameRef = useRef(null);
 
   const [phase, setPhase] = useState('guide');
   const [pages, setPages] = useState([]);
@@ -124,13 +125,16 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
   const [stepLog, setStepLog] = useState('');
   const [simpleMode, setSimpleMode] = useState(false);
   const [imageReady, setImageReady] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
 
   // canEdit = image chargée ET pas en mode simple
   const canEdit = imageReady && !simpleMode;
 
   /* ── Stop camera ── */
   const stopCamera = useCallback(() => {
+    if (animFrameRef.current) { cancelAnimationFrame(animFrameRef.current); animFrameRef.current = null; }
     if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
+    setVideoReady(false);
   }, []);
 
   /* ── Cleanup on unmount ── */
@@ -214,25 +218,29 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
   const startCamera = useCallback(async () => {
     setError(''); setStepLog(''); setBrightness(0); setContrast(0);
     setShowAdjust(false); setShowManualMode(false); setImageReady(false);
+    setVideoReady(false);
     setPhase('camera');
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false
       });
       streamRef.current = stream;
+      const video = videoRef.current;
+      if (!video) return;
+      video.srcObject = stream;
+      video.play();
+
+      // Pattern onloadedmetadata — garantit que les dimensions sont pretes
+      video.onloadedmetadata = () => {
+        console.log('[Camera] Ready:', video.videoWidth, 'x', video.videoHeight);
+        setVideoReady(true);
+      };
     } catch (err) {
       if (err.name === 'NotAllowedError') setError("Autorisez la camera. Vous pouvez choisir une photo.");
       else if (err.name === 'NotFoundError') setError('Aucune camera. Utilisez la galerie.');
       else setError(`Erreur camera : ${err.message}`);
     }
   }, [facingMode]);
-
-  useEffect(() => {
-    if (phase === 'camera' && streamRef.current && videoRef.current) {
-      videoRef.current.srcObject = streamRef.current;
-      videoRef.current.play().catch(() => {});
-    }
-  }, [phase]);
 
   const switchCamera = useCallback(() => { stopCamera(); setFacingMode(p => p === 'environment' ? 'user' : 'environment'); }, [stopCamera]);
   useEffect(() => { if (phase === 'camera' && !streamRef.current) startCamera(); }, [facingMode, phase, startCamera]);
@@ -243,11 +251,14 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
     const canvas = canvasRef.current;
     if (!video || !canvas) return;
 
+    // Guard: onloadedmetadata doit avoir ete appele
     if (!video.videoWidth || !video.videoHeight) {
-      setError("Camera pas prete. Patientez.");
+      console.warn('[Scanner] Video pas prete (dimensions 0)');
+      setError("Camera pas prete. Patientez un instant.");
       return;
     }
 
+    console.log('[Scanner] Capture:', video.videoWidth, 'x', video.videoHeight);
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext('2d').drawImage(video, 0, 0);
@@ -496,7 +507,8 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
                 <ImageUp className="w-4 h-4 mx-auto" />
               </button>
             </div>
-            <button onClick={capture} className="rounded-full border-4 border-white bg-white/20 hover:bg-white/40 transition-colors flex items-center justify-center active:scale-95"
+            <button onClick={capture} disabled={!videoReady}
+              className={`rounded-full border-4 border-white bg-white/20 hover:bg-white/40 transition-colors flex items-center justify-center active:scale-95 ${!videoReady ? 'opacity-40' : ''}`}
               data-testid="scanner-capture-btn" style={{ width: 72, height: 72 }}>
               <div className="rounded-full bg-white" style={{ width: 56, height: 56 }} />
             </button>
