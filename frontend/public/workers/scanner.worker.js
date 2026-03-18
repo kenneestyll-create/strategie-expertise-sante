@@ -1,137 +1,103 @@
 /**
- * Scanner Worker — OffscreenCanvas + Stateful
- * Architecture definitive: toutes les operations graphiques dans le Worker.
- * Le main thread ne fait JAMAIS de traitement d'image.
+ * scanner.worker.js — Stateful Worker avec OffscreenCanvas
+ * Actions : scan, filter, rotate, save
+ * Aucun appel bloquant dans le thread principal
  */
 
 let currentCanvas = null;
 let currentCtx = null;
-let originalImageData = null;
+let originalImage = null;
 
-self.onmessage = async (e) => {
+self.onmessage = async function (e) {
   const msg = e.data;
 
   if (msg.type === 'scan') {
-    try {
-      const bitmap = await createImageBitmap(msg.imageBlob);
-      currentCanvas = new OffscreenCanvas(bitmap.width, bitmap.height);
-      currentCtx = currentCanvas.getContext('2d');
-      currentCtx.drawImage(bitmap, 0, 0);
-      bitmap.close();
-
-      // Stocker l'image originale pour les filtres
-      originalImageData = currentCtx.getImageData(0, 0, currentCanvas.width, currentCanvas.height);
-
-      await sendPreview('original');
-    } catch (err) {
-      self.postMessage({ type: 'error', error: err.message });
-    }
+    const bitmap = await createImageBitmap(msg.blob);
+    currentCanvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+    currentCtx = currentCanvas.getContext('2d');
+    currentCtx.drawImage(bitmap, 0, 0);
+    bitmap.close();
+    originalImage = currentCtx.getImageData(0, 0, currentCanvas.width, currentCanvas.height);
+    await sendPreview();
     return;
   }
 
-  if (msg.type === 'filter' && currentCanvas) {
-    await applyFilter(msg.filter);
+  if (msg.type === 'filter' && currentCanvas && originalImage) {
+    let data = new ImageData(
+      new Uint8ClampedArray(originalImage.data),
+      originalImage.width,
+      originalImage.height
+    );
+    if (msg.filter === 'bw') data = binarize(data);
+    else if (msg.filter === 'enhanced') data = adjustContrast(data, 50);
+    currentCanvas.width = data.width;
+    currentCanvas.height = data.height;
+    currentCtx = currentCanvas.getContext('2d');
+    currentCtx.putImageData(data, 0, 0);
+    await sendPreview();
     return;
   }
 
   if (msg.type === 'rotate' && currentCanvas) {
-    await rotateCanvas(msg.direction);
+    const rotated = rotateCanvas(currentCanvas, msg.direction === 'left' ? -90 : 90);
+    currentCanvas = rotated.canvas;
+    currentCtx = rotated.ctx;
+    originalImage = currentCtx.getImageData(0, 0, currentCanvas.width, currentCanvas.height);
+    await sendPreview();
     return;
   }
 
   if (msg.type === 'save' && currentCanvas) {
-    try {
-      const blob = await currentCanvas.convertToBlob({ type: 'image/jpeg', quality: 0.95 });
-      const buffer = await blob.arrayBuffer();
-      self.postMessage({ type: 'saved', data: buffer }, [buffer]);
-    } catch (err) {
-      self.postMessage({ type: 'error', error: err.message });
-    }
+    const blob = await currentCanvas.convertToBlob({ type: 'image/jpeg', quality: 0.95 });
+    const buffer = await blob.arrayBuffer();
+    self.postMessage({ type: 'saved', data: buffer }, [buffer]);
     return;
   }
 };
 
-// === Fonctions internes ===
-
-async function applyFilter(filter) {
-  if (!originalImageData) return;
-
-  let imageData;
-  if (filter === 'original') {
-    imageData = new ImageData(
-      new Uint8ClampedArray(originalImageData.data),
-      originalImageData.width,
-      originalImageData.height
-    );
-  } else {
-    imageData = new ImageData(
-      new Uint8ClampedArray(originalImageData.data),
-      originalImageData.width,
-      originalImageData.height
-    );
-    if (filter === 'bw') binarize(imageData);
-    if (filter === 'enhanced') adjustContrast(imageData, 50);
-  }
-
-  currentCanvas.width = imageData.width;
-  currentCanvas.height = imageData.height;
-  currentCtx = currentCanvas.getContext('2d');
-  currentCtx.putImageData(imageData, 0, 0);
-  await sendPreview(filter);
-}
-
 async function sendPreview() {
-  try {
-    const blob = await currentCanvas.convertToBlob({ type: 'image/jpeg', quality: 0.9 });
-    const buffer = await blob.arrayBuffer();
-    self.postMessage({ type: 'preview', data: buffer }, [buffer]);
-  } catch (err) {
-    self.postMessage({ type: 'error', error: err.message });
-  }
+  const blob = await currentCanvas.convertToBlob({ type: 'image/jpeg', quality: 0.9 });
+  const buffer = await blob.arrayBuffer();
+  self.postMessage(
+    { type: 'preview', data: buffer, width: currentCanvas.width, height: currentCanvas.height },
+    [buffer]
+  );
 }
 
-function binarize(imageData, threshold = 128) {
-  const data = imageData.data;
-  for (let i = 0; i < data.length; i += 4) {
-    const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+function binarize(imageData, threshold) {
+  if (threshold === undefined) threshold = 128;
+  const d = imageData.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const gray = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
     const val = gray > threshold ? 255 : 0;
-    data[i] = data[i + 1] = data[i + 2] = val;
+    d[i] = d[i + 1] = d[i + 2] = val;
   }
+  return imageData;
 }
 
 function adjustContrast(imageData, contrast) {
   const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
-  const data = imageData.data;
-  for (let i = 0; i < data.length; i += 4) {
-    data[i] = Math.min(255, Math.max(0, factor * (data[i] - 128) + 128));
-    data[i + 1] = Math.min(255, Math.max(0, factor * (data[i + 1] - 128) + 128));
-    data[i + 2] = Math.min(255, Math.max(0, factor * (data[i + 2] - 128) + 128));
+  const d = imageData.data;
+  for (let i = 0; i < d.length; i += 4) {
+    d[i] = Math.min(255, Math.max(0, factor * (d[i] - 128) + 128));
+    d[i + 1] = Math.min(255, Math.max(0, factor * (d[i + 1] - 128) + 128));
+    d[i + 2] = Math.min(255, Math.max(0, factor * (d[i + 2] - 128) + 128));
   }
+  return imageData;
 }
 
-async function rotateCanvas(direction) {
-  const angle = direction === 'left' ? -90 : 90;
-  const rad = angle * Math.PI / 180;
+function rotateCanvas(canvas, angle) {
+  const rad = (angle * Math.PI) / 180;
   const cos = Math.cos(rad);
   const sin = Math.sin(rad);
-
-  const newWidth = Math.round(Math.abs(currentCanvas.width * cos) + Math.abs(currentCanvas.height * sin));
-  const newHeight = Math.round(Math.abs(currentCanvas.width * sin) + Math.abs(currentCanvas.height * cos));
-
-  const rotated = new OffscreenCanvas(newWidth, newHeight);
+  const newW = Math.round(Math.abs(canvas.width * cos) + Math.abs(canvas.height * sin));
+  const newH = Math.round(Math.abs(canvas.width * sin) + Math.abs(canvas.height * cos));
+  const rotated = new OffscreenCanvas(newW, newH);
   const ctx = rotated.getContext('2d');
-  ctx.translate(newWidth / 2, newHeight / 2);
+  ctx.translate(newW / 2, newH / 2);
   ctx.rotate(rad);
-  ctx.drawImage(currentCanvas, -currentCanvas.width / 2, -currentCanvas.height / 2);
-
-  currentCanvas = rotated;
-  currentCtx = ctx;
-
-  // Mettre a jour originalImageData apres rotation
-  originalImageData = currentCtx.getImageData(0, 0, currentCanvas.width, currentCanvas.height);
-
-  await sendPreview();
+  ctx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
+  return { canvas: rotated, ctx };
 }
 
-console.log('[ScannerWorker] OffscreenCanvas worker ready');
 self.postMessage({ type: 'ready' });

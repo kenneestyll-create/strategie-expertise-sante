@@ -1,153 +1,112 @@
-import { useRef, useCallback, useEffect, useState } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 
 /**
- * MobileScanner — Classe gerant le Worker OffscreenCanvas.
- * Pattern: capture(blob) → applyFilter/rotate → save()
- * Le Worker garde l'image en memoire, le main thread recoit des previews JPEG.
+ * Hook simplifie — pas de classe, juste un Worker + refs.
+ * Le Worker garde l'image en memoire (OffscreenCanvas stateful).
+ * Le main thread recoit des previews JPEG via ArrayBuffer transferable.
  */
-class MobileScanner {
-  constructor() {
-    this.worker = new Worker('/workers/scanner.worker.js');
-    this.onPreview = null;
-    this.onError = null;
-    this.onReady = null;
-    this._setupWorker();
-  }
+export function useScannerWorker() {
+  const workerRef = useRef(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [previewSize, setPreviewSize] = useState({ width: 0, height: 0 });
+  const [isReady, setIsReady] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState(null);
+  const prevUrlRef = useRef(null);
 
-  _setupWorker() {
-    this.worker.onmessage = (e) => {
-      const { type, data, error } = e.data;
-      if (type === 'ready' && this.onReady) {
-        this.onReady();
-      }
-      if (type === 'preview' && this.onPreview) {
-        const blob = new Blob([data], { type: 'image/jpeg' });
-        const url = URL.createObjectURL(blob);
-        this.onPreview(url);
-      }
-      if (type === 'error' && this.onError) {
-        this.onError(error);
-      }
+  const handleMessage = useCallback((e) => {
+    const { type, data, width, height, error: err } = e.data;
+
+    if (type === 'ready') {
+      setIsReady(true);
+      return;
+    }
+
+    if (type === 'preview') {
+      if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current);
+      const blob = new Blob([data], { type: 'image/jpeg' });
+      const url = URL.createObjectURL(blob);
+      prevUrlRef.current = url;
+      setPreviewUrl(url);
+      if (width && height) setPreviewSize({ width, height });
+      setIsProcessing(false);
+      return;
+    }
+
+    if (type === 'error') {
+      setError(err);
+      setIsProcessing(false);
+      return;
+    }
+    // 'saved' handled by save() promise
+  }, []);
+
+  const createWorker = useCallback(() => {
+    const w = new Worker('/workers/scanner.worker.js');
+    w.onmessage = handleMessage;
+    w.onerror = (err) => { setError(err.message); setIsProcessing(false); };
+    workerRef.current = w;
+    setIsReady(false);
+  }, [handleMessage]);
+
+  useEffect(() => {
+    createWorker();
+    return () => {
+      workerRef.current?.terminate();
+      if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current);
     };
-    this.worker.onerror = (err) => {
-      if (this.onError) this.onError(err.message);
-    };
-  }
+  }, [createWorker]);
 
-  capture(blob) {
-    this.worker.postMessage({ type: 'scan', imageBlob: blob });
-  }
+  const scan = useCallback((blob) => {
+    setIsProcessing(true);
+    setError(null);
+    workerRef.current?.postMessage({ type: 'scan', blob });
+  }, []);
 
-  applyFilter(filter) {
-    this.worker.postMessage({ type: 'filter', filter });
-  }
+  const filter = useCallback((name) => {
+    setIsProcessing(true);
+    workerRef.current?.postMessage({ type: 'filter', filter: name });
+  }, []);
 
-  rotate(direction) {
-    this.worker.postMessage({ type: 'rotate', direction });
-  }
+  const rotate = useCallback((direction) => {
+    setIsProcessing(true);
+    workerRef.current?.postMessage({ type: 'rotate', direction });
+  }, []);
 
-  save() {
+  const save = useCallback(() => {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
-        this.worker.removeEventListener('message', handler);
+        workerRef.current?.removeEventListener('message', handler);
         reject(new Error('Save timeout'));
       }, 10000);
 
       const handler = (e) => {
         if (e.data.type === 'saved') {
           clearTimeout(timeout);
-          this.worker.removeEventListener('message', handler);
+          workerRef.current?.removeEventListener('message', handler);
           resolve(e.data.data);
         }
         if (e.data.type === 'error') {
           clearTimeout(timeout);
-          this.worker.removeEventListener('message', handler);
+          workerRef.current?.removeEventListener('message', handler);
           reject(new Error(e.data.error));
         }
       };
-      this.worker.addEventListener('message', handler);
-      this.worker.postMessage({ type: 'save' });
+      workerRef.current?.addEventListener('message', handler);
+      workerRef.current?.postMessage({ type: 'save' });
     });
-  }
-
-  terminate() {
-    this.worker.terminate();
-  }
-}
-
-/**
- * React hook wrapping MobileScanner.
- * isReady = true quand le Worker a emis 'ready'
- * isSimpleMode = false par defaut (mode avance)
- */
-export function useScannerWorker() {
-  const scannerRef = useRef(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [error, setError] = useState(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [isReady, setIsReady] = useState(false);
-  const [isSimpleMode, setIsSimpleMode] = useState(false);
-  const prevUrlRef = useRef(null);
-
-  const wireScanner = useCallback((scanner) => {
-    scanner.onReady = () => setIsReady(true);
-    scanner.onPreview = (url) => {
-      if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current);
-      prevUrlRef.current = url;
-      setPreviewUrl(url);
-      setIsProcessing(false);
-    };
-    scanner.onError = (msg) => {
-      setError(msg);
-      setIsProcessing(false);
-    };
-  }, []);
-
-  useEffect(() => {
-    const scanner = new MobileScanner();
-    wireScanner(scanner);
-    scannerRef.current = scanner;
-
-    return () => {
-      scanner.terminate();
-      if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current);
-    };
-  }, [wireScanner]);
-
-  const capture = useCallback((blob) => {
-    setIsProcessing(true);
-    setError(null);
-    scannerRef.current?.capture(blob);
-  }, []);
-
-  const applyFilter = useCallback((filter) => {
-    setIsProcessing(true);
-    scannerRef.current?.applyFilter(filter);
-  }, []);
-
-  const rotate = useCallback((direction) => {
-    setIsProcessing(true);
-    scannerRef.current?.rotate(direction);
-  }, []);
-
-  const save = useCallback(async () => {
-    if (!scannerRef.current) throw new Error('Scanner not initialized');
-    const arrayBuffer = await scannerRef.current.save();
-    return new Blob([arrayBuffer], { type: 'image/jpeg' });
   }, []);
 
   const reset = useCallback(() => {
     if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current);
     prevUrlRef.current = null;
     setPreviewUrl(null);
+    setPreviewSize({ width: 0, height: 0 });
     setError(null);
     setIsProcessing(false);
-    setIsReady(false);
-    scannerRef.current?.terminate();
-    const scanner = new MobileScanner();
-    wireScanner(scanner);
-    scannerRef.current = scanner;
-  }, [wireScanner]);
+    workerRef.current?.terminate();
+    createWorker();
+  }, [createWorker]);
 
-  return { previewUrl, capture, applyFilter, rotate, save, reset, error, isProcessing, isReady, isSimpleMode, setIsSimpleMode };
+  return { previewUrl, previewSize, isReady, isProcessing, error, scan, filter, rotate, save, reset };
 }

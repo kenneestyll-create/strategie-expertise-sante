@@ -1,0 +1,122 @@
+{
+  "summary": "Iteration 84 - Complete scanner rewrite testing. ALL FEATURES WORKING. Tested: worker 'ready' emit, advanced mode default, file upload triggers scan, filters (N&B/Contraste+/Original), rotation (left/right), controls outside canvas, mode toggle (simple/advanced), save/valider closes scanner, multi-page flow (Page suivante/Terminer), no parasitic elements, preview image uses native dimensions with max-width constraint.",
+  "tests_executed": {
+    "WORKER_AND_INITIALIZATION": {
+      "TEST_01_WORKER_READY_BADGE": { "status": "PASS", "details": "Worker emits 'ready' - green check icon visible, not spinner" },
+      "TEST_02_ADVANCED_MODE_DEFAULT": { "status": "PASS", "details": "Header shows '(Avance)' by default in green text-emerald-400" },
+      "TEST_03_BADGE_SHOWS_ADVANCED": { "status": "PASS", "details": "Badge shows 'Mode avance — filtres, rotation, multi-pages'" }
+    },
+    "FILE_UPLOAD_AND_PREVIEW": {
+      "TEST_04_FILE_UPLOAD_TRIGGERS_SCAN": { "status": "PASS", "details": "File upload via input triggers scan, preview shows image" },
+      "TEST_05_PREVIEW_CORRECT_DIMENSIONS": { "status": "PASS", "details": "Preview image displays at native dimensions (800x600) with max-width: 100% constraint" },
+      "TEST_06_PREVIEW_USES_PREVIEW_SIZE": { "status": "PASS", "details": "Worker sends { type:'preview', data, width, height } - hook stores in previewSize, component uses for 1:1 display" }
+    },
+    "ADVANCED_TOOLBAR_TESTS": {
+      "TEST_07_TOOLBAR_VISIBLE_DEFAULT": { "status": "PASS", "details": "advanced-toolbar visible by default in preview when isReady" },
+      "TEST_08_CONTROLS_OUTSIDE_CANVAS": { "status": "PASS", "details": "Toolbar is in separate div BELOW preview image - gap of 268px confirmed" },
+      "TEST_09_FILTER_BW_WORKS": { "status": "PASS", "details": "N&B filter clicked, preview URL changed - image converted to black/white" },
+      "TEST_10_FILTER_ENHANCED_WORKS": { "status": "PASS", "details": "Contraste+ filter clicked, preview URL changed - contrast increased" },
+      "TEST_11_FILTER_ORIGINAL_WORKS": { "status": "PASS", "details": "Original filter clicked, preview URL changed - restored original image" },
+      "TEST_12_ROTATE_LEFT_WORKS": { "status": "PASS", "details": "Rotate left: dimensions changed from 800x600 to 600x800" },
+      "TEST_13_ROTATE_RIGHT_WORKS": { "status": "PASS", "details": "Rotate right: dimensions changed from 600x800 to 800x600" }
+    },
+    "MODE_TOGGLE_TESTS": {
+      "TEST_14_TOGGLE_TO_SIMPLE": { "status": "PASS", "details": "switch-simple-btn hides toolbar, header shows '(Simple)'" },
+      "TEST_15_SIMPLE_SHOWS_CORRECT_BUTTONS": { "status": "PASS", "details": "Simple mode shows only: Valider + Reprendre + Mode avance button" },
+      "TEST_16_SIMPLE_HIDES_PAGE_SUIVANTE": { "status": "PASS", "details": "Page suivante button hidden in simple mode" },
+      "TEST_17_TOGGLE_BACK_TO_ADVANCED": { "status": "PASS", "details": "switch-advanced-btn restores toolbar, header shows '(Avance)'" }
+    },
+    "MULTI_PAGE_TESTS": {
+      "TEST_18_PAGE_SUIVANTE_VISIBLE": { "status": "PASS", "details": "Page suivante button visible in advanced mode preview" },
+      "TEST_19_PAGE_SUIVANTE_REOPENS_CAMERA": { "status": "PASS", "details": "Page suivante adds page to collection, reopens camera for next page" },
+      "TEST_20_PAGE_COUNTER_SHOWS": { "status": "PASS", "details": "Page counter badge shows '1' after first page added" },
+      "TEST_21_TERMINER_SHOWS_PAGE_COUNT": { "status": "PASS", "details": "Terminer button shows 'Terminer (2 pages)' with correct count" }
+    },
+    "SAVE_AND_CLOSE_TESTS": {
+      "TEST_22_VALIDER_VISIBLE": { "status": "PASS", "details": "Valider / Sauvegarder button visible in preview" },
+      "TEST_23_SAVE_CLOSES_SCANNER": { "status": "PASS", "details": "Clicking Valider saves file and closes scanner modal" },
+      "TEST_24_REPRENDRE_OPENS_CAMERA": { "status": "PASS", "details": "Reprendre button opens camera for retake" }
+    },
+    "QUALITY_CHECKS": {
+      "TEST_25_NO_PARASITIC_ELEMENTS": { "status": "PASS", "details": "No floating icons or parasitic elements detected" },
+      "TEST_26_NATIVE_DIMENSIONS": { "status": "PASS", "details": "Preview image uses native dimensions (width: 800px) with max-width: 100% constraint" }
+    },
+    "GUIDE_PHASE_TESTS": {
+      "TEST_27_GUIDE_TOGGLE_TEXT_ADVANCED": { "status": "PASS", "details": "Toggle shows 'Revenir au mode simple' in advanced mode" },
+      "TEST_28_GUIDE_TOGGLE_TEXT_SIMPLE": { "status": "PASS", "details": "Toggle shows 'Activer le mode avance...' in simple mode" },
+      "TEST_29_SIMPLE_BADGE_TEXT": { "status": "PASS", "details": "Badge shows 'Mode simple — capture photo directe'" },
+      "TEST_30_SIMPLE_BUTTON_TEXT": { "status": "PASS", "details": "Button shows 'Prendre une photo' in simple mode" }
+    }
+  },
+  "architecture_validated": {
+    "stateful_worker": "scanner.worker.js uses OffscreenCanvas, maintains currentCanvas/currentCtx/originalImage state",
+    "worker_actions": "scan/filter/rotate/save all working via postMessage",
+    "worker_ready_emit": "Worker emits { type: 'ready' } synchronously at end of file",
+    "preview_message": "Worker sends { type:'preview', data:ArrayBuffer, width, height } with dimensions",
+    "simple_hook": "useScannerWorker.js is a simple function with useRef/useState, no class wrapper",
+    "previewSize_used": "Hook stores width/height in previewSize, component uses for 1:1 canvas display",
+    "controls_outside": "Controls in separate div below preview image (bg-black/90 border-t), never overlapping"
+  },
+  "key_test_ids_verified": [
+    "document-scanner",
+    "scanner-ready-badge",
+    "advanced-toolbar",
+    "filter-bw",
+    "filter-enhanced",
+    "filter-original",
+    "rotate-left-btn",
+    "rotate-right-btn",
+    "preview-image",
+    "preview-confirm-btn",
+    "preview-retake-btn",
+    "preview-add-page-btn",
+    "preview-finish-btn",
+    "switch-simple-btn",
+    "switch-advanced-btn",
+    "toggle-mode-btn",
+    "scanner-open-btn",
+    "scanner-file-input",
+    "scanner-capture-btn",
+    "page-counter"
+  ],
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "notes": [
+      "Console shows hydration warnings for span in select/option - unrelated to scanner feature",
+      "Camera shows 'Aucune camera. Utilisez la galerie.' in test environment - expected behavior"
+    ]
+  },
+  "test_report_links": [
+    "/app/test_reports/iteration_84.json"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Worker architecture correct: stateful OffscreenCanvas with scan/filter/rotate/save actions",
+    "Hook is clean functional component with useRef/useState, no class wrapper",
+    "Controls correctly placed in separate div below preview (line 355: bg-black/90 border-t)",
+    "Preview image uses previewSize for 1:1 display with max-width constraint",
+    "All test-ids properly placed for robust testing"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend only testing)",
+    "frontend": "100% - All 30 tests passed"
+  },
+  "test_credentials": {
+    "access_path": "/dossier-express -> click 'Commencer' -> find scanner-open-btn (mobile viewport 390px)"
+  },
+  "seed_data_creation": "Dynamically generated canvas images (800x600) for file upload testing",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 84 validates COMPLETE REWRITE of scanner. Key architecture: 1) Stateful Worker with OffscreenCanvas (scan/filter/rotate/save), 2) Simple functional hook useScannerWorker.js (no class), 3) Clean component with controls OUTSIDE canvas in separate div. Advanced mode is default. Worker emits 'ready' synchronously. Preview uses native dimensions with max-width: 100%. All filters and rotation work. Mode toggle preserves preview. Multi-page flow with Page suivante and Terminer works. No parasitic elements.",
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  }
+}
