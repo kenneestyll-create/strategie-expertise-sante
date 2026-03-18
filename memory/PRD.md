@@ -37,12 +37,12 @@ Application web complete en francais pour fournir des conseils sur les maladies 
   - `filter`: bw (binarize), enhanced (adjustContrast), original
   - `rotate`: left/right via OffscreenCanvas transform
   - `save`: convertToBlob JPEG quality 0.95
+- **Mode Simple/Avance:**
+  - Simple (defaut): capture photo + Valider uniquement, aucun filtre/rotation visible
+  - Avance: filtres (N&B, Contraste+, Original), rotation, multi-pages
+  - Bascule via toggle en guide ou bouton "Mode avance" en preview
 - **UI:** Guide -> Camera (requestAnimationFrame) -> Processing -> Preview -> Pages/PDF
-  - Filtres: Noir & Blanc, Contraste+, Original
-  - Rotation gauche/droite
-  - Multi-pages avec fusion PDF (jsPDF)
-  - Sauvegarde single ou multi-page
-- **Tests:** 12/12 passes (iteration 80) — fichiers anciens supprimes
+- **Tests:** 20/20 passes (iteration 81)
 - **Fichiers supprimes:** scannerEngine.js, opencvLoader.js, public/scanner.worker.js (ancien)
 
 ### Audit de Securite Complet (Mar 2026)
