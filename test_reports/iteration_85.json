@@ -1,0 +1,128 @@
+{
+  "summary": "Iteration 85 - Camera architecture replacement verified. ALL TESTS PASSED. Key changes: 1) NO canvas element in camera phase (video direct), 2) Video has object-fit: cover, 3) NO requestAnimationFrame loop, 4) Capture uses quality 1.0 at exact video dimensions, 5) Preview img uses width:100%, height:auto, object-fit:contain, 6) NO capture='environment' on file inputs, 7) NO gallery/flash/zoom icons in camera phase, 8) Only shutter button visible (+ switch camera in advanced mode).",
+  "architecture_changes_verified": {
+    "NO_CANVAS_IN_CAMERA": "PASS - No scanner-canvas test-id found in camera phase DOM",
+    "VIDEO_DIRECT_VISIBLE": "PASS - Video element visible with style: width:100%, height:100%, object-fit:cover",
+    "NO_RAF_LOOP": "PASS - No requestAnimationFrame or animFrameRef in code",
+    "NO_CAPTURE_ATTRIBUTE": "PASS - File input has no capture='environment' attribute",
+    "NO_GALLERY_BTN": "PASS - No camera-gallery-btn in camera phase",
+    "CAPTURE_QUALITY_1_0": "PASS - canvas.toBlob uses quality 1.0 (line 129)",
+    "PREVIEW_IMG_STYLES": "PASS - Preview uses width:100%, height:auto, object-fit:contain, display:block",
+    "NO_PARASITIC_ICONS": "PASS - No flash/gallery/zoom elements in camera phase"
+  },
+  "tests_executed": {
+    "CAMERA_PHASE_TESTS": {
+      "TEST_01_NO_CANVAS": { "status": "PASS", "details": "No scanner-canvas element in camera phase" },
+      "TEST_02_VIDEO_VISIBLE": { "status": "PASS", "details": "Video element visible with object-fit: cover" },
+      "TEST_03_NO_GALLERY_BTN": { "status": "PASS", "details": "No camera-gallery-btn in camera phase" },
+      "TEST_04_NO_FLASH_ICONS": { "status": "PASS", "details": "No flash elements in camera" },
+      "TEST_05_NO_ZOOM_ICONS": { "status": "PASS", "details": "No zoom elements in camera" },
+      "TEST_06_ONLY_SHUTTER": { "status": "PASS", "details": "Capture/shutter button is primary control" },
+      "TEST_07_SWITCH_CAMERA_ADVANCED": { "status": "PASS", "details": "Switch camera visible in advanced mode" }
+    },
+    "FILE_INPUT_TESTS": {
+      "TEST_08_NO_CAPTURE_ATTR": { "status": "PASS", "details": "File input has no capture attribute" },
+      "TEST_09_FILE_UPLOAD_WORKS": { "status": "PASS", "details": "File upload from guide triggers scan and preview" }
+    },
+    "PREVIEW_PHASE_TESTS": {
+      "TEST_10_PREVIEW_WIDTH_100": { "status": "PASS", "details": "Preview image has width: 100%" },
+      "TEST_11_PREVIEW_HEIGHT_AUTO": { "status": "PASS", "details": "Preview image has height: auto" },
+      "TEST_12_PREVIEW_CONTAIN": { "status": "PASS", "details": "Preview image has object-fit: contain" }
+    },
+    "ADVANCED_MODE_TESTS": {
+      "TEST_13_TOOLBAR_VISIBLE": { "status": "PASS", "details": "Advanced toolbar visible by default" },
+      "TEST_14_FILTER_BW": { "status": "PASS", "details": "N&B filter works" },
+      "TEST_15_FILTER_ENHANCED": { "status": "PASS", "details": "Contraste+ filter works" },
+      "TEST_16_FILTER_ORIGINAL": { "status": "PASS", "details": "Original filter works" },
+      "TEST_17_ROTATE_LEFT": { "status": "PASS", "details": "Rotate left works" },
+      "TEST_18_ROTATE_RIGHT": { "status": "PASS", "details": "Rotate right works" }
+    },
+    "MODE_TOGGLE_TESTS": {
+      "TEST_19_TOGGLE_SIMPLE": { "status": "PASS", "details": "Switch to simple mode hides toolbar, shows (Simple)" },
+      "TEST_20_TOGGLE_ADVANCED": { "status": "PASS", "details": "Switch back to advanced restores toolbar" },
+      "TEST_21_PREVIEW_PRESERVED": { "status": "PASS", "details": "Mode toggle does not lose preview" }
+    },
+    "MULTI_PAGE_TESTS": {
+      "TEST_22_PAGE_SUIVANTE": { "status": "PASS", "details": "Page suivante adds page and reopens camera" },
+      "TEST_23_PAGE_COUNTER": { "status": "PASS", "details": "Page counter shows '1' after first page" },
+      "TEST_24_TERMINER_COUNT": { "status": "PASS", "details": "Terminer shows 'Terminer (2 pages)'" },
+      "TEST_25_PAGES_PHASE": { "status": "PASS", "details": "Pages phase reached with page strip and active preview" }
+    },
+    "SAVE_FLOW_TESTS": {
+      "TEST_26_VALIDER_PRESENT": { "status": "PASS", "details": "Valider / Sauvegarder button present" },
+      "TEST_27_REPRENDRE_WORKS": { "status": "PASS", "details": "Reprendre returns to camera phase" }
+    }
+  },
+  "code_review_verification": {
+    "NO_requestAnimationFrame": "Verified - grep found no matches",
+    "NO_animFrameRef": "Verified - grep found no matches",
+    "NO_cameraCanvasRef": "Verified - grep found no matches",
+    "NO_scanner_canvas": "Verified - grep found no matches",
+    "NO_capture_environment": "Verified - grep found no matches",
+    "NO_camera_gallery_btn": "Verified - grep found no matches",
+    "quality_1_0_confirmed": "Line 129: canvas.toBlob(..., 'image/jpeg', 1.0)"
+  },
+  "key_test_ids_verified": [
+    "document-scanner",
+    "scanner-video",
+    "scanner-file-input",
+    "scanner-capture-btn",
+    "scanner-switch-camera",
+    "preview-image",
+    "advanced-toolbar",
+    "filter-bw",
+    "filter-enhanced",
+    "filter-original",
+    "rotate-left-btn",
+    "rotate-right-btn",
+    "preview-confirm-btn",
+    "preview-retake-btn",
+    "preview-add-page-btn",
+    "preview-finish-btn",
+    "switch-simple-btn",
+    "switch-advanced-btn",
+    "page-counter",
+    "page-strip",
+    "pages-active-preview"
+  ],
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "notes": [
+      "Camera shows 'Aucune camera. Utilisez la galerie.' in headless test - expected behavior",
+      "Hydration warnings from span in select/option - unrelated to scanner feature",
+      "'Made with Emergent' badge can overlay buttons at mobile viewport - external issue"
+    ]
+  },
+  "test_report_links": ["/app/test_reports/iteration_85.json"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Architecture change successful: Video element now visible directly with object-fit: cover",
+    "Canvas removed from camera phase - only used temporarily in captureFromCamera via document.createElement",
+    "Capture quality correctly set to 1.0 (no compression)",
+    "Preview image correctly uses width:100%, height:auto, object-fit:contain",
+    "All parasitic elements (gallery, flash, zoom) removed from camera phase",
+    "File input correctly has no capture attribute"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend only testing)",
+    "frontend": "100% - All 27 tests passed"
+  },
+  "test_credentials": {
+    "access_path": "/dossier-express -> click 'Commencer' -> find scanner-open-btn (mobile viewport 390px)"
+  },
+  "seed_data_creation": "Dynamically generated canvas images via JavaScript for file upload testing",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 85 validates CAMERA ARCHITECTURE REPLACEMENT. Key changes: 1) Video element visible directly (no canvas preview), 2) object-fit:cover on video, 3) NO requestAnimationFrame loop, 4) Capture creates temporary canvas via document.createElement with quality 1.0, 5) Preview uses width:100% height:auto object-fit:contain, 6) No capture='environment' on file inputs, 7) No parasitic icons (gallery/flash/zoom). All advanced features still work: filters, rotation, multi-page flow, mode toggle.",
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  }
+}

@@ -38,12 +38,10 @@ const PageStrip = ({ pages, activeIndex, onSelect, onRemove }) => (
 /* ====== MAIN SCANNER ====== */
 export const DocumentScanner = ({ onCapture, onClose }) => {
   const videoRef = useRef(null);
-  const cameraCanvasRef = useRef(null);
   const fileInputRef = useRef(null);
   const streamRef = useRef(null);
-  const animFrameRef = useRef(null);
 
-  const { previewUrl, previewSize, isReady, isProcessing, error: workerError, scan, filter, rotate, save, reset } = useScannerWorker();
+  const { previewUrl, isReady, isProcessing, error: workerError, scan, filter, rotate, save, reset } = useScannerWorker();
 
   const [phase, setPhase] = useState('guide');
   const [isSimpleMode, setIsSimpleMode] = useState(false);
@@ -57,14 +55,12 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
 
   /* -- Stop camera -- */
   const stopCamera = useCallback(() => {
-    if (animFrameRef.current) { cancelAnimationFrame(animFrameRef.current); animFrameRef.current = null; }
     if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
     setVideoReady(false);
   }, []);
 
   useEffect(() => () => { stopCamera(); if (pdfUrl) URL.revokeObjectURL(pdfUrl); }, [stopCamera, pdfUrl]);
 
-  /* -- Transition to preview when worker sends a preview -- */
   useEffect(() => {
     if (previewUrl && phase === 'processing') setPhase('preview');
   }, [previewUrl, phase]);
@@ -79,7 +75,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
     scan(blob);
   }, [scan]);
 
-  /* ====== FILE INPUT ====== */
+  /* ====== FILE INPUT (guide only, no capture attribute) ====== */
   const handleFileInput = useCallback((e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -88,33 +84,20 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
     processBlob(file);
   }, [processBlob, stopCamera]);
 
-  /* ====== CAMERA ====== */
+  /* ====== CAMERA — getUserMedia, video visible directement ====== */
   const startCamera = useCallback(async () => {
     setError(''); setVideoReady(false); setPhase('camera');
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false
+        video: { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+        audio: false
       });
       streamRef.current = stream;
       const video = videoRef.current;
       if (!video) return;
       video.srcObject = stream;
       video.play().catch(err => { console.warn('Lecture video interrompue', err); });
-      video.onloadedmetadata = () => {
-        const canvas = cameraCanvasRef.current;
-        if (canvas && video.videoWidth && video.videoHeight) {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-        }
-        setVideoReady(true);
-        const drawLoop = () => {
-          if (!streamRef.current) return;
-          const ctx = canvas?.getContext('2d');
-          if (ctx && video.videoWidth) ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          animFrameRef.current = requestAnimationFrame(drawLoop);
-        };
-        animFrameRef.current = requestAnimationFrame(drawLoop);
-      };
+      video.onloadedmetadata = () => { setVideoReady(true); };
     } catch (err) {
       if (err.name === 'NotAllowedError') setError('Autorisez la camera ou choisissez une photo.');
       else if (err.name === 'NotFoundError') setError('Aucune camera. Utilisez la galerie.');
@@ -125,16 +108,26 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
   const switchCamera = useCallback(() => { stopCamera(); setFacingMode(p => p === 'environment' ? 'user' : 'environment'); }, [stopCamera]);
   useEffect(() => { if (phase === 'camera' && !streamRef.current) startCamera(); }, [facingMode, phase, startCamera]);
 
-  /* ====== CAPTURE ====== */
+  /* ====== CAPTURE SANS PERTE — qualite 1.0, dimensions exactes ====== */
   const captureFromCamera = useCallback(() => {
-    const canvas = cameraCanvasRef.current;
     const video = videoRef.current;
-    if (!canvas || !video || !video.videoWidth) { setError('Camera pas prete.'); return; }
+    if (!video || !video.videoWidth || !video.videoHeight) { setError('Camera pas prete.'); return; }
+
+    // Canvas temporaire aux dimensions exactes de la video
+    const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0);
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
     stopCamera();
-    canvas.toBlob((blob) => { if (blob) processBlob(blob); else setError('Erreur capture.'); }, 'image/jpeg', 0.95);
+
+    // Qualite 1.0 — aucune compression
+    canvas.toBlob(
+      (blob) => { if (blob) processBlob(blob); else setError('Erreur capture.'); },
+      'image/jpeg',
+      1.0
+    );
   }, [stopCamera, processBlob]);
 
   /* ====== FILTER / ROTATE ====== */
@@ -259,11 +252,20 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
         </div>
       )}
 
-      {/* === CAMERA === */}
+      {/* === CAMERA — video directe, object-fit: cover, aucun canvas preview ====== */}
       {phase === 'camera' && (
-        <div className="flex-1 relative overflow-hidden">
-          <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover" style={{ display: 'none' }} data-testid="scanner-video" />
-          <canvas ref={cameraCanvasRef} className="w-full h-full object-cover" data-testid="scanner-canvas" />
+        <div className="flex-1 relative overflow-hidden bg-black">
+          {/* Video directe — remplit l'ecran comme CamScanner */}
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            data-testid="scanner-video"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+
+          {/* Guide cadrage — uniquement le cadre, aucun bouton parasite */}
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute inset-[6%] rounded-2xl border-2 border-white/70" style={{ boxShadow: '0 0 0 9999px rgba(0,0,0,0.35)' }} />
             <div className="absolute top-[6%] left-[6%] w-8 h-8 border-t-4 border-l-4 border-emerald-400 rounded-tl-lg" />
@@ -276,45 +278,35 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
               </span>
             </div>
           </div>
+
           {error && (
             <div className="absolute top-1/2 left-0 right-0 -translate-y-1/2 px-6 text-center" data-testid="camera-error">
               <p className="text-red-400 text-sm bg-black/80 rounded-xl p-4">{error}</p>
             </div>
           )}
+
+          {/* Controles camera — uniquement le declencheur, rien d'autre avant capture */}
           <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-6 pb-8 pt-4 bg-gradient-to-t from-black/80 to-transparent">
-            {isSimpleMode ? (
-              <>
-                <div style={{ width: 56, height: 56 }} />
-                <button onClick={captureFromCamera} disabled={!videoReady}
-                  className={`rounded-full border-4 border-white bg-white/20 hover:bg-white/40 transition-colors flex items-center justify-center active:scale-95 ${!videoReady ? 'opacity-40' : ''}`}
-                  data-testid="scanner-capture-btn" style={{ width: 72, height: 72 }}>
-                  <div className="rounded-full bg-white" style={{ width: 56, height: 56 }} />
-                </button>
-                <div style={{ width: 56, height: 56 }} />
-              </>
-            ) : (
-              <>
-                <div className="flex flex-col items-center gap-1.5">
-                  <Button variant="ghost" size="sm" onClick={switchCamera} className="text-white hover:bg-white/10 rounded-full w-14 h-14 min-h-[56px]" data-testid="scanner-switch-camera">
-                    <RotateCcw className="w-5 h-5" />
-                  </Button>
-                  <button onClick={() => fileInputRef.current?.click()} className="text-white/60 text-[10px] hover:text-white/80 min-h-[32px] px-2" data-testid="camera-gallery-btn">
-                    <ImageUp className="w-4 h-4 mx-auto" />
-                  </button>
-                </div>
-                <button onClick={captureFromCamera} disabled={!videoReady}
-                  className={`rounded-full border-4 border-white bg-white/20 hover:bg-white/40 transition-colors flex items-center justify-center active:scale-95 ${!videoReady ? 'opacity-40' : ''}`}
-                  data-testid="scanner-capture-btn" style={{ width: 72, height: 72 }}>
-                  <div className="rounded-full bg-white" style={{ width: 56, height: 56 }} />
-                </button>
-                {pages.length > 0 ? (
-                  <Button variant="ghost" size="sm" onClick={() => { stopCamera(); setPhase('pages'); }}
-                    className="text-white hover:bg-white/10 rounded-full w-14 h-14 min-h-[56px]">
-                    <Check className="w-5 h-5" />
-                  </Button>
-                ) : <div style={{ width: 56, height: 56 }} />}
-              </>
+            {!isSimpleMode && (
+              <Button variant="ghost" size="sm" onClick={switchCamera}
+                className="text-white hover:bg-white/10 rounded-full w-14 h-14 min-h-[56px]" data-testid="scanner-switch-camera">
+                <RotateCcw className="w-5 h-5" />
+              </Button>
             )}
+            {isSimpleMode && <div style={{ width: 56, height: 56 }} />}
+
+            <button onClick={captureFromCamera} disabled={!videoReady}
+              className={`rounded-full border-4 border-white bg-white/20 hover:bg-white/40 transition-colors flex items-center justify-center active:scale-95 ${!videoReady ? 'opacity-40' : ''}`}
+              data-testid="scanner-capture-btn" style={{ width: 72, height: 72 }}>
+              <div className="rounded-full bg-white" style={{ width: 56, height: 56 }} />
+            </button>
+
+            {!isSimpleMode && pages.length > 0 ? (
+              <Button variant="ghost" size="sm" onClick={() => { stopCamera(); setPhase('pages'); }}
+                className="text-white hover:bg-white/10 rounded-full w-14 h-14 min-h-[56px]">
+                <Check className="w-5 h-5" />
+              </Button>
+            ) : <div style={{ width: 56, height: 56 }} />}
           </div>
         </div>
       )}
@@ -328,21 +320,16 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
         </div>
       )}
 
-      {/* === PREVIEW — Canvas 1:1 + controles hors canvas === */}
+      {/* === PREVIEW — img sans deformation, controles hors image === */}
       {phase === 'preview' && previewUrl && (
         <div className="flex-1 flex flex-col min-h-0">
-          {/* Image preview — taille exacte 1:1, pas de reduction */}
-          <div className="flex-1 overflow-auto bg-neutral-900 flex items-start justify-center p-3 min-h-0">
+          {/* Image affichee sans deformation — width 100%, height auto, object-fit contain */}
+          <div className="flex-1 overflow-auto bg-neutral-900 flex items-center justify-center p-2 min-h-0">
             <img
               src={previewUrl}
               alt="Preview"
               data-testid="preview-image"
-              className="rounded-lg"
-              style={{
-                maxWidth: '100%',
-                width: previewSize.width > 0 ? previewSize.width : undefined,
-                height: 'auto',
-              }}
+              style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }}
             />
             {isProcessing && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/40">
@@ -351,9 +338,9 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
             )}
           </div>
 
-          {/* Controles — TOUJOURS hors du canvas, jamais superposes */}
+          {/* Controles — hors de l'image, jamais superposes */}
           <div className="bg-black/90 border-t border-white/10 flex-shrink-0">
-            {/* Toolbar avance — visible uniquement si !isSimpleMode ET Worker pret */}
+            {/* Toolbar avance — uniquement si !isSimpleMode ET Worker pret */}
             {!isSimpleMode && isReady && (
               <div className="flex items-center gap-1.5 px-3 py-2 border-b border-white/5 overflow-x-auto" data-testid="advanced-toolbar">
                 {[
@@ -433,7 +420,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
         <div className="flex-1 flex flex-col">
           <PageStrip pages={pages} activeIndex={activePageIndex} onSelect={setActivePageIndex} onRemove={removePage} />
           <div className="flex-1 relative overflow-hidden bg-black flex items-center justify-center p-4">
-            <img src={pages[activePageIndex]} alt={`Page ${activePageIndex + 1}`} className="max-w-full max-h-full object-contain rounded-lg" data-testid="pages-active-preview" />
+            <img src={pages[activePageIndex]} alt={`Page ${activePageIndex + 1}`} style={{ width: '100%', height: 'auto', objectFit: 'contain' }} data-testid="pages-active-preview" />
             {pages.length > 1 && activePageIndex > 0 && <button onClick={() => setActivePageIndex(p => p - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/60 flex items-center justify-center"><ChevronLeft className="w-5 h-5 text-white" /></button>}
             {pages.length > 1 && activePageIndex < pages.length - 1 && <button onClick={() => setActivePageIndex(p => p + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/60 flex items-center justify-center"><ChevronRight className="w-5 h-5 text-white" /></button>}
             <div className="absolute top-3 left-3 bg-accent/90 text-white text-[11px] font-medium px-2.5 py-1 rounded-full">Page {activePageIndex + 1} / {pages.length}</div>
@@ -467,6 +454,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
         </div>
       )}
 
+      {/* File input — guide uniquement, PAS de capture attribute */}
       <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileInput} className="hidden" data-testid="scanner-file-input" />
     </div>
   );
