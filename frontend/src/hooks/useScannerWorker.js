@@ -81,6 +81,7 @@ export function useScannerWorker() {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [error, setError] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isSimpleMode, setIsSimpleMode] = useState(true);
   const prevUrlRef = useRef(null);
 
   useEffect(() => {
@@ -148,5 +149,5 @@ export function useScannerWorker() {
     scannerRef.current = scanner;
   }, []);
 
-  return { previewUrl, capture, applyFilter, rotate, save, reset, error, isProcessing };
+  return { previewUrl, capture, applyFilter, rotate, save, reset, error, isProcessing, isSimpleMode, setIsSimpleMode };
 }

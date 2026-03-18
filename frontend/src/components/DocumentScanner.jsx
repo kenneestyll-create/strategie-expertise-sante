@@ -50,7 +50,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
   const streamRef = useRef(null);
   const animFrameRef = useRef(null);
 
-  const { previewUrl, capture, applyFilter, rotate, save, reset, error: workerError, isProcessing } = useScannerWorker();
+  const { previewUrl, capture, applyFilter, rotate, save, reset, error: workerError, isProcessing, isSimpleMode, setIsSimpleMode } = useScannerWorker();
 
   const [phase, setPhase] = useState('guide');
   const [pages, setPages] = useState([]);
@@ -238,6 +238,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
           {pages.length > 0 && <span className="bg-accent text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full" data-testid="page-counter">{pages.length}</span>}
           <ScanLine className="w-4 h-4 text-emerald-400" />
           <span>CamScanner</span>
+          {isSimpleMode && <span className="text-[10px] text-amber-400 font-normal ml-1">(Simple)</span>}
         </h3>
         <Button variant="ghost" size="sm" onClick={() => { stopCamera(); onClose(); }}
           className="text-white hover:bg-white/10 min-h-[44px] min-w-[44px]" data-testid="scanner-close" aria-label="Fermer le scanner">
@@ -274,16 +275,22 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
           </div>
           <div className="w-full max-w-xs flex items-center gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20" data-testid="scanner-ready-badge">
             <Check className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-            <span className="text-emerald-400/80 text-xs font-medium">Traitement OffscreenCanvas — UI fluide garantie</span>
+            <span className="text-emerald-400/80 text-xs font-medium">
+              {isSimpleMode ? 'Mode simple — capture photo directe' : 'Mode avance — filtres, rotation, multi-pages'}
+            </span>
           </div>
           <div className="w-full max-w-xs pt-2 space-y-2">
             <Button onClick={startCamera} className="w-full gap-2 h-14 text-base font-semibold" data-testid="scanner-start-btn">
-              <Camera className="w-5 h-5" /> Ouvrir la camera
+              <Camera className="w-5 h-5" /> {isSimpleMode ? 'Prendre une photo' : 'Ouvrir la camera'}
             </Button>
             <Button variant="outline" onClick={() => fileInputRef.current?.click()}
               className="w-full gap-2 h-12 text-sm border-white/20 text-white hover:bg-white/10" data-testid="scanner-file-btn">
               <ImageUp className="w-5 h-5" /> Choisir une photo
             </Button>
+            <button onClick={() => setIsSimpleMode(p => !p)}
+              className="w-full text-center text-white/40 text-xs py-3 min-h-[44px] hover:text-white/60 transition-colors" data-testid="toggle-mode-btn">
+              {isSimpleMode ? 'Activer le mode avance (filtres, rotation...)' : 'Revenir au mode simple'}
+            </button>
           </div>
           {error && <p className="text-red-400 text-sm text-center max-w-xs" data-testid="scanner-error">{error}</p>}
         </div>
@@ -357,47 +364,70 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
           </div>
 
           <div className="bg-black/90 border-t border-white/10 flex-shrink-0">
-            {/* Toolbar */}
-            <div className="flex items-center gap-1.5 px-3 py-2 border-b border-white/5 overflow-x-auto">
-              {FILTERS.map(f => (
-                <button key={f.id} onClick={() => handleFilter(f.id)} disabled={isProcessing}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all min-h-[40px] whitespace-nowrap ${filter === f.id ? 'bg-emerald-500 text-white' : 'bg-white/8 text-white/60 hover:bg-white/15'} ${isProcessing ? 'opacity-40' : ''}`}
-                  data-testid={`filter-${f.id}`}>
-                  <f.icon className="w-3.5 h-3.5" /> {f.label}
+            {/* Toolbar — mode avance uniquement */}
+            {!isSimpleMode && (
+              <div className="flex items-center gap-1.5 px-3 py-2 border-b border-white/5 overflow-x-auto" data-testid="advanced-toolbar">
+                {FILTERS.map(f => (
+                  <button key={f.id} onClick={() => handleFilter(f.id)} disabled={isProcessing}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all min-h-[40px] whitespace-nowrap ${filter === f.id ? 'bg-emerald-500 text-white' : 'bg-white/8 text-white/60 hover:bg-white/15'} ${isProcessing ? 'opacity-40' : ''}`}
+                    data-testid={`filter-${f.id}`}>
+                    <f.icon className="w-3.5 h-3.5" /> {f.label}
+                  </button>
+                ))}
+                <div className="w-px h-7 bg-white/10 mx-0.5 flex-shrink-0" />
+                <button onClick={() => handleRotate('left')} disabled={isProcessing}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 min-h-[40px] whitespace-nowrap ${isProcessing ? 'opacity-30' : ''}`}
+                  data-testid="rotate-left-btn">
+                  <RotateCcw className="w-3.5 h-3.5" />
                 </button>
-              ))}
-              <div className="w-px h-7 bg-white/10 mx-0.5 flex-shrink-0" />
-              <button onClick={() => handleRotate('left')} disabled={isProcessing}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 min-h-[40px] whitespace-nowrap ${isProcessing ? 'opacity-30' : ''}`}
-                data-testid="rotate-left-btn">
-                <RotateCcw className="w-3.5 h-3.5" />
-              </button>
-              <button onClick={() => handleRotate('right')} disabled={isProcessing}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 min-h-[40px] whitespace-nowrap ${isProcessing ? 'opacity-30' : ''}`}
-                data-testid="rotate-right-btn">
-                <RotateCw className="w-3.5 h-3.5" />
-              </button>
-            </div>
+                <button onClick={() => handleRotate('right')} disabled={isProcessing}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 min-h-[40px] whitespace-nowrap ${isProcessing ? 'opacity-30' : ''}`}
+                  data-testid="rotate-right-btn">
+                  <RotateCw className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
 
             {/* Actions */}
             <div className="p-3 space-y-2">
-              {pages.length === 0 ? (
-                <Button onClick={confirmSingle} disabled={isProcessing} className="w-full gap-2 h-14 text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 min-h-[56px]" data-testid="preview-confirm-btn">
-                  <Check className="w-5 h-5" /> Valider / Sauvegarder
-                </Button>
+              {isSimpleMode ? (
+                /* Mode simple : Valider uniquement */
+                <>
+                  <Button onClick={confirmSingle} disabled={isProcessing} className="w-full gap-2 h-14 text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 min-h-[56px]" data-testid="preview-confirm-btn">
+                    <Check className="w-5 h-5" /> Valider / Sauvegarder
+                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={retake} className="flex-1 gap-2 h-12 border-white/20 text-white hover:bg-white/10 text-sm min-h-[48px]" data-testid="preview-retake-btn">
+                      <RotateCcw className="w-4 h-4" /> Reprendre
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsSimpleMode(false)}
+                      className="flex-1 gap-2 h-12 border-white/20 text-white hover:bg-white/10 text-sm min-h-[48px]" data-testid="switch-advanced-btn">
+                      <Eye className="w-4 h-4" /> Mode avance
+                    </Button>
+                  </div>
+                </>
               ) : (
-                <Button onClick={addPageAndFinish} disabled={isProcessing} className="w-full gap-2 h-14 text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 min-h-[56px]" data-testid="preview-finish-btn">
-                  <Layers className="w-5 h-5" /> Terminer ({pages.length + 1} pages)
-                </Button>
+                /* Mode avance : filtres/rotation + multi-pages */
+                <>
+                  {pages.length === 0 ? (
+                    <Button onClick={confirmSingle} disabled={isProcessing} className="w-full gap-2 h-14 text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 min-h-[56px]" data-testid="preview-confirm-btn">
+                      <Check className="w-5 h-5" /> Valider / Sauvegarder
+                    </Button>
+                  ) : (
+                    <Button onClick={addPageAndFinish} disabled={isProcessing} className="w-full gap-2 h-14 text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 min-h-[56px]" data-testid="preview-finish-btn">
+                      <Layers className="w-5 h-5" /> Terminer ({pages.length + 1} pages)
+                    </Button>
+                  )}
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={retake} className="flex-1 gap-2 h-12 border-white/20 text-white hover:bg-white/10 text-sm min-h-[48px]" data-testid="preview-retake-btn">
+                      <RotateCcw className="w-4 h-4" /> Reprendre
+                    </Button>
+                    <Button variant="outline" onClick={addPageAndContinue} disabled={isProcessing} className="flex-1 gap-2 h-12 border-white/20 text-white hover:bg-white/10 text-sm min-h-[48px]" data-testid="preview-add-page-btn">
+                      <Plus className="w-4 h-4" /> Page suivante
+                    </Button>
+                  </div>
+                </>
               )}
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={retake} className="flex-1 gap-2 h-12 border-white/20 text-white hover:bg-white/10 text-sm min-h-[48px]" data-testid="preview-retake-btn">
-                  <RotateCcw className="w-4 h-4" /> Reprendre
-                </Button>
-                <Button variant="outline" onClick={addPageAndContinue} disabled={isProcessing} className="flex-1 gap-2 h-12 border-white/20 text-white hover:bg-white/10 text-sm min-h-[48px]" data-testid="preview-add-page-btn">
-                  <Plus className="w-4 h-4" /> Page suivante
-                </Button>
-              </div>
             </div>
           </div>
         </div>

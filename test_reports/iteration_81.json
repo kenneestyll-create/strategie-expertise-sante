@@ -1,0 +1,151 @@
+{
+  "summary": "Iteration 81 - Simple/Advanced Mode Toggle Testing. ALL 20 TESTS PASSED (100%). The scanner correctly implements simple mode (default) with only capture and validate buttons, and advanced mode with filters (N&B, Contraste+, Original), rotation (left/right), and multi-page support. Mode switching works correctly from both guide page toggle and preview 'Mode avance' button.",
+  "tests_executed": {
+    "TEST_1_SCANNER_OPENS": {
+      "status": "PASS",
+      "details": "Scanner modal opens from DocumentUploader scanner-open-btn (visible on mobile). Shows document-scanner test-id."
+    },
+    "TEST_2_HEADER_SIMPLE_INDICATOR": {
+      "status": "PASS",
+      "details": "Header shows '(Simple)' text when in simple mode - 'CamScanner(Simple)'"
+    },
+    "TEST_3_GUIDE_BADGE_SIMPLE": {
+      "status": "PASS",
+      "details": "Guide page badge shows 'Mode simple — capture photo directe'"
+    },
+    "TEST_4_TOGGLE_BTN_TEXT": {
+      "status": "PASS",
+      "details": "Toggle button on guide page shows 'Activer le mode avance (filtres, rotation...)'"
+    },
+    "TEST_5_TOGGLE_CHANGES_BADGE": {
+      "status": "PASS",
+      "details": "Clicking toggle changes badge to 'Mode avance — filtres, rotation, multi-pages'"
+    },
+    "TEST_6_FILE_UPLOAD_WORKS": {
+      "status": "PASS",
+      "details": "File upload triggers Web Worker processing and shows preview"
+    },
+    "TEST_7_NO_TOOLBAR_IN_SIMPLE": {
+      "status": "PASS",
+      "details": "advanced-toolbar (data-testid) does NOT exist in DOM when in simple mode"
+    },
+    "TEST_8_NO_FILTERS_IN_SIMPLE": {
+      "status": "PASS",
+      "details": "Filter buttons (filter-bw, filter-enhanced, filter-original) not visible in simple mode"
+    },
+    "TEST_9_NO_ROTATION_IN_SIMPLE": {
+      "status": "PASS",
+      "details": "Rotation buttons (rotate-left-btn, rotate-right-btn) not visible in simple mode"
+    },
+    "TEST_10_SIMPLE_BUTTONS_EXIST": {
+      "status": "PASS",
+      "details": "Simple mode preview shows: preview-confirm-btn ('Valider / Sauvegarder'), preview-retake-btn ('Reprendre'), switch-advanced-btn ('Mode avance')"
+    },
+    "TEST_11_NO_ADD_PAGE_IN_SIMPLE": {
+      "status": "PASS",
+      "details": "preview-add-page-btn ('Page suivante') NOT visible in simple mode"
+    },
+    "TEST_12_TOOLBAR_IN_ADVANCED": {
+      "status": "PASS",
+      "details": "advanced-toolbar appears after clicking 'Mode avance' button"
+    },
+    "TEST_13_FILTERS_IN_ADVANCED": {
+      "status": "PASS",
+      "details": "All 3 filter buttons visible in advanced mode: filter-bw, filter-enhanced, filter-original"
+    },
+    "TEST_14_ROTATION_IN_ADVANCED": {
+      "status": "PASS",
+      "details": "Both rotation buttons visible in advanced mode: rotate-left-btn, rotate-right-btn"
+    },
+    "TEST_15_ADD_PAGE_IN_ADVANCED": {
+      "status": "PASS",
+      "details": "preview-add-page-btn ('Page suivante') appears in advanced mode"
+    },
+    "TEST_16_SWITCH_BTN_REPLACED": {
+      "status": "PASS",
+      "details": "switch-advanced-btn is removed after switching to advanced mode, replaced by 'Page suivante'"
+    },
+    "TEST_17_BW_FILTER_SELECTABLE": {
+      "status": "PASS",
+      "details": "Clicking filter-bw highlights it with bg-emerald-500 class"
+    },
+    "TEST_18_ENHANCED_FILTER_SELECTABLE": {
+      "status": "PASS",
+      "details": "Clicking filter-enhanced highlights it with bg-emerald-500 class"
+    },
+    "TEST_19_ROTATION_CLICKABLE": {
+      "status": "PASS",
+      "details": "rotate-right-btn is clickable and triggers rotation (Worker processes image)"
+    },
+    "TEST_20_SAVE_WORKS_IN_SIMPLE": {
+      "status": "PASS",
+      "details": "Clicking 'Valider / Sauvegarder' in simple mode saves file and closes scanner"
+    }
+  },
+  "features_validated": {
+    "simple_mode_default": "Scanner opens in simple mode by default (isSimpleMode=true in useScannerWorker.js)",
+    "simple_mode_ui": "Only shows: capture button, Valider/Sauvegarder, Reprendre, Mode avance",
+    "advanced_mode_ui": "Shows: filter toolbar (N&B, Contraste+, Original), rotation buttons, Page suivante, Valider",
+    "mode_toggle_guide": "Toggle button on guide page switches mode and updates badge text",
+    "mode_toggle_preview": "'Mode avance' button in preview switches to advanced mode",
+    "filter_functionality": "All 3 filters (bw, enhanced, original) work correctly via Web Worker",
+    "rotation_functionality": "Left/right rotation work correctly via Web Worker",
+    "file_upload": "File upload works in both simple and advanced modes",
+    "save_functionality": "Save/Valider works correctly, closes scanner and passes file to parent"
+  },
+  "key_test_ids": {
+    "toggle-mode-btn": "Guide page toggle button to switch simple/advanced",
+    "switch-advanced-btn": "Preview button to switch to advanced mode (only in simple mode)",
+    "advanced-toolbar": "Filter+rotate toolbar container (only in advanced mode)",
+    "filter-bw": "Noir & Blanc filter button",
+    "filter-enhanced": "Contraste+ filter button",
+    "filter-original": "Original filter button",
+    "rotate-left-btn": "Rotate left button",
+    "rotate-right-btn": "Rotate right button",
+    "preview-add-page-btn": "Page suivante button (only in advanced mode)",
+    "preview-confirm-btn": "Valider / Sauvegarder button",
+    "preview-retake-btn": "Reprendre button",
+    "scanner-ready-badge": "Badge showing mode description"
+  },
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "notes": [
+      "Emergent badge at bottom can intercept clicks on buttons near bottom of screen - use force=True or JS click",
+      "Mode state resets when scanner is closed and reopened (expected behavior as isSimpleMode is hook state)",
+      "Scanner button (scanner-open-btn) only visible on mobile viewport due to 'flex sm:hidden' class"
+    ]
+  },
+  "test_report_links": [
+    "/app/test_reports/iteration_81.json"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Simple/advanced mode implementation is clean and follows React best practices",
+    "Conditional rendering of advanced-toolbar uses isSimpleMode state correctly",
+    "Mode toggle properly updates both UI state and badge text",
+    "Web Worker architecture handles filter/rotation in both modes",
+    "Test IDs are well-named and consistent (toggle-mode-btn, switch-advanced-btn, advanced-toolbar)"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend only testing as requested)",
+    "frontend": "100% - 20/20 tests passed"
+  },
+  "test_credentials": {
+    "access_path": "/dossier-express -> click CTA button -> scroll to find scanner-open-btn (mobile only)"
+  },
+  "seed_data_creation": "Reused /tmp/test_simple_advanced.jpg (400x300 white with test text)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 81 validates simple/advanced mode toggle feature. Key testing notes: 1) Scanner opens in simple mode by default, 2) Use JavaScript click (page.evaluate) to avoid Emergent badge overlay interception, 3) advanced-toolbar test-id only exists in advanced mode - use count() to verify absence, 4) Mode resets on scanner close/reopen, 5) File upload path works well for headless testing",
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  }
+}
