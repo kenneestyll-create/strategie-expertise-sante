@@ -12,13 +12,17 @@ export function useScannerWorker() {
   const [isReady, setIsReady] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
+  const [cvReady, setCvReady] = useState(false);
+  const [autoCropApplied, setAutoCropApplied] = useState(null);
   const prevUrlRef = useRef(null);
+  const inputSizeRef = useRef(null);
 
   const handleMessage = useCallback((e) => {
-    const { type, data, width, height, error: err } = e.data;
+    const { type, data, width, height, error: err, cvReady: cv } = e.data;
 
     if (type === 'ready') {
       setIsReady(true);
+      if (cv !== undefined) setCvReady(cv);
       return;
     }
 
@@ -28,7 +32,15 @@ export function useScannerWorker() {
       const url = URL.createObjectURL(blob);
       prevUrlRef.current = url;
       setPreviewUrl(url);
-      if (width && height) setPreviewSize({ width, height });
+      if (width && height) {
+        setPreviewSize({ width, height });
+        // Check if dimensions changed (auto-crop applied)
+        if (inputSizeRef.current) {
+          const { w: inW, h: inH } = inputSizeRef.current;
+          setAutoCropApplied(width !== inW || height !== inH);
+          inputSizeRef.current = null;
+        }
+      }
       setIsProcessing(false);
       return;
     }
@@ -39,6 +51,7 @@ export function useScannerWorker() {
       return;
     }
     // 'saved' handled by save() promise
+    // 'debug' messages are logged but not displayed
   }, []);
 
   const createWorker = useCallback(() => {
@@ -47,6 +60,7 @@ export function useScannerWorker() {
     w.onerror = (err) => { setError(err.message); setIsProcessing(false); };
     workerRef.current = w;
     setIsReady(false);
+    setCvReady(false);
   }, [handleMessage]);
 
   useEffect(() => {
@@ -60,6 +74,14 @@ export function useScannerWorker() {
   const scan = useCallback((blob, autoCrop) => {
     setIsProcessing(true);
     setError(null);
+    setAutoCropApplied(null);
+    // Track input size to detect crop
+    if (blob instanceof Blob) {
+      createImageBitmap(blob).then(bmp => {
+        inputSizeRef.current = { w: bmp.width, h: bmp.height };
+        bmp.close();
+      }).catch(() => {});
+    }
     workerRef.current?.postMessage({ type: 'scan', blob, autoCrop: !!autoCrop });
   }, []);
 
@@ -104,9 +126,10 @@ export function useScannerWorker() {
     setPreviewSize({ width: 0, height: 0 });
     setError(null);
     setIsProcessing(false);
+    setAutoCropApplied(null);
     workerRef.current?.terminate();
     createWorker();
   }, [createWorker]);
 
-  return { previewUrl, previewSize, isReady, isProcessing, error, scan, filter, rotate, save, reset };
+  return { previewUrl, previewSize, isReady, isProcessing, error, cvReady, autoCropApplied, scan, filter, rotate, save, reset };
 }

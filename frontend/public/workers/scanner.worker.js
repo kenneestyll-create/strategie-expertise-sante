@@ -1,6 +1,6 @@
 /**
  * scanner.worker.js — Web Worker avec OffscreenCanvas + OpenCV.js
- * Auto-crop : detection robuste du document via OpenCV (contours + perspective)
+ * Auto-crop robuste : segmentation par luminosite + detection de contours
  */
 
 let currentCanvas = null;
@@ -16,11 +16,9 @@ let cvReady = false;
     importScripts('/workers/opencv.js');
 
     if (typeof cv !== 'undefined') {
-      // opencv-js-wasm returns a Promise
       if (typeof cv === 'function' || (cv && typeof cv.then === 'function')) {
         cv = await cv;
       }
-      // Verify key functions exist
       if (cv && typeof cv.Mat === 'function' && typeof cv.findContours === 'function') {
         cvReady = true;
       } else if (cv && cv.onRuntimeInitialized !== undefined) {
@@ -39,6 +37,10 @@ let cvReady = false;
   self.postMessage({ type: 'ready', cvReady });
 })();
 
+function debug(msg) {
+  self.postMessage({ type: 'debug', message: msg });
+}
+
 /* =========================================================
  * MESSAGE HANDLER
  * ========================================================= */
@@ -55,14 +57,20 @@ self.onmessage = async function (e) {
 
       if (msg.autoCrop && cvReady) {
         try {
+          debug('Auto-crop starting (' + currentCanvas.width + 'x' + currentCanvas.height + ')');
           const cropped = autoCropOpenCV(currentCanvas, currentCtx);
           if (cropped) {
+            debug('Auto-crop success: ' + cropped.canvas.width + 'x' + cropped.canvas.height);
             currentCanvas = cropped.canvas;
             currentCtx = cropped.ctx;
+          } else {
+            debug('Auto-crop: no document detected, keeping original');
           }
         } catch (err) {
-          console.warn('[scanner.worker] Auto-crop error:', err.message);
+          debug('Auto-crop error: ' + err.message);
         }
+      } else if (msg.autoCrop && !cvReady) {
+        debug('Auto-crop skipped: OpenCV not loaded');
       }
 
       originalImage = currentCtx.getImageData(0, 0, currentCanvas.width, currentCanvas.height);
@@ -106,8 +114,10 @@ self.onmessage = async function (e) {
 };
 
 /* =========================================================
- * AUTO-CROP VIA OPENCV.JS
- * Downscale pour detection, transform a pleine resolution
+ * AUTO-CROP — Strategie multi-approche
+ * 1) Segmentation par luminosite (document blanc/clair)
+ * 2) Detection de contours Canny (fallback)
+ * 3) Rectangle englobant (dernier recours)
  * ========================================================= */
 
 function autoCropOpenCV(canvas, ctx) {
@@ -117,6 +127,7 @@ function autoCropOpenCV(canvas, ctx) {
 
   const imageData = ctx.getImageData(0, 0, w, h);
 
+  // Downscale for faster detection
   const MAX_DETECT = 800;
   const scale = Math.min(1, MAX_DETECT / Math.max(w, h));
   const dw = Math.round(w * scale);
@@ -132,7 +143,22 @@ function autoCropOpenCV(canvas, ctx) {
     src.copyTo(small);
   }
 
-  const corners = detectDocumentCorners(small, dw, dh);
+  // Strategy 1: Brightness segmentation (best for white docs on darker backgrounds)
+  debug('Trying brightness segmentation...');
+  let corners = detectByBrightness(small, dw, dh);
+
+  // Strategy 2: Edge detection with Canny
+  if (!corners) {
+    debug('Trying edge detection...');
+    corners = detectByEdges(small, dw, dh);
+  }
+
+  // Strategy 3: Rotated bounding rect of bright region
+  if (!corners) {
+    debug('Trying bounding rect fallback...');
+    corners = detectByBoundingRect(small, dw, dh);
+  }
+
   small.delete();
 
   if (!corners) {
@@ -140,90 +166,213 @@ function autoCropOpenCV(canvas, ctx) {
     return null;
   }
 
+  // Scale corners back to full resolution
   const scaledCorners = corners.map(p => ({
     x: Math.round(p.x / scale),
     y: Math.round(p.y / scale)
   }));
+
+  debug('Document detected at: ' + scaledCorners.map(p => `(${p.x},${p.y})`).join(' '));
 
   const result = perspectiveTransform(src, scaledCorners);
   src.delete();
   return result;
 }
 
-function detectDocumentCorners(mat, w, h) {
+/* ---------------------------------------------------------
+ * Strategy 1: Brightness-based segmentation
+ * Works for white/light documents on darker backgrounds
+ * --------------------------------------------------------- */
+function detectByBrightness(mat, w, h) {
+  const imgArea = w * h;
+  let gray = new cv.Mat();
+  let blurred = new cv.Mat();
+  let thresh = new cv.Mat();
+  let closed = new cv.Mat();
+
+  cv.cvtColor(mat, gray, cv.COLOR_RGBA2GRAY);
+
+  // Large blur to smooth out texture (wood grain, text, etc.)
+  cv.GaussianBlur(gray, blurred, new cv.Size(15, 15), 0);
+
+  // Otsu threshold: automatically separates bright (paper) from dark (background)
+  cv.threshold(blurred, thresh, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
+
+  // Morphological close: fill gaps in the document (text, lines, etc.)
+  let kernelClose = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(25, 25));
+  cv.morphologyEx(thresh, closed, cv.MORPH_CLOSE, kernelClose);
+
+  // Morphological open: remove small bright noise spots
+  let kernelOpen = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(11, 11));
+  cv.morphologyEx(closed, closed, cv.MORPH_OPEN, kernelOpen);
+
+  let corners = findBestQuadrilateral(closed, w, h, imgArea);
+
+  gray.delete(); blurred.delete(); thresh.delete(); closed.delete();
+  kernelClose.delete(); kernelOpen.delete();
+
+  if (corners) debug('Brightness segmentation: found document');
+  return corners;
+}
+
+/* ---------------------------------------------------------
+ * Strategy 2: Edge detection (Canny)
+ * --------------------------------------------------------- */
+function detectByEdges(mat, w, h) {
+  const imgArea = w * h;
   let gray = new cv.Mat();
   let blurred = new cv.Mat();
 
   cv.cvtColor(mat, gray, cv.COLOR_RGBA2GRAY);
   cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0);
 
-  const thresholdSets = [
-    [75, 200],
-    [50, 150],
-    [30, 100],
-  ];
-
+  const thresholdSets = [[75, 200], [50, 150], [30, 100]];
   let bestCorners = null;
   let bestArea = 0;
-  const imgArea = w * h;
 
   for (const [lo, hi] of thresholdSets) {
     let edges = new cv.Mat();
     cv.Canny(blurred, edges, lo, hi);
 
     let dilated = new cv.Mat();
-    let kernel = cv.Mat.ones(3, 3, cv.CV_8U);
-    cv.dilate(edges, dilated, kernel, new cv.Point(-1, -1), 2);
+    let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
+    cv.dilate(edges, dilated, kernel, new cv.Point(-1, -1), 3);
 
-    let contours = new cv.MatVector();
-    let hierarchy = new cv.Mat();
-    cv.findContours(dilated, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+    let corners = findBestQuadrilateral(dilated, w, h, imgArea);
 
-    let candidates = [];
-    for (let i = 0; i < contours.size(); i++) {
-      const area = cv.contourArea(contours.get(i));
-      if (area > imgArea * 0.05) candidates.push({ idx: i, area });
-    }
-    candidates.sort((a, b) => b.area - a.area);
+    edges.delete(); dilated.delete(); kernel.delete();
 
-    for (const { idx } of candidates.slice(0, 5)) {
-      let cnt = contours.get(idx);
-      let peri = cv.arcLength(cnt, true);
-      let approx = new cv.Mat();
-
-      for (const eps of [0.02, 0.03, 0.04, 0.05]) {
-        cv.approxPolyDP(cnt, approx, eps * peri, true);
-
-        if (approx.rows === 4 && cv.isContourConvex(approx)) {
-          const approxArea = cv.contourArea(approx);
-          if (approxArea > imgArea * 0.1 && approxArea < imgArea * 0.98 && approxArea > bestArea) {
-            let points = [];
-            for (let j = 0; j < 4; j++) {
-              points.push({ x: approx.data32S[j * 2], y: approx.data32S[j * 2 + 1] });
-            }
-            bestCorners = orderPoints(points);
-            bestArea = approxArea;
-          }
-          if (approx.rows === 4) break;
-        }
+    if (corners) {
+      let area = quadArea(corners);
+      if (area > bestArea) {
+        bestCorners = corners;
+        bestArea = area;
       }
-      approx.delete();
+      if (bestArea > imgArea * 0.2) break;
     }
-
-    edges.delete();
-    dilated.delete();
-    kernel.delete();
-    contours.delete();
-    hierarchy.delete();
-
-    if (bestCorners && bestArea > imgArea * 0.2) break;
   }
 
-  gray.delete();
-  blurred.delete();
+  gray.delete(); blurred.delete();
+
+  if (bestCorners) debug('Edge detection: found document');
   return bestCorners;
 }
 
+/* ---------------------------------------------------------
+ * Strategy 3: Rotated bounding rect of the bright region
+ * Last resort - gives a rectangular crop even if edges aren't clean
+ * --------------------------------------------------------- */
+function detectByBoundingRect(mat, w, h) {
+  const imgArea = w * h;
+  let gray = new cv.Mat();
+  let blurred = new cv.Mat();
+  let thresh = new cv.Mat();
+  let closed = new cv.Mat();
+
+  cv.cvtColor(mat, gray, cv.COLOR_RGBA2GRAY);
+  cv.GaussianBlur(gray, blurred, new cv.Size(21, 21), 0);
+  cv.threshold(blurred, thresh, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
+
+  let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(31, 31));
+  cv.morphologyEx(thresh, closed, cv.MORPH_CLOSE, kernel);
+
+  let contours = new cv.MatVector();
+  let hierarchy = new cv.Mat();
+  cv.findContours(closed, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+  let bestCorners = null;
+  let bestArea = 0;
+
+  for (let i = 0; i < contours.size(); i++) {
+    const area = cv.contourArea(contours.get(i));
+    if (area > imgArea * 0.08 && area < imgArea * 0.98 && area > bestArea) {
+      let cnt = contours.get(i);
+      let rect = cv.minAreaRect(cnt);
+      let vertices = cv.RotatedRect.points(rect);
+      let points = vertices.map(v => ({ x: Math.round(v.x), y: Math.round(v.y) }));
+      let ordered = orderPoints(points);
+      let qArea = quadArea(ordered);
+      if (qArea > imgArea * 0.08 && qArea < imgArea * 0.98) {
+        bestCorners = ordered;
+        bestArea = qArea;
+      }
+    }
+  }
+
+  gray.delete(); blurred.delete(); thresh.delete(); closed.delete();
+  kernel.delete(); contours.delete(); hierarchy.delete();
+
+  if (bestCorners) debug('Bounding rect fallback: found document');
+  return bestCorners;
+}
+
+/* ---------------------------------------------------------
+ * Find the best 4-point quadrilateral in a binary image
+ * --------------------------------------------------------- */
+function findBestQuadrilateral(binaryMat, w, h, imgArea) {
+  let contours = new cv.MatVector();
+  let hierarchy = new cv.Mat();
+  cv.findContours(binaryMat, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+  // Collect candidates sorted by area
+  let candidates = [];
+  for (let i = 0; i < contours.size(); i++) {
+    const area = cv.contourArea(contours.get(i));
+    if (area > imgArea * 0.08) candidates.push({ idx: i, area });
+  }
+  candidates.sort((a, b) => b.area - a.area);
+
+  let bestCorners = null;
+  let bestArea = 0;
+
+  for (const { idx } of candidates.slice(0, 5)) {
+    let cnt = contours.get(idx);
+    let peri = cv.arcLength(cnt, true);
+    let approx = new cv.Mat();
+
+    // Try multiple epsilon values
+    for (const eps of [0.02, 0.03, 0.04, 0.05, 0.06, 0.08]) {
+      cv.approxPolyDP(cnt, approx, eps * peri, true);
+
+      if (approx.rows === 4) {
+        const approxArea = cv.contourArea(approx);
+        if (approxArea > imgArea * 0.08 && approxArea < imgArea * 0.98 && approxArea > bestArea) {
+          let points = [];
+          for (let j = 0; j < 4; j++) {
+            points.push({ x: approx.data32S[j * 2], y: approx.data32S[j * 2 + 1] });
+          }
+          if (isConvexQuad(points)) {
+            bestCorners = orderPoints(points);
+            bestArea = approxArea;
+          }
+        }
+        break; // Found 4 points at this epsilon
+      }
+    }
+
+    // If no 4-point found, try minAreaRect on this contour
+    if (!bestCorners && cv.contourArea(cnt) > imgArea * 0.1) {
+      let rect = cv.minAreaRect(cnt);
+      let vertices = cv.RotatedRect.points(rect);
+      let points = vertices.map(v => ({ x: Math.round(v.x), y: Math.round(v.y) }));
+      let ordered = orderPoints(points);
+      let qArea = quadArea(ordered);
+      if (qArea > imgArea * 0.08 && qArea < imgArea * 0.98 && qArea > bestArea) {
+        bestCorners = ordered;
+        bestArea = qArea;
+      }
+    }
+
+    approx.delete();
+  }
+
+  contours.delete(); hierarchy.delete();
+  return bestCorners;
+}
+
+/* =========================================================
+ * PERSPECTIVE TRANSFORM
+ * ========================================================= */
 function perspectiveTransform(src, corners) {
   const [tl, tr, br, bl] = corners;
 
@@ -257,6 +406,10 @@ function perspectiveTransform(src, corners) {
   return { canvas: croppedCanvas, ctx: croppedCtx };
 }
 
+/* =========================================================
+ * GEOMETRY HELPERS
+ * ========================================================= */
+
 function orderPoints(pts) {
   const sums = pts.map(p => p.x + p.y);
   const diffs = pts.map(p => p.y - p.x);
@@ -268,8 +421,31 @@ function orderPoints(pts) {
   ];
 }
 
+function quadArea(corners) {
+  // Shoelace formula for quadrilateral area
+  const [a, b, c, d] = corners;
+  return 0.5 * Math.abs(
+    (a.x * b.y - b.x * a.y) +
+    (b.x * c.y - c.x * b.y) +
+    (c.x * d.y - d.x * c.y) +
+    (d.x * a.y - a.x * d.y)
+  );
+}
+
+function isConvexQuad(pts) {
+  // Check if 4 points form a convex quadrilateral
+  if (pts.length !== 4) return false;
+  const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+  const ordered = orderPoints(pts);
+  const c1 = cross(ordered[0], ordered[1], ordered[2]);
+  const c2 = cross(ordered[1], ordered[2], ordered[3]);
+  const c3 = cross(ordered[2], ordered[3], ordered[0]);
+  const c4 = cross(ordered[3], ordered[0], ordered[1]);
+  return (c1 > 0 && c2 > 0 && c3 > 0 && c4 > 0) || (c1 < 0 && c2 < 0 && c3 < 0 && c4 < 0);
+}
+
 /* =========================================================
- * UTILITAIRES (inchanges)
+ * UTILITAIRES
  * ========================================================= */
 
 async function sendPreview() {

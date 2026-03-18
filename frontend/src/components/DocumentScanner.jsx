@@ -41,7 +41,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
   const fileInputRef = useRef(null);
   const streamRef = useRef(null);
 
-  const { previewUrl, isReady, isProcessing, error: workerError, scan, filter, rotate, save, reset } = useScannerWorker();
+  const { previewUrl, isReady, isProcessing, error: workerError, cvReady, autoCropApplied, scan, filter, rotate, save, reset } = useScannerWorker();
 
   const [phase, setPhase] = useState('guide');
   const [isSimpleMode, setIsSimpleMode] = useState(false);
@@ -229,11 +229,18 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
             {isReady
               ? <Check className="w-5 h-5 text-emerald-400 flex-shrink-0" />
               : <Loader2 className="w-5 h-5 text-amber-400 flex-shrink-0 animate-spin" />}
-            <span className={`text-xs font-medium ${isReady ? 'text-emerald-400/80' : 'text-amber-400/80'}`}>
-              {isReady
-                ? (isSimpleMode ? 'Mode simple — capture photo directe' : 'Mode avance — filtres, rotation, multi-pages')
-                : 'Initialisation du scanner...'}
-            </span>
+            <div className="flex flex-col">
+              <span className={`text-xs font-medium ${isReady ? 'text-emerald-400/80' : 'text-amber-400/80'}`}>
+                {isReady
+                  ? (isSimpleMode ? 'Mode simple — capture photo directe' : 'Mode avance — filtres, rotation, multi-pages')
+                  : 'Chargement du scanner + OpenCV...'}
+              </span>
+              {isReady && (
+                <span className={`text-[10px] mt-0.5 ${cvReady ? 'text-emerald-400/60' : 'text-amber-400/60'}`}>
+                  {cvReady ? 'Auto-crop actif (OpenCV)' : 'Auto-crop indisponible'}
+                </span>
+              )}
+            </div>
           </div>
           <div className="w-full max-w-xs pt-2 space-y-2">
             <Button onClick={startCamera} className="w-full gap-2 h-14 text-base font-semibold" data-testid="scanner-start-btn">
@@ -301,13 +308,24 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
         <div className="flex-1 flex flex-col items-center justify-center gap-4 px-6">
           <Loader2 className="w-14 h-14 text-emerald-400 animate-spin" />
           <p className="text-white text-base font-medium">Traitement de l'image...</p>
-          <p className="text-white/40 text-xs">OffscreenCanvas — UI non bloquee</p>
+          <p className="text-white/40 text-xs">{cvReady ? 'Detection du document + recadrage auto (OpenCV)' : 'OffscreenCanvas — UI non bloquee'}</p>
         </div>
       )}
 
       {/* === PREVIEW — img sans deformation, controles hors image === */}
       {phase === 'preview' && previewUrl && (
         <div className="flex-1 flex flex-col min-h-0">
+          {/* Auto-crop status badge */}
+          {autoCropApplied !== null && (
+            <div className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium flex-shrink-0 ${autoCropApplied ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/15 text-amber-400'}`} data-testid="autocrop-status">
+              {autoCropApplied ? (
+                <><Check className="w-3.5 h-3.5" /> Document detecte et recadre automatiquement</>
+              ) : (
+                <><ZapOff className="w-3.5 h-3.5" /> {cvReady ? 'Document non detecte — image originale conservee' : 'Auto-crop indisponible (OpenCV non charge)'}</>
+              )}
+            </div>
+          )}
+
           {/* Image affichee sans deformation — width 100%, height auto, object-fit contain */}
           <div className="flex-1 overflow-auto bg-neutral-900 flex items-center justify-center p-2 min-h-0">
             <img

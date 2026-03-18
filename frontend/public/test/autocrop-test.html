@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Auto-Crop Debug</title>
+  <style>
+    body { font-family: sans-serif; background: #111; color: #eee; padding: 20px; }
+    .container { display: flex; gap: 20px; flex-wrap: wrap; }
+    .box { text-align: center; }
+    img { max-width: 400px; border: 2px solid #333; }
+    #status { padding: 10px; margin: 10px 0; border-radius: 6px; font-weight: bold; }
+    .loading { background: #333; color: #ffa; }
+    .success { background: #1a3a1a; color: #4f4; }
+    .error { background: #3a1a1a; color: #f44; }
+    #log { background: #1a1a1a; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 12px; white-space: pre-wrap; max-height: 400px; overflow-y: auto; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Auto-Crop Debug - Real Photo</h1>
+  <div id="status" class="loading">Initialisation...</div>
+  <div class="container">
+    <div class="box">
+      <h3>Original</h3>
+      <img id="original" />
+      <p id="origInfo"></p>
+    </div>
+    <div class="box">
+      <h3>After Auto-Crop</h3>
+      <img id="cropped" />
+      <p id="cropInfo"></p>
+    </div>
+  </div>
+  <div id="log"></div>
+  <script>
+    const status = document.getElementById('status');
+    const log = document.getElementById('log');
+    function addLog(msg) { log.textContent += msg + '\n'; }
+
+    const worker = new Worker('/workers/scanner.worker.js?v=' + Date.now());
+
+    worker.onmessage = async (e) => {
+      if (e.data.type === 'ready') {
+        addLog('Worker ready. cvReady=' + e.data.cvReady);
+        status.textContent = 'Worker pret. cvReady=' + e.data.cvReady;
+        if (!e.data.cvReady) {
+          status.className = 'error';
+          status.textContent = 'OpenCV.js non charge!';
+          return;
+        }
+        // Test with user's real photo
+        const resp = await fetch('/test/camera_capture_sim.jpg');
+        const blob = await resp.blob();
+        document.getElementById('original').src = URL.createObjectURL(blob.slice(0));
+        addLog('Image loaded: ' + blob.size + ' bytes');
+        status.textContent = 'Envoi au worker avec autoCrop=true...';
+        worker.postMessage({ type: 'scan', blob, autoCrop: true });
+      }
+      if (e.data.type === 'preview') {
+        const blob = new Blob([e.data.data], { type: 'image/jpeg' });
+        document.getElementById('cropped').src = URL.createObjectURL(blob);
+        document.getElementById('cropInfo').textContent = e.data.width + ' x ' + e.data.height;
+        addLog('Preview received: ' + e.data.width + 'x' + e.data.height);
+        const origImg = document.getElementById('original');
+        const checkResult = () => {
+          const ow = origImg.naturalWidth, oh = origImg.naturalHeight;
+          document.getElementById('origInfo').textContent = ow + ' x ' + oh;
+          if (e.data.width !== ow || e.data.height !== oh) {
+            status.className = 'success';
+            status.textContent = 'AUTO-CROP OK! ' + ow + 'x' + oh + ' -> ' + e.data.width + 'x' + e.data.height;
+            addLog('SUCCESS: Dimensions changed');
+          } else {
+            status.className = 'error';
+            status.textContent = 'Auto-crop n\'a PAS modifie l\'image';
+            addLog('FAIL: Dimensions unchanged - auto-crop did not detect document');
+          }
+        };
+        if (origImg.complete && origImg.naturalWidth) checkResult();
+        else origImg.onload = checkResult;
+      }
+      if (e.data.type === 'error') {
+        status.className = 'error';
+        status.textContent = 'Erreur: ' + e.data.error;
+        addLog('ERROR: ' + e.data.error);
+      }
+      if (e.data.type === 'debug') {
+        addLog('[DEBUG] ' + e.data.message);
+      }
+    };
+
+    worker.onerror = (err) => {
+      status.className = 'error';
+      status.textContent = 'Worker error: ' + err.message;
+      addLog('WORKER ERROR: ' + err.message);
+    };
+  </script>
+</body>
+</html>
