@@ -346,7 +346,7 @@ class TestCORSPolicy:
         """OPTIONS request should return specific origin, not '*'"""
         # Test against internal URL to avoid K8s ingress interference
         headers = {
-            "Origin": "https://non-blocking-ocr.preview.emergentagent.com",
+            "Origin": "https://occupational-scan.preview.emergentagent.com",
             "Access-Control-Request-Method": "POST",
             "Access-Control-Request-Headers": "Content-Type,Authorization"
         }
@@ -361,7 +361,7 @@ class TestCORSPolicy:
         # Should be the specific origin or empty (if not allowed)
         print(f"CORS Allow-Origin header: '{cors_header}'")
         if cors_header:
-            assert cors_header in ["https://non-blocking-ocr.preview.emergentagent.com", "http://localhost:3000"], \
+            assert cors_header in ["https://occupational-scan.preview.emergentagent.com", "http://localhost:3000"], \
                 f"Unexpected CORS origin: {cors_header}"
         print(f"PASS: CORS returns specific origin '{cors_header}', not wildcard")
 

@@ -4,4 +4,4 @@ Disallow: /admin
 Disallow: /admin/login
 Disallow: /espace-client
 
-Sitemap: https://non-blocking-ocr.preview.emergentagent.com/sitemap.xml
+Sitemap: https://occupational-scan.preview.emergentagent.com/sitemap.xml

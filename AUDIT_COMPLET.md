@@ -55,7 +55,7 @@
 | Aspect | Détail |
 |--------|--------|
 | **Environnement actuel** | Preview Emergent (Kubernetes) |
-| **URL preview** | `https://non-blocking-ocr.preview.emergentagent.com` |
+| **URL preview** | `https://occupational-scan.preview.emergentagent.com` |
 | **Frontend** | Port 3000 (supervisord, hot reload) |
 | **Backend** | Port 8001 (supervisord, hot reload) |
 | **Ingress** | Préfixe `/api` → backend:8001, reste → frontend:3000 |

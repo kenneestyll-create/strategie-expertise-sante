@@ -81,7 +81,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
     if (!file) return;
     e.target.value = '';
     stopCamera();
-    processBlob(file, false);
+    processBlob(file, true);
   }, [processBlob, stopCamera]);
 
   /* ====== CAMERA — getUserMedia, video visible directement ====== */

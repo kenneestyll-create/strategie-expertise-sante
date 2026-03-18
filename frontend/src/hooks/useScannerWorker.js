@@ -42,7 +42,7 @@ export function useScannerWorker() {
   }, []);
 
   const createWorker = useCallback(() => {
-    const w = new Worker('/workers/scanner.worker.js');
+    const w = new Worker(`/workers/scanner.worker.js?v=${Date.now()}`);
     w.onmessage = handleMessage;
     w.onerror = (err) => { setError(err.message); setIsProcessing(false); };
     workerRef.current = w;

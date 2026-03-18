@@ -1,0 +1,88 @@
+{
+  "summary": "Iteration 87 - CamScanner Auto-Crop Feature Testing. ALL TESTS PASSED. Verified OpenCV.js auto-crop working correctly: standalone test page shows 1920x1440 -> 1308x1089 (document perspective-corrected). Full scanner UI integration tested - file import triggers auto-crop, filters (N&B, Contraste+, Original) work, rotation works, save function works. Scanner accessible via /dossier-express -> Commencer -> scanner-open-btn.",
+  "features_tested": {
+    "TEST_01_SCANNER_OPENS": {
+      "status": "PASS",
+      "details": "Scanner modal opens correctly from /dossier-express after clicking Commencer -> scanner-open-btn"
+    },
+    "TEST_02_FILE_IMPORT_AUTOCROP": {
+      "status": "PASS",
+      "details": "Choisir une photo button triggers file import with autoCrop=true (line 84 in DocumentScanner.jsx)"
+    },
+    "TEST_03_STANDALONE_AUTOCROP_PAGE": {
+      "status": "PASS",
+      "details": "/test/autocrop-test.html shows 'AUTO-CROP OK!' - Original: 1920x1440 -> Cropped: 1308x1089"
+    },
+    "TEST_04_WORKER_CVREADY": {
+      "status": "PASS",
+      "details": "Ready badge shows 'Mode avance — filtres, rotation, multi-pages' indicating cvReady=true"
+    },
+    "TEST_05_PREVIEW_AFTER_UPLOAD": {
+      "status": "PASS",
+      "details": "Preview image visible after file upload, document cropped from wood background"
+    },
+    "TEST_06_FILTERS_WORK": {
+      "status": "PASS",
+      "details": "N&B (black/white), Contraste+ (enhanced), Original filters all work correctly"
+    },
+    "TEST_07_ROTATION_WORKS": {
+      "status": "PASS",
+      "details": "Rotate left/right buttons rotate image 90 degrees correctly"
+    },
+    "TEST_08_SAVE_WORKS": {
+      "status": "PASS",
+      "details": "Valider/Sauvegarder saves scanned image, scanner closes, file appears in document list (scan_*.jpg)"
+    }
+  },
+  "auto_crop_verification": {
+    "standalone_test": "/test/autocrop-test.html",
+    "original_dimensions": "1920 x 1440",
+    "cropped_dimensions": "1308 x 1089",
+    "opencv_implementation": "OpenCV.js (12MB) loaded via importScripts at /workers/opencv.js",
+    "algorithm": "Canny edge detection + contour finding + perspective transform",
+    "code_locations": {
+      "worker_autocrop_function": "/app/frontend/public/workers/scanner.worker.js lines 113-258",
+      "file_import_autocrop_true": "/app/frontend/src/components/DocumentScanner.jsx line 84",
+      "hook_passes_flag": "/app/frontend/src/hooks/useScannerWorker.js line 63"
+    }
+  },
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "notes": [
+      "React hydration warnings (span in select/option) - unrelated to scanner feature",
+      "Camera shows error in headless test as expected - no actual camera available",
+      "Login credentials (demo@test.com / Password123!) show 'Email ou mot de passe incorrect' - may be test data issue"
+    ]
+  },
+  "test_report_links": ["/app/test_reports/iteration_87.json"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "OpenCV.js auto-crop implementation is robust - uses Canny edge detection with multiple threshold sets for document detection",
+    "Perspective transform correctly straightens skewed documents",
+    "File import correctly passes autoCrop=true to worker",
+    "Worker initialization waits for cv.Mat and cv.findContours to be available before setting cvReady=true",
+    "Safety bounds (30%-95% of original area) prevent over/under-cropping"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend only testing)",
+    "frontend": "100% - All 8 tests passed"
+  },
+  "test_credentials": {
+    "access_path": "/dossier-express -> click 'Commencer' -> find scanner-open-btn (mobile viewport 390px)"
+  },
+  "seed_data_creation": "Used existing test image /test/doc_on_wood.jpg",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 87 verified AUTO-CROP feature with OpenCV.js. Key findings: 1) Standalone test at /test/autocrop-test.html confirms OpenCV.js working (1920x1440->1308x1089), 2) Scanner UI integration tested - file import triggers auto-crop, 3) All filters (N&B, Contraste+, Original) work, 4) Rotation works, 5) Save function works. Scanner accessed via /dossier-express, no login required. Login credentials may have changed - demo@test.com and admin@accompagn-sante.fr both show 'incorrect' error.",
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  }
+}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Auto-Crop Test</title>
+  <style>
+    body { font-family: sans-serif; background: #111; color: #eee; padding: 20px; }
+    .container { display: flex; gap: 20px; flex-wrap: wrap; }
+    .box { text-align: center; }
+    img { max-width: 400px; border: 2px solid #333; }
+    #status { padding: 10px; margin: 10px 0; border-radius: 6px; font-weight: bold; }
+    .loading { background: #333; color: #ffa; }
+    .success { background: #1a3a1a; color: #4f4; }
+    .error { background: #3a1a1a; color: #f44; }
+  </style>
+</head>
+<body>
+  <h1>Test Auto-Crop OpenCV.js</h1>
+  <div id="status" class="loading">Initialisation du Worker + OpenCV.js...</div>
+  <div class="container">
+    <div class="box">
+      <h3>Original</h3>
+      <img id="original" />
+      <p id="origInfo"></p>
+    </div>
+    <div class="box">
+      <h3>After Auto-Crop</h3>
+      <img id="cropped" />
+      <p id="cropInfo"></p>
+    </div>
+  </div>
+  <script>
+    const status = document.getElementById('status');
+    const worker = new Worker('/workers/scanner.worker.js?v=' + Date.now());
+
+    worker.onmessage = async (e) => {
+      if (e.data.type === 'ready') {
+        status.textContent = 'Worker pret. cvReady=' + e.data.cvReady + '. Chargement de l\'image test...';
+        if (!e.data.cvReady) {
+          status.className = 'error';
+          status.textContent = 'OpenCV.js non disponible dans le worker!';
+          return;
+        }
+        // Load test image
+        const resp = await fetch('/test/doc_on_wood.jpg');
+        const blob = await resp.blob();
+        document.getElementById('original').src = URL.createObjectURL(blob);
+        document.getElementById('origInfo').textContent = `Blob: ${blob.size} bytes`;
+        status.textContent = 'Image chargee, envoi au worker avec autoCrop=true...';
+        worker.postMessage({ type: 'scan', blob, autoCrop: true });
+      }
+      if (e.data.type === 'preview') {
+        const blob = new Blob([e.data.data], { type: 'image/jpeg' });
+        document.getElementById('cropped').src = URL.createObjectURL(blob);
+        document.getElementById('cropInfo').textContent = `${e.data.width} x ${e.data.height}`;
+        const origImg = document.getElementById('original');
+        // Wait for original to load to get its natural dimensions
+        origImg.onload = () => {
+          const ow = origImg.naturalWidth, oh = origImg.naturalHeight;
+          document.getElementById('origInfo').textContent = `${ow} x ${oh}`;
+          if (e.data.width !== ow || e.data.height !== oh) {
+            status.className = 'success';
+            status.textContent = `AUTO-CROP OK! Original: ${ow}x${oh} -> Cropped: ${e.data.width}x${e.data.height}`;
+          } else {
+            status.className = 'error';
+            status.textContent = 'Auto-crop n\'a pas modifie l\'image (dimensions identiques).';
+          }
+        };
+        if (origImg.complete) origImg.onload();
+      }
+      if (e.data.type === 'error') {
+        status.className = 'error';
+        status.textContent = 'Erreur Worker: ' + e.data.error;
+      }
+    };
+
+    worker.onerror = (err) => {
+      status.className = 'error';
+      status.textContent = 'Worker error: ' + err.message;
+    };
+  </script>
+</body>
+</html>
