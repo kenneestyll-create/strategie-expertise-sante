@@ -15,51 +15,43 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 - Formulaire simple : type de dossier + regime + situation
 - Analyse IA basique (Claude Sonnet 4.5)
 - Resultat textuel avec email gate pour rapport complet
-- Bouton "Analyser mon dossier gratuitement"
 
-### Dossier Express IA (PAYANT — 97EUR)
+### Dossier Express IA (PAYANT — 97 EUR)
 - Score de solidite du dossier (XX/100) avec ring SVG anime
 - 3 metriques cles : Completude, Qualite, Coherence
 - Points de fragilite, alertes de risque, predictions
 - Actions recommandees priorisees (max 3)
-- Indicateur navbar compact — uniquement pour clients payants
-- **Gating:** Clients sans Dossier Express IA voient un teaser floute avec CTA
 
 ## Fonctionnalites implementees
 
 ### Scanner Documents CamScanner-like — Architecture DEFINITIVE (Mar 2026)
-- **Architecture:** Web Worker + OffscreenCanvas (non-bloquant)
-  - Worker stateful: `/app/frontend/public/workers/scanner.worker.js`
-  - Hook React: `/app/frontend/src/hooks/useScannerWorker.js` (classe MobileScanner)
+- **Architecture:** Worker OffscreenCanvas stateful + Hook fonctionnel simple
+  - Worker: `/app/frontend/public/workers/scanner.worker.js`
+  - Hook: `/app/frontend/src/hooks/useScannerWorker.js` (pas de classe, useRef/useState)
   - Composant: `/app/frontend/src/components/DocumentScanner.jsx`
-- **Traitement dans le Worker:**
-  - `scan`: createImageBitmap + OffscreenCanvas, stocke originalImageData
+- **Worker stateful:**
+  - `scan`: createImageBitmap + OffscreenCanvas, stocke originalImage
   - `filter`: bw (binarize), enhanced (adjustContrast), original
-  - `rotate`: left/right via OffscreenCanvas transform
-  - `save`: convertToBlob JPEG quality 0.95
-- **Mode Simple/Avance:**
-  - Simple (defaut): capture photo + Valider uniquement, aucun filtre/rotation visible
-  - Avance: filtres (N&B, Contraste+, Original), rotation, multi-pages
-  - Bascule via toggle en guide ou bouton "Mode avance" en preview
-- **UI:** Guide -> Camera (requestAnimationFrame) -> Processing -> Preview -> Pages/PDF
-- **Tests:** 20/20 passes (iteration 81)
+  - `rotate`: left/right via rotateCanvas helper
+  - `save`: convertToBlob JPEG 0.95
+  - `ready`: emis a l'init pour signaler que le Worker est pret
+  - Preview envoie ArrayBuffer transferable + dimensions (width/height)
+- **Hook simplifie:**
+  - Pas de classe MobileScanner, juste useRef + useState
+  - previewUrl, previewSize (dimensions 1:1), isReady, isProcessing
+  - scan(), filter(), rotate(), save(), reset()
+- **Composant propre:**
+  - Canvas 1:1 (dimensions exactes de la photo, pas de reduction)
+  - Controles TOUJOURS hors du canvas (jamais superposes)
+  - Mode simple (capture + valider) / avance (filtres, rotation, multi-pages)
+  - Mode avance par defaut (isSimpleMode=false)
+  - Toggle bidirectionnel guide + preview
+  - Worker 'ready' conditionne l'affichage toolbar avance
+- **Tests:** 30/30 passes (iteration 84)
 - **Fichiers supprimes:** scannerEngine.js, opencvLoader.js, public/scanner.worker.js (ancien)
 
-### Audit de Securite Complet (Mar 2026)
-- JWT Secret obligatoire depuis env var
-- Paiement securise (verification DB + fallback live Stripe + webhook cross-update)
-- Rate Limiting 5/min sur endpoints d'authentification
-- Uploads securises (MIME whitelist + extensions + 10Mo + scan signatures)
-- CORS strict depuis ALLOWED_ORIGINS
-- Documents securises (auth + propriete)
-- Headers de securite
-
-### Optimisation Tunnel de Conversion Dossier Express IA (Mar 2026)
-- Landing page refonte avec compteur hebdomadaire, temoignages, CTA
-- Formulaire avec indicateur de progression, sidebar valeur, options upsell
-- Preparation Stripe production (STRIPE_MODE auto-detecte)
-
-### Section Partenaires Footer (Mar 2026)
+### Securite, Conversion, Partenaires, etc.
+- (Voir sessions precedentes pour details)
 
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
