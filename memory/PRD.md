@@ -27,33 +27,36 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 ### Scanner Documents CamScanner-like — Architecture DEFINITIVE (Mar 2026)
 - **Architecture:** Worker OffscreenCanvas stateful + Hook fonctionnel simple
   - Worker: `/app/frontend/public/workers/scanner.worker.js`
-  - Hook: `/app/frontend/src/hooks/useScannerWorker.js` (pas de classe, useRef/useState)
+  - Hook: `/app/frontend/src/hooks/useScannerWorker.js` (cache-busting URL)
   - Composant: `/app/frontend/src/components/DocumentScanner.jsx`
+  - OpenCV.js: `/app/frontend/public/workers/opencv.js` (12MB, self-hosted, opencv-js-wasm@5.0.0)
 - **Worker stateful:**
   - `scan`: createImageBitmap + OffscreenCanvas, stocke originalImage
   - `filter`: bw (binarize), enhanced (adjustContrast), original
   - `rotate`: left/right via rotateCanvas helper
   - `save`: convertToBlob JPEG 0.95
-  - `ready`: emis a l'init pour signaler que le Worker est pret
+  - `ready`: emis apres chargement OpenCV.js (cvReady flag)
   - Preview envoie ArrayBuffer transferable + dimensions (width/height)
+- **Auto-Crop OpenCV.js (CORRIGE - Mars 2026):**
+  - Chargement local de OpenCV.js via importScripts (evite CORS)
+  - Downscale pour detection rapide (max 800px), transform a pleine resolution
+  - Canny edge detection multi-seuils (75/200, 50/150, 30/100)
+  - findContours + approxPolyDP avec epsilon adaptatif
+  - getPerspectiveTransform + warpPerspective pour redresser le document
+  - Fonctionne pour camera ET import fichier (autoCrop=true)
+  - Teste avec image realiste : 1920x1440 -> 1308x1089 (document isole du fond bois)
 - **Hook simplifie:**
   - Pas de classe MobileScanner, juste useRef + useState
   - previewUrl, previewSize (dimensions 1:1), isReady, isProcessing
   - scan(), filter(), rotate(), save(), reset()
-- **Composant propre:**
-  - Canvas 1:1 (dimensions exactes de la photo, pas de reduction)
-  - Controles TOUJOURS hors du canvas (jamais superposes)
-  - Mode simple (capture + valider) / avance (filtres, rotation, multi-pages)
-  - Mode avance par defaut (isSimpleMode=false)
-  - Toggle bidirectionnel guide + preview
-  - Worker 'ready' conditionne l'affichage toolbar avance
-- **Tests:** 30/30 passes (iteration 84)
-- **Fichiers supprimes:** scannerEngine.js, opencvLoader.js, public/scanner.worker.js (ancien)
+  - Cache-busting: `?v=${Date.now()}` sur l'URL du worker
+- **Tests:** 8/8 passes (iteration 87)
 
 ### Securite, Conversion, Partenaires, etc.
 - (Voir sessions precedentes pour details)
 
 ## Taches a venir
+- **P1:** Outil de recadrage manuel comme fallback si auto-crop echoue
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Integration HubSpot (en attente de credentials)
 - **P2:** Audit logging complet
@@ -66,3 +69,4 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 - Claude Sonnet 4.5 (Emergent LLM Key)
 - Resend (sandbox)
 - HubSpot (partiellement, en attente credentials)
+- OpenCV.js (opencv-js-wasm@5.0.0, self-hosted)
