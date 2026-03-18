@@ -4,4 +4,4 @@ Disallow: /admin
 Disallow: /admin/login
 Disallow: /espace-client
 
-Sitemap: https://dossier-express.preview.emergentagent.com/sitemap.xml
+Sitemap: https://non-blocking-ocr.preview.emergentagent.com/sitemap.xml

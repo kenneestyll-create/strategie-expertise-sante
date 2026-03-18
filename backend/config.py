@@ -94,7 +94,7 @@ DOCUMENT_CATEGORIES = {
 DOCUMENT_STATUSES = ["en_attente", "valide", "illisible", "corrige"]
 
 # SEO
-SITE_URL = "https://dossier-express.preview.emergentagent.com"
+SITE_URL = "https://non-blocking-ocr.preview.emergentagent.com"
 SITEMAP_PAGES = [
     ("/", "1.0", "daily"),
     ("/a-propos", "0.8", "monthly"),

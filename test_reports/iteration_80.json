@@ -1,0 +1,111 @@
+{
+  "summary": "Iteration 80 - DocumentScanner with Web Worker + OffscreenCanvas architecture. ALL 12 TESTS PASS. The scanner uses a stateful Web Worker at /workers/scanner.worker.js for non-blocking image processing. File upload, filters (B&W, Contraste+, Original), rotation (left/right), multi-page support, and save functionality all work correctly.",
+  "tests_executed": {
+    "TEST_1_SCANNER_OPENS": {
+      "status": "PASS",
+      "details": "Scanner modal opens from DocumentUploader scanner-open-btn (visible on mobile). Shows document-scanner test-id."
+    },
+    "TEST_2_GUIDE_PHASE": {
+      "status": "PASS",
+      "details": "Guide phase renders with: scanner-title ('CamScanner'), scanner-start-btn ('Ouvrir la camera'), scanner-file-btn ('Choisir une photo'), scanner-close, scanner-ready-badge ('Traitement OffscreenCanvas — UI fluide garantie'), and 4 scanner-tip elements."
+    },
+    "TEST_3_FILE_UPLOAD": {
+      "status": "PASS",
+      "details": "File upload via scanner-file-input triggers Web Worker processing. Console shows '[ScannerWorker] OffscreenCanvas worker ready'. Preview image appears after processing."
+    },
+    "TEST_4_FILTER_BW": {
+      "status": "PASS",
+      "details": "Noir & Blanc filter (filter-bw) highlights with bg-emerald-500 when selected. Worker applies binarize() filter."
+    },
+    "TEST_5_FILTER_ENHANCED": {
+      "status": "PASS",
+      "details": "Contraste+ filter (filter-enhanced) highlights when selected. Worker applies adjustContrast() filter."
+    },
+    "TEST_6_FILTER_ORIGINAL": {
+      "status": "PASS",
+      "details": "Original filter (filter-original) highlights when selected. Worker restores original image data."
+    },
+    "TEST_7_ROTATE_LEFT": {
+      "status": "PASS",
+      "details": "Rotate left button (rotate-left-btn) triggers Worker rotation. Image rotates -90 degrees."
+    },
+    "TEST_8_ROTATE_RIGHT": {
+      "status": "PASS",
+      "details": "Rotate right button (rotate-right-btn) triggers Worker rotation. Image rotates +90 degrees."
+    },
+    "TEST_9_ACTION_BUTTONS": {
+      "status": "PASS",
+      "details": "All action buttons present: preview-confirm-btn ('Valider / Sauvegarder'), preview-retake-btn ('Reprendre'), preview-add-page-btn ('Page suivante')."
+    },
+    "TEST_10_CLOSE_BUTTON": {
+      "status": "PASS",
+      "details": "Close button (scanner-close) closes the scanner modal. document-scanner element removed from DOM."
+    },
+    "TEST_11_WORKER_LOADS": {
+      "status": "PASS",
+      "details": "Web Worker loads from /workers/scanner.worker.js. Console shows '[ScannerWorker] OffscreenCanvas worker ready'."
+    },
+    "TEST_12_NO_SCANNER_ERRORS": {
+      "status": "PASS",
+      "details": "No console errors related to ScannerWorker or OffscreenCanvas. (Note: OCR module has separate errors unrelated to scanner)"
+    },
+    "TEST_MULTI_PAGE_FLOW": {
+      "status": "PASS",
+      "details": "Tested separately - upload first image -> click 'Page suivante' -> camera phase -> upload second image -> 'Terminer (2 pages)' button appears. Page counter shows '1' after first page added."
+    },
+    "TEST_SAVE_FUNCTIONALITY": {
+      "status": "PASS",
+      "details": "Clicking 'Valider / Sauvegarder' triggers Worker.save() -> finalizing phase -> scanner closes (file passed to parent DocumentUploader via onCapture callback)."
+    }
+  },
+  "web_worker_architecture_validated": {
+    "worker_file": "/app/frontend/public/workers/scanner.worker.js",
+    "worker_class": "MobileScanner in /app/frontend/src/hooks/useScannerWorker.js",
+    "react_hook": "useScannerWorker() returns { previewUrl, capture, applyFilter, rotate, save, reset, error, isProcessing }",
+    "message_types": ["scan", "filter", "rotate", "save"],
+    "response_types": ["preview", "saved", "error"],
+    "offscreen_canvas": "Used for all image processing - main thread never blocked"
+  },
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "notes": [
+      "HTML hydration warnings (span in select/option) are from DossierExpressPage form selects, not related to scanner",
+      "Camera access fails in headless browser (expected) - file upload path tested instead",
+      "OCR module has separate 'postMessage Worker' errors related to Tesseract.js - not related to scanner",
+      "Scanner button (scanner-open-btn) only visible on mobile viewport due to 'flex sm:hidden' class"
+    ]
+  },
+  "test_report_links": ["/app/test_reports/iteration_80.json"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Web Worker architecture correctly implemented - all image processing in worker, main thread only receives preview blobs",
+    "useScannerWorker hook properly manages Worker lifecycle with useEffect cleanup",
+    "Memory leak prevention: URL.revokeObjectURL called on previous preview URLs",
+    "Worker uses OffscreenCanvas for createImageBitmap, getImageData, putImageData - true non-blocking processing",
+    "Error handling in place: worker.onerror, message type 'error', save timeout (10s)",
+    "Filter functions (binarize, adjustContrast) work correctly on ImageData",
+    "Rotation updates originalImageData after transform - allows re-applying filters to rotated image"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend only testing as requested)",
+    "frontend": "100% - 12/12 scanner tests passed + multi-page and save tests verified"
+  },
+  "test_credentials": {
+    "client": "N/A - scanner accessed from public /dossier-express form"
+  },
+  "seed_data_creation": "Created /tmp/test_scan_image.jpg (400x300 white with test text) and /tmp/test_scan_image2.jpg (400x300 lightblue with 'Page 2') for testing",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 80 validates the Web Worker + OffscreenCanvas scanner architecture. Key testing notes: 1) Scanner button only visible on mobile (sm:hidden class), 2) Use page.evaluate() for clicking preview-add-page-btn if direct click fails, 3) Camera won't work in headless - test file upload path, 4) Worker console log '[ScannerWorker] OffscreenCanvas worker ready' confirms successful load, 5) OCR errors (postMessage Worker) are from Tesseract.js not scanner",
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  }
+}
