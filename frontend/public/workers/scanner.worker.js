@@ -134,3 +134,4 @@ async function rotateCanvas(direction) {
 }
 
 console.log('[ScannerWorker] OffscreenCanvas worker ready');
+self.postMessage({ type: 'ready' });

@@ -10,12 +10,16 @@ class MobileScanner {
     this.worker = new Worker('/workers/scanner.worker.js');
     this.onPreview = null;
     this.onError = null;
+    this.onReady = null;
     this._setupWorker();
   }
 
   _setupWorker() {
     this.worker.onmessage = (e) => {
       const { type, data, error } = e.data;
+      if (type === 'ready' && this.onReady) {
+        this.onReady();
+      }
       if (type === 'preview' && this.onPreview) {
         const blob = new Blob([data], { type: 'image/jpeg' });
         const url = URL.createObjectURL(blob);
@@ -24,7 +28,6 @@ class MobileScanner {
       if (type === 'error' && this.onError) {
         this.onError(error);
       }
-      // 'saved' is handled by the save() promise
     };
     this.worker.onerror = (err) => {
       if (this.onError) this.onError(err.message);
@@ -74,20 +77,21 @@ class MobileScanner {
 
 /**
  * React hook wrapping MobileScanner.
- * Returns: { previewUrl, capture, applyFilter, rotate, save, error, isProcessing }
+ * isReady = true quand le Worker a emis 'ready'
+ * isSimpleMode = false par defaut (mode avance)
  */
 export function useScannerWorker() {
   const scannerRef = useRef(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [error, setError] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isSimpleMode, setIsSimpleMode] = useState(true);
+  const [isReady, setIsReady] = useState(false);
+  const [isSimpleMode, setIsSimpleMode] = useState(false);
   const prevUrlRef = useRef(null);
 
-  useEffect(() => {
-    const scanner = new MobileScanner();
+  const wireScanner = useCallback((scanner) => {
+    scanner.onReady = () => setIsReady(true);
     scanner.onPreview = (url) => {
-      // Revoke previous URL to avoid memory leaks
       if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current);
       prevUrlRef.current = url;
       setPreviewUrl(url);
@@ -97,13 +101,18 @@ export function useScannerWorker() {
       setError(msg);
       setIsProcessing(false);
     };
+  }, []);
+
+  useEffect(() => {
+    const scanner = new MobileScanner();
+    wireScanner(scanner);
     scannerRef.current = scanner;
 
     return () => {
       scanner.terminate();
       if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current);
     };
-  }, []);
+  }, [wireScanner]);
 
   const capture = useCallback((blob) => {
     setIsProcessing(true);
@@ -133,21 +142,12 @@ export function useScannerWorker() {
     setPreviewUrl(null);
     setError(null);
     setIsProcessing(false);
-    // Recreate worker for clean state
+    setIsReady(false);
     scannerRef.current?.terminate();
     const scanner = new MobileScanner();
-    scanner.onPreview = (url) => {
-      if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current);
-      prevUrlRef.current = url;
-      setPreviewUrl(url);
-      setIsProcessing(false);
-    };
-    scanner.onError = (msg) => {
-      setError(msg);
-      setIsProcessing(false);
-    };
+    wireScanner(scanner);
     scannerRef.current = scanner;
-  }, []);
+  }, [wireScanner]);
 
-  return { previewUrl, capture, applyFilter, rotate, save, reset, error, isProcessing, isSimpleMode, setIsSimpleMode };
+  return { previewUrl, capture, applyFilter, rotate, save, reset, error, isProcessing, isReady, isSimpleMode, setIsSimpleMode };
 }

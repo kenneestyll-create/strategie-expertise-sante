@@ -50,7 +50,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
   const streamRef = useRef(null);
   const animFrameRef = useRef(null);
 
-  const { previewUrl, capture, applyFilter, rotate, save, reset, error: workerError, isProcessing, isSimpleMode, setIsSimpleMode } = useScannerWorker();
+  const { previewUrl, capture, applyFilter, rotate, save, reset, error: workerError, isProcessing, isReady, isSimpleMode, setIsSimpleMode } = useScannerWorker();
 
   const [phase, setPhase] = useState('guide');
   const [pages, setPages] = useState([]);
@@ -276,9 +276,15 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
             ))}
           </div>
           <div className="w-full max-w-xs flex items-center gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20" data-testid="scanner-ready-badge">
-            <Check className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-            <span className="text-emerald-400/80 text-xs font-medium">
-              {isSimpleMode ? 'Mode simple — capture photo directe' : 'Mode avance — filtres, rotation, multi-pages'}
+            {isReady ? (
+              <Check className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+            ) : (
+              <Loader2 className="w-5 h-5 text-amber-400 flex-shrink-0 animate-spin" />
+            )}
+            <span className={`text-xs font-medium ${isReady ? 'text-emerald-400/80' : 'text-amber-400/80'}`}>
+              {isReady
+                ? (isSimpleMode ? 'Mode simple — capture photo directe' : 'Mode avance — filtres, rotation, multi-pages')
+                : 'Initialisation du scanner...'}
             </span>
           </div>
           <div className="w-full max-w-xs pt-2 space-y-2">
@@ -382,8 +388,8 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
           </div>
 
           <div className="bg-black/90 border-t border-white/10 flex-shrink-0">
-            {/* Toolbar — mode avance uniquement */}
-            {!isSimpleMode && (
+            {/* Toolbar — mode avance + Worker pret */}
+            {!isSimpleMode && isReady && (
               <div className="flex items-center gap-1.5 px-3 py-2 border-b border-white/5 overflow-x-auto" data-testid="advanced-toolbar">
                 {FILTERS.map(f => (
                   <button key={f.id} onClick={() => handleFilter(f.id)} disabled={isProcessing}

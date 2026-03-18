@@ -1,0 +1,118 @@
+{
+  "summary": "Iteration 83 - ADVANCED mode default testing. ALL KEY FEATURES WORKING. Scanner now opens in ADVANCED mode by default (isSimpleMode=false). Worker emits 'ready' message synchronously. Advanced toolbar (filters, rotation) correctly shows when !isSimpleMode AND isReady. Toggle between modes works bidirectionally.",
+  "tests_executed": {
+    "GUIDE_PHASE_TESTS": {
+      "TEST_01_HEADER_ADVANCED_DEFAULT": { "status": "PASS", "details": "Header shows '(Avance)' by default in green" },
+      "TEST_03_BADGE_ADVANCED_MODE": { "status": "PASS", "details": "Badge shows 'Mode avance — filtres, rotation, multi-pages'" },
+      "TEST_04_IS_READY_TRUE": { "status": "PASS", "details": "Worker emits 'ready' - check icon visible, not spinner" },
+      "TEST_05_TOGGLE_TEXT_ADVANCED": { "status": "PASS", "details": "Toggle shows 'Revenir au mode simple' (correct for advanced default)" }
+    },
+    "PREVIEW_ADVANCED_DEFAULT_TESTS": {
+      "TEST_06_TOOLBAR_VISIBLE_BY_DEFAULT": { "status": "PASS", "details": "advanced-toolbar visible by default in preview" },
+      "TEST_07_FILTERS_VISIBLE_DEFAULT": { "status": "PASS", "details": "All 3 filter buttons visible: N&B, Contraste+, Original" },
+      "TEST_08_ROTATION_VISIBLE_DEFAULT": { "status": "PASS", "details": "Both rotation buttons visible (rotate-left-btn, rotate-right-btn)" },
+      "TEST_09_PAGE_SUIVANTE_VISIBLE": { "status": "PASS", "details": "Page suivante button visible in advanced mode" },
+      "TEST_10_SWITCH_SIMPLE_VISIBLE": { "status": "PASS", "details": "switch-simple-btn visible with text 'Revenir au mode simple'" },
+      "TEST_11_NO_SWITCH_ADVANCED": { "status": "PASS", "details": "switch-advanced-btn NOT visible (correct - already in advanced)" }
+    },
+    "FILTER_AND_ROTATION_TESTS": {
+      "TEST_12_FILTER_BW_WORKS": { "status": "PASS", "details": "N&B filter clicked and works" },
+      "TEST_13_FILTER_ENHANCED_WORKS": { "status": "PASS", "details": "Contraste+ filter clicked and works" },
+      "TEST_14_FILTER_ORIGINAL_WORKS": { "status": "PASS", "details": "Original filter clicked and works" },
+      "TEST_15_ROTATE_LEFT_WORKS": { "status": "PASS", "details": "Rotate left clicked and works" },
+      "TEST_16_ROTATE_RIGHT_WORKS": { "status": "PASS", "details": "Rotate right clicked and works" }
+    },
+    "MODE_TOGGLE_TESTS": {
+      "TEST_17_TOGGLE_HIDES_TOOLBAR": { "status": "PASS", "details": "Toggling to simple mode hides advanced toolbar" },
+      "TEST_18_SWITCH_ADVANCED_APPEARS": { "status": "PASS", "details": "switch-advanced-btn visible in simple mode" },
+      "TEST_19_PAGE_SUIVANTE_HIDDEN": { "status": "PASS", "details": "Page suivante hidden in simple mode" },
+      "TEST_20_TOGGLE_RESTORES_TOOLBAR": { "status": "PASS", "details": "Toggling back to advanced restores toolbar (via JS click)" }
+    },
+    "CAMERA_ADVANCED_TESTS": {
+      "TEST_22_CAMERA_SWITCH_VISIBLE": { "status": "PASS", "details": "Switch camera button visible in advanced mode camera" },
+      "TEST_23_CAMERA_GALLERY_VISIBLE": { "status": "PASS", "details": "Gallery button visible in advanced mode camera" },
+      "TEST_24_CAPTURE_BTN_VISIBLE": { "status": "PASS", "details": "Capture button visible in camera" },
+      "TEST_25_CAMERA_TEXT_ADVANCED": { "status": "PASS", "details": "Camera shows 'Cadrez le document' (advanced mode text)" }
+    },
+    "MULTI_PAGE_TESTS": {
+      "TEST_30_PAGE_SUIVANTE_TO_CAMERA": { "status": "PASS", "details": "Page suivante takes to camera for next page" },
+      "TEST_31_PAGE_COUNTER_VISIBLE": { "status": "PASS", "details": "Page counter shows '1' after first page added" },
+      "TEST_32_MULTI_PAGE_FINISH": { "status": "PASS", "details": "Finish button shows 'Terminer (2 pages)' correctly" }
+    },
+    "SAVE_TESTS": {
+      "TEST_21_SAVE_WORKS": { "status": "PASS", "details": "Save works - scanner closes after validation" }
+    }
+  },
+  "features_validated": {
+    "advanced_mode_default": "Scanner opens in ADVANCED mode by default (isSimpleMode=false)",
+    "header_indicator": "Header shows '(Avance)' in text-emerald-400 (green) by default",
+    "worker_ready": "Worker emits 'ready' message synchronously after load, isReady becomes true quickly",
+    "guide_badge": "Badge shows 'Mode avance — filtres, rotation, multi-pages' when ready",
+    "preview_advanced_default": "Toolbar with filters (N&B, Contraste+, Original) + rotation buttons visible by default",
+    "toolbar_condition": "Toolbar correctly shows only when !isSimpleMode AND isReady",
+    "camera_advanced_default": "Switch camera + gallery + capture all visible in camera phase by default",
+    "camera_text_advanced": "Camera shows 'Cadrez le document' (not 'Prenez la photo')",
+    "filters_work": "All 3 filter buttons work correctly (bw, enhanced, original)",
+    "rotation_works": "Both rotation buttons work correctly (left, right)",
+    "mode_toggle_guide": "Toggle in guide works bidirectionally",
+    "mode_toggle_preview": "Toggle in preview works - hides/shows controls without resetting preview image",
+    "multi_page_flow": "Page suivante and multi-page flow works in advanced mode",
+    "save_works": "Save/Valider works in advanced mode"
+  },
+  "key_test_ids_verified": {
+    "advanced-toolbar": "Visible by default in preview (when isReady)",
+    "filter-bw": "Noir & Blanc filter button",
+    "filter-enhanced": "Contraste+ filter button",
+    "filter-original": "Original filter button",
+    "rotate-left-btn": "Rotate left button",
+    "rotate-right-btn": "Rotate right button",
+    "preview-add-page-btn": "Page suivante button (advanced only)",
+    "switch-simple-btn": "Revenir au mode simple (advanced preview)",
+    "switch-advanced-btn": "Mode avance button (simple preview)",
+    "toggle-mode-btn": "Mode toggle on guide page",
+    "scanner-switch-camera": "Switch camera (advanced camera only)",
+    "camera-gallery-btn": "Gallery button (advanced camera only)",
+    "scanner-ready-badge": "Shows initialization then ready state"
+  },
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "notes": [
+      "switch-advanced-btn click requires JavaScript click() in Playwright due to possible overlay from 'Made with Emergent' badge - NOT a code bug, test script workaround",
+      "Scanner button (scanner-open-btn) only visible on mobile viewport due to responsive design",
+      "Console shows hydration warnings for span in select/option - unrelated to scanner feature"
+    ]
+  },
+  "test_report_links": [
+    "/app/test_reports/iteration_83.json"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "isSimpleMode correctly defaults to false (line 89 of useScannerWorker.js)",
+    "Worker correctly emits { type: 'ready' } at end of scanner.worker.js",
+    "Toolbar condition (!isSimpleMode && isReady) correctly implemented on line 392 of DocumentScanner.jsx",
+    "Mode toggle preserves preview image - excellent UX",
+    "All test-ids are correctly placed for testing"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend only testing)",
+    "frontend": "100% - All 27 tests passed"
+  },
+  "test_credentials": {
+    "access_path": "/dossier-express -> click 'Commencer' -> scroll to find scanner-open-btn (mobile viewport only)"
+  },
+  "seed_data_creation": "Used dynamically generated canvas images for testing file upload",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 83 validates ADVANCED mode as default. Key change from iteration 82: isSimpleMode now defaults to FALSE. By default: header shows (Avance) in green, badge shows advanced mode text, camera has switch camera + gallery + capture, preview has full toolbar with filters + rotation + Page suivante. Toggle to simple hides all advanced controls. Toggle back restores them. Worker 'ready' emits synchronously so isReady is true almost immediately.",
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  }
+}
