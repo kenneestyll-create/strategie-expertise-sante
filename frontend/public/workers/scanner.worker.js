@@ -1,7 +1,7 @@
 /**
  * scanner.worker.js — Stateful Worker avec OffscreenCanvas
  * Actions : scan, filter, rotate, save
- * Auto-crop : detection des bords du document via Sobel + projection
+ * Auto-crop : detection du document par contraste fond/contenu
  */
 
 let currentCanvas = null;
@@ -20,10 +20,14 @@ self.onmessage = async function (e) {
 
     // Auto-crop si la source est la camera
     if (msg.autoCrop) {
-      const cropped = autoCrop(currentCanvas);
-      if (cropped) {
-        currentCanvas = cropped.canvas;
-        currentCtx = cropped.ctx;
+      try {
+        const cropped = autoCrop(currentCanvas, currentCtx);
+        if (cropped) {
+          currentCanvas = cropped.canvas;
+          currentCtx = cropped.ctx;
+        }
+      } catch (err) {
+        // Si l'auto-crop echoue, on garde l'original
       }
     }
 
@@ -65,75 +69,76 @@ self.onmessage = async function (e) {
   }
 };
 
-// === AUTO-CROP : detection du document via Sobel edge detection ===
+// === AUTO-CROP : detection du document par contraste fond/contenu ===
 
-function autoCrop(canvas) {
+function autoCrop(canvas, ctx) {
   const w = canvas.width;
   const h = canvas.height;
+  const imageData = ctx.getImageData(0, 0, w, h);
+  const data = imageData.data;
 
-  // Travailler sur une version reduite pour la vitesse
-  const maxDim = 400;
-  const scale = Math.min(1, maxDim / Math.max(w, h));
-  const sw = Math.round(w * scale);
-  const sh = Math.round(h * scale);
-
-  const small = new OffscreenCanvas(sw, sh);
-  const sCtx = small.getContext('2d');
-  sCtx.drawImage(canvas, 0, 0, sw, sh);
-  const sData = sCtx.getImageData(0, 0, sw, sh);
-  const pixels = sData.data;
-
-  // Grayscale
-  const gray = new Float32Array(sw * sh);
-  for (let i = 0; i < sw * sh; i++) {
-    gray[i] = 0.299 * pixels[i * 4] + 0.587 * pixels[i * 4 + 1] + 0.114 * pixels[i * 4 + 2];
+  // Helper: grayscale a (x, y)
+  function grayAt(x, y) {
+    const i = (y * w + x) * 4;
+    return 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
   }
 
-  // Sobel edge detection
-  const edges = new Float32Array(sw * sh);
-  for (let y = 1; y < sh - 1; y++) {
-    for (let x = 1; x < sw - 1; x++) {
-      const idx = y * sw + x;
-      const gx =
-        -gray[(y - 1) * sw + x - 1] - 2 * gray[idx - 1] - gray[(y + 1) * sw + x - 1]
-        + gray[(y - 1) * sw + x + 1] + 2 * gray[idx + 1] + gray[(y + 1) * sw + x + 1];
-      const gy =
-        -gray[(y - 1) * sw + x - 1] - 2 * gray[(y - 1) * sw + x] - gray[(y - 1) * sw + x + 1]
-        + gray[(y + 1) * sw + x - 1] + 2 * gray[(y + 1) * sw + x] + gray[(y + 1) * sw + x + 1];
-      edges[idx] = Math.sqrt(gx * gx + gy * gy);
+  // Etape 1: echantillonner le fond depuis les bords exterieurs (3%)
+  const borderSize = Math.max(8, Math.round(Math.min(w, h) * 0.03));
+  const sampleGap = 3;
+  let bgSum = 0, bgCount = 0;
+
+  for (let y = 0; y < borderSize; y += sampleGap) {
+    for (let x = 0; x < w; x += sampleGap) { bgSum += grayAt(x, y); bgCount++; }
+  }
+  for (let y = h - borderSize; y < h; y += sampleGap) {
+    for (let x = 0; x < w; x += sampleGap) { bgSum += grayAt(x, y); bgCount++; }
+  }
+  for (let y = borderSize; y < h - borderSize; y += sampleGap) {
+    for (let x = 0; x < borderSize; x += sampleGap) { bgSum += grayAt(x, y); bgCount++; }
+    for (let x = w - borderSize; x < w; x += sampleGap) { bgSum += grayAt(x, y); bgCount++; }
+  }
+
+  if (bgCount === 0) return null;
+  const bgAvg = bgSum / bgCount;
+
+  // Etape 2: compter pixels "contenu" par ligne et colonne
+  // Un pixel est "contenu" si sa luminosite differe du fond de plus de 30
+  const contrastThreshold = 30;
+  const scanStep = Math.max(1, Math.round(Math.min(w, h) / 300));
+
+  const rowContent = new Float32Array(h);
+  const colContent = new Float32Array(w);
+
+  for (let y = 0; y < h; y += scanStep) {
+    let cnt = 0;
+    for (let x = 0; x < w; x += scanStep) {
+      if (Math.abs(grayAt(x, y) - bgAvg) > contrastThreshold) cnt++;
     }
+    rowContent[y] = cnt;
   }
 
-  // Projection des bords sur les axes X et Y
-  const colSum = new Float32Array(sw);
-  const rowSum = new Float32Array(sh);
-  for (let y = 0; y < sh; y++) {
-    for (let x = 0; x < sw; x++) {
-      const e = edges[y * sw + x];
-      colSum[x] += e;
-      rowSum[y] += e;
+  for (let x = 0; x < w; x += scanStep) {
+    let cnt = 0;
+    for (let y = 0; y < h; y += scanStep) {
+      if (Math.abs(grayAt(x, y) - bgAvg) > contrastThreshold) cnt++;
     }
+    colContent[x] = cnt;
   }
 
-  // Seuil : moyenne des projections
-  let colTotal = 0, rowTotal = 0;
-  for (let x = 0; x < sw; x++) colTotal += colSum[x];
-  for (let y = 0; y < sh; y++) rowTotal += rowSum[y];
-  const colThresh = (colTotal / sw) * 0.4;
-  const rowThresh = (rowTotal / sh) * 0.4;
+  // Etape 3: trouver les limites (15% des pixels d'une ligne/colonne = contenu)
+  const samplesPerRow = Math.ceil(w / scanStep);
+  const samplesPerCol = Math.ceil(h / scanStep);
+  const rowThresh = samplesPerRow * 0.15;
+  const colThresh = samplesPerCol * 0.15;
 
-  // Trouver les limites du document
-  let left = 0, right = sw - 1, top = 0, bottom = sh - 1;
-  for (let x = 0; x < sw; x++) { if (colSum[x] > colThresh) { left = x; break; } }
-  for (let x = sw - 1; x >= 0; x--) { if (colSum[x] > colThresh) { right = x; break; } }
-  for (let y = 0; y < sh; y++) { if (rowSum[y] > rowThresh) { top = y; break; } }
-  for (let y = sh - 1; y >= 0; y--) { if (rowSum[y] > rowThresh) { bottom = y; break; } }
+  let top = 0, bottom = h - 1, left = 0, right = w - 1;
 
-  // Remettre aux dimensions originales
-  left = Math.round(left / scale);
-  right = Math.round(right / scale);
-  top = Math.round(top / scale);
-  bottom = Math.round(bottom / scale);
+  // Scan a step=1 sur le tableau pre-calcule (O(n) lectures, pas de recalcul)
+  for (let y = 0; y < h; y++) { if (rowContent[y] >= rowThresh) { top = y; break; } }
+  for (let y = h - 1; y >= 0; y--) { if (rowContent[y] >= rowThresh) { bottom = y; break; } }
+  for (let x = 0; x < w; x++) { if (colContent[x] >= colThresh) { left = x; break; } }
+  for (let x = w - 1; x >= 0; x--) { if (colContent[x] >= colThresh) { right = x; break; } }
 
   // Padding leger (0.5%)
   const pad = Math.round(Math.max(w, h) * 0.005);
@@ -145,7 +150,7 @@ function autoCrop(canvas) {
   const cropW = right - left + 1;
   const cropH = bottom - top + 1;
 
-  // Securite : ne pas recadrer si le resultat est trop petit (<30%) ou quasi identique (>95%)
+  // Securite: ne pas recadrer si resultat trop petit (<30%) ou quasi identique (>95%)
   if (cropW < w * 0.3 || cropH < h * 0.3) return null;
   if (cropW > w * 0.95 && cropH > h * 0.95) return null;
 
