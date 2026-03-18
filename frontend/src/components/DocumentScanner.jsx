@@ -61,12 +61,6 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
 
   useEffect(() => () => { stopCamera(); if (pdfUrl) URL.revokeObjectURL(pdfUrl); }, [stopCamera, pdfUrl]);
 
-  /* -- Body class to hide external overlays -- */
-  useEffect(() => {
-    document.body.classList.add('scanner-active');
-    return () => { document.body.classList.remove('scanner-active'); };
-  }, []);
-
   useEffect(() => {
     if (previewUrl && phase === 'processing') setPhase('preview');
   }, [previewUrl, phase]);
@@ -187,7 +181,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
 
   /* ====== RENDER ====== */
   return (
-    <div className="fixed inset-0 bg-black flex flex-col" style={{ zIndex: 99999 }} data-testid="document-scanner">
+    <div className="fixed inset-0 bg-black flex flex-col" style={{ zIndex: 999999 }} data-testid="document-scanner">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-black/80 backdrop-blur-sm flex-shrink-0">
         <h3 className="text-white text-sm font-semibold flex items-center gap-2">

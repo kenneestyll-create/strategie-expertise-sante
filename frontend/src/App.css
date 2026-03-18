@@ -76,13 +76,8 @@
 }
 
 
-/* === SCANNER FULLSCREEN — masquer TOUS les overlays externes === */
-body.scanner-active #emergent-badge,
-body.scanner-active [style*="z-index: 9999"],
-body.scanner-active [style*="z-index: 400"],
-body.scanner-active [style*="z-index:9999"],
-body.scanner-active [style*="z-index:400"] {
+/* === SCANNER — masquer uniquement Emergent === */
+[class*="emergent"],
+[id*="emergent"] {
   display: none !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
 }
