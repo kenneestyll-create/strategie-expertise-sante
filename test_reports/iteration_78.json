@@ -1,0 +1,132 @@
+{
+  "summary": "Iteration 78 - CamScanner with NEW SYNCHRONOUS ScannerEngine (no Worker). ALL 15 TESTS PASS. Architecture change validated: removed Web Worker entirely, using pure JS ScannerEngine class with synchronous operations. SCAN/FILTER/ROTATE/CROP all complete in <10ms. Console shows SCAN START/DONE, FILTER START/DONE, ROTATE START/DONE, CROP START/DONE - NO Worker-related logs (correct for new architecture).",
+  "tests_executed": {
+    "TEST_1_SCANNER_OPENS": {
+      "status": "PASS",
+      "details": "Scanner opens from /dossier-express, guide phase shows with scanner-ready-badge: 'Cadrage automatique + correction perspective actives'"
+    },
+    "TEST_2_FILE_UPLOAD": {
+      "status": "PASS",
+      "details": "Upload test image via scanner-file-btn, preview shows immediately with step-log: 'Image traitee'. Console shows: SCAN START / SCAN DONE 8 ms"
+    },
+    "TEST_3_ALL_BUTTONS_ENABLED": {
+      "status": "PASS",
+      "details": "After image ready, all 7 buttons are ENABLED (no opacity-30/opacity-40): filter-bw, filter-document, filter-original, rotate-left-btn, rotate-right-btn, manual-crop-btn, adjust-toggle-btn"
+    },
+    "TEST_4_FILTER_BW": {
+      "status": "PASS",
+      "details": "Click filter-bw, button highlights green (bg-emerald-500), step-log: 'Filtre Noir & Blanc (3ms)'. Console: FILTER START: bw / FILTER DONE 1 ms"
+    },
+    "TEST_5_FILTER_ORIGINAL": {
+      "status": "PASS",
+      "details": "Click filter-original, button highlights green, step-log: 'Filtre Original (1ms)'. Console: FILTER START: original / FILTER DONE 1 ms"
+    },
+    "TEST_6_FILTER_CONTRASTE_PLUS": {
+      "status": "PASS",
+      "details": "Click filter-document, button highlights green, step-log: 'Filtre Contraste+ (2ms)'. Console: FILTER START: document / FILTER DONE 1 ms"
+    },
+    "TEST_7_ROTATE_LEFT": {
+      "status": "PASS",
+      "details": "Click rotate-left-btn, step-log: 'Rotation gauche (3ms)'. Console: ROTATE START: left / ROTATE DONE 2 ms"
+    },
+    "TEST_8_ROTATE_RIGHT": {
+      "status": "PASS",
+      "details": "Click rotate-right-btn, step-log: 'Rotation droite (2ms)'. Console: ROTATE START: right / ROTATE DONE 2 ms"
+    },
+    "TEST_9_CROP": {
+      "status": "PASS",
+      "details": "Click manual-crop-btn, corner-adjuster visible with 4 corner handles, manual-mode-badge shows 'Deplacez les coins', click apply-crop-btn, step-log: 'Recadrage applique (2ms)'. Console: CROP START / CROP DONE 1 ms"
+    },
+    "TEST_10_ADJUST": {
+      "status": "PASS",
+      "details": "Click adjust-toggle-btn, adjust-panel opens with brightness-slider and contrast-slider visible"
+    },
+    "TEST_11_SAVE": {
+      "status": "PASS",
+      "details": "Click preview-confirm-btn (Valider / Sauvegarder), finalizing phase triggered (fast completion)"
+    },
+    "TEST_12_MULTI_PAGE": {
+      "status": "PASS",
+      "details": "Upload first image (red), click preview-add-page-btn (via evaluate), page-counter shows '1', camera phase with 'Page 2' text visible, upload second image (blue), preview-finish-btn shows 'Terminer (2 pages)'. NOTE: Must use page.evaluate() to click add-page button for React handler to fire."
+    },
+    "TEST_13_NO_CANVAS_ERROR": {
+      "status": "PASS",
+      "details": "Zero 'getImageData: source width is 0' errors in console. Canvas guards in scannerEngine.js: line 25-28 check sourceCanvas.width/height before processing."
+    },
+    "TEST_14_NO_HANGING": {
+      "status": "PASS",
+      "details": "All operations < 10ms: SCAN 4-8ms, FILTER 1-3ms, ROTATE 2-3ms, CROP 1-2ms. No Worker init delay. Operations are SYNCHRONOUS on main thread."
+    },
+    "TEST_15_CLOSE": {
+      "status": "PASS",
+      "details": "Click scanner-close, scanner closes successfully, document-scanner element no longer visible"
+    }
+  },
+  "console_logs_verified": [
+    "SCAN START",
+    "SCAN DONE 8 ms",
+    "FILTER START: bw",
+    "FILTER DONE 1 ms",
+    "FILTER START: original",
+    "FILTER DONE 1 ms",
+    "FILTER START: document",
+    "FILTER DONE 1 ms",
+    "ROTATE START: left",
+    "ROTATE DONE 2 ms",
+    "ROTATE START: right",
+    "ROTATE DONE 2 ms",
+    "CROP START",
+    "CROP DONE 1 ms"
+  ],
+  "architecture_changes_validated": {
+    "removed": ["opencvLoader.js", "Web Worker", "Worker init/communication", "async handlers", "workerReady/workerLoading/workerFailed states"],
+    "added": ["scannerEngine.js - Pure JS ScannerEngine class", "synchronous methods: scan(), applyFilter(), rotate(), crop(), adjust()"],
+    "key_differences": [
+      "No Worker init delay - engine instantiated with useRef",
+      "All operations synchronous - no async/await for image processing",
+      "canEdit = imageReady && !simpleMode (no workerReady check)",
+      "Image preview uses <img> with src={processedUrl}",
+      "On engine error, falls back to fallbackEnhance()"
+    ]
+  },
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "notes": [
+      "HTML hydration warnings for span in option/select are unrelated to scanner - from DossierExpressPage form",
+      "Camera access fails in Playwright test environment (expected) - shows 'Aucune camera. Utilisez la galerie.'",
+      "Multi-page test requires page.evaluate() for button click to trigger React handler - Playwright click(force=True) doesn't work"
+    ]
+  },
+  "test_report_links": ["/app/test_reports/iteration_78.json"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "ScannerEngine class properly guards against invalid canvas: line 25-28 checks sourceCanvas.width/height",
+    "All engine methods return null on !this.ready, preventing getImageData errors",
+    "canEdit computed correctly: imageReady && !simpleMode",
+    "Filter highlighting: filter === f.id && canEdit for bg-emerald-500",
+    "Rotation properly updates originalData after transform",
+    "Crop uses normalized coords {x0, y0, x1, y1} with Math.min/max for bounds"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend only testing)",
+    "frontend": "100% - 15/15 tests passed"
+  },
+  "test_credentials": {
+    "client": "demo@test.com / Password123!"
+  },
+  "seed_data_creation": "Created /tmp/test_image_1.jpg (300x200 red) and /tmp/test_image_2.jpg (400x300 blue) for testing",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 78 validates the MAJOR ARCHITECTURE CHANGE: removed Web Worker, using pure JS ScannerEngine class. All 15 scanner tests pass. Key testing notes: 1) Use page.evaluate() for clicking preview-add-page-btn (React handler issue), 2) Camera access fails in test env - use file input, 3) Console logs show SCAN/FILTER/ROTATE/CROP START/DONE with <10ms times (no WORKER logs), 4) scannerEngine.js is synchronous with proper canvas guards.",
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  }
+}
