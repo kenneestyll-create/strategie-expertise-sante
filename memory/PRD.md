@@ -67,28 +67,15 @@ Application web complète en français pour fournir des conseils sur les maladie
 - Routes, collections DB et variables inchangées
 - Validé par 13 tests + 4 vérifications grep
 
-### Scanner Documents CamScanner-like (Mar 2026) ✅ — STATEFUL PURE JS
-- **Architecture Stateful Pure JS** : Worker garde l'image en mémoire (originalImage + baseImage + currentImage)
-  - Pipeline: `scan` → `filter` / `rotate` / `crop` / `adjust` (stateful, 0 transfert) → `save`
-  - Init: ~139ms, Scan: ~32ms, Filter: ~16ms, Rotate: ~16ms, Crop: ~21ms
-- **Timeouts 2s max** : TIMEOUT_MS=2000 sur chaque opération, sendMessage nettoie pending map, reject propre
-- **État `imageReady`** : Bloque TOUTES les actions tant que l'image n'est pas chargée dans le worker
-  - `canEdit = imageReady && !processing && workerReady && !simpleMode`
-  - Guard canvas width=0 dans capture() et handleFileInput()
-  - Fallback grayscale automatique sur timeout/erreur worker
-- **Logs obligatoires** : START/DONE pour chaque opération (INIT, SCAN, FILTER, ROTATE, CROP, ADJUST, SAVE)
-- **Détection automatique** : Canny edge + Contour finding + Perspective warp (DLT)
-- **Interface CamScanner complète — TOUS CONTRÔLES ACTIFS** :
-  - 3 filtres avec surbrillance verte : Noir & Blanc | Contraste+ | Original
-  - Rotation gauche + droite
-  - Sliders luminosité/contraste (debounced, panneau extensible)
-  - Recadrage manuel (4 poignées draggables HG/HD/BG/BD)
-  - Mode Simple toggle
-  - Multi-pages + fusion PDF (jsPDF)
-  - Galerie accessible en phase caméra (multi-page)
-- **Accessibilité** : boutons min-h 44-56px, aria-labels
-- Mobile uniquement (bouton scanner visible en mobile)
-- Fichiers : `scanner.worker.js` (v6) + `opencvLoader.js` + `DocumentScanner.jsx`
+### Scanner Documents CamScanner-like (Mar 2026) — PUR JS SYNCHRONE
+- **Architecture** : Moteur ScannerEngine pur JS synchrone (zero Worker, zero promesse)
+  - Base sur le modele ScannerUltime fourni par le client
+  - SCAN: 4-8ms, FILTER: 1-3ms, ROTATE: 2-3ms, CROP: 1-2ms, INIT: 0ms
+- **Moteur** : originalData stocke apres auto-crop, filtres re-appliques depuis la base
+  - Detection auto: grayscale, Canny edge, plus grand rectangle, crop
+  - canEdit = imageReady && !simpleMode (zero etat Worker)
+- **Interface** : 3 filtres + rotation + recadrage 4 coins + luminosite/contraste + multi-pages + PDF
+- **Fichiers** : scannerEngine.js + DocumentScanner.jsx (opencvLoader.js et scanner.worker.js obsoletes)
 
 ### Section Partenaires Footer (Mar 2026) ✅
 - Formulaire dédié inline (Nom, Société, Email, Type de partenariat, Message)
