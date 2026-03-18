@@ -10,12 +10,13 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 - **Integrations:** Stripe (test), PayPal (test), Claude Sonnet 4.5 (Emergent LLM Key), Resend (sandbox), apscheduler, fpdf2, slowapi
 
 ## Scanner Documents (Mar 2026)
-- **Architecture:** Worker OffscreenCanvas stateful + Hook fonctionnel simple
-- **Camera:** `getUserMedia({ video: { facingMode } })` — resolution native de la camera (4:3), champ de vision complet
-- **Affichage:** `object-fit: contain` — vue complete sans zoom/crop, fond noir
+- **Architecture:** Appareil photo natif (`<input capture="environment">`) + Worker OffscreenCanvas
+- **Prise de photo:** Utilise l'appareil photo natif du telephone (Samsung Camera, etc.) via `capture="environment"` — qualite maximale, autofocus, HDR
+- **Galerie:** Input file sans `capture` — ouvre la galerie pour choisir une photo existante
 - **Worker:** scan, filter (bw/enhanced/original), rotate, save — 3.4 Ko leger
-- **Auto-crop:** SUPPRIME (utilisateur a demande sa suppression)
-- **Cache-busting:** `?v=${Date.now()}` sur l'URL du worker
+- **Modes:** Simple (capture directe) / Avance (filtres, rotation, multi-pages, PDF)
+- **Multi-pages:** Strip de pages, navigation, ajout/suppression, fusion PDF
+- **Auto-crop:** SUPPRIME
 
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)

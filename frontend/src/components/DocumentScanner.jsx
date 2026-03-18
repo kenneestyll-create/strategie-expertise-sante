@@ -37,9 +37,8 @@ const PageStrip = ({ pages, activeIndex, onSelect, onRemove }) => (
 
 /* ====== MAIN SCANNER ====== */
 export const DocumentScanner = ({ onCapture, onClose }) => {
-  const videoRef = useRef(null);
-  const fileInputRef = useRef(null);
-  const streamRef = useRef(null);
+  const cameraInputRef = useRef(null);
+  const galleryInputRef = useRef(null);
 
   const { previewUrl, isReady, isProcessing, error: workerError, scan, filter, rotate, save, reset } = useScannerWorker();
 
@@ -48,18 +47,10 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
   const [pages, setPages] = useState([]);
   const [activePageIndex, setActivePageIndex] = useState(0);
   const [pdfUrl, setPdfUrl] = useState(null);
-  const [facingMode, setFacingMode] = useState('environment');
   const [error, setError] = useState('');
   const [activeFilter, setActiveFilter] = useState('original');
-  const [videoReady, setVideoReady] = useState(false);
 
-  /* -- Stop camera -- */
-  const stopCamera = useCallback(() => {
-    if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
-    setVideoReady(false);
-  }, []);
-
-  useEffect(() => () => { stopCamera(); if (pdfUrl) URL.revokeObjectURL(pdfUrl); }, [stopCamera, pdfUrl]);
+  useEffect(() => () => { if (pdfUrl) URL.revokeObjectURL(pdfUrl); }, [pdfUrl]);
 
   useEffect(() => {
     if (previewUrl && phase === 'processing') setPhase('preview');
@@ -75,60 +66,26 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
     scan(blob);
   }, [scan]);
 
-  /* ====== FILE INPUT (guide only, no capture attribute) ====== */
-  const handleFileInput = useCallback((e) => {
+  /* ====== PHOTO via appareil natif ====== */
+  const handleCameraCapture = useCallback((e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = '';
-    stopCamera();
     processBlob(file);
-  }, [processBlob, stopCamera]);
+  }, [processBlob]);
 
-  /* ====== CAMERA — getUserMedia, video visible directement ====== */
-  const startCamera = useCallback(async () => {
-    setError(''); setVideoReady(false); setPhase('camera');
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode },
-        audio: false
-      });
-      streamRef.current = stream;
-      const video = videoRef.current;
-      if (!video) return;
-      video.srcObject = stream;
-      video.play().catch(err => { console.warn('Lecture video interrompue', err); });
-      video.onloadedmetadata = () => { setVideoReady(true); };
-    } catch (err) {
-      if (err.name === 'NotAllowedError') setError('Autorisez la camera ou choisissez une photo.');
-      else if (err.name === 'NotFoundError') setError('Aucune camera. Utilisez la galerie.');
-      else setError(`Erreur camera : ${err.message}`);
-    }
-  }, [facingMode]);
+  /* ====== PHOTO depuis galerie ====== */
+  const handleGalleryInput = useCallback((e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    processBlob(file);
+  }, [processBlob]);
 
-  const switchCamera = useCallback(() => { stopCamera(); setFacingMode(p => p === 'environment' ? 'user' : 'environment'); }, [stopCamera]);
-  useEffect(() => { if (phase === 'camera' && !streamRef.current) startCamera(); }, [facingMode, phase, startCamera]);
-
-  /* ====== CAPTURE SANS PERTE — qualite 1.0, dimensions exactes ====== */
-  const captureFromCamera = useCallback(() => {
-    const video = videoRef.current;
-    if (!video || !video.videoWidth || !video.videoHeight) { setError('Camera pas prete.'); return; }
-
-    // Canvas temporaire aux dimensions exactes de la video
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    stopCamera();
-
-    // Qualite 1.0 — aucune compression
-    canvas.toBlob(
-      (blob) => { if (blob) processBlob(blob); else setError('Erreur capture.'); },
-      'image/jpeg',
-      1.0
-    );
-  }, [stopCamera, processBlob]);
+  /* ====== Ouvrir l'appareil photo natif ====== */
+  const openNativeCamera = useCallback(() => {
+    cameraInputRef.current?.click();
+  }, []);
 
   /* ====== FILTER / ROTATE ====== */
   const handleFilter = useCallback((f) => { if (isProcessing) return; setActiveFilter(f); filter(f); }, [filter, isProcessing]);
@@ -139,8 +96,10 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
     if (!previewUrl) return;
     setPages(p => [...p, previewUrl]);
     setActivePageIndex(pages.length);
-    reset(); startCamera();
-  }, [previewUrl, pages.length, reset, startCamera]);
+    reset();
+    // Rouvrir l'appareil photo natif pour la page suivante
+    setTimeout(() => openNativeCamera(), 100);
+  }, [previewUrl, pages.length, reset, openNativeCamera]);
 
   const addPageAndFinish = useCallback(() => {
     if (!previewUrl) return;
@@ -160,8 +119,8 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
   const removePage = useCallback((i) => {
     const np = pages.filter((_, j) => j !== i);
     setPages(np);
-    if (!np.length) startCamera(); else setActivePageIndex(Math.min(i, np.length - 1));
-  }, [pages, startCamera]);
+    if (!np.length) setPhase('guide'); else setActivePageIndex(Math.min(i, np.length - 1));
+  }, [pages]);
 
   const confirmMulti = useCallback(async () => {
     setPhase('finalizing');
@@ -172,12 +131,14 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
         const r = await fetch(u); const bl = await r.blob();
         return new File([bl], `page${i + 1}.jpg`, { type: 'image/jpeg' });
       }));
-      stopCamera();
       onCapture(new File([b], `scan_${pages.length}p_${Date.now()}.pdf`, { type: 'application/pdf' }), imgs);
     } catch { setError('Erreur PDF'); setPhase('pages'); }
-  }, [pages, onCapture, stopCamera]);
+  }, [pages, onCapture]);
 
-  const retake = useCallback(() => { reset(); startCamera(); }, [reset, startCamera]);
+  const retake = useCallback(() => {
+    reset();
+    setPhase('guide');
+  }, [reset]);
 
   /* ====== RENDER ====== */
   return (
@@ -192,13 +153,13 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
             {isSimpleMode ? '(Simple)' : '(Avance)'}
           </span>
         </h3>
-        <Button variant="ghost" size="sm" onClick={() => { stopCamera(); onClose(); }}
+        <Button variant="ghost" size="sm" onClick={onClose}
           className="text-white hover:bg-white/10 min-h-[44px] min-w-[44px]" data-testid="scanner-close">
           <X className="w-5 h-5" />
         </Button>
       </div>
 
-      {!isSimpleMode && pages.length > 0 && (phase === 'camera' || phase === 'preview') && (
+      {!isSimpleMode && pages.length > 0 && phase === 'preview' && (
         <PageStrip pages={pages} activeIndex={-1} onSelect={() => setPhase('pages')} />
       )}
 
@@ -210,7 +171,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
           </div>
           <div className="text-center">
             <h2 className="text-white text-lg font-semibold mb-1" data-testid="scanner-title">CamScanner</h2>
-            <p className="text-white/50 text-sm">Capture et traitement non-bloquant</p>
+            <p className="text-white/50 text-sm">Appareil photo natif — qualite maximale</p>
           </div>
           <div className="w-full max-w-xs space-y-2.5">
             {[
@@ -236,12 +197,12 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
             </span>
           </div>
           <div className="w-full max-w-xs pt-2 space-y-2">
-            <Button onClick={startCamera} className="w-full gap-2 h-14 text-base font-semibold" data-testid="scanner-start-btn">
-              <Camera className="w-5 h-5" /> {isSimpleMode ? 'Prendre une photo' : 'Ouvrir la camera'}
+            <Button onClick={openNativeCamera} className="w-full gap-2 h-14 text-base font-semibold" data-testid="scanner-start-btn">
+              <Camera className="w-5 h-5" /> Prendre une photo
             </Button>
-            <Button variant="outline" onClick={() => fileInputRef.current?.click()}
+            <Button variant="outline" onClick={() => galleryInputRef.current?.click()}
               className="w-full gap-2 h-12 text-sm border-white/20 text-white hover:bg-white/10" data-testid="scanner-file-btn">
-              <ImageUp className="w-5 h-5" /> Choisir une photo
+              <ImageUp className="w-5 h-5" /> Choisir depuis la galerie
             </Button>
             <button onClick={() => setIsSimpleMode(p => !p)}
               className="w-full text-center text-white/40 text-xs py-3 min-h-[44px] hover:text-white/60 transition-colors" data-testid="toggle-mode-btn">
@@ -249,50 +210,6 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
             </button>
           </div>
           {error && <p className="text-red-400 text-sm text-center max-w-xs" data-testid="scanner-error">{error}</p>}
-        </div>
-      )}
-
-      {/* === CAMERA — video directe, vue complete ====== */}
-      {phase === 'camera' && (
-        <div className="flex-1 relative overflow-hidden bg-black flex items-center justify-center">
-          {/* Video directe — vue complete sans zoom/crop */}
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            data-testid="scanner-video"
-            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-          />
-
-          {/* Guide cadrage */}
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute inset-[6%] rounded-2xl border-2 border-white/70" style={{ boxShadow: '0 0 0 9999px rgba(0,0,0,0.35)' }} />
-            <div className="absolute top-[6%] left-[6%] w-8 h-8 border-t-4 border-l-4 border-emerald-400 rounded-tl-lg" />
-            <div className="absolute top-[6%] right-[6%] w-8 h-8 border-t-4 border-r-4 border-emerald-400 rounded-tr-lg" />
-            <div className="absolute bottom-[6%] left-[6%] w-8 h-8 border-b-4 border-l-4 border-emerald-400 rounded-bl-lg" />
-            <div className="absolute bottom-[6%] right-[6%] w-8 h-8 border-b-4 border-r-4 border-emerald-400 rounded-br-lg" />
-            <div className="absolute top-[calc(6%+12px)] left-0 right-0 text-center">
-              <span className="text-white/80 text-xs bg-black/50 px-3 py-1.5 rounded-full">
-                {isSimpleMode ? 'Prenez la photo' : (pages.length === 0 ? 'Cadrez le document' : `Page ${pages.length + 1}`)}
-              </span>
-            </div>
-          </div>
-
-          {error && (
-            <div className="absolute top-1/2 left-0 right-0 -translate-y-1/2 px-6 text-center" data-testid="camera-error">
-              <p className="text-red-400 text-sm bg-black/80 rounded-xl p-4">{error}</p>
-            </div>
-          )}
-
-          {/* Controles camera — uniquement le declencheur */}
-          <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center pb-8 pt-4 bg-gradient-to-t from-black/80 to-transparent">
-            <button onClick={captureFromCamera} disabled={!videoReady}
-              className={`rounded-full border-4 border-white bg-white/20 hover:bg-white/40 transition-colors flex items-center justify-center active:scale-95 ${!videoReady ? 'opacity-40' : ''}`}
-              data-testid="scanner-capture-btn" style={{ width: 72, height: 72 }}>
-              <div className="rounded-full bg-white" style={{ width: 56, height: 56 }} />
-            </button>
-          </div>
         </div>
       )}
 
@@ -305,10 +222,9 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
         </div>
       )}
 
-      {/* === PREVIEW — img sans deformation, controles hors image === */}
+      {/* === PREVIEW === */}
       {phase === 'preview' && previewUrl && (
         <div className="flex-1 flex flex-col min-h-0">
-          {/* Image affichee sans deformation — width 100%, height auto, object-fit contain */}
           <div className="flex-1 overflow-auto bg-neutral-900 flex items-center justify-center p-2 min-h-0">
             <img
               src={previewUrl}
@@ -323,9 +239,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
             )}
           </div>
 
-          {/* Controles — hors de l'image, jamais superposes */}
           <div className="bg-black/90 border-t border-white/10 flex-shrink-0">
-            {/* Toolbar avance — uniquement si !isSimpleMode ET Worker pret */}
             {!isSimpleMode && isReady && (
               <div className="flex items-center gap-1.5 px-3 py-2 border-b border-white/5 overflow-x-auto" data-testid="advanced-toolbar">
                 {[
@@ -353,7 +267,6 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
               </div>
             )}
 
-            {/* Boutons d'action */}
             <div className="p-3 space-y-2">
               {isSimpleMode ? (
                 <>
@@ -412,7 +325,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
           </div>
           <div className="p-4 bg-black/80 space-y-2 flex-shrink-0">
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => { reset(); startCamera(); }} className="flex-1 gap-2 h-12 min-h-[48px] border-white/20 text-white hover:bg-white/10"><Plus className="w-4 h-4" /> Ajouter</Button>
+              <Button variant="outline" onClick={() => { reset(); openNativeCamera(); }} className="flex-1 gap-2 h-12 min-h-[48px] border-white/20 text-white hover:bg-white/10"><Plus className="w-4 h-4" /> Ajouter</Button>
               <Button onClick={async () => { setPhase('finalizing'); const pdf = await buildPdf(pages); const b = pdf.output('blob'); if (pdfUrl) URL.revokeObjectURL(pdfUrl); setPdfUrl(URL.createObjectURL(b)); setPhase('pdfPreview'); }} className="flex-1 gap-2 h-12 min-h-[48px]"><Eye className="w-4 h-4" /> Apercu PDF</Button>
             </div>
             <Button onClick={confirmMulti} className="w-full gap-2 h-14 min-h-[56px] bg-emerald-600 hover:bg-emerald-500 font-semibold"><Layers className="w-4 h-4" /> Fusionner ({pages.length} pages)</Button>
@@ -439,8 +352,10 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
         </div>
       )}
 
-      {/* File input — guide uniquement, PAS de capture attribute */}
-      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileInput} className="hidden" data-testid="scanner-file-input" />
+      {/* Input appareil photo natif — capture="environment" ouvre la camera arriere */}
+      <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleCameraCapture} className="hidden" data-testid="scanner-camera-input" />
+      {/* Input galerie — pas de capture attribute */}
+      <input ref={galleryInputRef} type="file" accept="image/*" onChange={handleGalleryInput} className="hidden" data-testid="scanner-file-input" />
     </div>
   );
 };
