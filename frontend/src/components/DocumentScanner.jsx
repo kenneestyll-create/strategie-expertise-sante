@@ -285,28 +285,13 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
             </div>
           )}
 
-          {/* Controles camera — uniquement le declencheur, rien d'autre avant capture */}
-          <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-6 pb-8 pt-4 bg-gradient-to-t from-black/80 to-transparent">
-            {!isSimpleMode && (
-              <Button variant="ghost" size="sm" onClick={switchCamera}
-                className="text-white hover:bg-white/10 rounded-full w-14 h-14 min-h-[56px]" data-testid="scanner-switch-camera">
-                <RotateCcw className="w-5 h-5" />
-              </Button>
-            )}
-            {isSimpleMode && <div style={{ width: 56, height: 56 }} />}
-
+          {/* Controles camera — uniquement le declencheur */}
+          <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center pb-8 pt-4 bg-gradient-to-t from-black/80 to-transparent">
             <button onClick={captureFromCamera} disabled={!videoReady}
               className={`rounded-full border-4 border-white bg-white/20 hover:bg-white/40 transition-colors flex items-center justify-center active:scale-95 ${!videoReady ? 'opacity-40' : ''}`}
               data-testid="scanner-capture-btn" style={{ width: 72, height: 72 }}>
               <div className="rounded-full bg-white" style={{ width: 56, height: 56 }} />
             </button>
-
-            {!isSimpleMode && pages.length > 0 ? (
-              <Button variant="ghost" size="sm" onClick={() => { stopCamera(); setPhase('pages'); }}
-                className="text-white hover:bg-white/10 rounded-full w-14 h-14 min-h-[56px]">
-                <Check className="w-5 h-5" />
-              </Button>
-            ) : <div style={{ width: 56, height: 56 }} />}
           </div>
         </div>
       )}
