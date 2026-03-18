@@ -74,3 +74,15 @@
     background-color: hsl(var(--accent) / 0.3);
     color: hsl(var(--foreground));
 }
+
+
+/* === SCANNER FULLSCREEN — masquer TOUS les overlays externes === */
+body.scanner-active #emergent-badge,
+body.scanner-active [style*="z-index: 9999"],
+body.scanner-active [style*="z-index: 400"],
+body.scanner-active [style*="z-index:9999"],
+body.scanner-active [style*="z-index:400"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
