@@ -24,39 +24,27 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 
 ## Fonctionnalites implementees
 
-### Scanner Documents CamScanner-like — Architecture DEFINITIVE (Mar 2026)
+### Scanner Documents CamScanner-like (Mar 2026)
 - **Architecture:** Worker OffscreenCanvas stateful + Hook fonctionnel simple
-  - Worker: `/app/frontend/public/workers/scanner.worker.js`
+  - Worker: `/app/frontend/public/workers/scanner.worker.js` (3.4 Ko, leger)
   - Hook: `/app/frontend/src/hooks/useScannerWorker.js` (cache-busting URL)
   - Composant: `/app/frontend/src/components/DocumentScanner.jsx`
-  - OpenCV.js: `/app/frontend/public/workers/opencv.js` (12MB, self-hosted, opencv-js-wasm@5.0.0)
 - **Worker stateful:**
   - `scan`: createImageBitmap + OffscreenCanvas, stocke originalImage
   - `filter`: bw (binarize), enhanced (adjustContrast), original
   - `rotate`: left/right via rotateCanvas helper
   - `save`: convertToBlob JPEG 0.95
-  - `ready`: emis apres chargement OpenCV.js (cvReady flag)
-  - Preview envoie ArrayBuffer transferable + dimensions (width/height)
-- **Auto-Crop OpenCV.js (CORRIGE - Mars 2026):**
-  - Chargement local de OpenCV.js via importScripts (evite CORS)
-  - Downscale pour detection rapide (max 800px), transform a pleine resolution
-  - Canny edge detection multi-seuils (75/200, 50/150, 30/100)
-  - findContours + approxPolyDP avec epsilon adaptatif
-  - getPerspectiveTransform + warpPerspective pour redresser le document
-  - Fonctionne pour camera ET import fichier (autoCrop=true)
-  - Teste avec image realiste : 1920x1440 -> 1308x1089 (document isole du fond bois)
+  - `ready`: emis immediatement (pas de dependance lourde)
 - **Hook simplifie:**
-  - Pas de classe MobileScanner, juste useRef + useState
-  - previewUrl, previewSize (dimensions 1:1), isReady, isProcessing
+  - previewUrl, previewSize, isReady, isProcessing
   - scan(), filter(), rotate(), save(), reset()
   - Cache-busting: `?v=${Date.now()}` sur l'URL du worker
-- **Tests:** 8/8 passes (iteration 87)
+- **Auto-crop:** SUPPRIME (Mars 2026) - l'utilisateur a demande sa suppression apres echecs repetes. Le scanner prend les photos sans recadrage automatique.
 
 ### Securite, Conversion, Partenaires, etc.
 - (Voir sessions precedentes pour details)
 
 ## Taches a venir
-- **P1:** Outil de recadrage manuel comme fallback si auto-crop echoue
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Integration HubSpot (en attente de credentials)
 - **P2:** Audit logging complet
@@ -69,4 +57,3 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 - Claude Sonnet 4.5 (Emergent LLM Key)
 - Resend (sandbox)
 - HubSpot (partiellement, en attente credentials)
-- OpenCV.js (opencv-js-wasm@5.0.0, self-hosted)
