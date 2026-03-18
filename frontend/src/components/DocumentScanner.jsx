@@ -89,7 +89,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
     setError(''); setVideoReady(false); setPhase('camera');
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+        video: { facingMode },
         audio: false
       });
       streamRef.current = stream;
@@ -122,7 +122,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
 
     stopCamera();
 
-    // Qualite 1.0 — aucune compression, autoCrop actif pour la camera
+    // Qualite 1.0 — aucune compression
     canvas.toBlob(
       (blob) => { if (blob) processBlob(blob); else setError('Erreur capture.'); },
       'image/jpeg',
@@ -252,20 +252,20 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
         </div>
       )}
 
-      {/* === CAMERA — video directe, object-fit: cover, aucun canvas preview ====== */}
+      {/* === CAMERA — video directe, vue complete ====== */}
       {phase === 'camera' && (
-        <div className="flex-1 relative overflow-hidden bg-black">
-          {/* Video directe — remplit l'ecran comme CamScanner */}
+        <div className="flex-1 relative overflow-hidden bg-black flex items-center justify-center">
+          {/* Video directe — vue complete sans zoom/crop */}
           <video
             ref={videoRef}
             autoPlay
             playsInline
             muted
             data-testid="scanner-video"
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
           />
 
-          {/* Guide cadrage — uniquement le cadre, aucun bouton parasite */}
+          {/* Guide cadrage */}
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute inset-[6%] rounded-2xl border-2 border-white/70" style={{ boxShadow: '0 0 0 9999px rgba(0,0,0,0.35)' }} />
             <div className="absolute top-[6%] left-[6%] w-8 h-8 border-t-4 border-l-4 border-emerald-400 rounded-tl-lg" />
