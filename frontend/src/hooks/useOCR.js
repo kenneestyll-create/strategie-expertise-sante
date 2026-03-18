@@ -17,7 +17,6 @@ export const useOCR = () => {
   const extractText = useCallback(async (file) => {
     if (!file) return null;
 
-    // Only process images (Tesseract.js handles JPG/PNG)
     const isImage = file.type?.startsWith('image/');
     if (!isImage) {
       return { raw: '', fields: {}, source: 'skip', message: 'OCR disponible uniquement pour les images (JPG, PNG)' };
@@ -27,8 +26,9 @@ export const useOCR = () => {
     setProgress(0);
     setError(null);
 
+    let objectUrl = null;
     try {
-      const worker = await createWorker({
+      const worker = await createWorker('fra', 1, {
         logger: (m) => {
           if (m.status === 'recognizing text') {
             setProgress(Math.round(m.progress * 100));
@@ -37,10 +37,9 @@ export const useOCR = () => {
       });
       workerRef.current = worker;
 
-      await worker.loadLanguage('fra');
-      await worker.initialize('fra');
-
-      const { data: { text, confidence } } = await worker.recognize(file);
+      // Convertir File en blob URL pour eviter DataCloneError
+      objectUrl = URL.createObjectURL(file);
+      const { data: { text, confidence } } = await worker.recognize(objectUrl);
       await worker.terminate();
       workerRef.current = null;
 
@@ -63,6 +62,8 @@ export const useOCR = () => {
         workerRef.current = null;
       }
       return null;
+    } finally {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
     }
   }, []);
 
@@ -74,8 +75,9 @@ export const useOCR = () => {
     setProgress(0);
     setError(null);
 
+    const objectUrls = [];
     try {
-      const worker = await createWorker({
+      const worker = await createWorker('fra', 1, {
         logger: (m) => {
           if (m.status === 'recognizing text') {
             setProgress(Math.round(m.progress * 100));
@@ -83,12 +85,13 @@ export const useOCR = () => {
         }
       });
       workerRef.current = worker;
-      await worker.loadLanguage('fra');
-      await worker.initialize('fra');
 
       let allText = '';
       for (let i = 0; i < imageFiles.length; i++) {
-        const { data: { text } } = await worker.recognize(imageFiles[i]);
+        // Convertir File en blob URL pour eviter DataCloneError
+        const url = URL.createObjectURL(imageFiles[i]);
+        objectUrls.push(url);
+        const { data: { text } } = await worker.recognize(url);
         allText += `\n--- ${imageFiles[i].name} ---\n${text}\n`;
         setProgress(Math.round(((i + 1) / imageFiles.length) * 100));
       }
@@ -107,6 +110,8 @@ export const useOCR = () => {
         workerRef.current = null;
       }
       return null;
+    } finally {
+      objectUrls.forEach(u => URL.revokeObjectURL(u));
     }
   }, []);
 
