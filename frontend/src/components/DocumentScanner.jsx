@@ -68,11 +68,11 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
   useEffect(() => { if (workerError) setError(workerError); }, [workerError]);
 
   /* -- Send blob to worker -- */
-  const processBlob = useCallback((blob) => {
+  const processBlob = useCallback((blob, autoCrop) => {
     setPhase('processing');
     setError('');
     setActiveFilter('original');
-    scan(blob);
+    scan(blob, autoCrop);
   }, [scan]);
 
   /* ====== FILE INPUT (guide only, no capture attribute) ====== */
@@ -81,7 +81,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
     if (!file) return;
     e.target.value = '';
     stopCamera();
-    processBlob(file);
+    processBlob(file, false);
   }, [processBlob, stopCamera]);
 
   /* ====== CAMERA — getUserMedia, video visible directement ====== */
@@ -122,9 +122,9 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
 
     stopCamera();
 
-    // Qualite 1.0 — aucune compression
+    // Qualite 1.0 — aucune compression, autoCrop actif pour la camera
     canvas.toBlob(
-      (blob) => { if (blob) processBlob(blob); else setError('Erreur capture.'); },
+      (blob) => { if (blob) processBlob(blob, true); else setError('Erreur capture.'); },
       'image/jpeg',
       1.0
     );

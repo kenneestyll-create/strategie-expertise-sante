@@ -57,10 +57,10 @@ export function useScannerWorker() {
     };
   }, [createWorker]);
 
-  const scan = useCallback((blob) => {
+  const scan = useCallback((blob, autoCrop) => {
     setIsProcessing(true);
     setError(null);
-    workerRef.current?.postMessage({ type: 'scan', blob });
+    workerRef.current?.postMessage({ type: 'scan', blob, autoCrop: !!autoCrop });
   }, []);
 
   const filter = useCallback((name) => {
