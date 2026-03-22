@@ -190,6 +190,28 @@ export const AccidentTravailPage = () => {
               </Button>
             </Link>
           </div>
+
+          {/* Encarts IP & PGPF */}
+          <div className="grid sm:grid-cols-2 gap-6 mt-12">
+            <div className="bg-primary-foreground/10 rounded-xl p-6" data-testid="atmp-ip-card">
+              <h3 className="text-lg font-semibold text-primary-foreground mb-3">Incidence Professionnelle (IP)</h3>
+              <p className="text-sm text-primary-foreground/70 mb-4">
+                Vos sequelles impactent votre carriere ? Vous avez peut-etre droit a une indemnisation complementaire au titre de l'incidence professionnelle : penibilite accrue, devalorisation, reconversion...
+              </p>
+              <Link to="/ressources" className="text-sm text-accent hover:underline font-medium">
+                En savoir plus sur l'IP →
+              </Link>
+            </div>
+            <div className="bg-primary-foreground/10 rounded-xl p-6" data-testid="atmp-pgpf-card">
+              <h3 className="text-lg font-semibold text-primary-foreground mb-3">Perte de Gains Futurs (PGPF)</h3>
+              <p className="text-sm text-primary-foreground/70 mb-4">
+                Votre accident ou maladie reduit durablement vos revenus ? La PGPF compense cette perte definitive par capitalisation. Decouvrez la methode de calcul et les justificatifs.
+              </p>
+              <Link to="/ressources" className="text-sm text-accent hover:underline font-medium">
+                En savoir plus sur la PGPF →
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
     </main>

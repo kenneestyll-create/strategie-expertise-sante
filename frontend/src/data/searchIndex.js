@@ -38,15 +38,24 @@ const PAGES = [
   { title: "Régimes spéciaux (SNCF, RATP)", description: "Accompagnement dédié aux agents des régimes spéciaux", category: "Sections", href: "/accompagnements", anchor: "regimes-speciaux", keywords: ["régimes", "spéciaux", "SNCF", "RATP", "cheminots", "agents"] },
   { title: "Tarif StrategiIA", description: "Analyse IA gratuite avec options premium dès 29€", category: "Sections", href: "/tarifs", anchor: "tarif-strategiia", keywords: ["tarif", "prix", "strategiia", "analyse", "IA", "29"] },
   { title: "Tarif Dossier Express IA", description: "Analyse complète par IA + rapport PDF — 97€", category: "Sections", href: "/tarifs", anchor: "tarif-dossier-express", keywords: ["tarif", "prix", "dossier", "express", "97", "rapport"] },
-  { title: "Glossaire santé & droit", description: "Lexique des termes clés : AT, MP, IPP, MDPH, AAH, RQTH", category: "Sections", href: "/ressources", anchor: "glossaire", keywords: ["glossaire", "lexique", "définition", "AT", "MP", "IPP", "AAH", "RQTH", "vocabulaire"] },
-  { title: "Encyclopédie des maladies professionnelles", description: "Tableaux, TMS, IPP et pathologies hors tableau", category: "Sections", href: "/ressources", anchor: "encyclopedie", keywords: ["encyclopédie", "tableaux", "TMS", "IPP", "pathologie", "maladie"] },
+  { title: "Glossaire santé & droit", description: "Lexique des termes clés : AT, MP, IPP, IP, PGPF, MDPH, AAH, RQTH", category: "Sections", href: "/ressources", anchor: "glossaire", keywords: ["glossaire", "lexique", "définition", "AT", "MP", "IPP", "AAH", "RQTH", "vocabulaire", "IP", "PGPF", "incidence professionnelle", "perte de gains futurs"] },
+  { title: "Encyclopédie des maladies professionnelles", description: "Tableaux, TMS, IPP, IP, PGPF et pathologies hors tableau", category: "Sections", href: "/ressources", anchor: "encyclopedie", keywords: ["encyclopédie", "tableaux", "TMS", "IPP", "pathologie", "maladie", "incidence professionnelle", "IP", "PGPF", "perte de gains futurs"] },
   { title: "FAQ — Questions fréquentes", description: "Réponses aux questions les plus posées", category: "Sections", href: "/ressources", anchor: "faq", keywords: ["FAQ", "questions", "fréquentes", "réponses", "aide"] },
   { title: "Guides pratiques", description: "Par où commencer ? Guides étape par étape", category: "Sections", href: "/ressources", anchor: "guides", keywords: ["guide", "pratique", "étape", "démarche", "commencer"] },
   { title: "Bibliothèque de documents", description: "Formulaires, modèles de lettres et documents utiles", category: "Sections", href: "/ressources", anchor: "bibliotheque", keywords: ["bibliothèque", "document", "formulaire", "lettre", "modèle", "téléchargement"] },
 ];
 
+const IP_PGPF = [
+  { title: "Incidence Professionnelle (IP)", description: "Indemnisation des conséquences sur la carrière : pénibilité accrue, dévalorisation, reconversion, perte d'opportunités", category: "Indemnisation", href: "/ressources", anchor: "encyclopedie", keywords: ["incidence professionnelle", "IP", "pénibilité", "dévalorisation", "reconversion", "carrière", "indemnisation", "préjudice", "emploi"] },
+  { title: "Perte de Gains Professionnels Futurs (PGPF)", description: "Compensation de la perte définitive de revenus après consolidation — méthode de calcul par capitalisation", category: "Indemnisation", href: "/ressources", anchor: "encyclopedie", keywords: ["PGPF", "perte de gains futurs", "perte de gains professionnels futurs", "capitalisation", "revenus", "bareme", "Gazette du Palais", "rente", "salaire", "consolidation"] },
+  { title: "Critères IP — Pénibilité accrue", description: "Conditions de travail plus pénibles dues aux séquelles : efforts supplémentaires, douleurs, fatigue", category: "Indemnisation", href: "/ressources", anchor: "encyclopedie", keywords: ["pénibilité", "accrue", "efforts", "douleur", "fatigue", "séquelles", "travail", "IP"] },
+  { title: "Critères IP — Dévalorisation professionnelle", description: "Réduction de l'employabilité suite au handicap : discrimination, postes accessibles limités", category: "Indemnisation", href: "/ressources", anchor: "encyclopedie", keywords: ["dévalorisation", "employabilité", "handicap", "discrimination", "embauche", "marché du travail", "IP"] },
+  { title: "Calcul PGPF — Méthode de capitalisation", description: "Projection de carrière, évolution salariale, impact du handicap, barème de capitalisation", category: "Indemnisation", href: "/ressources", anchor: "encyclopedie", keywords: ["calcul", "PGPF", "capitalisation", "projection", "carrière", "salaire", "barème", "euro de rente"] },
+  { title: "PGPA vs PGPF — Distinction", description: "Perte de gains actuels (avant consolidation) vs perte de gains futurs (après consolidation)", category: "Indemnisation", href: "/ressources", anchor: "encyclopedie", keywords: ["PGPA", "PGPF", "distinction", "consolidation", "arrêt", "indemnités journalières", "perte de revenus"] },
+];
+
 const TOOLS = [
-  { title: "Calculatrice IPP", description: "Estimez votre indemnisation selon votre taux d'incapacité permanente partielle", category: "Outils", href: "/calculatrice-ipp", keywords: ["calculatrice", "IPP", "incapacité", "permanente", "partielle", "indemnisation", "rente", "capital", "taux", "calcul", "estimation", "séquelles"] },
+  { title: "Calculatrice IPP", description: "Estimez votre indemnisation selon votre taux d'incapacité permanente partielle — avec encarts IP et PGPF", category: "Outils", href: "/calculatrice-ipp", keywords: ["calculatrice", "IPP", "incapacité", "permanente", "partielle", "indemnisation", "rente", "capital", "taux", "calcul", "estimation", "séquelles", "incidence professionnelle", "IP", "PGPF", "perte de gains futurs"] },
   { title: "Calculatrice AAH", description: "Estimez le montant de votre Allocation aux Adultes Handicapés", category: "Outils", href: "/calculatrice-aah", keywords: ["calculatrice", "AAH", "allocation", "adulte", "handicapé", "montant", "calcul", "estimation", "invalidité", "revenu"] },
   { title: "Simulateur de droits", description: "Vérifiez votre éligibilité aux différentes aides et dispositifs", category: "Outils", href: "/simulateur", keywords: ["simulateur", "droits", "éligibilité", "aide", "dispositif"] },
 ];
@@ -119,6 +128,7 @@ export const SEARCH_INDEX = [
   ...TOOLS,
   ...PAGES,
   ...AIDES,
+  ...IP_PGPF,
   ...MALADIES,
   ...TMS,
   ...IPP_ITEMS,

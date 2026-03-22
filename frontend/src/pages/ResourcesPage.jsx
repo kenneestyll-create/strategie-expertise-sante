@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import {
   ArrowRight, BookOpen, AlertCircle, FileText, Shield, HelpCircle, Download,
   Search, MapPin, Phone, Mail, ExternalLink, ChevronRight, Activity, Table2,
-  Scale, Users, Heart, Clipboard, Info
+  Scale, Users, Heart, Clipboard, Info, Briefcase, TrendingDown
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -144,13 +144,17 @@ export const ResourcesPage = () => {
 
   const glossary = [
     { term: "IPP", fullName: "Incapacité Permanente Partielle", definition: "Taux exprimé en pourcentage qui évalue les séquelles définitives d'un accident du travail ou d'une maladie professionnelle." },
+    { term: "IP", fullName: "Incidence Professionnelle", definition: "Poste de préjudice indemnisant les conséquences sur la carrière : pénibilité accrue, dévalorisation, reconversion, perte d'opportunités." },
+    { term: "PGPF", fullName: "Perte de Gains Professionnels Futurs", definition: "Indemnisation de la perte définitive de revenus après consolidation, calculée par capitalisation selon un barème officiel." },
     { term: "PTIA", fullName: "Perte Totale et Irréversible d'Autonomie", definition: "Garantie d'assurance couvrant l'état d'une personne qui ne peut plus exercer aucune activité professionnelle." },
     { term: "CRRMP", fullName: "Comité Régional de Reconnaissance des MP", definition: "Instance médicale qui statue sur les maladies hors tableau ou ne remplissant pas les conditions d'un tableau." },
     { term: "AT/MP", fullName: "Accident du Travail / Maladie Pro", definition: "Régime de la Sécurité sociale couvrant les accidents du travail et maladies professionnelles." },
     { term: "RQTH", fullName: "Reconnaissance Travailleur Handicapé", definition: "Décision administrative ouvrant des droits spécifiques en matière d'emploi." },
     { term: "MDPH", fullName: "Maison Départementale PH", definition: "Guichet unique pour toutes les démarches liées au handicap : RQTH, AAH, cartes, PCH, etc." },
     { term: "AAH", fullName: "Allocation Adultes Handicapés", definition: "Aide financière pour personnes handicapées (taux d'incapacité ≥ 80%, ou 50-79% avec restriction d'emploi)." },
-    { term: "CMI", fullName: "Carte Mobilité Inclusion", definition: "Carte remplaçant les anciennes cartes d'invalidité, de priorité et de stationnement." }
+    { term: "CMI", fullName: "Carte Mobilité Inclusion", definition: "Carte remplaçant les anciennes cartes d'invalidité, de priorité et de stationnement." },
+    { term: "PGPA", fullName: "Perte de Gains Professionnels Actuels", definition: "Indemnisation des pertes de revenus entre l'accident et la consolidation (arrêt de travail, mi-temps thérapeutique)." },
+    { term: "Dintilhac", fullName: "Nomenclature Dintilhac", definition: "Classification de référence des postes de préjudice corporel en France, utilisée pour structurer l'indemnisation." }
   ];
 
   const guides = [
@@ -161,7 +165,7 @@ export const ResourcesPage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Ressources et guides" description="Ressources gratuites : annuaire MDPH, tableaux des maladies professionnelles, guides pratiques et outils de calcul." path="/ressources" />
+      <SEO title="Ressources et guides" description="Ressources gratuites : IP, PGPF, annuaire MDPH, tableaux des maladies professionnelles, guides pratiques et outils de calcul." path="/ressources" />
       {/* Hero */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
@@ -206,25 +210,31 @@ export const ResourcesPage = () => {
             <span className="text-sm font-medium text-accent uppercase tracking-wider">Encyclopédie</span>
             <h2 className="text-3xl sm:text-4xl font-semibold mt-2 mb-4">Base de connaissances</h2>
             <p className="text-muted-foreground max-w-2xl">
-              Tout ce qu'il faut savoir sur les maladies professionnelles, l'IPP, les MDPH et les aides disponibles.
+              Tout ce qu'il faut savoir sur les maladies professionnelles, l'IPP, l'incidence professionnelle, la PGPF, les MDPH et les aides disponibles.
             </p>
           </div>
 
           <Tabs defaultValue="tableaux" className="w-full" data-testid="encyclopedia-tabs">
             <TabsList className="w-full flex flex-wrap h-auto gap-2 bg-muted/50 p-2 rounded-xl mb-8">
-              <TabsTrigger value="tableaux" className="flex-1 min-w-[120px] gap-1.5 rounded-lg" data-testid="enc-tab-tableaux">
+              <TabsTrigger value="tableaux" className="flex-1 min-w-[100px] gap-1.5 rounded-lg" data-testid="enc-tab-tableaux">
                 <Table2 className="w-4 h-4" /> Tableaux MP
               </TabsTrigger>
-              <TabsTrigger value="horstableau" className="flex-1 min-w-[120px] gap-1.5 rounded-lg" data-testid="enc-tab-horstableau">
+              <TabsTrigger value="horstableau" className="flex-1 min-w-[100px] gap-1.5 rounded-lg" data-testid="enc-tab-horstableau">
                 <Scale className="w-4 h-4" /> Hors tableau
               </TabsTrigger>
-              <TabsTrigger value="ipp" className="flex-1 min-w-[80px] gap-1.5 rounded-lg" data-testid="enc-tab-ipp">
+              <TabsTrigger value="ipp" className="flex-1 min-w-[70px] gap-1.5 rounded-lg" data-testid="enc-tab-ipp">
                 <Activity className="w-4 h-4" /> IPP
               </TabsTrigger>
-              <TabsTrigger value="mdph" className="flex-1 min-w-[80px] gap-1.5 rounded-lg" data-testid="enc-tab-mdph">
+              <TabsTrigger value="ip" className="flex-1 min-w-[70px] gap-1.5 rounded-lg" data-testid="enc-tab-ip">
+                <Briefcase className="w-4 h-4" /> IP
+              </TabsTrigger>
+              <TabsTrigger value="pgpf" className="flex-1 min-w-[70px] gap-1.5 rounded-lg" data-testid="enc-tab-pgpf">
+                <TrendingDown className="w-4 h-4" /> PGPF
+              </TabsTrigger>
+              <TabsTrigger value="mdph" className="flex-1 min-w-[70px] gap-1.5 rounded-lg" data-testid="enc-tab-mdph">
                 <MapPin className="w-4 h-4" /> MDPH
               </TabsTrigger>
-              <TabsTrigger value="aides" className="flex-1 min-w-[80px] gap-1.5 rounded-lg" data-testid="enc-tab-aides">
+              <TabsTrigger value="aides" className="flex-1 min-w-[70px] gap-1.5 rounded-lg" data-testid="enc-tab-aides">
                 <Heart className="w-4 h-4" /> Aides MDPH
               </TabsTrigger>
             </TabsList>
@@ -469,6 +479,364 @@ export const ResourcesPage = () => {
                     </div>
                   </CardContent>
                 </Card>
+              </div>
+            </TabsContent>
+
+            {/* ── Tab IP : Incidence Professionnelle ── */}
+            <TabsContent value="ip" data-testid="enc-content-ip">
+              <div className="space-y-6">
+                {/* Definition */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Briefcase className="w-5 h-5 text-accent" /> Incidence Professionnelle (IP) — Definition
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-foreground/80 leading-relaxed">
+                      L'<strong>incidence professionnelle</strong> (IP) est un poste de prejudice qui vise a indemniser les consequences d'un accident ou d'une maladie professionnelle sur la vie professionnelle de la victime, au-dela de la simple perte de revenus. Elle couvre l'ensemble des repercussions negatives sur la carriere, les conditions de travail et les perspectives d'evolution professionnelle.
+                    </p>
+                    <p className="text-sm text-foreground/80 leading-relaxed">
+                      Contrairement a l'<strong>Incapacite Permanente Partielle (IPP)</strong> qui mesure le deficit fonctionnel, l'incidence professionnelle evalue specifiquement l'impact de ce deficit sur l'activite professionnelle de la victime. C'est un poste de prejudice complementaire, reconnu par la jurisprudence et les baremes d'indemnisation.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                {/* Criteres */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Scale className="w-5 h-5 text-accent" /> Criteres retenus par les juridictions et assureurs
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {[
+                        {
+                          title: "Penibilite accrue",
+                          desc: "La victime peut continuer a travailler mais dans des conditions plus penibles : efforts supplementaires, fatigue accrue, douleurs lors de certaines taches, amenagements necessaires du poste.",
+                          color: "bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-400"
+                        },
+                        {
+                          title: "Devalorisation sur le marche du travail",
+                          desc: "Le handicap ou les sequelles reduisent l'employabilite de la victime : difficulte a retrouver un emploi equivalent, discrimination a l'embauche, postes accessibles moins nombreux.",
+                          color: "bg-orange-500/10 border-orange-500/20 text-orange-700 dark:text-orange-400"
+                        },
+                        {
+                          title: "Perte d'opportunites professionnelles",
+                          desc: "La victime ne peut plus acceder a des promotions, formations qualifiantes, missions specifiques ou evolutions de carriere auxquelles elle aurait pu pretendre sans le dommage.",
+                          color: "bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-400"
+                        },
+                        {
+                          title: "Necessite de reconversion",
+                          desc: "L'impossibilite de poursuivre dans le meme metier impose une reconversion professionnelle, souvent vers un emploi moins qualifie ou moins remunere.",
+                          color: "bg-blue-500/10 border-blue-500/20 text-blue-700 dark:text-blue-400"
+                        }
+                      ].map((item, i) => (
+                        <div key={i} className={`p-4 rounded-xl border ${item.color}`}>
+                          <h4 className="font-semibold text-sm mb-2">{item.title}</h4>
+                          <p className="text-xs leading-relaxed opacity-90">{item.desc}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Justificatifs */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <FileText className="w-5 h-5 text-accent" /> Justificatifs necessaires
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {[
+                        { title: "Rapports medicaux", items: ["Certificats medicaux detaillant les sequelles", "Rapport d'expertise medicale avec taux d'IPP", "Bilan fonctionnel et limitations identifiees", "Avis du medecin du travail sur l'aptitude"] },
+                        { title: "Expertises", items: ["Expertise medicale judiciaire ou amiable", "Expertise ergonomique du poste de travail", "Evaluation par un medecin conseil specialise", "Bilan de competences post-accident"] },
+                        { title: "Attestations employeur", items: ["Attestation de l'employeur sur les restrictions", "Fiche de poste avant/apres l'accident", "Historique des amenagements demandes", "Attestation de collegues (temoignages)"] },
+                        { title: "Elements de carriere", items: ["CV et parcours professionnel complet", "Bulletins de salaire (evolution sur 3-5 ans)", "Entretiens annuels d'evaluation", "Projections de carriere (promotions prevues)"] }
+                      ].map((group, i) => (
+                        <div key={i} className="p-4 rounded-xl bg-muted/50 border border-border/50">
+                          <h4 className="font-semibold text-sm mb-3 text-accent">{group.title}</h4>
+                          <ul className="space-y-1.5">
+                            {group.items.map((item, j) => (
+                              <li key={j} className="flex items-start gap-2 text-xs text-foreground/70">
+                                <ChevronRight className="w-3 h-3 mt-0.5 text-accent flex-shrink-0" /> {item}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Exemples concrets */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Users className="w-5 h-5 text-accent" /> Exemples concrets d'indemnisation
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {[
+                        {
+                          profil: "Ouvrier du batiment — 45 ans",
+                          situation: "TMS epaule, IPP 15%. Ne peut plus porter de charges lourdes. Reclasse comme magasinier avec perte de primes.",
+                          ip: "Penibilite accrue + devalorisation",
+                          indemnisation: "15 000 a 25 000 EUR"
+                        },
+                        {
+                          profil: "Infirmiere — 38 ans",
+                          situation: "Lombalgie chronique post-AT, IPP 20%. Reconversion vers un poste administratif hospitalier moins remunere.",
+                          ip: "Reconversion + perte d'opportunites",
+                          indemnisation: "30 000 a 50 000 EUR"
+                        },
+                        {
+                          profil: "Cadre commercial — 52 ans",
+                          situation: "Syndrome du canal carpien bilateral (MP), IPP 12%. Difficulte a utiliser un clavier. Retraite anticipee forcee.",
+                          ip: "Devalorisation + perte de fin de carriere",
+                          indemnisation: "40 000 a 80 000 EUR"
+                        },
+                        {
+                          profil: "Technicien agricole — 35 ans",
+                          situation: "Exposition pesticides, IPP 25%. Ne peut plus travailler en milieu agricole. Reconversion necessaire.",
+                          ip: "Reconversion totale + devalorisation",
+                          indemnisation: "50 000 a 100 000 EUR"
+                        }
+                      ].map((ex, i) => (
+                        <div key={i} className="p-4 rounded-xl border border-border/50 bg-card">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                            <h4 className="font-semibold text-sm">{ex.profil}</h4>
+                            <Badge variant="outline" className="text-accent border-accent/30 w-fit">{ex.indemnisation}</Badge>
+                          </div>
+                          <p className="text-xs text-foreground/70 mb-1">{ex.situation}</p>
+                          <p className="text-xs text-muted-foreground">IP retenue : <span className="font-medium text-foreground/80">{ex.ip}</span></p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Disclaimer */}
+                <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20" data-testid="ip-disclaimer">
+                  <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
+                    <strong>Avertissement :</strong> Ces informations sont fournies a titre indicatif et ne constituent pas un conseil juridique. Les montants d'indemnisation dependent de chaque situation individuelle et de l'appreciation des juges. Consultez un professionnel du droit pour une evaluation personnalisee de votre dossier.
+                  </p>
+                </div>
+
+                {/* CTA */}
+                <div className="flex flex-col sm:flex-row gap-3 items-center justify-center pt-2">
+                  <Link to="/calculatrice-ipp">
+                    <Button variant="outline" className="gap-2">
+                      <Activity className="w-4 h-4" /> Calculer votre taux IPP
+                    </Button>
+                  </Link>
+                  <Link to="/simulateur">
+                    <Button className="gap-2">
+                      <ArrowRight className="w-4 h-4" /> Analyser votre dossier avec StrategiIA
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* ── Tab PGPF : Perte de Gains Professionnels Futurs ── */}
+            <TabsContent value="pgpf" data-testid="enc-content-pgpf">
+              <div className="space-y-6">
+                {/* Definition */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingDown className="w-5 h-5 text-accent" /> Perte de Gains Professionnels Futurs (PGPF) — Definition
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-foreground/80 leading-relaxed">
+                      La <strong>Perte de Gains Professionnels Futurs</strong> (PGPF) est un poste de prejudice qui compense la reduction definitive des revenus professionnels de la victime apres la consolidation de ses blessures. Elle represente la difference entre ce que la victime aurait gagne sans l'accident et ce qu'elle gagnera effectivement avec ses sequelles.
+                    </p>
+                    <p className="text-sm text-foreground/80 leading-relaxed">
+                      La PGPF fait partie de la <strong>nomenclature Dintilhac</strong>, reference en matiere d'indemnisation du prejudice corporel en France. Elle se distingue nettement des autres postes de prejudice economique.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                {/* Distinction perte actuelle vs future */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Scale className="w-5 h-5 text-accent" /> Distinction : perte actuelle vs. perte future
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                        <h4 className="font-semibold text-sm mb-2 text-blue-700 dark:text-blue-400">Perte de Gains Professionnels Actuels (PGPA)</h4>
+                        <ul className="space-y-1.5 text-xs text-foreground/70">
+                          <li className="flex items-start gap-2"><ChevronRight className="w-3 h-3 mt-0.5 text-blue-500 flex-shrink-0" /> Couvre la periode entre l'accident et la consolidation</li>
+                          <li className="flex items-start gap-2"><ChevronRight className="w-3 h-3 mt-0.5 text-blue-500 flex-shrink-0" /> Indemnise les pertes de revenus pendant l'arret de travail</li>
+                          <li className="flex items-start gap-2"><ChevronRight className="w-3 h-3 mt-0.5 text-blue-500 flex-shrink-0" /> Calcul : difference entre salaire habituel et indemnites journalieres percues</li>
+                          <li className="flex items-start gap-2"><ChevronRight className="w-3 h-3 mt-0.5 text-blue-500 flex-shrink-0" /> Periode limitee et quantifiable retrospectivement</li>
+                        </ul>
+                      </div>
+                      <div className="p-4 rounded-xl bg-accent/10 border border-accent/20">
+                        <h4 className="font-semibold text-sm mb-2 text-accent">Perte de Gains Professionnels Futurs (PGPF)</h4>
+                        <ul className="space-y-1.5 text-xs text-foreground/70">
+                          <li className="flex items-start gap-2"><ChevronRight className="w-3 h-3 mt-0.5 text-accent flex-shrink-0" /> Couvre toute la periode apres consolidation jusqu'a la retraite</li>
+                          <li className="flex items-start gap-2"><ChevronRight className="w-3 h-3 mt-0.5 text-accent flex-shrink-0" /> Indemnise la perte de capacite de gain definitive</li>
+                          <li className="flex items-start gap-2"><ChevronRight className="w-3 h-3 mt-0.5 text-accent flex-shrink-0" /> Calcul : projection de carriere avec capitalisation (bareme de capitalisation)</li>
+                          <li className="flex items-start gap-2"><ChevronRight className="w-3 h-3 mt-0.5 text-accent flex-shrink-0" /> Prend en compte l'evolution salariale previsible</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Methode de calcul */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Activity className="w-5 h-5 text-accent" /> Methode de calcul en France
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-foreground/80 leading-relaxed">
+                      Le calcul de la PGPF repose sur une methodologie precise, validee par la jurisprudence francaise :
+                    </p>
+                    <div className="space-y-3">
+                      {[
+                        {
+                          etape: "1. Projection de carriere",
+                          desc: "Reconstitution du parcours professionnel hypothetique sans l'accident : evolution de poste, augmentations prevues, promotions probables, anciennete.",
+                        },
+                        {
+                          etape: "2. Evolution salariale previsible",
+                          desc: "Estimation du salaire futur en tenant compte de l'inflation, des conventions collectives, de l'anciennete et des usages du secteur.",
+                        },
+                        {
+                          etape: "3. Impact du handicap sur les revenus",
+                          desc: "Evaluation de la reduction de revenus causee par les sequelles : temps partiel impose, poste moins remunere, impossibilite de travailler.",
+                        },
+                        {
+                          etape: "4. Capitalisation",
+                          desc: "Application d'un bareme de capitalisation (Gazette du Palais) pour convertir la perte annuelle en un capital unique, en fonction de l'age de la victime et de l'esperance de vie.",
+                        }
+                      ].map((step, i) => (
+                        <div key={i} className="flex gap-3 p-3 rounded-lg bg-muted/50 border border-border/30">
+                          <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                            <span className="text-xs font-bold text-accent">{i + 1}</span>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-sm">{step.etape}</h4>
+                            <p className="text-xs text-foreground/70 mt-1">{step.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="p-4 rounded-xl bg-muted/80 border border-border/50">
+                      <p className="text-xs text-foreground/70 leading-relaxed">
+                        <strong>Formule simplifiee :</strong> PGPF = (Salaire annuel sans accident - Salaire annuel avec sequelles) x Euro de rente (bareme de capitalisation selon l'age)
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Justificatifs */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <FileText className="w-5 h-5 text-accent" /> Justificatifs necessaires
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {[
+                        { title: "Bulletins de salaire", items: ["12 a 36 derniers bulletins avant l'accident", "Bulletins post-consolidation (si reprise)", "Primes, heures supplementaires, avantages en nature", "Attestations de paiement des indemnites percues"] },
+                        { title: "Contrats de travail", items: ["Contrat en vigueur au moment de l'accident", "Avenants et promotions obtenues", "Convention collective applicable", "Grille salariale de l'entreprise / du secteur"] },
+                        { title: "Evolution professionnelle previsible", items: ["Entretiens professionnels et plan de carriere", "Formations prevues ou en cours", "Promesses d'embauche ou de promotion", "Statistiques sectorielles d'evolution salariale"] },
+                        { title: "Expertises economiques et medicales", items: ["Expertise medicale avec taux d'IPP", "Expertise economique (calcul de perte par actuaire)", "Avis du medecin du travail sur les restrictions", "Bilan de competences ou d'orientation professionnelle"] }
+                      ].map((group, i) => (
+                        <div key={i} className="p-4 rounded-xl bg-muted/50 border border-border/50">
+                          <h4 className="font-semibold text-sm mb-3 text-accent">{group.title}</h4>
+                          <ul className="space-y-1.5">
+                            {group.items.map((item, j) => (
+                              <li key={j} className="flex items-start gap-2 text-xs text-foreground/70">
+                                <ChevronRight className="w-3 h-3 mt-0.5 text-accent flex-shrink-0" /> {item}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Cas concrets */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Users className="w-5 h-5 text-accent" /> Cas concrets d'application
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {[
+                        {
+                          profil: "Salarie du prive — Technicien, 40 ans",
+                          situation: "Salaire net : 2 200 EUR/mois. Apres AT grave, reclasse a mi-temps therapeutique : 1 300 EUR/mois. Perte annuelle : 10 800 EUR.",
+                          calcul: "10 800 EUR x 19,5 (euro de rente, homme 40 ans) = 210 600 EUR capitalises",
+                          indemnisation: "environ 210 000 EUR"
+                        },
+                        {
+                          profil: "Fonctionnaire — Enseignant, 35 ans",
+                          situation: "Salaire net : 2 500 EUR/mois. Maladie professionnelle, mise en retraite pour invalidite. Pension : 1 400 EUR/mois. Perte annuelle : 13 200 EUR.",
+                          calcul: "13 200 EUR x 22,1 (euro de rente, homme 35 ans) = 291 720 EUR capitalises",
+                          indemnisation: "environ 290 000 EUR"
+                        },
+                        {
+                          profil: "Independant — Artisan plombier, 48 ans",
+                          situation: "Revenu moyen : 3 500 EUR/mois. TMS invalidant, ne peut plus exercer. Revenu apres reconversion : 1 800 EUR/mois. Perte annuelle : 20 400 EUR.",
+                          calcul: "20 400 EUR x 15,8 (euro de rente, homme 48 ans) = 322 320 EUR capitalises",
+                          indemnisation: "environ 320 000 EUR"
+                        }
+                      ].map((ex, i) => (
+                        <div key={i} className="p-4 rounded-xl border border-border/50 bg-card">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                            <h4 className="font-semibold text-sm">{ex.profil}</h4>
+                            <Badge variant="outline" className="text-accent border-accent/30 w-fit">{ex.indemnisation}</Badge>
+                          </div>
+                          <p className="text-xs text-foreground/70 mb-1">{ex.situation}</p>
+                          <p className="text-xs text-muted-foreground font-mono bg-muted/50 rounded px-2 py-1 mt-2">{ex.calcul}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Disclaimer */}
+                <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20" data-testid="pgpf-disclaimer">
+                  <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
+                    <strong>Avertissement :</strong> Ces informations sont fournies a titre indicatif et ne constituent pas un conseil juridique. Les montants d'indemnisation dependent de chaque situation individuelle, des baremes de capitalisation en vigueur et de l'appreciation des juges. Consultez un professionnel du droit pour une evaluation personnalisee de votre dossier.
+                  </p>
+                </div>
+
+                {/* CTA */}
+                <div className="flex flex-col sm:flex-row gap-3 items-center justify-center pt-2">
+                  <Link to="/calculatrice-ipp">
+                    <Button variant="outline" className="gap-2">
+                      <Activity className="w-4 h-4" /> Calculatrice IPP avec IP et PGPF
+                    </Button>
+                  </Link>
+                  <Link to="/simulateur">
+                    <Button className="gap-2">
+                      <ArrowRight className="w-4 h-4" /> Analyser votre dossier avec StrategiIA
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </TabsContent>
 

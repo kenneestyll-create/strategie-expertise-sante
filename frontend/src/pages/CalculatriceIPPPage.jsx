@@ -22,7 +22,10 @@ import {
   Phone,
   Copy,
   Check,
-  Eye
+  Eye,
+  Briefcase,
+  TrendingDown,
+  ChevronRight
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -352,6 +355,51 @@ export const CalculatriceIPPPage = () => {
                 Elle est calculée à partir du salaire et d'un taux utile.
               </p>
             </div>
+          </div>
+
+          {/* IP & PGPF Encarts explicatifs */}
+          <div className="grid sm:grid-cols-2 gap-4 mt-6">
+            <div className="p-5 bg-card border border-border rounded-xl" data-testid="ipp-encart-ip">
+              <Briefcase className="w-6 h-6 text-accent mb-3" strokeWidth={1.5} />
+              <h3 className="font-semibold mb-2">Incidence Professionnelle (IP)</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Au-dela du taux d'IPP, l'<strong>incidence professionnelle</strong> indemnise les consequences sur votre carriere : penibilite accrue, devalorisation sur le marche du travail, necessite de reconversion.
+              </p>
+              <ul className="space-y-1 mb-3">
+                {["Penibilite accrue au poste", "Perte d'opportunites de carriere", "Devalorisation sur le marche de l'emploi", "Necessite de reconversion professionnelle"].map((item, i) => (
+                  <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                    <ChevronRight className="w-3 h-3 mt-0.5 text-accent flex-shrink-0" /> {item}
+                  </li>
+                ))}
+              </ul>
+              <Link to="/ressources" className="text-xs text-accent hover:underline font-medium">
+                En savoir plus sur l'IP →
+              </Link>
+            </div>
+            <div className="p-5 bg-card border border-border rounded-xl" data-testid="ipp-encart-pgpf">
+              <TrendingDown className="w-6 h-6 text-accent mb-3" strokeWidth={1.5} />
+              <h3 className="font-semibold mb-2">Perte de Gains Futurs (PGPF)</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                La <strong>PGPF</strong> compense la perte definitive de revenus apres consolidation. Elle se calcule par capitalisation de la perte annuelle selon un bareme officiel.
+              </p>
+              <ul className="space-y-1 mb-3">
+                {["Projection de carriere sans accident", "Impact du handicap sur les revenus", "Capitalisation selon bareme Gazette du Palais", "Distinction avec la perte actuelle (PGPA)"].map((item, i) => (
+                  <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                    <ChevronRight className="w-3 h-3 mt-0.5 text-accent flex-shrink-0" /> {item}
+                  </li>
+                ))}
+              </ul>
+              <Link to="/ressources" className="text-xs text-accent hover:underline font-medium">
+                En savoir plus sur la PGPF →
+              </Link>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 mt-4" data-testid="ipp-ip-pgpf-note">
+            <Info className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
+              <strong>A savoir :</strong> Votre taux d'IPP peut ouvrir droit a une indemnisation complementaire au titre de l'incidence professionnelle et/ou de la PGPF. Ces postes de prejudice sont evaluables par un professionnel du droit ou via notre outil StrategiIA.
+            </p>
           </div>
 
           {/* CTA */}

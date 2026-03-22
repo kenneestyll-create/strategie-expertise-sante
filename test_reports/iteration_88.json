@@ -1,0 +1,68 @@
+{
+  "summary": "Frontend testing completed for IP (Incidence Professionnelle) and PGPF (Perte de Gains Professionnels Futurs) strategic content additions. All 12 test features passed successfully.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/test_reports/iteration_88.json"],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (skipped)", "frontend": "100%"},
+  "test_credentials": "No login required - public pages",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "IP and PGPF content has been fully integrated across the site. All data-testid attributes are in place for testing.",
+  "test_results": {
+    "page_ressources_ip_pgpf_tabs": {
+      "status": "PASS",
+      "details": "IP tab (enc-tab-ip) and PGPF tab (enc-tab-pgpf) exist in encyclopedia section"
+    },
+    "ip_tab_content": {
+      "status": "PASS",
+      "details": "IP tab contains: definition, criteria (pénibilité, dévalorisation, perte opportunités, reconversion), justificatifs, exemples d'indemnisation, disclaimer (ip-disclaimer)"
+    },
+    "pgpf_tab_content": {
+      "status": "PASS",
+      "details": "PGPF tab contains: definition, distinction PGPA/PGPF, méthode de calcul (4 étapes), justificatifs, cas concrets (salarié/fonctionnaire/indépendant), disclaimer (pgpf-disclaimer)"
+    },
+    "calculatrice_ipp_encarts": {
+      "status": "PASS",
+      "details": "IP encart (ipp-encart-ip) and PGPF encart (ipp-encart-pgpf) visible with links to /ressources. Note informative (ipp-ip-pgpf-note) present."
+    },
+    "search_incidence_professionnelle": {
+      "status": "PASS",
+      "details": "Search for 'incidence professionnelle' returns 16 relevant results including IP definition, criteria, encyclopedia, glossary"
+    },
+    "search_pgpf": {
+      "status": "PASS",
+      "details": "Search for 'PGPF' returns 7 relevant results including PGPF definition, calcul method, PGPA vs PGPF distinction"
+    },
+    "search_perte_gains_futurs": {
+      "status": "PASS",
+      "details": "Search for 'perte de gains futurs' returns 16 relevant results"
+    },
+    "glossaire_terms": {
+      "status": "PASS",
+      "details": "Glossary contains IP, PGPF, PGPA, Dintilhac terms (data-testid glossary-item-ip, glossary-item-pgpf, glossary-item-pgpa, glossary-item-dintilhac)"
+    },
+    "accident_travail_encarts": {
+      "status": "PASS",
+      "details": "IP card (atmp-ip-card) and PGPF card (atmp-pgpf-card) visible on /accident-travail-maladie-professionnelle page"
+    },
+    "internal_links": {
+      "status": "PASS",
+      "details": "All internal links work correctly: Calculatrice IPP -> /ressources, Accident du Travail -> /ressources"
+    },
+    "mobile_responsive": {
+      "status": "PASS",
+      "details": "Encyclopedia tabs and IP/PGPF content display correctly on mobile (390x844 viewport)"
+    }
+  }
+}
