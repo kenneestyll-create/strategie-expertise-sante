@@ -13,28 +13,44 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 - Composant: `/app/frontend/src/components/MascotteStrate.jsx`
 - Design: trombone SVG avec bouclier, style noir/or
 - Position: fixed bottom-7.5rem right-1.5rem (au-dessus ChatBot)
+- Cachee sur /admin pages
 - Bulle auto-show apres 3s (sessionStorage)
-- **Conseils depuis la base de donnees** via `/api/conseils/today` (rotation deterministe + priorite)
-- **TTS: speakFrench() avec getVoices(), filtre fr-FR, onvoiceschanged** — CORRIGE
-- Bouton action dynamique vers page pertinente + tracking clics
-- Disclaimer juridique obligatoire
-- Tests: 16/16 backend + 100% frontend (iteration 90)
+- Conseils depuis la base de donnees via `/api/conseils/today` (rotation deterministe + priorite)
+- TTS: speakFrench() avec getVoices(), filtre fr-FR, onvoiceschanged
+- Tracking deduplique: localStorage par conseil_id + date (1 vue/jour/conseil)
+- Tracking clics: POST /api/conseils/click avec conseil_id
+- Conversion tracking: export `trackStrateConversion(action)` pour Dossier Express, paiements, etc.
+- Tests: 16/16 backend + 100% frontend (iteration 91)
 
 ## Admin Conseils Strate (Mar 2026)
 - Composant: `/app/frontend/src/components/AdminConseilsStrate.jsx`
 - Onglet "Strate" dans AdminDashboard (position 8)
+- 5 KPIs globaux: Total, Actifs, Vues, Clics, Taux de clic
+- Sous-onglets: "Gestion des conseils" / "Statistiques"
 - CRUD complet: creer, modifier, supprimer des conseils
 - "Mettre en avant aujourd'hui" (priority override)
+- Colonne CTR par conseil dans le tableau
 - Dates debut/fin pour planifier les conseils
 - Preview TTS depuis le tableau et le formulaire
-- KPIs: total, actifs, vues, clics
 - Recherche + filtre par categorie
 - 30 conseils seeds automatiques
+
+## Statistiques Strate (Mar 2026)
+- Collection: `strate_daily_stats` { conseil_id, category, date, views, clicks, conversions }
+- Collection: `strate_conversions` { conseil_id, action, date, timestamp }
+- Endpoint: `GET /api/conseils/admin/analytics?period=7d|30d&category=all|{cat}`
+- Retourne: topConseils (Top 10), totals (views, clicks, conversions, ctr), timeseries, categories
+- Dashboard admin:
+  - 4 KPIs periode (vues, clics, taux, conversions)
+  - Graphique courbe AreaChart (vues + clics par jour)
+  - Graphique barres BarChart (performance par categorie)
+  - Tableau Top 10 avec taux de clic colore
+  - Filtres: periode (7j/30j) + categorie
+- Tests: 16/16 backend + 100% frontend (iteration 91)
 
 ## Contenu IP & PGPF (Mar 2026)
 - 2 sections completes (definition, criteres, justificatifs, exemples, disclaimer)
 - Integre dans: Ressources, Calculatrice IPP, Recherche, StrategiIA, AT page, Glossaire
-- Tests: 12/12 passes (iteration 88)
 
 ## Scanner Documents (Mar 2026)
 - Appareil photo natif (`<input capture="environment">`)
