@@ -7,39 +7,34 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 - **Frontend:** React + Shadcn/UI + Tailwind CSS + Recharts
 - **Backend:** FastAPI + MongoDB
 - **Theme:** Warm neutral noir/or (Manrope + Playfair Display)
-- **Integrations:** Stripe (test), PayPal (test), Claude Sonnet 4.5 (Emergent LLM Key), Resend (sandbox)
+- **Integrations:** Stripe (test), PayPal (test), Claude Sonnet 4.5 (Emergent LLM Key), Resend (sandbox), Algolia Search
 
-## Moteur de Recherche (Mar 2026) — AMELIORE
-- Fichier: `/app/frontend/src/data/searchIndex.js`
-- UI: `/app/frontend/src/components/GlobalSearch.jsx`
-- **Normalisation des accents** (NFD) — "medecin" trouve "médecin"
-- **Dictionnaire de synonymes** (80+ entries, francais medical/juridique) — "docteur"→"medecin", "argent"→"indemnisation", etc.
-- **Correspondance par prefixe** — "indemn" → "indemnisation"
-- **Keywords enrichis** sur toutes les entrees (20-30% plus de mots par entree)
-- **Pages ajoutees**: Parrainage, Scanner documents
-- **Intents utilisateur**: "burn out", "faute inexcusable", "combien vais-je toucher", "consolidation", "delais de prescription"
-- **Icones par categorie**: Indemnisation (Scale), Guides (BookOpen), Sections (FileText)
-- **Highlight accent-insensitive** dans les resultats
-- **Deduplication** par href+anchor (evite les doublons)
-- Scoring: titre(15) > keyword exact(8) > keyword prefix(5) > synonym(3) > base(3) + bonus phrase(25) + bonus all terms(20)
-- Tests: 25/25 frontend (iteration 92)
+## Moteur de Recherche — Algolia (Mar 2026)
+- **Algolia App ID:** 54V9JMPOCR
+- **Index:** strategie_sante
+- **Records:** 87 (pages, outils, sections, guides, intents, maladies, MDPH, aides, IP/PGPF)
+- **Synonymes:** 29 groupes (IPP, AT, MP, MDPH, AAH, docteur/medecin, avocat/juriste, etc.)
+- **Config:** typo tolerance FR, removeStopWords FR, ignorePlurals FR, queryLanguages FR
+- **Script indexation:** `/app/backend/algolia_index.py`
+- **Composant:** `/app/frontend/src/components/GlobalSearch.jsx` (algoliasearch/lite v5)
+- Recherche instantanee debounced 200ms, resultats groupes par categorie avec icones
+- Highlight Algolia natif avec `<mark class="algolia-hl">`
+- "Aucun resultat" → lien vers chatbot
+- Attribution "Recherche par Algolia"
+- Raccourci Ctrl+K
+- Tests: 19/20 frontend (iteration 93)
 
 ## Mascotte "Strate" (Mar 2026)
-- Composant: `/app/frontend/src/components/MascotteStrate.jsx`
-- Conseils depuis la base de donnees via `/api/conseils/today`
-- TTS: speakFrench() avec getVoices(), filtre fr-FR, onvoiceschanged
-- Tracking deduplique: localStorage par conseil_id + date
-- Conversion tracking: export `trackStrateConversion(action)`
+- TTS francais, conseils depuis DB, tracking deduplique, conversion tracking
 - Tests: 16/16 backend + 100% frontend (iteration 91)
 
 ## Admin Conseils Strate (Mar 2026)
-- Composant: `/app/frontend/src/components/AdminConseilsStrate.jsx`
 - CRUD complet + sous-onglets Gestion/Statistiques
-- Analytics: Top 10, taux de clic, courbe vues/clics/jour, filtres periode/categorie
+- Analytics: Top 10, taux de clic, courbe vues/clics/jour, filtres
 - Tests: 16/16 backend + 100% frontend (iteration 91)
 
 ## Contenu IP & PGPF (Mar 2026)
-- Integre dans: Ressources, Calculatrice IPP, Recherche, StrategiIA, AT page, Glossaire
+- Integre dans: Ressources, Calculatrice IPP, Recherche, StrategiIA
 
 ## Scanner Documents (Mar 2026)
 - Appareil photo natif (`<input capture="environment">`)
@@ -55,4 +50,5 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 - Stripe (test mode), PayPal (test mode)
 - Claude Sonnet 4.5 (Emergent LLM Key)
 - Resend (sandbox)
-- HubSpot (partiellement, en attente credentials)
+- Algolia Search (plan gratuit, 10K recherches/mois)
+- HubSpot (en attente credentials)
