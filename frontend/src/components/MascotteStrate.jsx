@@ -99,21 +99,21 @@ export const MascotteStrate = () => {
       {/* ── Fenetre compacte conseil ── */}
       {isOpen && (
         <div
-          className="absolute bottom-16 right-0 mb-2 w-64 rounded-xl shadow-2xl border border-[#C9A84C]/25 overflow-hidden"
-          style={{ background: '#141414', animation: 'strateIn .25s ease-out' }}
+          className="absolute bottom-16 right-0 mb-2 w-64 rounded-xl shadow-2xl border border-border overflow-hidden bg-background"
+          style={{ animation: 'strateIn .25s ease-out' }}
           data-testid="strate-bubble"
         >
           {/* Header compact */}
-          <div className="flex items-center justify-between px-3 py-2 border-b border-[#C9A84C]/15">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-border">
             <span className="text-[#C9A84C] text-[10px] font-semibold tracking-widest uppercase">Conseil du {getDateLabel()}</span>
-            <button onClick={close} className="text-white/30 hover:text-white/60 transition-colors" data-testid="strate-close" aria-label="Fermer">
+            <button onClick={close} className="text-muted-foreground hover:text-foreground transition-colors" data-testid="strate-close" aria-label="Fermer">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
 
           {/* Conseil */}
           <div className="px-3 py-2.5">
-            <p className="text-white/85 text-[13px] leading-relaxed" data-testid="strate-conseil-text">{conseil.text}</p>
+            <p className="text-foreground text-[13px] leading-relaxed font-medium" data-testid="strate-conseil-text">{conseil.text}</p>
           </div>
 
           {/* Actions */}
@@ -122,7 +122,7 @@ export const MascotteStrate = () => {
               onClick={speak}
               disabled={isSpeaking}
               className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${
-                isSpeaking ? 'bg-[#C9A84C]/25 text-[#C9A84C] animate-pulse' : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70'
+                isSpeaking ? 'bg-accent/20 text-accent animate-pulse' : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
               }`}
               data-testid="strate-speak-btn"
             >
@@ -132,7 +132,7 @@ export const MascotteStrate = () => {
             <Link
               to={conseil.link}
               onClick={() => { trackClick(conseil.id); close(); }}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#C9A84C] text-black hover:bg-[#C9A84C]/85 transition-all"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-foreground text-primary-foreground hover:bg-foreground/90 transition-all"
               data-testid="strate-action-btn"
             >
               {conseil.label} <ArrowRight className="w-2.5 h-2.5" />

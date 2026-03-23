@@ -188,18 +188,20 @@ export const HomePage = () => {
             <span className="text-[#6b1c2a]">maladie professionnelle</span>
           </h1>
 
-          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-2xl mb-5" data-testid="hero-subtitle">
+          <p className="text-sm sm:text-base text-foreground leading-relaxed max-w-2xl mb-5" data-testid="hero-subtitle">
             Un accompagnement stratégique pour obtenir la reconnaissance de votre situation,
             éviter les erreurs qui peuvent vous coûter des milliers d'euros
-            et vous permettre d'obtenir ce que vous méritez vraiment.
+            et maximiser vos droits à indemnisation.
           </p>
 
           <p
-            className="text-sm text-muted-foreground/70 italic max-w-2xl mb-8"
+            className="text-sm text-foreground/90 italic max-w-2xl mb-8"
             style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
             data-testid="hero-tagline"
           >
-            L'expertise humaine au c&oelig;ur de chaque dossier, l'intelligence artificielle comme outil de précision.
+            L'expertise humaine au c&oelig;ur de chaque dossier.
+            <br />
+            L'intelligence artificielle comme outil de précision.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 mb-8">
