@@ -5,7 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const FALLBACK = {
-  id: '', text: "Vous disposez en general de 2 ans pour declarer une maladie professionnelle.", category: "droits", link: "/ressources", link_label: "En savoir plus",
+  id: '', text: "Vous disposez en général de 2 ans pour déclarer une maladie professionnelle.", category: "droits", link: "/ressources", link_label: "En savoir plus",
 };
 
 const MOIS = ['jan.', 'fev.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'aout', 'sept.', 'oct.', 'nov.', 'dec.'];
