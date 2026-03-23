@@ -1,7 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, X, ArrowRight, Table2, MapPin, Heart, Activity, FileText, Wrench, Globe, Scale, BookOpen } from 'lucide-react';
-import { searchContent } from '@/data/searchIndex';
+import { Search, X, ArrowRight, Table2, MapPin, Heart, Activity, FileText, Wrench, Globe, Scale, BookOpen, MessageCircle } from 'lucide-react';
+import { liteClient as algoliasearch } from 'algoliasearch/lite';
+
+const searchClient = algoliasearch(
+  process.env.REACT_APP_ALGOLIA_APP_ID,
+  process.env.REACT_APP_ALGOLIA_SEARCH_KEY
+);
+const INDEX_NAME = process.env.REACT_APP_ALGOLIA_INDEX_NAME;
 
 const CATEGORY_ICONS = {
   'Outils': Wrench,
@@ -19,12 +25,39 @@ export const GlobalSearch = () => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
   const inputRef = useRef(null);
   const navigate = useNavigate();
+  const debounceRef = useRef(null);
 
+  // Algolia search with debounce
   useEffect(() => {
-    const r = searchContent(query);
-    setResults(r);
+    if (!query || query.trim().length < 2) {
+      setResults([]);
+      return;
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const { results: searchResults } = await searchClient.search({
+          requests: [{
+            indexName: INDEX_NAME,
+            query: query.trim(),
+            hitsPerPage: 15,
+            attributesToHighlight: ['title', 'description'],
+            highlightPreTag: '<mark class="algolia-hl">',
+            highlightPostTag: '</mark>',
+          }],
+        });
+        setResults(searchResults?.[0]?.hits || []);
+      } catch {
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 200);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [query]);
 
   useEffect(() => {
@@ -49,63 +82,27 @@ export const GlobalSearch = () => {
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
-  const handleSelect = useCallback((entry) => {
+  const handleSelect = useCallback((hit) => {
     setOpen(false);
-    const searchQuery = query.trim();
-    // Navigate with search highlight parameter and anchor
-    const anchor = entry.anchor || '';
+    const anchor = hit.anchor || '';
     const url = anchor
-      ? `${entry.href}${entry.href.includes('?') ? '&' : '?'}highlight=${encodeURIComponent(searchQuery)}#${anchor}`
-      : `${entry.href}${entry.href.includes('?') ? '&' : '?'}highlight=${encodeURIComponent(searchQuery)}`;
+      ? `${hit.href}?highlight=${encodeURIComponent(query.trim())}#${anchor}`
+      : `${hit.href}?highlight=${encodeURIComponent(query.trim())}`;
     navigate(url);
   }, [navigate, query]);
 
-  // Highlight matching terms in text (accent-insensitive)
-  const highlightMatch = useCallback((text) => {
-    if (!query || query.length < 2) return text;
-    const terms = query.toLowerCase().trim().split(/\s+/).filter(t => t.length >= 2);
-    if (terms.length === 0) return text;
-    // Normalize both query terms and text for matching, but display original text
-    const norm = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    const normText = norm(text);
-    const normTerms = terms.map(t => norm(t));
-    // Find all match positions
-    const positions = [];
-    for (const nt of normTerms) {
-      let idx = 0;
-      while ((idx = normText.indexOf(nt, idx)) !== -1) {
-        positions.push([idx, idx + nt.length]);
-        idx += 1;
-      }
-    }
-    if (positions.length === 0) return text;
-    // Merge overlapping ranges
-    positions.sort((a, b) => a[0] - b[0]);
-    const merged = [positions[0]];
-    for (let i = 1; i < positions.length; i++) {
-      const last = merged[merged.length - 1];
-      if (positions[i][0] <= last[1]) {
-        last[1] = Math.max(last[1], positions[i][1]);
-      } else {
-        merged.push(positions[i]);
-      }
-    }
-    // Build highlighted parts from original text
-    const parts = [];
-    let prev = 0;
-    for (const [start, end] of merged) {
-      if (start > prev) parts.push(<span key={`t-${prev}`}>{text.slice(prev, start)}</span>);
-      parts.push(<mark key={`m-${start}`} className="bg-accent/20 text-accent-foreground rounded-sm px-0.5">{text.slice(start, end)}</mark>);
-      prev = end;
-    }
-    if (prev < text.length) parts.push(<span key={`t-${prev}`}>{text.slice(prev)}</span>);
-    return parts;
-  }, [query]);
+  // Render highlighted text from Algolia
+  const renderHighlight = useCallback((hit, attr) => {
+    const hlResult = hit._highlightResult?.[attr];
+    if (!hlResult || !hlResult.value) return hit[attr] || '';
+    return <span dangerouslySetInnerHTML={{ __html: hlResult.value }} />;
+  }, []);
 
   // Group results by category
   const grouped = results.reduce((acc, r) => {
-    if (!acc[r.category]) acc[r.category] = [];
-    acc[r.category].push(r);
+    const cat = r.category || 'Autres';
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(r);
     return acc;
   }, {});
 
@@ -136,8 +133,8 @@ export const GlobalSearch = () => {
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setOpen(false)} />
 
           {/* Search Panel */}
-          <div className="relative max-w-2xl mx-auto mt-[10vh] mx-4">
-            <div className="bg-background border border-border rounded-2xl shadow-2xl overflow-hidden" data-testid="global-search-panel">
+          <div className="relative max-w-2xl mx-auto mt-[10vh]">
+            <div className="bg-background border border-border rounded-2xl shadow-2xl overflow-hidden mx-4" data-testid="global-search-panel">
               {/* Search Input */}
               <div className="flex items-center gap-3 px-5 py-4 border-b border-border">
                 <Search className="w-5 h-5 text-muted-foreground flex-shrink-0" />
@@ -145,11 +142,14 @@ export const GlobalSearch = () => {
                   ref={inputRef}
                   value={query}
                   onChange={e => setQuery(e.target.value)}
-                  placeholder="Rechercher un sujet, une maladie, un outil, un département..."
+                  placeholder="Rechercher un sujet, une maladie, un outil, un departement..."
                   className="flex-1 bg-transparent outline-none text-base placeholder:text-muted-foreground"
                   data-testid="global-search-input"
                 />
-                {query && (
+                {loading && (
+                  <div className="w-4 h-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
+                )}
+                {query && !loading && (
                   <button onClick={() => setQuery('')} className="p-1 hover:bg-muted rounded-md">
                     <X className="w-4 h-4 text-muted-foreground" />
                   </button>
@@ -161,18 +161,28 @@ export const GlobalSearch = () => {
 
               {/* Results */}
               <div className="max-h-[60vh] overflow-y-auto" data-testid="global-search-results">
-                {query.length >= 2 && results.length === 0 && (
-                  <div className="px-5 py-10 text-center text-muted-foreground">
-                    <p className="text-sm">Aucun résultat pour "<strong>{query}</strong>"</p>
-                    <p className="text-xs mt-2">Essayez avec d'autres termes : canal carpien, MDPH Paris, AAH, expertise...</p>
+                {/* No results */}
+                {query.length >= 2 && !loading && results.length === 0 && (
+                  <div className="px-5 py-10 text-center text-muted-foreground" data-testid="search-no-results">
+                    <p className="text-sm">Aucun resultat pour "<strong>{query}</strong>"</p>
+                    <p className="text-xs mt-3 mb-4">Essayez avec d'autres termes ou posez votre question a notre assistant</p>
+                    <button
+                      onClick={() => { setOpen(false); /* TODO: open chatbot */ }}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border hover:bg-muted text-sm transition-colors"
+                      data-testid="search-chatbot-link"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      Poser une question au chatbot
+                    </button>
                   </div>
                 )}
 
+                {/* Suggestions when empty */}
                 {query.length < 2 && (
                   <div className="px-5 py-8 text-center text-muted-foreground">
-                    <p className="text-sm mb-3">Tapez au moins 2 caractères pour rechercher</p>
+                    <p className="text-sm mb-3">Tapez au moins 2 caracteres pour rechercher</p>
                     <div className="flex flex-wrap gap-2 justify-center">
-                      {['canal carpien', 'MDPH Paris', 'IPP 30%', 'AAH', 'expertise medicale', 'burn out', 'indemnisation', 'faute inexcusable'].map(s => (
+                      {['canal carpien', 'MDPH', 'IPP', 'AAH', 'expertise medicale', 'burn out', 'indemnisation', 'faute inexcusable'].map(s => (
                         <button
                           key={s}
                           onClick={() => setQuery(s)}
@@ -186,6 +196,7 @@ export const GlobalSearch = () => {
                   </div>
                 )}
 
+                {/* Grouped results */}
                 {Object.entries(grouped).map(([category, items]) => {
                   const Icon = CATEGORY_ICONS[category] || FileText;
                   return (
@@ -196,18 +207,20 @@ export const GlobalSearch = () => {
                           {category}
                         </span>
                       </div>
-                      {items.map((item, i) => (
+                      {items.map((hit, i) => (
                         <button
-                          key={`${category}-${i}`}
-                          onClick={() => handleSelect(item)}
+                          key={hit.objectID}
+                          onClick={() => handleSelect(hit)}
                           className="w-full flex items-start gap-3 px-5 py-3 hover:bg-muted/50 transition-colors text-left group"
-                          data-testid={`search-result-${i}`}
+                          data-testid={`search-result-${hit.objectID}`}
                         >
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate group-hover:text-accent transition-colors">
-                              {highlightMatch(item.title)}
+                            <p className="text-sm font-medium truncate group-hover:text-accent transition-colors algolia-result-title">
+                              {renderHighlight(hit, 'title')}
                             </p>
-                            <p className="text-xs text-muted-foreground truncate mt-0.5">{highlightMatch(item.description)}</p>
+                            <p className="text-xs text-muted-foreground truncate mt-0.5 algolia-result-desc">
+                              {renderHighlight(hit, 'description')}
+                            </p>
                           </div>
                           <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1" />
                         </button>
@@ -216,10 +229,21 @@ export const GlobalSearch = () => {
                   );
                 })}
               </div>
+
+              {/* Algolia attribution */}
+              {results.length > 0 && (
+                <div className="px-5 py-2 border-t border-border/50 flex justify-end">
+                  <span className="text-[10px] text-muted-foreground/50">Recherche par Algolia</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
+
+      <style>{`
+        .algolia-hl { background: hsl(var(--accent) / 0.2); color: hsl(var(--accent-foreground)); border-radius: 2px; padding: 0 2px; }
+      `}</style>
     </>
   );
 };
