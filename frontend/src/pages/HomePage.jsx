@@ -163,21 +163,23 @@ export const HomePage = () => {
       />
 
       {/* ══════════════════════════════════════════════════════════
-          HERO — Émotion + Empathie + Impact
+          HERO — Chaleur + Empathie + Réassurance
       ══════════════════════════════════════════════════════════ */}
-      <section className="relative min-h-screen flex items-center justify-center pt-20" data-testid="hero-section">
-        <div className="absolute inset-0 bg-[#0a0a08]" />
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23D4AF37\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
+      <section className="relative min-h-screen flex items-center pt-20" data-testid="hero-section">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1598016677484-ad34c3fd766e?auto=format&fit=crop&w=1920&q=60')" }}
+        />
+        <div className="absolute inset-0 hero-overlay" />
 
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-center">
-          <div className="inline-flex items-center gap-2.5 bg-[#C9A84C]/10 border border-[#C9A84C]/20 text-[#C9A84C] px-5 py-2 rounded-full mb-8" data-testid="pioneer-badge">
-            <Sparkles className="w-4 h-4" />
-            <span className="text-xs font-bold uppercase tracking-[0.15em]">Service pionnier en France</span>
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
+          <div className="inline-flex items-center gap-2.5 bg-foreground text-primary-foreground px-5 py-2.5 rounded-full mb-8 shadow-lg" data-testid="pioneer-badge">
+            <Sparkles className="w-4 h-4 text-accent" />
+            <span className="text-xs font-bold uppercase tracking-wider">Service pionnier en France</span>
           </div>
 
           <h1
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-[#f5f0e8] leading-[1.15] mb-8 max-w-4xl mx-auto"
-            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+            className="text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground leading-[1.2] mb-6 max-w-3xl"
             data-testid="hero-title"
           >
             Vous n'êtes plus seul face à votre{' '}
@@ -186,25 +188,25 @@ export const HomePage = () => {
             <span className="text-[#C9A84C]">maladie professionnelle</span>
           </h1>
 
-          <p className="text-base sm:text-lg text-[#f5f0e8]/70 leading-relaxed max-w-3xl mx-auto mb-6" data-testid="hero-subtitle">
+          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-2xl mb-5" data-testid="hero-subtitle">
             Un accompagnement stratégique pour obtenir la reconnaissance de votre situation,
             éviter les erreurs qui peuvent vous coûter des milliers d'euros
             et vous permettre d'obtenir ce que vous méritez vraiment.
           </p>
 
           <p
-            className="text-sm sm:text-base text-[#C9A84C]/80 italic max-w-2xl mx-auto mb-10"
+            className="text-sm text-[#C9A84C]/70 italic max-w-2xl mb-8"
             style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
             data-testid="hero-tagline"
           >
             L'expertise humaine au c&oelig;ur de chaque dossier, l'intelligence artificielle comme outil de précision.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
+          <div className="flex flex-col sm:flex-row gap-3 mb-8">
             <Link to="/contact">
               <Button
                 size="lg"
-                className="rounded-full px-8 gap-2 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-semibold text-base h-13"
+                className="rounded-full px-8 gap-2 bg-foreground hover:bg-foreground/90 text-primary-foreground"
                 data-testid="hero-cta-primary"
               >
                 <Phone className="w-4 h-4" />
@@ -215,7 +217,7 @@ export const HomePage = () => {
               <Button
                 variant="outline"
                 size="lg"
-                className="rounded-full px-8 gap-2 border-[#f5f0e8]/20 text-[#f5f0e8] hover:bg-[#f5f0e8]/5 h-13"
+                className="rounded-full px-8 gap-2"
                 data-testid="hero-cta-secondary"
               >
                 Analyser ma situation gratuitement
@@ -225,9 +227,9 @@ export const HomePage = () => {
           </div>
 
           {visitorCount > 0 && (
-            <div className="inline-flex items-center gap-2 text-sm text-[#f5f0e8]/40 bg-[#f5f0e8]/[0.04] border border-[#f5f0e8]/10 px-5 py-2.5 rounded-full">
-              <Eye className="w-4 h-4 text-[#C9A84C]" />
-              <span><strong className="text-[#f5f0e8]/70">{visitorCount.toLocaleString('fr-FR')}</strong> visiteurs nous ont fait confiance</span>
+            <div className="inline-flex items-center gap-2 text-sm text-muted-foreground bg-background/80 backdrop-blur-sm px-4 py-2 rounded-full">
+              <Eye className="w-4 h-4 text-accent" />
+              <span><strong className="text-foreground">{visitorCount.toLocaleString('fr-FR')}</strong> visiteurs nous ont fait confiance</span>
             </div>
           )}
         </div>
@@ -282,34 +284,33 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           SECTION RISQUES
       ══════════════════════════════════════════════════════════ */}
-      <section className="relative py-16 sm:py-24 overflow-hidden" data-testid="risques-section">
-        <div className="absolute inset-0 bg-[#0c0c0c]" />
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8" ref={risquesRef}>
+      <section className="section-padding bg-card" data-testid="risques-section">
+        <div className="max-w-5xl mx-auto" ref={risquesRef}>
           <div className="text-center mb-12 reveal">
-            <AlertTriangle className="w-10 h-10 text-amber-500 mx-auto mb-4" />
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-[#f5f0e8] mb-3">
+            <AlertTriangle className="w-8 h-8 text-amber-600 mx-auto mb-4" />
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-3">
               Ce que vous risquez sans accompagnement
             </h2>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 mb-12 stagger">
+          <div className="grid sm:grid-cols-2 gap-4 sm:gap-5 mb-12 stagger">
             {risques.map((r, i) => (
               <div
                 key={i}
-                className="flex items-start gap-4 p-5 rounded-xl border border-red-500/10 bg-red-500/[0.03] reveal"
+                className="flex items-start gap-4 p-5 rounded-xl border border-amber-200/40 bg-amber-50/30 reveal"
                 data-testid={`risque-${i}`}
               >
-                <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center flex-shrink-0">
-                  <r.icon className="w-5 h-5 text-red-400" />
+                <div className="w-10 h-10 rounded-lg bg-amber-100/60 flex items-center justify-center flex-shrink-0">
+                  <r.icon className="w-5 h-5 text-amber-700" />
                 </div>
-                <p className="text-[#f5f0e8]/80 text-sm sm:text-base leading-relaxed font-medium pt-1.5">{r.text}</p>
+                <p className="text-foreground/80 text-sm leading-relaxed font-medium pt-1.5">{r.text}</p>
               </div>
             ))}
           </div>
 
           <div className="text-center reveal">
             <p
-              className="text-lg sm:text-xl text-[#C9A84C] font-semibold italic max-w-2xl mx-auto mb-8"
+              className="text-base sm:text-lg text-accent font-medium italic max-w-2xl mx-auto mb-8"
               style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
               data-testid="risques-accroche"
             >
@@ -318,7 +319,7 @@ export const HomePage = () => {
             <Link to="/contact">
               <Button
                 size="lg"
-                className="rounded-full px-8 gap-2 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-semibold"
+                className="rounded-full px-8 gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
                 data-testid="risques-cta"
               >
                 <Phone className="w-4 h-4" />
@@ -337,7 +338,7 @@ export const HomePage = () => {
         <div className="max-w-7xl mx-auto" ref={methodeRef}>
           <div className="text-center max-w-2xl mx-auto mb-14 reveal">
             <span className="text-sm font-medium text-accent uppercase tracking-[0.15em]">Notre approche</span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mt-2 mb-4">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mt-2 mb-4">
               La Méthode <span className="text-accent">S.E.S</span>
             </h2>
             <p className="text-muted-foreground">
@@ -376,7 +377,7 @@ export const HomePage = () => {
         <div className="max-w-7xl mx-auto" ref={solutionsRef}>
           <div className="text-center max-w-2xl mx-auto mb-14 reveal">
             <span className="text-sm font-medium text-accent uppercase tracking-[0.15em]">Nos solutions</span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mt-2 mb-4">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mt-2 mb-4">
               Choisissez l'accompagnement adapté à votre situation
             </h2>
           </div>
@@ -417,7 +418,7 @@ export const HomePage = () => {
         <div className="max-w-7xl mx-auto" ref={chiffresRef}>
           <div className="text-center max-w-2xl mx-auto mb-14 reveal">
             <span className="text-sm font-medium text-accent uppercase tracking-wider">Contexte national</span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mt-2 mb-4">Le défi en chiffres</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mt-2 mb-4">Le défi en chiffres</h2>
             <p className="text-muted-foreground">
               Des millions de personnes sont concernées chaque année en France. Derrière ces chiffres, des parcours humains qui méritent un véritable accompagnement.
             </p>
@@ -462,7 +463,7 @@ export const HomePage = () => {
         <div className="max-w-7xl mx-auto" ref={confianceRef}>
           <div className="text-center max-w-2xl mx-auto mb-14 reveal">
             <span className="text-sm font-medium text-accent uppercase tracking-[0.15em]">Crédibilité</span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mt-2 mb-4">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mt-2 mb-4">
               Pourquoi nous faire confiance ?
             </h2>
           </div>
@@ -519,7 +520,7 @@ export const HomePage = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <span className="text-sm font-medium text-accent uppercase tracking-wider">Orientation stratégique</span>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mt-2 mb-4" data-testid="home-medecin-conseil-title">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mt-2 mb-4" data-testid="home-medecin-conseil-title">
                 Le choix du médecin conseil : un enjeu financier majeur
               </h2>
               <p className="text-muted-foreground mb-4 leading-relaxed">
@@ -569,7 +570,7 @@ export const HomePage = () => {
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <span className="text-[#C9A84C] text-sm font-medium uppercase tracking-[0.2em]">Ils ont fait confiance</span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mt-3 text-[#f5f0e8]">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mt-3 text-[#f5f0e8]">
               Des parcours transformés
             </h2>
             <p className="text-[#f5f0e8]/40 mt-3 max-w-xl mx-auto text-sm">
@@ -644,7 +645,7 @@ export const HomePage = () => {
       ══════════════════════════════════════════════════════════ */}
       <section className="section-padding bg-foreground text-primary-foreground">
         <div className="max-w-4xl mx-auto text-center reveal" ref={ctaRef}>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-6">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-6">
             Besoin d'aide pour y voir plus clair ?
           </h2>
           <p className="text-primary-foreground/70 mb-8 max-w-2xl mx-auto">
