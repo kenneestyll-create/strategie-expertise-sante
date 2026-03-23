@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Volume2, ArrowRight, X, Info } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-/* ── Fallback conseil if API fails ── */
 const FALLBACK = {
+  id: '',
   text: "Vous disposez en general de 2 ans pour declarer une maladie professionnelle apres le diagnostic.",
   category: "droits",
   link: "/ressources",
@@ -29,11 +29,10 @@ const StrateSVG = ({ size = 52 }) => (
   </svg>
 );
 
-/* ── TTS FR-FR — Fonction robuste ── */
+/* ── TTS FR-FR ── */
 function speakFrench(text, onStart, onEnd, onError) {
   if (typeof speechSynthesis === 'undefined') return;
   speechSynthesis.cancel();
-
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = 'fr-FR';
   utterance.rate = 0.9;
@@ -41,30 +40,52 @@ function speakFrench(text, onStart, onEnd, onError) {
   utterance.onstart = onStart;
   utterance.onend = onEnd;
   utterance.onerror = onError;
-
   const trySpeak = () => {
     const voices = speechSynthesis.getVoices();
-    const frVoice =
-      voices.find(v => v.lang === 'fr-FR') ||
-      voices.find(v => v.lang.startsWith('fr'));
+    const frVoice = voices.find(v => v.lang === 'fr-FR') || voices.find(v => v.lang.startsWith('fr'));
     if (frVoice) utterance.voice = frVoice;
     speechSynthesis.speak(utterance);
   };
-
   const voices = speechSynthesis.getVoices();
   if (voices.length > 0) {
     trySpeak();
   } else {
-    speechSynthesis.onvoiceschanged = () => {
-      trySpeak();
-      speechSynthesis.onvoiceschanged = null;
-    };
-    // Fallback timeout if onvoiceschanged never fires
-    setTimeout(() => {
-      if (speechSynthesis.speaking) return;
-      trySpeak();
-    }, 500);
+    speechSynthesis.onvoiceschanged = () => { trySpeak(); speechSynthesis.onvoiceschanged = null; };
+    setTimeout(() => { if (!speechSynthesis.speaking) trySpeak(); }, 500);
   }
+}
+
+/* ── Tracking helpers ── */
+function trackView(conseilId) {
+  if (!conseilId) return;
+  const key = `strate_view_${conseilId}_${new Date().toDateString()}`;
+  if (localStorage.getItem(key)) return;
+  fetch(`${API}/conseils/view`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ conseil_id: conseilId }),
+  }).catch(() => {});
+  localStorage.setItem(key, 'true');
+}
+
+function trackClick(conseilId) {
+  if (!conseilId) return;
+  fetch(`${API}/conseils/click`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ conseil_id: conseilId }),
+  }).catch(() => {});
+}
+
+/* ── Conversion tracking (exportable) ── */
+export function trackStrateConversion(action) {
+  const conseilId = sessionStorage.getItem('strate_conseil_id');
+  if (!conseilId) return;
+  fetch(`${API}/conseils/conversion`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ conseil_id: conseilId, action }),
+  }).catch(() => {});
 }
 
 /* ── COMPOSANT PRINCIPAL ── */
@@ -73,27 +94,38 @@ export const MascotteStrate = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [hasSpoken, setHasSpoken] = useState(false);
   const [conseil, setConseil] = useState(null);
+  const location = useLocation();
+  const isAdmin = location.pathname.startsWith('/admin');
 
-  /* Fetch conseil du jour from backend */
+  /* Fetch conseil du jour + deduplicated view tracking */
   useEffect(() => {
+    if (isAdmin) return;
     fetch(`${API}/conseils/today`)
       .then(r => r.ok ? r.json() : Promise.reject())
-      .then(data => setConseil({
-        text: data.text,
-        cat: data.category,
-        link: data.link || '/ressources',
-        label: data.link_label || 'En savoir plus',
-      }))
+      .then(data => {
+        const c = {
+          id: data.id,
+          text: data.text,
+          cat: data.category,
+          link: data.link || '/ressources',
+          label: data.link_label || 'En savoir plus',
+        };
+        setConseil(c);
+        sessionStorage.setItem('strate_conseil_id', data.id);
+        trackView(data.id);
+      })
       .catch(() => setConseil({
+        id: FALLBACK.id,
         text: FALLBACK.text,
         cat: FALLBACK.category,
         link: FALLBACK.link,
         label: FALLBACK.link_label,
       }));
-  }, []);
+  }, [isAdmin]);
 
-  /* Auto-show bubble after 3 seconds on first visit */
+  /* Auto-show bubble after 3s */
   useEffect(() => {
+    if (isAdmin) return;
     const seen = sessionStorage.getItem('strate_seen');
     if (!seen) {
       const t = setTimeout(() => { setIsOpen(true); sessionStorage.setItem('strate_seen', '1'); }, 3000);
@@ -112,11 +144,7 @@ export const MascotteStrate = () => {
   }, [conseil]);
 
   const handleMascotClick = useCallback(() => {
-    if (isOpen) {
-      speak();
-    } else {
-      setIsOpen(true);
-    }
+    if (isOpen) speak(); else setIsOpen(true);
   }, [isOpen, speak]);
 
   const close = useCallback(() => {
@@ -125,29 +153,22 @@ export const MascotteStrate = () => {
     setIsOpen(false);
   }, []);
 
-  const trackClick = useCallback(() => {
+  const handleActionClick = useCallback(() => {
     if (!conseil) return;
-    fetch(`${API}/conseils/click`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: conseil.text }),
-    }).catch(() => {});
+    trackClick(conseil.id);
     close();
   }, [conseil, close]);
 
-  if (!conseil) return null;
+  if (!conseil || isAdmin) return null;
 
   return (
     <div className="fixed z-40" style={{ bottom: '7.5rem', right: '1.5rem' }} data-testid="mascotte-strate">
-
-      {/* Bulle de conseil */}
       {isOpen && (
         <div
           className="absolute bottom-full right-0 mb-3 w-72 sm:w-80 rounded-2xl shadow-2xl border border-[#C9A84C]/30 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300"
           style={{ background: 'linear-gradient(145deg, #1a1a1a 0%, #111 100%)' }}
           data-testid="strate-bubble"
         >
-          {/* Header */}
           <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#C9A84C]/20">
             <div className="flex items-center gap-2">
               <StrateSVG size={24} />
@@ -157,23 +178,15 @@ export const MascotteStrate = () => {
               <X className="w-4 h-4" />
             </button>
           </div>
-
-          {/* Conseil */}
           <div className="px-4 py-3">
-            <p className="text-white/90 text-sm leading-relaxed" data-testid="strate-conseil-text">
-              {conseil.text}
-            </p>
+            <p className="text-white/90 text-sm leading-relaxed" data-testid="strate-conseil-text">{conseil.text}</p>
           </div>
-
-          {/* Actions */}
           <div className="px-4 pb-3 flex items-center gap-2">
             <button
               onClick={speak}
               disabled={isSpeaking}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                isSpeaking
-                  ? 'bg-[#C9A84C]/30 text-[#C9A84C] animate-pulse'
-                  : 'bg-[#C9A84C]/15 text-[#C9A84C] hover:bg-[#C9A84C]/25'
+                isSpeaking ? 'bg-[#C9A84C]/30 text-[#C9A84C] animate-pulse' : 'bg-[#C9A84C]/15 text-[#C9A84C] hover:bg-[#C9A84C]/25'
               }`}
               data-testid="strate-speak-btn"
             >
@@ -182,25 +195,19 @@ export const MascotteStrate = () => {
             </button>
             <Link
               to={conseil.link}
-              onClick={trackClick}
+              onClick={handleActionClick}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-[#C9A84C] text-black hover:bg-[#C9A84C]/90 transition-all"
               data-testid="strate-action-btn"
             >
               {conseil.label} <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
-
-          {/* Disclaimer */}
           <div className="px-4 pb-3 flex items-start gap-1.5" data-testid="strate-disclaimer">
             <Info className="w-3 h-3 text-white/25 flex-shrink-0 mt-0.5" />
-            <p className="text-[10px] text-white/25 leading-relaxed">
-              Information indicative — ne remplace pas un conseil juridique personnalise.
-            </p>
+            <p className="text-[10px] text-white/25 leading-relaxed">Information indicative — ne remplace pas un conseil juridique personnalise.</p>
           </div>
         </div>
       )}
-
-      {/* Mascotte (bouton flottant) */}
       <button
         onClick={handleMascotClick}
         className="group relative w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95 border-2 border-[#C9A84C]/40 hover:border-[#C9A84C]/70"
