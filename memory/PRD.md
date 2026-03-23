@@ -7,33 +7,25 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 - **Frontend:** React + Shadcn/UI + Tailwind CSS + Recharts
 - **Backend:** FastAPI + MongoDB
 - **Theme:** Warm neutral noir/or (Manrope + Playfair Display)
-- **Integrations:** Stripe (test), PayPal (test), Claude Sonnet 4.5 (Emergent LLM Key), Resend (sandbox), Algolia Search
 
-## Recherche IA (Mar 2026) — REMPLACE RECHERCHE CLASSIQUE
-- Fichier: `/app/frontend/src/components/GlobalSearch.jsx`
-- **Concept:** La barre de recherche est un point d'entree vers l'IA
-- Icone Sparkles, placeholder "Posez votre question..."
-- **Suggestions IA**: 6 questions frequentes cliquables
-- **Pendant la frappe**: Algolia montre des pages suggerees (debounce 250ms)
-- **Bouton "Demander"** dore + "Ou demander a l'IA" sous les suggestions
-- **Soumission (Enter/clic)**: dispatch `CustomEvent('strate-ask-ai')` → ChatBot ecoute et s'ouvre automatiquement avec la question pre-remplie, auto-envoyee apres 300ms
-- **Chatbot** repond via Claude Sonnet 4.5 (ou FAQ)
-- **Algolia** reste pour les suggestions de pages rapides (87 records, 29 synonymes)
-- Tests: 9/9 backend + 15/15 frontend (iteration 94)
+## Chatbot IA Expert (Mar 2026) — CORRIGE
+- Fichier: `/app/backend/utils/chatbot.py`
+- **FAQ restreinte** : uniquement tarifs et contact (questions generales simples)
+- **Detection signaux medicaux** : liste MEDICAL_SIGNALS bypass la FAQ (coccyg, hernie, canal carpien, burn out, faute inexcusable, etc.)
+- **Exclusions FAQ** : must_not_contain empeche la FAQ de capturer des questions specifiques (ex: "combien toucher IPP" ne matche plus "tarifs")
+- **Prompt Claude enrichi** : tous les tableaux MP (4, 6, 16bis, 25, 30, 42, 47, 57A-E, 66, 69, 79, 97, 98), procedure hors tableau CRRMP, IP/PGPF, persona expert
+- **Orientation systematique** vers StrategiIA, Dossier Express, Calculatrice IPP en fin de reponse
+- Tests: 11/11 backend (iteration 95)
+
+## Recherche IA (Mar 2026)
+- Barre de recherche → point d'entree IA, suggestions Algolia + envoi au chatbot
+- Tests: 15/15 frontend (iteration 94)
 
 ## Mascotte "Strate" (Mar 2026)
-- TTS francais, conseils depuis DB, tracking deduplique, conversion tracking
-- Tests: 16/16 backend (iteration 91)
+- TTS francais, conseils DB, tracking, conversion
 
 ## Admin Conseils Strate (Mar 2026)
-- CRUD complet + sous-onglets Gestion/Statistiques
-- Analytics: Top 10, courbe vues/clics, filtres
-
-## Contenu IP & PGPF (Mar 2026)
-- Integre dans: Ressources, Calculatrice IPP, Recherche, StrategiIA
-
-## Scanner Documents (Mar 2026)
-- Appareil photo natif (`<input capture="environment">`)
+- CRUD + Analytics (Top 10, courbes, filtres)
 
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
@@ -43,8 +35,4 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 - **P3:** Refactoring EmailTemplateEditor.jsx
 
 ## Integrations 3rd party
-- Stripe (test mode), PayPal (test mode)
-- Claude Sonnet 4.5 (Emergent LLM Key)
-- Resend (sandbox)
-- Algolia Search (plan gratuit, 10K recherches/mois)
-- HubSpot (en attente credentials)
+- Stripe (test), PayPal (test), Claude Sonnet 4.5 (Emergent LLM Key), Resend (sandbox), Algolia Search, HubSpot (attente)
