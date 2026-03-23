@@ -28,7 +28,8 @@ import {
   Activity,
   Accessibility,
   ClipboardList,
-  ExternalLink
+  ExternalLink,
+  AlertTriangle
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -586,6 +587,54 @@ export const HomePage = () => {
                   alt="Réseau de professionnels partenaires santé et juridique"
                   className="w-full h-full object-cover"
                 />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Avis Section Preview */}
+      <section className="section-padding bg-accent/5 border-y border-accent/10">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <span className="text-sm font-medium text-accent uppercase tracking-wider">Orientation stratégique</span>
+              <h2 className="text-3xl sm:text-4xl font-semibold mt-2 mb-4" data-testid="home-medecin-conseil-title">
+                Le choix du médecin conseil : un enjeu financier majeur
+              </h2>
+              <p className="text-muted-foreground mb-4 leading-relaxed">
+                Un médecin conseil mal choisi peut entraîner une sous-évaluation de vos séquelles
+                et une perte d'indemnisation de plusieurs dizaines de milliers d'euros.
+              </p>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Nous vous orientons vers le professionnel le plus adapté à votre pathologie
+                et à votre stratégie juridique.
+              </p>
+              <Link to="/medecin-conseil">
+                <Button className="rounded-full px-6 gap-2 bg-accent hover:bg-accent/90 text-accent-foreground" data-testid="home-medecin-conseil-cta">
+                  <Stethoscope className="w-4 h-4" />
+                  Être accompagné dans le choix de mon médecin conseil
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-foreground text-primary-foreground p-5 rounded-xl">
+                <p className="text-3xl font-bold text-accent mb-1">800 - 3 000 €</p>
+                <p className="text-xs text-primary-foreground/60">Coût moyen d'un médecin conseil</p>
+              </div>
+              <div className="bg-foreground text-primary-foreground p-5 rounded-xl">
+                <p className="text-3xl font-bold text-accent mb-1">x10</p>
+                <p className="text-xs text-primary-foreground/60">Retour sur investissement potentiel</p>
+              </div>
+              <div className="col-span-2 bg-foreground text-primary-foreground p-5 rounded-xl">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle className="w-5 h-5 text-amber-500" />
+                  <p className="font-semibold text-sm">Risque d'un mauvais choix</p>
+                </div>
+                <p className="text-xs text-primary-foreground/60 leading-relaxed">
+                  Un taux d'IPP sous-évalué de quelques points peut représenter une perte de plusieurs dizaines de milliers d'euros sur votre indemnisation finale.
+                </p>
               </div>
             </div>
           </div>

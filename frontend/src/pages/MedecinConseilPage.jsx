@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
@@ -14,8 +15,22 @@ import {
   FileSearch,
   Phone
 } from 'lucide-react';
+import axios from 'axios';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+const trackClick = (action) => {
+  axios.post(`${API}/tracking/event`, {
+    page: 'medecin-conseil',
+    action,
+    timestamp: new Date().toISOString()
+  }).catch(() => {});
+};
 
 export default function MedecinConseilPage() {
+  useEffect(() => {
+    trackClick('page-view');
+  }, []);
   const enjeux = [
     { icon: Target, title: "Taux d'IPP", desc: "Un médecin conseil adapté peut faire la différence entre un taux sous-évalué et une juste reconnaissance de vos séquelles." },
     { icon: CircleDollarSign, title: "Indemnisation globale", desc: "L'évaluation de l'incidence professionnelle, de la PGPF et des préjudices extra-patrimoniaux dépend directement de la qualité de l'expertise." },
@@ -63,6 +78,14 @@ export default function MedecinConseilPage() {
               Un accompagnement éclairé en amont de cette étape peut faire une différence
               considérable sur l'issue de votre dossier.
             </p>
+            <div className="mt-8">
+              <Button asChild size="lg" className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-8" data-testid="medecin-conseil-hero-cta" onClick={() => trackClick('hero-cta-click')}>
+                <Link to="/contact">
+                  <Phone className="w-4 h-4" />
+                  Être accompagné dans le choix de mon médecin conseil
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
@@ -250,13 +273,13 @@ export default function MedecinConseilPage() {
             Cette étape préalable peut faire toute la différence.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90" data-testid="medecin-conseil-cta-accompagnement">
+            <Button asChild size="lg" className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90" data-testid="medecin-conseil-cta-accompagnement" onClick={() => trackClick('cta-accompagnement-click')}>
               <Link to="/contact">
                 <Phone className="w-4 h-4" />
                 Être accompagné dans le choix de mon médecin conseil
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="gap-2" data-testid="medecin-conseil-cta-analyse">
+            <Button asChild variant="outline" size="lg" className="gap-2" data-testid="medecin-conseil-cta-analyse" onClick={() => trackClick('cta-analyse-click')}>
               <Link to="/simulateur">
                 Analyser ma situation gratuitement <ArrowRight className="w-4 h-4" />
               </Link>

@@ -12,7 +12,9 @@ import {
   Clock,
   MessageCircle,
   Train,
-  Bus
+  Bus,
+  Stethoscope,
+  Phone
 } from 'lucide-react';
 
 export const ServicesPage = () => {
@@ -261,6 +263,28 @@ export const ServicesPage = () => {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Médecin Conseil — Strategic CTA */}
+      <section className="section-padding bg-accent/5 border-y border-accent/10" data-testid="services-medecin-conseil">
+        <div className="max-w-4xl mx-auto text-center">
+          <Stethoscope className="w-10 h-10 text-accent mx-auto mb-4" />
+          <h2 className="text-2xl sm:text-3xl font-semibold mb-4">
+            Besoin d'un médecin conseil adapté à votre situation ?
+          </h2>
+          <p className="text-muted-foreground mb-6 max-w-2xl mx-auto leading-relaxed">
+            Le choix du médecin conseil de victime est une décision stratégique majeure
+            qui influence directement votre taux d'IPP et votre indemnisation.
+            Ne laissez pas le hasard décider.
+          </p>
+          <Link to="/medecin-conseil">
+            <Button size="lg" className="rounded-full px-8 gap-2 bg-accent hover:bg-accent/90 text-accent-foreground" data-testid="services-medecin-conseil-cta">
+              <Phone className="w-4 h-4" />
+              Être accompagné dans le choix de mon médecin conseil
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Link>
         </div>
       </section>
 

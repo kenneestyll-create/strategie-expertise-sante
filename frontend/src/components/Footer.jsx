@@ -210,6 +210,11 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/medecin-conseil" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                  Choisir son médecin conseil
+                </Link>
+              </li>
+              <li>
                 <Link to="/ressources" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
                   Ressources
                 </Link>

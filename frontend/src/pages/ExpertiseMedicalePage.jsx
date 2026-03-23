@@ -10,7 +10,8 @@ import {
   UserCheck,
   CheckCircle,
   AlertTriangle,
-  BookOpen
+  BookOpen,
+  Phone
 } from 'lucide-react';
 
 export const ExpertiseMedicalePage = () => {
@@ -167,6 +168,37 @@ export const ExpertiseMedicalePage = () => {
             <p className="text-muted-foreground mt-8 pl-18">
               Le rapport est ensuite transmis à l'organisme ou au tribunal qui a demandé l'expertise.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Médecin Conseil — Strategic Link */}
+      <section className="section-padding bg-accent/5 border-y border-accent/10" data-testid="expertise-medecin-conseil">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-3">
+                <AlertTriangle className="w-5 h-5 text-amber-500" />
+                <span className="text-sm font-medium text-accent uppercase tracking-wider">Choix stratégique</span>
+              </div>
+              <h2 className="text-2xl font-semibold mb-3">
+                Comment choisir le bon médecin conseil ?
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                Le médecin conseil de victime joue un rôle déterminant lors de l'expertise.
+                Un choix inadapté peut compromettre votre indemnisation de manière irréversible.
+                Découvrez notre approche pour vous orienter vers le bon professionnel.
+              </p>
+            </div>
+            <div className="flex-shrink-0">
+              <Link to="/medecin-conseil">
+                <Button size="lg" className="rounded-full gap-2 bg-accent hover:bg-accent/90 text-accent-foreground" data-testid="expertise-medecin-conseil-cta">
+                  <Phone className="w-4 h-4" />
+                  En savoir plus
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>

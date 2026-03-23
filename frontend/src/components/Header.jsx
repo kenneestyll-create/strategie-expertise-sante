@@ -25,6 +25,7 @@ export const Header = () => {
     { name: 'Accompagnements', href: '/accompagnements' },
     { name: 'Protection juridique', href: '/protection-juridique' },
     { name: 'Expertise médicale', href: '/expertise-medicale' },
+    { name: 'Choisir son médecin conseil', href: '/medecin-conseil' },
     { name: 'AT / MP', href: '/accident-travail-maladie-professionnelle' },
     { name: 'MDPH', href: '/mdph' },
   ];
@@ -51,6 +52,7 @@ export const Header = () => {
     { name: 'Accompagnements', href: '/accompagnements' },
     { name: 'Protection juridique', href: '/protection-juridique' },
     { name: 'Expertise médicale', href: '/expertise-medicale' },
+    { name: 'Choisir son médecin conseil', href: '/medecin-conseil' },
     { name: 'AT / MP', href: '/accident-travail-maladie-professionnelle' },
     { name: 'MDPH', href: '/mdph' },
     { name: 'Tarifs', href: '/tarifs' },
