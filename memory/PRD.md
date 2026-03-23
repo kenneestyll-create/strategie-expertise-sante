@@ -10,14 +10,10 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 
 ## Mascotte Strate — Redesign (Mar 2026)
 - Fichier: `/app/frontend/src/components/MascotteStrate.jsx`
-- **Suppression** grande fenetre auto-ouverte (plus d'intrusion)
-- **Bulle pulsante** "Conseil du jour" avec animation CSS pulse douce
-- **Badge date rouge** "23 mars" sur la mascotte (incite a revenir)
-- **Clic** → fenetre compacte 256px, header "CONSEIL DU [date]", fond #141414
-- **Fermeture** X discret, animation slide-in
-- **Actions** : Ecouter TTS + lien action dore
-- Tracking inchange (views, clicks, conversions)
-- Style sobre noir/or coherent avec la charte
+- Bulle pulsante "Conseil du jour" avec animation CSS pulse douce
+- Badge date rouge sur la mascotte
+- CRUD Admin complet + Stats (Views, Clicks, CTR)
+- TTS en francais force
 
 ## Chatbot IA Expert (Mar 2026)
 - FAQ restreinte (tarifs, contact uniquement)
@@ -31,7 +27,17 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 ## Admin Conseils Strate (Mar 2026)
 - CRUD + Analytics (Top 10, courbes, filtres)
 
+## Page Medecin Conseil (Mar 2026) — DONE
+- Page strategique SEO/conversion: `/medecin-conseil`
+- Route ajoutee dans App.js
+- Liens: Header (dropdown Expertise), Footer, HomePage, ServicesPage, ExpertiseMedicalePage
+- CTA Hero en haut + CTA en bas ("Etre accompagne dans le choix de mon medecin conseil")
+- Tracking des clics et pages vues via `/api/tracking/event`
+- Stats tracking via `/api/tracking/stats`
+- Tests: 100% backend + frontend (iteration 96)
+
 ## Taches a venir
+- **P1:** Systeme de suivi (tracking clics/conversions) avance — Dashboard admin
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Integration HubSpot (en attente de credentials)
 - **P2:** Audit logging complet
