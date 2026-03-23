@@ -5,149 +5,163 @@ from emergentintegrations.llm.chat import LlmChat, UserMessage
 from config import EMERGENT_LLM_KEY, logger
 
 
+# ── FAQ limitee aux questions PUREMENT generales (tarifs, contact, RDV) ──
 FAQ_DATABASE = {
-    "expertise médicale": {
-        "keywords": ["expertise", "médical", "médecin", "expert", "préparer", "préparation"],
-        "response": """**Comment se préparer à une expertise médicale ?**
-
-Voici les étapes essentielles :
-
-1. **Rassemblez vos documents** : tous vos certificats médicaux, comptes-rendus, imageries, ordonnances
-2. **Préparez une chronologie** de votre parcours médical
-3. **Listez vos symptômes** au quotidien et leur impact sur votre vie
-4. **Notez vos questions** pour l'expert
-5. **Restez honnête et précis** dans vos réponses
-
-L'expertise dure généralement 30 à 60 minutes. Vous pouvez vous faire accompagner.
-
-👉 [Découvrez notre accompagnement personnalisé](/expertise-medicale)"""
-    },
-    "mdph": {
-        "keywords": ["mdph", "handicap", "rqth", "aah", "allocation", "reconnaissance"],
-        "response": """**Qu'est-ce que la MDPH ?**
-
-La **Maison Départementale des Personnes Handicapées** est votre interlocuteur unique pour :
-
-- La **RQTH** (Reconnaissance de la Qualité de Travailleur Handicapé)
-- L'**AAH** (Allocation aux Adultes Handicapés)
-- Les **cartes d'invalidité** et de stationnement
-- Les aides humaines et matérielles
-
-**Pour constituer un dossier :**
-1. Téléchargez le formulaire unique sur le site de votre MDPH
-2. Faites remplir le certificat médical par votre médecin
-3. Joignez tous les justificatifs demandés
-
-Délai moyen : 4 à 6 mois.
-
-👉 [En savoir plus sur les démarches MDPH](/mdph)"""
-    },
-    "accident travail": {
-        "keywords": ["accident", "travail", "at", "mp", "maladie", "professionnelle", "droits", "droit"],
-        "response": """**Quels sont vos droits après un accident du travail ?**
-
-En cas d'AT/MP, vous avez droit à :
-
-- **Prise en charge à 100%** des soins liés à l'accident
-- **Indemnités journalières** pendant l'arrêt de travail
-- **Rente ou capital** en cas de séquelles permanentes (IPP)
-- **Protection contre le licenciement** pendant l'arrêt
-
-**Étapes clés :**
-1. Déclaration dans les 24h à l'employeur
-2. Certificat médical initial
-3. Suivi médical et consolidation
-4. Évaluation du taux d'IPP
-
-👉 [Comprendre vos droits AT/MP](/accident-travail-maladie-professionnelle)"""
-    },
-    "protection juridique": {
-        "keywords": ["protection", "juridique", "assurance", "avocat", "activer", "litige"],
-        "response": """**Comment activer votre protection juridique ?**
-
-La protection juridique est souvent incluse dans vos contrats d'assurance (habitation, auto, santé). Elle peut couvrir les frais d'avocat et d'expertise.
-
-**Pour l'activer :**
-1. Vérifiez vos contrats d'assurance
-2. Identifiez les garanties couvertes
-3. Déclarez votre litige par écrit à l'assureur
-4. Constituez votre dossier
-
-**Bon à savoir :** Vous avez le droit de choisir votre propre avocat, même si l'assurance vous en propose un.
-
-👉 [Guide complet sur la protection juridique](/protection-juridique)"""
-    },
     "tarifs": {
-        "keywords": ["tarif", "prix", "coût", "combien", "prestation", "accompagnement"],
+        "keywords": ["tarif", "prix", "coût", "combien ça coûte", "prestation"],
+        "must_not_contain": ["ipp", "taux", "indemnisation", "maladie", "accident", "expertise", "calcul", "rente", "toucher", "recevoir"],
         "response": """**Nos tarifs**
 
-- **Analyse de dossier** : à partir de 150 €
-- **Préparation à expertise médicale** : à partir de 250 €
-- **Accompagnement MDPH** : à partir de 200 €
-- **Protection juridique** : à partir de 200 €
-- **Accompagnement complet** : à partir de 500 € (sur devis)
-- **Séminaires / Formations** : sur devis
+- **Analyse de dossier** : a partir de 150 euros
+- **Preparation a expertise medicale** : a partir de 250 euros
+- **Accompagnement MDPH** : a partir de 200 euros
+- **Protection juridique** : a partir de 200 euros
+- **Accompagnement complet** : a partir de 500 euros (sur devis)
+- **Seminaires / Formations** : sur devis
 - **Conseil entreprises** : sur devis
 
-**Le premier échange téléphonique est gratuit et sans engagement.**
+**Le premier echange telephonique est gratuit et sans engagement.**
 
-👉 [Voir tous nos tarifs](/tarifs)"""
+Pour en savoir plus : [Voir tous nos tarifs](/tarifs)"""
     },
     "contact": {
-        "keywords": ["contact", "rendez-vous", "joindre", "téléphone", "email", "contacter"],
+        "keywords": ["contacter", "rendez-vous", "joindre", "téléphone", "email", "appeler", "écrire"],
+        "must_not_contain": ["expertise", "mdph", "maladie", "accident", "ipp", "droit"],
         "response": """**Comment nous contacter ?**
 
-Vous pouvez me contacter pour un premier échange gratuit et sans engagement :
+Vous pouvez me contacter pour un premier echange gratuit et sans engagement :
 
 - **Par le formulaire de contact** sur notre site
 - **Par email** : contact@accompagn-sante.fr
-- **Par téléphone** : 06 00 00 00 00
+- **Par telephone** : 06 00 00 00 00
 
-Je vous répondrai dans les 24 à 48 heures.
+Je vous repondrai dans les 24 a 48 heures.
 
-👉 [Accéder au formulaire de contact](/contact)"""
-    }
+Pour en savoir plus : [Acceder au formulaire de contact](/contact)"""
+    },
 }
 
 
 def find_faq_response(message: str) -> Optional[str]:
-    message_lower = message.lower()
+    """Match FAQ uniquement pour les questions generales simples.
+    Toute question medicale/juridique specifique va directement a Claude."""
+    msg = message.lower()
+
+    # Si la question contient des termes medicaux specifiques, JAMAIS la FAQ
+    MEDICAL_SIGNALS = [
+        "tableau", "coccyg", "lombalgie", "hernie", "canal carpien", "tendinite",
+        "sciatique", "amiante", "silicose", "tms", "surdite", "syndrome",
+        "pathologie", "diagnostic", "symptome", "consolidation", "rechute",
+        "maladie professionnelle", "faute inexcusable", "pgpf", "ip ",
+        "incidence professionnelle", "perte de gains", "capitalisation",
+        "burn out", "burnout", "depression", "epuisement",
+        "inaptitude", "reclassement", "licenciement", "rente", "bareme",
+        "hors tableau", "crrmp", "alinea", "est-elle", "est-il", "peut-on",
+        "comment contester", "comment calculer", "quel taux", "combien toucher",
+        "combien recevoir", "quelle indemnisation", "quels droits",
+    ]
+    for signal in MEDICAL_SIGNALS:
+        if signal in msg:
+            return None
+
+    # Questions avec "?" contenant plus de 8 mots → probablement specifique → Claude
+    word_count = len(msg.split())
+    if "?" in msg and word_count > 8:
+        return None
+
+    # FAQ match stricte
     for topic, data in FAQ_DATABASE.items():
-        for keyword in data["keywords"]:
-            if keyword in message_lower:
-                return data["response"]
+        has_keyword = any(kw in msg for kw in data["keywords"])
+        has_exclusion = any(exc in msg for exc in data.get("must_not_contain", []))
+        if has_keyword and not has_exclusion:
+            return data["response"]
+
     return None
+
+
+# ── Base de connaissances pour le prompt Claude ──
+TABLEAUX_MP = """TABLEAUX DES MALADIES PROFESSIONNELLES (extraits principaux) :
+- Tableau 4 : Hemopathies provoquees par le benzene (delai 30 ans) — chimie, petrochimie, imprimerie
+- Tableau 6 : Affections par rayonnements ionisants (delai 50 ans) — nucleaire, radiologie
+- Tableau 16 bis : Cancers par goudrons de houille (delai 20 ans) — travaux routiers
+- Tableau 25 : Silicose (delai 35 ans) — mines, carrieres, fonderies, BTP
+- Tableau 30 : Affections par amiante (delai 40 ans) — flocage, calorifugeage, isolation
+- Tableau 30 bis : Cancer broncho-pulmonaire amiante (delai 40 ans)
+- Tableau 36 : Affections par huiles/graisses (delai 7j a 6 mois) — usinage, mecanique
+- Tableau 42 : Surdite professionnelle (delai 1 an) — bruits lesionnels
+- Tableau 47 : Affections par bois (variable) — menuiserie, scierie
+- Tableau 57 : TMS - Affections periarticulaires (variable) — mouvements repetitifs
+  - 57A : Epaule (coiffe des rotateurs) — 6 mois a 1 an
+  - 57B : Coude (epicondylite, epitrochleite) — 6 mois a 1 an
+  - 57C : Poignet/Main (canal carpien) — 6 mois a 1 an
+  - 57D : Genou (hygroma, tendinite) — 6 mois a 1 an
+  - 57E : Cheville/Pied (tendinite d'Achille) — 6 mois a 1 an
+- Tableau 66 : Rhinites et asthmes professionnels (7j a 1 an) — farine, bois, latex
+- Tableau 69 : Vibrations (delai 5 ans) — marteaux-piqueurs, tronconneuses
+- Tableau 79 : Lesions du menisque (delai 2 ans) — position agenouillee
+- Tableau 97 : Lombalgie/Sciatique (delai 6 mois) — manutention charges lourdes
+- Tableau 98 : Hernie discale (delai 6 mois) — manutention charges lourdes
+
+PATHOLOGIES HORS TABLEAU :
+Si une pathologie n'est pas listee dans un tableau (ex: burn-out, coccygodynie, fibromyalgie, depression...), elle peut QUAND MEME etre reconnue comme maladie professionnelle via la procedure COMPLEMENTAIRE :
+- Alinea 3 de l'article L461-1 : maladie hors tableau avec IPP >= 25% + lien direct et essentiel avec le travail → examen par le CRRMP (Comite Regional de Reconnaissance des Maladies Professionnelles)
+- Alinea 4 : maladie dans un tableau mais conditions non remplies (delai depasse, travaux differents) → CRRMP aussi
+
+INDEMNISATION :
+- IPP < 10% : capital forfaitaire
+- IPP >= 10% : rente viagere
+- Incidence Professionnelle (IP) : indemnisation des consequences sur la carriere
+- PGPF : Perte de Gains Professionnels Futurs — capitalisation des revenus perdus
+- Faute inexcusable : majoration de l'indemnisation si l'employeur avait conscience du danger"""
+
+
+SYSTEM_PROMPT = f"""Tu es l'assistant expert de Strategie & Expertise Sante, un service francais d'accompagnement specialise dans les maladies professionnelles, accidents du travail, expertises medicales et litiges assurance.
+
+Tu as une connaissance approfondie du droit de la securite sociale, des maladies professionnelles et de l'indemnisation corporelle.
+
+{TABLEAUX_MP}
+
+REGLES DE REPONSE :
+1. Reponds TOUJOURS en francais avec precision et expertise
+2. Pour les questions medicales specifiques (ex: "la coccygodynie est-elle dans un tableau ?"), donne une reponse PRECISE basee sur ta connaissance des tableaux ci-dessus
+3. Si la pathologie N'EST PAS dans un tableau, explique clairement la procedure de reconnaissance hors tableau via le CRRMP (alinea 3 ou 4)
+4. Cite les numeros de tableau quand c'est pertinent
+5. Donne des informations concretes : delais, conditions, taux, procedures
+6. Sois empathique mais professionnel — les personnes qui posent ces questions vivent souvent des situations difficiles
+7. A la fin de ta reponse, suggere TOUJOURS une action concrete parmi :
+   - [Analyser votre situation avec StrategiIA](/simulateur) pour une analyse personnalisee gratuite
+   - [Commander un Dossier Express IA](/dossier-express) pour un rapport complet sous 2h
+   - [Estimer votre indemnisation](/calculatrice-ipp) si le sujet est l'IPP
+   - [Prendre rendez-vous](/agenda) pour un accompagnement personnalise
+   - [Consulter nos ressources](/ressources) pour approfondir
+
+IMPORTANT : Ne dis JAMAIS "je ne peux pas donner de conseil medical ou juridique". Tu ES un expert qui oriente et informe. Donne des reponses precises et utiles. Seul un disclaimer final rappelle que chaque situation est unique et merite un examen personnalise.
+
+Pages du site :
+- /expertise-medicale : Preparation aux expertises
+- /accident-travail-maladie-professionnelle : Droits AT/MP
+- /mdph : Demarches MDPH, AAH, RQTH
+- /protection-juridique : Protection juridique
+- /calculatrice-ipp : Calculatrice d'indemnisation IPP
+- /simulateur : StrategiIA — analyse IA gratuite
+- /dossier-express : Dossier Express IA (rapport PDF, 97 euros)
+- /tarifs : Nos tarifs
+- /contact : Formulaire de contact
+- /ressources : FAQ, glossaire, encyclopedie
+- /agenda : Prise de rendez-vous"""
 
 
 async def get_ai_response(message: str, session_id: str) -> str:
     if not EMERGENT_LLM_KEY:
-        return "Je suis désolé, le service IA n'est pas disponible actuellement. Veuillez consulter nos ressources ou me contacter directement."
+        return ("Je suis desole, le service IA n'est pas disponible actuellement. "
+                "Pour une analyse de votre situation, essayez notre [StrategiIA](/simulateur) "
+                "ou commandez un [Dossier Express IA](/dossier-express).")
 
     try:
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
             session_id=session_id,
-            system_message="""Tu es l'assistant virtuel de Stratégie & Expertise Santé, un service français d'accompagnement pour les personnes confrontées à des maladies professionnelles, accidents du travail, expertises médicales et litiges avec les assurances.
-
-Ton rôle est d'aider les visiteurs à comprendre leurs droits et les orienter vers les bonnes ressources.
-
-Règles importantes :
-- Réponds toujours en français
-- Sois empathique et rassurant
-- Utilise un langage simple, sans jargon excessif
-- Ne donne jamais de conseils médicaux ou juridiques spécifiques
-- Oriente vers les professionnels compétents quand nécessaire
-- Suggère de prendre contact pour un accompagnement personnalisé
-- Sois concis mais complet
-
-Pages du site à suggérer si pertinent :
-- /expertise-medicale : Préparation aux expertises
-- /accident-travail-maladie-professionnelle : Droits AT/MP
-- /mdph : Démarches MDPH
-- /protection-juridique : Protection juridique
-- /tarifs : Nos tarifs
-- /contact : Formulaire de contact
-- /ressources : FAQ et glossaire"""
+            system_message=SYSTEM_PROMPT,
         ).with_model("anthropic", "claude-sonnet-4-5-20250929")
 
         user_message = UserMessage(text=message)
@@ -156,4 +170,6 @@ Pages du site à suggérer si pertinent :
 
     except Exception as e:
         logger.error(f"Error getting AI response: {str(e)}")
-        return "Je suis désolé, une erreur s'est produite. Veuillez réessayer ou consulter nos ressources directement sur le site."
+        return ("Je suis desole, une erreur s'est produite. "
+                "Vous pouvez analyser votre situation avec [StrategiIA](/simulateur) "
+                "ou consulter nos [ressources](/ressources).")
