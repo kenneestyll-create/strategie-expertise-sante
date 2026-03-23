@@ -4,9 +4,9 @@ from typing import Optional
 from datetime import datetime, timezone
 from bson import ObjectId
 from utils.auth import get_current_admin
-from utils.db import db
+from config import db
 
-router = APIRouter(prefix="/api/conseils", tags=["conseils"])
+router = APIRouter(prefix="/conseils", tags=["conseils"])
 
 CATEGORIES = ["droits", "expertise", "indemnisation", "emploi", "demarches", "strategie", "actualite"]
 LINK_OPTIONS = ["/calculatrice-ipp", "/dossier-express", "/ressources", "/simulateur", "/contact", "/accident-travail-maladie-professionnelle"]

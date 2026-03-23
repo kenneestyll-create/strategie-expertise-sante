@@ -53,6 +53,7 @@ import axios from 'axios';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { BarChart3, BellRing, Download, FlaskConical, PenTool } from 'lucide-react';
 import { EmailTemplateEditor } from '@/components/EmailTemplateEditor';
+import { AdminConseilsStrate } from '@/components/AdminConseilsStrate';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -577,7 +578,7 @@ export const AdminDashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-6xl" style={{gridTemplateColumns: 'repeat(13, 1fr)'}}>
+          <TabsList className="grid w-full max-w-6xl" style={{gridTemplateColumns: 'repeat(14, 1fr)'}}>
             <TabsTrigger value="contacts" className="gap-1 text-xs sm:text-sm">
               <Users className="w-3 h-3 sm:w-4 sm:h-4" />
               Contacts
@@ -608,6 +609,10 @@ export const AdminDashboard = () => {
               {urgentAlerts.non_traite > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">{urgentAlerts.non_traite}</span>
               )}
+            </TabsTrigger>
+            <TabsTrigger value="conseils-strate" className="gap-1 text-xs sm:text-sm" data-testid="tab-conseils-strate">
+              <Star className="w-3 h-3 sm:w-4 sm:h-4 text-[#C9A84C]" />
+              Strate
             </TabsTrigger>
             <TabsTrigger value="strategiia" className="gap-1 text-xs sm:text-sm" data-testid="tab-strategiia">
               <Brain className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -2481,6 +2486,11 @@ export const AdminDashboard = () => {
           {/* Templates Tab */}
           <TabsContent value="templates" className="space-y-6" data-testid="templates-tab-content">
             <EmailTemplateEditor token={token} />
+          </TabsContent>
+
+          {/* Conseils Strate Tab */}
+          <TabsContent value="conseils-strate" className="space-y-6" data-testid="conseils-strate-tab-content">
+            <AdminConseilsStrate axiosConfig={axiosConfig} />
           </TabsContent>
         </Tabs>
       </main>
