@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
-  MessageCircle, X, Send, Loader2, Bot, User,
+  MessageCircle, X, Send, Bot, User,
   ArrowRight, Gauge, Lock, FileText, Phone
 } from 'lucide-react';
 import axios from 'axios';
@@ -12,6 +12,68 @@ import ReactMarkdown from 'react-markdown';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const CHAT_LIMIT = 5;
+
+const WAITING_MESSAGES = [
+  "Analyse de votre situation en cours",
+  "Consultation de notre base juridique",
+  "Préparation de votre réponse personnalisée",
+];
+
+const LoadingBubble = () => {
+  const [msgIndex, setMsgIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [isLong, setIsLong] = useState(false);
+  const startRef = useRef(Date.now());
+
+  useEffect(() => {
+    const msgTimer = setInterval(() => {
+      setMsgIndex(prev => (prev + 1) % WAITING_MESSAGES.length);
+    }, 3500);
+    return () => clearInterval(msgTimer);
+  }, []);
+
+  useEffect(() => {
+    const progTimer = setInterval(() => {
+      const elapsed = Date.now() - startRef.current;
+      const p = Math.min(92, (elapsed / 15000) * 92);
+      setProgress(p);
+      if (elapsed > 10000) setIsLong(true);
+    }, 200);
+    return () => clearInterval(progTimer);
+  }, []);
+
+  return (
+    <div className="flex gap-3" data-testid="chatbot-loading">
+      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+        <Bot className="w-4 h-4 text-muted-foreground" />
+      </div>
+      <div className="max-w-[80%] bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3 space-y-2.5">
+        <p className="text-sm text-foreground/80">
+          Votre question est en cours d'analyse par notre IA
+          <span className="inline-flex w-6 ml-0.5">
+            <span className="animate-[blink_1.4s_infinite] [animation-delay:0ms]">.</span>
+            <span className="animate-[blink_1.4s_infinite] [animation-delay:200ms]">.</span>
+            <span className="animate-[blink_1.4s_infinite] [animation-delay:400ms]">.</span>
+          </span>
+        </p>
+        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+          <div
+            className="h-full bg-accent rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground italic transition-opacity duration-300" key={msgIndex}>
+          {WAITING_MESSAGES[msgIndex]}...
+        </p>
+        {isLong && (
+          <p className="text-xs text-accent font-medium" data-testid="chatbot-loading-long">
+            Notre IA analyse votre cas en détail, merci de patienter encore quelques secondes...
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -186,16 +248,7 @@ export const ChatBot = () => {
               </div>
             ))}
 
-            {loading && (
-              <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-muted-foreground" />
-                </div>
-                <div className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3">
-                  <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-                </div>
-              </div>
-            )}
+            {loading && <LoadingBubble />}
 
             <div ref={messagesEndRef} />
           </div>

@@ -115,7 +115,36 @@ INDEMNISATION :
 - Faute inexcusable : majoration de l'indemnisation si l'employeur avait conscience du danger"""
 
 
-SYSTEM_PROMPT = f"""Tu es l'assistant expert de Strategie & Expertise Sante, un service francais d'accompagnement specialise dans les maladies professionnelles, accidents du travail, expertises medicales et litiges assurance.
+# Mots-clés qui nécessitent la base complète des tableaux MP
+COMPLEX_SIGNALS = [
+    "tableau", "amiante", "silicose", "tms", "canal carpien", "tendinite",
+    "hernie", "lombalgie", "sciatique", "surdite", "crrmp", "alinea",
+    "hors tableau", "ipp", "taux", "rente", "indemnisation", "capitalisation",
+    "faute inexcusable", "pgpf", "incidence professionnelle", "consolidation",
+    "rechute", "bareme", "burn out", "burnout", "depression", "inaptitude",
+    "maladie professionnelle", "pathologie", "diagnostic", "epicondylite",
+    "fibromyalgie", "coccyg", "menisque",
+]
+
+
+SYSTEM_PROMPT_LIGHT = """Tu es l'assistant expert de Strategie & Expertise Sante, un service francais d'accompagnement specialise dans les maladies professionnelles, accidents du travail, expertises medicales et litiges assurance.
+
+REGLES DE REPONSE :
+1. Reponds TOUJOURS en francais avec precision et expertise
+2. Sois empathique mais professionnel
+3. Donne des reponses concises et utiles
+4. A la fin de ta reponse, suggere UNE action concrete parmi :
+   - [Analyser votre situation avec StrategiIA](/simulateur)
+   - [Commander un Dossier Express IA](/dossier-express)
+   - [Prendre rendez-vous](/agenda)
+   - [Consulter nos ressources](/ressources)
+
+Pages du site :
+- /expertise-medicale, /accident-travail-maladie-professionnelle, /mdph, /protection-juridique
+- /calculatrice-ipp, /simulateur, /dossier-express, /tarifs, /contact, /ressources, /agenda"""
+
+
+SYSTEM_PROMPT_FULL = f"""Tu es l'assistant expert de Strategie & Expertise Sante, un service francais d'accompagnement specialise dans les maladies professionnelles, accidents du travail, expertises medicales et litiges assurance.
 
 Tu as une connaissance approfondie du droit de la securite sociale, des maladies professionnelles et de l'indemnisation corporelle.
 
@@ -151,6 +180,11 @@ Pages du site :
 - /agenda : Prise de rendez-vous"""
 
 
+def _is_complex_question(message: str) -> bool:
+    msg = message.lower()
+    return any(signal in msg for signal in COMPLEX_SIGNALS)
+
+
 async def get_ai_response(message: str, session_id: str) -> str:
     if not EMERGENT_LLM_KEY:
         return ("Je suis desole, le service IA n'est pas disponible actuellement. "
@@ -158,10 +192,12 @@ async def get_ai_response(message: str, session_id: str) -> str:
                 "ou commandez un [Dossier Express IA](/dossier-express).")
 
     try:
+        prompt = SYSTEM_PROMPT_FULL if _is_complex_question(message) else SYSTEM_PROMPT_LIGHT
+
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
             session_id=session_id,
-            system_message=SYSTEM_PROMPT,
+            system_message=prompt,
         ).with_model("anthropic", "claude-sonnet-4-5-20250929")
 
         user_message = UserMessage(text=message)
