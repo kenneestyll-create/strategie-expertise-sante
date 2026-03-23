@@ -144,7 +144,7 @@ class TestDossierExpressEndpoints:
     def test_dossier_express_checkout(self):
         """Dossier Express checkout endpoint should work"""
         response = requests.post(f"{BASE_URL}/api/dossier-express/checkout", json={
-            "origin_url": "https://occupational-scan.preview.emergentagent.com",
+            "origin_url": "https://mascot-tips-admin.preview.emergentagent.com",
             "email": "test@example.com",
             "name": "Test User"
         })

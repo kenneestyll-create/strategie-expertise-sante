@@ -8,7 +8,7 @@ import os
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 if not BASE_URL:
-    BASE_URL = "https://occupational-scan.preview.emergentagent.com"
+    BASE_URL = "https://mascot-tips-admin.preview.emergentagent.com"
 
 
 class TestWeeklyCountAPI:
@@ -80,7 +80,7 @@ class TestDossierExpressCheckout:
         response = requests.post(f"{BASE_URL}/api/dossier-express/checkout", json={
             "email": "test@example.com",
             "name": "Test User",
-            "origin_url": "https://occupational-scan.preview.emergentagent.com",
+            "origin_url": "https://mascot-tips-admin.preview.emergentagent.com",
             "premium_pdf": False,
             "analyse_premium": False
         })
@@ -102,7 +102,7 @@ class TestDossierExpressCheckout:
         response = requests.post(f"{BASE_URL}/api/dossier-express/checkout", json={
             "email": "test@example.com",
             "name": "Test User",
-            "origin_url": "https://occupational-scan.preview.emergentagent.com",
+            "origin_url": "https://mascot-tips-admin.preview.emergentagent.com",
             "premium_pdf": True,
             "analyse_premium": True
         })

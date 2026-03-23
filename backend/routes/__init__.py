@@ -6,6 +6,7 @@ from routes.admin import router as admin_router
 from routes.client import router as client_router
 from routes.strategiia import router as strategiia_router
 from routes.misc import router as misc_router
+from routes.conseils import router as conseils_router
 
 all_routers = [
     public_router,
@@ -16,4 +17,5 @@ all_routers = [
     client_router,
     strategiia_router,
     misc_router,
+    conseils_router,
 ]

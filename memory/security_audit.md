@@ -34,7 +34,7 @@
 ### 5. ✅ Politique CORS stricte (P2 - Haute)
 - **Fichier:** `/app/backend/server.py` (lignes 28-35)
 - **Correction:** Origins lus depuis `ALLOWED_ORIGINS` en variable d'environnement. Pas de fallback `*`.
-- **Test interne (localhost:8001):** Retourne `access-control-allow-origin: https://occupational-scan.preview.emergentagent.com` ✅
+- **Test interne (localhost:8001):** Retourne `access-control-allow-origin: https://mascot-tips-admin.preview.emergentagent.com` ✅
 - **Note:** L'ingress Kubernetes du preview override les headers CORS avec `*`. Ce comportement est propre à l'environnement de preview et n'affecte pas la production.
 
 ### 6. ✅ Accès documents sécurisé (P3 - Moyenne)
