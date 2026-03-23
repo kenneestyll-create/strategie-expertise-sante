@@ -14,11 +14,22 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 - Design: trombone SVG avec bouclier, style noir/or
 - Position: fixed bottom-7.5rem right-1.5rem (au-dessus ChatBot)
 - Bulle auto-show apres 3s (sessionStorage)
-- 30 conseils rotatifs (Math.floor(Date.now() / jour) % 30)
-- TTS: speechSynthesis fr-FR, bouton Ecouter/Reecouter
-- Bouton action dynamique vers page pertinente
+- **Conseils depuis la base de donnees** via `/api/conseils/today` (rotation deterministe + priorite)
+- **TTS: speakFrench() avec getVoices(), filtre fr-FR, onvoiceschanged** — CORRIGE
+- Bouton action dynamique vers page pertinente + tracking clics
 - Disclaimer juridique obligatoire
-- Tests: 12/12 passes (iteration 89)
+- Tests: 16/16 backend + 100% frontend (iteration 90)
+
+## Admin Conseils Strate (Mar 2026)
+- Composant: `/app/frontend/src/components/AdminConseilsStrate.jsx`
+- Onglet "Strate" dans AdminDashboard (position 8)
+- CRUD complet: creer, modifier, supprimer des conseils
+- "Mettre en avant aujourd'hui" (priority override)
+- Dates debut/fin pour planifier les conseils
+- Preview TTS depuis le tableau et le formulaire
+- KPIs: total, actifs, vues, clics
+- Recherche + filtre par categorie
+- 30 conseils seeds automatiques
 
 ## Contenu IP & PGPF (Mar 2026)
 - 2 sections completes (definition, criteres, justificatifs, exemples, disclaimer)
