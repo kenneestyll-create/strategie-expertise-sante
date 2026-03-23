@@ -148,8 +148,8 @@ export const MascotteStrate = () => {
         {!isOpen && (
           <button
             onClick={() => setIsOpen(true)}
-            className="mb-1 px-3 py-1.5 rounded-full text-[11px] font-medium text-[#C9A84C] border border-[#C9A84C]/30 hover:border-[#C9A84C]/50 transition-all cursor-pointer"
-            style={{ background: 'rgba(201,168,76,0.08)', animation: 'stratePulse 2.5s ease-in-out infinite' }}
+            className="mb-1 px-3 py-1.5 rounded-full text-[11px] font-semibold border border-foreground/20 hover:border-foreground/40 transition-all cursor-pointer bg-background shadow-sm"
+            style={{ color: '#000000', animation: 'stratePulse 2.5s ease-in-out infinite' }}
             data-testid="strate-hint-bubble"
           >
             Conseil du jour
