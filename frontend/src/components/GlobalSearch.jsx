@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, X, ArrowRight, Table2, MapPin, Heart, Activity, FileText, Wrench, Globe } from 'lucide-react';
+import { Search, X, ArrowRight, Table2, MapPin, Heart, Activity, FileText, Wrench, Globe, Scale, BookOpen } from 'lucide-react';
 import { searchContent } from '@/data/searchIndex';
 
 const CATEGORY_ICONS = {
@@ -10,7 +10,9 @@ const CATEGORY_ICONS = {
   'IPP — Exemples': Activity,
   'Annuaire MDPH': MapPin,
   'Aides MDPH': Heart,
-  'Guides': FileText,
+  'Guides': BookOpen,
+  'Indemnisation': Scale,
+  'Sections': FileText,
 };
 
 export const GlobalSearch = () => {
@@ -58,16 +60,46 @@ export const GlobalSearch = () => {
     navigate(url);
   }, [navigate, query]);
 
-  // Highlight matching terms in text
+  // Highlight matching terms in text (accent-insensitive)
   const highlightMatch = useCallback((text) => {
     if (!query || query.length < 2) return text;
     const terms = query.toLowerCase().trim().split(/\s+/).filter(t => t.length >= 2);
     if (terms.length === 0) return text;
-    const regex = new RegExp(`(${terms.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
-    const parts = text.split(regex);
-    return parts.map((part, i) =>
-      regex.test(part) ? <mark key={i} className="bg-accent/20 text-accent-foreground rounded-sm px-0.5">{part}</mark> : part
-    );
+    // Normalize both query terms and text for matching, but display original text
+    const norm = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const normText = norm(text);
+    const normTerms = terms.map(t => norm(t));
+    // Find all match positions
+    const positions = [];
+    for (const nt of normTerms) {
+      let idx = 0;
+      while ((idx = normText.indexOf(nt, idx)) !== -1) {
+        positions.push([idx, idx + nt.length]);
+        idx += 1;
+      }
+    }
+    if (positions.length === 0) return text;
+    // Merge overlapping ranges
+    positions.sort((a, b) => a[0] - b[0]);
+    const merged = [positions[0]];
+    for (let i = 1; i < positions.length; i++) {
+      const last = merged[merged.length - 1];
+      if (positions[i][0] <= last[1]) {
+        last[1] = Math.max(last[1], positions[i][1]);
+      } else {
+        merged.push(positions[i]);
+      }
+    }
+    // Build highlighted parts from original text
+    const parts = [];
+    let prev = 0;
+    for (const [start, end] of merged) {
+      if (start > prev) parts.push(<span key={`t-${prev}`}>{text.slice(prev, start)}</span>);
+      parts.push(<mark key={`m-${start}`} className="bg-accent/20 text-accent-foreground rounded-sm px-0.5">{text.slice(start, end)}</mark>);
+      prev = end;
+    }
+    if (prev < text.length) parts.push(<span key={`t-${prev}`}>{text.slice(prev)}</span>);
+    return parts;
   }, [query]);
 
   // Group results by category
@@ -140,7 +172,7 @@ export const GlobalSearch = () => {
                   <div className="px-5 py-8 text-center text-muted-foreground">
                     <p className="text-sm mb-3">Tapez au moins 2 caractères pour rechercher</p>
                     <div className="flex flex-wrap gap-2 justify-center">
-                      {['canal carpien', 'MDPH Paris', 'IPP 30%', 'AAH', 'expertise médicale', 'amiante'].map(s => (
+                      {['canal carpien', 'MDPH Paris', 'IPP 30%', 'AAH', 'expertise medicale', 'burn out', 'indemnisation', 'faute inexcusable'].map(s => (
                         <button
                           key={s}
                           onClick={() => setQuery(s)}

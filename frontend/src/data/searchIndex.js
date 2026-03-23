@@ -9,64 +9,147 @@ import { MDPH_DIRECTORY } from './mdphDirectory';
   - anchor (optional) is an element id to scroll to on the target page
 */
 
+/* ── Normalisation des accents ── */
+function normalize(str) {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+/* ── Dictionnaire de synonymes (français médical/juridique) ── */
+const SYNONYMS = {
+  'docteur': ['medecin', 'praticien', 'generaliste', 'specialiste'],
+  'medecin': ['docteur', 'praticien', 'generaliste', 'specialiste'],
+  'avocat': ['juriste', 'conseil juridique', 'defenseur', 'protection juridique'],
+  'juriste': ['avocat', 'conseil juridique'],
+  'indemnite': ['indemnisation', 'compensation', 'reparation', 'dedommagement', 'argent', 'somme'],
+  'indemnisation': ['indemnite', 'compensation', 'reparation', 'dedommagement', 'argent'],
+  'argent': ['indemnisation', 'indemnite', 'paiement', 'somme', 'montant'],
+  'rente': ['indemnisation', 'pension', 'capital', 'revenu'],
+  'pension': ['rente', 'indemnisation', 'allocation', 'revenu'],
+  'salaire': ['revenu', 'remuneration', 'gains', 'traitement', 'paie'],
+  'revenu': ['salaire', 'gains', 'remuneration'],
+  'handicap': ['invalidite', 'incapacite', 'deficience', 'inaptitude', 'sequelles'],
+  'invalidite': ['handicap', 'incapacite', 'inaptitude'],
+  'incapacite': ['handicap', 'invalidite', 'ipp', 'taux', 'sequelles'],
+  'sequelles': ['incapacite', 'handicap', 'consequences', 'invalidite', 'blessure'],
+  'blessure': ['lesion', 'sequelles', 'traumatisme', 'dommage'],
+  'lesion': ['blessure', 'atteinte', 'dommage'],
+  'accident': ['sinistre', 'at', 'incident', 'dommage'],
+  'maladie': ['pathologie', 'affection', 'trouble', 'mp'],
+  'pathologie': ['maladie', 'affection', 'trouble'],
+  'cpam': ['securite sociale', 'secu', 'caisse', 'assurance maladie'],
+  'securite sociale': ['cpam', 'secu', 'caisse'],
+  'secu': ['cpam', 'securite sociale', 'caisse'],
+  'tribunal': ['justice', 'juge', 'audience', 'contentieux', 'recours'],
+  'recours': ['contestation', 'appel', 'tribunal', 'litige'],
+  'contestation': ['recours', 'refus', 'appel', 'opposition'],
+  'refus': ['rejet', 'contestation', 'recours'],
+  'emploi': ['travail', 'poste', 'profession', 'metier', 'job'],
+  'travail': ['emploi', 'poste', 'profession', 'metier', 'activite'],
+  'licenciement': ['rupture', 'renvoi', 'fin de contrat', 'inaptitude'],
+  'inaptitude': ['licenciement', 'reclassement', 'incapacite'],
+  'reclassement': ['reconversion', 'mutation', 'changement de poste'],
+  'reconversion': ['reclassement', 'formation', 'changement de metier'],
+  'dossier': ['document', 'formulaire', 'pieces', 'justificatif'],
+  'document': ['dossier', 'formulaire', 'pieces', 'papiers', 'justificatif'],
+  'formulaire': ['cerfa', 'document', 'imprime'],
+  'cerfa': ['formulaire', 'document', 'imprime'],
+  'expert': ['expertise', 'medecin expert', 'evaluation'],
+  'expertise': ['expert', 'evaluation', 'examen'],
+  'aide': ['allocation', 'prestation', 'soutien', 'accompagnement'],
+  'allocation': ['aide', 'prestation', 'aah', 'pension'],
+  'prix': ['tarif', 'cout', 'montant', 'formule'],
+  'tarif': ['prix', 'cout', 'montant', 'formule'],
+  'cout': ['prix', 'tarif', 'montant'],
+  'rdv': ['rendez-vous', 'agenda', 'consultation', 'creneau'],
+  'rendez-vous': ['rdv', 'agenda', 'consultation', 'creneau', 'booking'],
+  'consultation': ['rendez-vous', 'rdv', 'visite'],
+  'scanner': ['scan', 'numeriser', 'photo', 'document', 'appareil photo'],
+  'scan': ['scanner', 'numeriser', 'photo'],
+  'ia': ['intelligence artificielle', 'strategiia', 'analyse automatique'],
+  'strategiia': ['ia', 'simulateur', 'analyse', 'intelligence artificielle'],
+  'pj': ['protection juridique', 'assurance', 'avocat'],
+  'dos': ['douleur', 'rachis', 'lombalgie', 'hernie', 'sciatique', 'lumbago'],
+  'lombalgie': ['dos', 'rachis', 'lumbago', 'douleur'],
+  'hernie': ['disque', 'dos', 'rachis', 'sciatique'],
+  'epaule': ['coiffe', 'rotateurs', 'tendinite', 'tms'],
+  'canal carpien': ['poignet', 'main', 'tms', 'syndrome', 'nerf median'],
+  'poignet': ['canal carpien', 'main', 'tms'],
+  'genou': ['menisque', 'hygroma', 'rotule', 'tms'],
+  'amiante': ['mesotheliome', 'plaque pleurale', 'cancer', 'poumon', 'tableau 30'],
+  'burn out': ['burnout', 'epuisement', 'depression', 'stress', 'souffrance'],
+  'burnout': ['burn out', 'epuisement', 'depression', 'stress'],
+  'depression': ['burn out', 'burnout', 'souffrance', 'psychologique'],
+  'stress': ['burn out', 'burnout', 'souffrance', 'harcelement'],
+  'harcelement': ['moral', 'stress', 'souffrance', 'discrimination'],
+  'parrainage': ['parrain', 'filleul', 'reduction', 'avantage', 'recommandation'],
+};
+
+function getSynonyms(term) {
+  const normalized = normalize(term);
+  return SYNONYMS[normalized] || [];
+}
+
 const PAGES = [
-  { title: "Accueil", description: "Page d'accueil de Stratégie & Expertise Santé", category: "Pages", href: "/", keywords: ["accueil", "home", "bienvenue"] },
-  { title: "À propos — Mon parcours", description: "Découvrez l'expérience et le parcours professionnel", category: "Pages", href: "/a-propos", keywords: ["parcours", "expérience", "à propos", "qui", "biographie"] },
-  { title: "Accompagnements", description: "Nos services d'accompagnement personnalisé", category: "Pages", href: "/accompagnements", keywords: ["accompagnement", "service", "aide", "soutien", "conseil"] },
-  { title: "Expertise médicale", description: "Comprendre et se préparer à l'expertise médicale", category: "Pages", href: "/expertise-medicale", keywords: ["expertise", "médicale", "médecin", "conseil", "évaluation", "expert"] },
-  { title: "Accident du travail / Maladie professionnelle", description: "Vos droits en cas d'AT/MP", category: "Pages", href: "/accident-travail-maladie-professionnelle", keywords: ["accident", "travail", "maladie", "professionnelle", "AT", "MP", "CPAM", "déclaration", "reconnaissance"] },
-  { title: "MDPH", description: "Tout savoir sur la Maison Départementale des Personnes Handicapées", category: "Pages", href: "/mdph", keywords: ["mdph", "handicap", "maison départementale", "droits", "AAH", "RQTH", "carte", "invalidité"] },
-  { title: "Protection juridique", description: "Activer et utiliser votre protection juridique", category: "Pages", href: "/protection-juridique", keywords: ["protection", "juridique", "assurance", "avocat", "recours", "défense"] },
-  { title: "Séminaires", description: "Nos séminaires de formation et d'information", category: "Pages", href: "/seminaires", keywords: ["séminaire", "formation", "conférence", "atelier"] },
-  { title: "Entreprises", description: "Offres pour les entreprises et les CSE", category: "Pages", href: "/entreprises", keywords: ["entreprise", "CSE", "employeur", "salarié", "prévention"] },
-  { title: "Partenaires", description: "Nos partenaires de confiance", category: "Pages", href: "/partenaires", keywords: ["partenaire", "réseau", "collaboration"] },
-  { title: "Forum", description: "Communauté d'entraide entre usagers", category: "Pages", href: "/forum", keywords: ["forum", "communauté", "discussion", "entraide", "question"] },
-  { title: "Avis clients", description: "Témoignages et avis de nos clients", category: "Pages", href: "/avis", keywords: ["avis", "témoignage", "client", "satisfaction", "note"] },
-  { title: "Ressources", description: "Base de connaissances, guides et FAQ", category: "Pages", href: "/ressources", keywords: ["ressource", "guide", "faq", "information", "documentation", "encyclopédie"] },
-  { title: "Contact", description: "Nous contacter pour une question ou un rendez-vous", category: "Pages", href: "/contact", keywords: ["contact", "email", "téléphone", "message", "joindre"] },
-  { title: "Tarifs", description: "Nos tarifs et formules d'accompagnement", category: "Pages", href: "/tarifs", keywords: ["tarif", "prix", "formule", "paiement", "coût", "pass"] },
-  { title: "Prendre rendez-vous", description: "Réserver un créneau en ligne", category: "Pages", href: "/agenda", keywords: ["rendez-vous", "agenda", "réserver", "calendrier", "créneau", "booking"] },
-  { title: "Espace client", description: "Accéder à votre espace personnel sécurisé", category: "Pages", href: "/espace-client", keywords: ["espace client", "connexion", "dossier", "suivi", "portail"] },
-  { title: "Simulateur de droits", description: "Simulez vos droits en quelques questions", category: "Pages", href: "/simulateur", keywords: ["simulateur", "droits", "éligibilité", "test", "questionnaire"] },
-  { title: "Mentions légales", description: "Informations légales du site", category: "Pages", href: "/mentions-legales", keywords: ["mentions", "légales", "RGPD", "données"] },
-  { title: "Dossier Express IA", description: "Analyse complète de votre dossier par IA avec rapport PDF sous 2h - 97€", category: "Pages", href: "/dossier-express", keywords: ["dossier", "express", "analyse", "rapport", "PDF", "IA", "stratégiia", "97", "rapide"] },
-  { title: "CGU", description: "Conditions générales d'utilisation", category: "Pages", href: "/cgu", keywords: ["CGU", "conditions", "générales", "utilisation"] },
-  { title: "Politique de confidentialité", description: "Protection de vos données personnelles (RGPD)", category: "Pages", href: "/politique-confidentialite", keywords: ["RGPD", "confidentialité", "données", "protection", "vie privée", "consentement"] },
-  { title: "Le défi en chiffres", description: "Statistiques nationales : accidents du travail, maladies professionnelles, handicap, MDPH", category: "Pages", href: "/", anchor: "chiffres", keywords: ["chiffres", "statistiques", "700000", "accidents", "12 millions", "handicap", "MDPH", "50000", "maladies"] },
+  { title: "Accueil", description: "Page d'accueil de Strategie & Expertise Sante", category: "Pages", href: "/", keywords: ["accueil", "home", "bienvenue", "presentation", "decouvrir"] },
+  { title: "A propos — Mon parcours", description: "Decouvrez l'experience et le parcours professionnel", category: "Pages", href: "/a-propos", keywords: ["parcours", "experience", "a propos", "qui", "biographie", "profil", "formation", "competences", "equipe"] },
+  { title: "Accompagnements", description: "Nos services d'accompagnement personnalise pour AT/MP, MDPH, expertise", category: "Pages", href: "/accompagnements", keywords: ["accompagnement", "service", "aide", "soutien", "conseil", "prestation", "offre", "suivi", "prise en charge"] },
+  { title: "Expertise medicale", description: "Comprendre et se preparer a l'expertise medicale, medecin expert, evaluation", category: "Pages", href: "/expertise-medicale", keywords: ["expertise", "medicale", "medecin", "conseil", "evaluation", "expert", "examen", "preparation", "rapport", "docteur", "avis", "contre-expertise"] },
+  { title: "Accident du travail / Maladie professionnelle", description: "Vos droits en cas d'AT/MP — declaration, reconnaissance, indemnisation", category: "Pages", href: "/accident-travail-maladie-professionnelle", keywords: ["accident", "travail", "maladie", "professionnelle", "at", "mp", "cpam", "declaration", "reconnaissance", "sinistre", "blessure", "indemnisat", "droit", "employeur", "securite sociale"] },
+  { title: "MDPH", description: "Tout savoir sur la Maison Departementale des Personnes Handicapees — droits, AAH, RQTH", category: "Pages", href: "/mdph", keywords: ["mdph", "handicap", "maison departementale", "droits", "aah", "rqth", "carte", "invalidite", "pch", "orientation", "taux", "incapacite", "reconnaissance", "dossier"] },
+  { title: "Protection juridique", description: "Activer et utiliser votre protection juridique — avocat, recours, assurance", category: "Pages", href: "/protection-juridique", keywords: ["protection", "juridique", "assurance", "avocat", "recours", "defense", "pj", "litige", "tribunal", "justice", "contrat", "garantie", "sinistre"] },
+  { title: "Seminaires", description: "Nos seminaires de formation et d'information sante/droit", category: "Pages", href: "/seminaires", keywords: ["seminaire", "formation", "conference", "atelier", "evenement", "webinaire", "inscription", "programme"] },
+  { title: "Entreprises", description: "Offres pour les entreprises, CSE, employeurs — prevention, formation", category: "Pages", href: "/entreprises", keywords: ["entreprise", "cse", "employeur", "salarie", "prevention", "formation", "collectif", "groupe", "comite", "social", "economique"] },
+  { title: "Partenaires", description: "Nos partenaires de confiance — reseau professionnel", category: "Pages", href: "/partenaires", keywords: ["partenaire", "reseau", "collaboration", "professionnel", "association"] },
+  { title: "Forum", description: "Communaute d'entraide — posez vos questions, partagez votre experience", category: "Pages", href: "/forum", keywords: ["forum", "communaute", "discussion", "entraide", "question", "reponse", "temoignage", "partage", "echange"] },
+  { title: "Avis clients", description: "Temoignages et avis de nos clients satisfaits", category: "Pages", href: "/avis", keywords: ["avis", "temoignage", "client", "satisfaction", "note", "retour", "experience", "recommandation", "etoile"] },
+  { title: "Ressources", description: "Base de connaissances, guides pratiques, FAQ et encyclopedie", category: "Pages", href: "/ressources", keywords: ["ressource", "guide", "faq", "information", "documentation", "encyclopedie", "connaissance", "base", "bibliotheque", "savoir"] },
+  { title: "Contact", description: "Nous contacter pour une question ou un rendez-vous", category: "Pages", href: "/contact", keywords: ["contact", "email", "telephone", "message", "joindre", "ecrire", "appeler", "formulaire", "demande"] },
+  { title: "Tarifs", description: "Nos tarifs et formules d'accompagnement — prix et options", category: "Pages", href: "/tarifs", keywords: ["tarif", "prix", "formule", "paiement", "cout", "pass", "abonnement", "offre", "montant", "euro", "budget"] },
+  { title: "Prendre rendez-vous", description: "Reserver un creneau en ligne — agenda de consultation", category: "Pages", href: "/agenda", keywords: ["rendez-vous", "agenda", "reserver", "calendrier", "creneau", "booking", "rdv", "consultation", "disponibilite", "horaire"] },
+  { title: "Espace client", description: "Acceder a votre espace personnel securise — suivi de dossier", category: "Pages", href: "/espace-client", keywords: ["espace client", "connexion", "dossier", "suivi", "portail", "compte", "personnel", "login", "mot de passe"] },
+  { title: "Simulateur de droits", description: "Simulez vos droits en quelques questions — eligibilite AT/MP/MDPH", category: "Pages", href: "/simulateur", keywords: ["simulateur", "droits", "eligibilite", "test", "questionnaire", "verification", "strategiia", "ia", "analyse", "diagnostic"] },
+  { title: "Mentions legales", description: "Informations legales du site", category: "Pages", href: "/mentions-legales", keywords: ["mentions", "legales", "rgpd", "donnees", "editeur", "hebergeur", "responsabilite"] },
+  { title: "Dossier Express IA", description: "Analyse complete de votre dossier par IA avec rapport PDF sous 2h — 97 euros", category: "Pages", href: "/dossier-express", keywords: ["dossier", "express", "analyse", "rapport", "pdf", "ia", "strategiia", "97", "rapide", "intelligence artificielle", "automatique", "premium"] },
+  { title: "CGU", description: "Conditions generales d'utilisation du site et des services", category: "Pages", href: "/cgu", keywords: ["cgu", "conditions", "generales", "utilisation", "reglement", "contrat", "acceptation", "service"] },
+  { title: "Politique de confidentialite", description: "Protection de vos donnees personnelles (RGPD)", category: "Pages", href: "/politique-confidentialite", keywords: ["rgpd", "confidentialite", "donnees", "protection", "vie privee", "consentement", "cookie", "personnel"] },
+  { title: "Le defi en chiffres", description: "Statistiques nationales : accidents du travail, maladies professionnelles, handicap", category: "Pages", href: "/", anchor: "chiffres", keywords: ["chiffres", "statistiques", "700000", "accidents", "12 millions", "handicap", "mdph", "50000", "maladies", "donnees", "nombres"] },
+  { title: "Parrainage", description: "Programme de parrainage — parrainez un proche et beneficiez d'avantages", category: "Pages", href: "/parrainage", keywords: ["parrainage", "parrain", "filleul", "reduction", "avantage", "recommandation", "offre", "partage", "invitation", "code"] },
   // Anchored sections
-  { title: "Liste des accompagnements", description: "Tous nos services : AT/MP, MDPH, expertise médicale, protection juridique", category: "Sections", href: "/accompagnements", anchor: "services-liste", keywords: ["liste", "services", "accompagnement", "AT", "MP", "MDPH", "expertise"] },
-  { title: "Régimes spéciaux (SNCF, RATP)", description: "Accompagnement dédié aux agents des régimes spéciaux", category: "Sections", href: "/accompagnements", anchor: "regimes-speciaux", keywords: ["régimes", "spéciaux", "SNCF", "RATP", "cheminots", "agents"] },
-  { title: "Tarif StrategiIA", description: "Analyse IA gratuite avec options premium dès 29€", category: "Sections", href: "/tarifs", anchor: "tarif-strategiia", keywords: ["tarif", "prix", "strategiia", "analyse", "IA", "29"] },
-  { title: "Tarif Dossier Express IA", description: "Analyse complète par IA + rapport PDF — 97€", category: "Sections", href: "/tarifs", anchor: "tarif-dossier-express", keywords: ["tarif", "prix", "dossier", "express", "97", "rapport"] },
-  { title: "Glossaire santé & droit", description: "Lexique des termes clés : AT, MP, IPP, IP, PGPF, MDPH, AAH, RQTH", category: "Sections", href: "/ressources", anchor: "glossaire", keywords: ["glossaire", "lexique", "définition", "AT", "MP", "IPP", "AAH", "RQTH", "vocabulaire", "IP", "PGPF", "incidence professionnelle", "perte de gains futurs"] },
-  { title: "Encyclopédie des maladies professionnelles", description: "Tableaux, TMS, IPP, IP, PGPF et pathologies hors tableau", category: "Sections", href: "/ressources", anchor: "encyclopedie", keywords: ["encyclopédie", "tableaux", "TMS", "IPP", "pathologie", "maladie", "incidence professionnelle", "IP", "PGPF", "perte de gains futurs"] },
-  { title: "FAQ — Questions fréquentes", description: "Réponses aux questions les plus posées", category: "Sections", href: "/ressources", anchor: "faq", keywords: ["FAQ", "questions", "fréquentes", "réponses", "aide"] },
-  { title: "Guides pratiques", description: "Par où commencer ? Guides étape par étape", category: "Sections", href: "/ressources", anchor: "guides", keywords: ["guide", "pratique", "étape", "démarche", "commencer"] },
-  { title: "Bibliothèque de documents", description: "Formulaires, modèles de lettres et documents utiles", category: "Sections", href: "/ressources", anchor: "bibliotheque", keywords: ["bibliothèque", "document", "formulaire", "lettre", "modèle", "téléchargement"] },
+  { title: "Liste des accompagnements", description: "Tous nos services : AT/MP, MDPH, expertise medicale, protection juridique", category: "Sections", href: "/accompagnements", anchor: "services-liste", keywords: ["liste", "services", "accompagnement", "at", "mp", "mdph", "expertise", "catalogue"] },
+  { title: "Regimes speciaux (SNCF, RATP)", description: "Accompagnement dedie aux agents des regimes speciaux", category: "Sections", href: "/accompagnements", anchor: "regimes-speciaux", keywords: ["regimes", "speciaux", "sncf", "ratp", "cheminots", "agents", "fonctionnaire", "public"] },
+  { title: "Tarif StrategiIA", description: "Analyse IA gratuite avec options premium des 29 euros", category: "Sections", href: "/tarifs", anchor: "tarif-strategiia", keywords: ["tarif", "prix", "strategiia", "analyse", "ia", "29", "gratuit", "premium", "formule"] },
+  { title: "Tarif Dossier Express IA", description: "Analyse complete par IA + rapport PDF — 97 euros", category: "Sections", href: "/tarifs", anchor: "tarif-dossier-express", keywords: ["tarif", "prix", "dossier", "express", "97", "rapport", "pdf", "premium"] },
+  { title: "Glossaire sante & droit", description: "Lexique des termes cles : AT, MP, IPP, IP, PGPF, MDPH, AAH, RQTH", category: "Sections", href: "/ressources", anchor: "glossaire", keywords: ["glossaire", "lexique", "definition", "at", "mp", "ipp", "aah", "rqth", "vocabulaire", "ip", "pgpf", "incidence professionnelle", "perte de gains futurs", "terme", "signification", "acronyme"] },
+  { title: "Encyclopedie des maladies professionnelles", description: "Tableaux, TMS, IPP, IP, PGPF et pathologies hors tableau", category: "Sections", href: "/ressources", anchor: "encyclopedie", keywords: ["encyclopedie", "tableaux", "tms", "ipp", "pathologie", "maladie", "incidence professionnelle", "ip", "pgpf", "perte de gains futurs", "liste", "reference"] },
+  { title: "FAQ — Questions frequentes", description: "Reponses aux questions les plus posees", category: "Sections", href: "/ressources", anchor: "faq", keywords: ["faq", "questions", "frequentes", "reponses", "aide", "comment", "pourquoi", "quand", "combien"] },
+  { title: "Guides pratiques", description: "Par ou commencer ? Guides etape par etape", category: "Sections", href: "/ressources", anchor: "guides", keywords: ["guide", "pratique", "etape", "demarche", "commencer", "procedure", "comment faire", "methode"] },
+  { title: "Bibliotheque de documents", description: "Formulaires, modeles de lettres et documents utiles", category: "Sections", href: "/ressources", anchor: "bibliotheque", keywords: ["bibliotheque", "document", "formulaire", "lettre", "modele", "telechargement", "cerfa", "courrier", "template", "pdf"] },
 ];
 
 const IP_PGPF = [
-  { title: "Incidence Professionnelle (IP)", description: "Indemnisation des conséquences sur la carrière : pénibilité accrue, dévalorisation, reconversion, perte d'opportunités", category: "Indemnisation", href: "/ressources", anchor: "encyclopedie", keywords: ["incidence professionnelle", "IP", "pénibilité", "dévalorisation", "reconversion", "carrière", "indemnisation", "préjudice", "emploi"] },
-  { title: "Perte de Gains Professionnels Futurs (PGPF)", description: "Compensation de la perte définitive de revenus après consolidation — méthode de calcul par capitalisation", category: "Indemnisation", href: "/ressources", anchor: "encyclopedie", keywords: ["PGPF", "perte de gains futurs", "perte de gains professionnels futurs", "capitalisation", "revenus", "bareme", "Gazette du Palais", "rente", "salaire", "consolidation"] },
-  { title: "Critères IP — Pénibilité accrue", description: "Conditions de travail plus pénibles dues aux séquelles : efforts supplémentaires, douleurs, fatigue", category: "Indemnisation", href: "/ressources", anchor: "encyclopedie", keywords: ["pénibilité", "accrue", "efforts", "douleur", "fatigue", "séquelles", "travail", "IP"] },
-  { title: "Critères IP — Dévalorisation professionnelle", description: "Réduction de l'employabilité suite au handicap : discrimination, postes accessibles limités", category: "Indemnisation", href: "/ressources", anchor: "encyclopedie", keywords: ["dévalorisation", "employabilité", "handicap", "discrimination", "embauche", "marché du travail", "IP"] },
-  { title: "Calcul PGPF — Méthode de capitalisation", description: "Projection de carrière, évolution salariale, impact du handicap, barème de capitalisation", category: "Indemnisation", href: "/ressources", anchor: "encyclopedie", keywords: ["calcul", "PGPF", "capitalisation", "projection", "carrière", "salaire", "barème", "euro de rente"] },
-  { title: "PGPA vs PGPF — Distinction", description: "Perte de gains actuels (avant consolidation) vs perte de gains futurs (après consolidation)", category: "Indemnisation", href: "/ressources", anchor: "encyclopedie", keywords: ["PGPA", "PGPF", "distinction", "consolidation", "arrêt", "indemnités journalières", "perte de revenus"] },
+  { title: "Incidence Professionnelle (IP)", description: "Indemnisation des consequences sur la carriere : penibilite accrue, devalorisation, reconversion", category: "Indemnisation", href: "/ressources", anchor: "encyclopedie", keywords: ["incidence professionnelle", "ip", "penibilite", "devalorisation", "reconversion", "carriere", "indemnisation", "prejudice", "emploi", "consequence", "impact", "travail", "profession"] },
+  { title: "Perte de Gains Professionnels Futurs (PGPF)", description: "Compensation de la perte definitive de revenus apres consolidation — capitalisation", category: "Indemnisation", href: "/ressources", anchor: "encyclopedie", keywords: ["pgpf", "perte de gains futurs", "perte de gains professionnels futurs", "capitalisation", "revenus", "bareme", "gazette du palais", "rente", "salaire", "consolidation", "projection", "manque a gagner"] },
+  { title: "Criteres IP — Penibilite accrue", description: "Conditions de travail plus penibles dues aux sequelles : efforts supplementaires, douleurs", category: "Indemnisation", href: "/ressources", anchor: "encyclopedie", keywords: ["penibilite", "accrue", "efforts", "douleur", "fatigue", "sequelles", "travail", "ip", "conditions", "souffrance"] },
+  { title: "Criteres IP — Devalorisation professionnelle", description: "Reduction de l'employabilite suite au handicap : discrimination, postes limites", category: "Indemnisation", href: "/ressources", anchor: "encyclopedie", keywords: ["devalorisation", "employabilite", "handicap", "discrimination", "embauche", "marche du travail", "ip", "chomage", "difficulte"] },
+  { title: "Calcul PGPF — Methode de capitalisation", description: "Projection de carriere, evolution salariale, impact du handicap, bareme de capitalisation", category: "Indemnisation", href: "/ressources", anchor: "encyclopedie", keywords: ["calcul", "pgpf", "capitalisation", "projection", "carriere", "salaire", "bareme", "euro de rente", "methode", "montant", "estimation"] },
+  { title: "PGPA vs PGPF — Distinction", description: "Perte de gains actuels (avant consolidation) vs perte de gains futurs (apres consolidation)", category: "Indemnisation", href: "/ressources", anchor: "encyclopedie", keywords: ["pgpa", "pgpf", "distinction", "consolidation", "arret", "indemnites journalieres", "perte de revenus", "difference", "avant", "apres"] },
 ];
 
 const TOOLS = [
-  { title: "Calculatrice IPP", description: "Estimez votre indemnisation selon votre taux d'incapacité permanente partielle — avec encarts IP et PGPF", category: "Outils", href: "/calculatrice-ipp", keywords: ["calculatrice", "IPP", "incapacité", "permanente", "partielle", "indemnisation", "rente", "capital", "taux", "calcul", "estimation", "séquelles", "incidence professionnelle", "IP", "PGPF", "perte de gains futurs"] },
-  { title: "Calculatrice AAH", description: "Estimez le montant de votre Allocation aux Adultes Handicapés", category: "Outils", href: "/calculatrice-aah", keywords: ["calculatrice", "AAH", "allocation", "adulte", "handicapé", "montant", "calcul", "estimation", "invalidité", "revenu"] },
-  { title: "Simulateur de droits", description: "Vérifiez votre éligibilité aux différentes aides et dispositifs", category: "Outils", href: "/simulateur", keywords: ["simulateur", "droits", "éligibilité", "aide", "dispositif"] },
+  { title: "Calculatrice IPP", description: "Estimez votre indemnisation selon votre taux d'incapacite permanente partielle — avec IP et PGPF", category: "Outils", href: "/calculatrice-ipp", keywords: ["calculatrice", "ipp", "incapacite", "permanente", "partielle", "indemnisation", "rente", "capital", "taux", "calcul", "estimation", "sequelles", "incidence professionnelle", "ip", "pgpf", "perte de gains futurs", "montant", "combien", "simuler"] },
+  { title: "Calculatrice AAH", description: "Estimez le montant de votre Allocation aux Adultes Handicapes", category: "Outils", href: "/calculatrice-aah", keywords: ["calculatrice", "aah", "allocation", "adulte", "handicape", "montant", "calcul", "estimation", "invalidite", "revenu", "aide", "simuler", "combien"] },
+  { title: "Simulateur de droits — StrategiIA", description: "Verifiez votre eligibilite aux differentes aides et dispositifs grace a l'IA", category: "Outils", href: "/simulateur", keywords: ["simulateur", "droits", "eligibilite", "aide", "dispositif", "strategiia", "ia", "intelligence artificielle", "analyse", "diagnostic", "test", "gratuit"] },
+  { title: "Dossier Express IA", description: "Analyse complete par intelligence artificielle avec rapport PDF", category: "Outils", href: "/dossier-express", keywords: ["dossier", "express", "ia", "rapport", "pdf", "analyse", "intelligence artificielle", "premium", "97", "rapide", "complet"] },
+  { title: "Scanner de documents", description: "Numerisez vos documents medicaux avec l'appareil photo de votre telephone", category: "Outils", href: "/espace-client", keywords: ["scanner", "scan", "document", "photo", "numeriser", "appareil photo", "telephone", "camera", "piece", "justificatif", "medical"] },
 ];
 
 const MALADIES = MALADIES_PRO_TABLEAUX.map(m => ({
   title: `Tableau ${m.numero} — ${m.titre}`,
-  description: `Délai : ${m.delai} | ${m.travaux}`,
+  description: `Delai : ${m.delai} | ${m.travaux}`,
   category: "Maladies professionnelles",
   href: "/ressources#encyclopedie",
   keywords: [
-    m.numero, m.titre.toLowerCase(), m.travaux.toLowerCase(), m.delai.toLowerCase(),
+    m.numero, normalize(m.titre), normalize(m.travaux), normalize(m.delai),
     "tableau", "maladie", "professionnelle"
   ].join(' ').split(/[\s,()]+/).filter(Boolean)
 }));
@@ -77,9 +160,9 @@ const TMS = TMS_LOCALISATION.map(t => ({
   category: "Maladies professionnelles",
   href: "/ressources#encyclopedie",
   keywords: [
-    t.tableau.toLowerCase(), t.zone.toLowerCase(),
-    ...t.pathologies.map(p => p.toLowerCase()),
-    "tms", "trouble", "musculo", "squelettique", "tableau 57"
+    normalize(t.tableau), normalize(t.zone),
+    ...t.pathologies.map(p => normalize(p)),
+    "tms", "trouble", "musculo", "squelettique", "tableau 57", "douleur", "tendinite"
   ]
 }));
 
@@ -89,8 +172,8 @@ const IPP_ITEMS = IPP_EXEMPLES.map(ex => ({
   category: "IPP — Exemples",
   href: "/ressources#encyclopedie",
   keywords: [
-    `${ex.taux}%`, ex.description.toLowerCase(), ex.indemnisation.toLowerCase(),
-    "ipp", "incapacité", "taux", "indemnisation", "exemple"
+    `${ex.taux}%`, normalize(ex.description), normalize(ex.indemnisation),
+    "ipp", "incapacite", "taux", "indemnisation", "exemple", "montant"
   ]
 }));
 
@@ -99,34 +182,46 @@ const MDPH_ITEMS = MDPH_DIRECTORY.map(m => ({
   description: m.adresse,
   category: "Annuaire MDPH",
   href: "/ressources#encyclopedie",
-  keywords: [m.dep.toLowerCase(), m.nom.toLowerCase(), "mdph", "maison", "département", "handicap", "adresse"]
+  keywords: [normalize(m.dep), normalize(m.nom), "mdph", "maison", "departement", "handicap", "adresse", "annuaire"]
 }));
 
 const AIDES = [
-  { title: "CMI Invalidité", description: "Carte Mobilité Inclusion mention invalidité — taux ≥ 80%", category: "Aides MDPH", href: "/ressources#encyclopedie", keywords: ["cmi", "carte", "mobilité", "inclusion", "invalidité", "80%", "handicap", "demi-part"] },
-  { title: "CMI Priorité", description: "Carte Mobilité Inclusion mention priorité — station debout pénible", category: "Aides MDPH", href: "/ressources#encyclopedie", keywords: ["cmi", "carte", "mobilité", "priorité", "station debout", "file d'attente"] },
-  { title: "CMI Stationnement", description: "Carte Mobilité Inclusion mention stationnement — périmètre de marche limité", category: "Aides MDPH", href: "/ressources#encyclopedie", keywords: ["cmi", "carte", "stationnement", "parking", "place handicapé", "voiture"] },
-  { title: "PCH — Aide humaine", description: "Financement d'un aidant pour les actes essentiels", category: "Aides MDPH", href: "/ressources#encyclopedie", keywords: ["pch", "aide", "humaine", "aidant", "toilette", "habillage", "alimentation", "prestation compensation"] },
-  { title: "PCH — Aides techniques", description: "Fauteuil roulant, prothèses, matériel adapté", category: "Aides MDPH", href: "/ressources#encyclopedie", keywords: ["pch", "aide", "technique", "fauteuil", "prothèse", "matériel", "équipement"] },
-  { title: "PCH — Aménagement du logement", description: "Rampe, douche italienne, monte-escalier, domotique", category: "Aides MDPH", href: "/ressources#encyclopedie", keywords: ["pch", "logement", "aménagement", "rampe", "douche", "monte-escalier", "accessibilité", "domicile"] },
-  { title: "PCH — Aménagement du véhicule", description: "Adaptation du véhicule et surcoûts de transport", category: "Aides MDPH", href: "/ressources#encyclopedie", keywords: ["pch", "véhicule", "voiture", "transport", "conduite", "adaptation"] },
-  { title: "AAH — Allocation Adultes Handicapés", description: "Aide financière mensuelle (max 971,37 €) pour personnes handicapées", category: "Aides MDPH", href: "/calculatrice-aah", keywords: ["aah", "allocation", "adulte", "handicapé", "aide", "financière", "revenu", "mensuel"] },
-  { title: "RQTH — Travailleur Handicapé", description: "Reconnaissance ouvrant des droits en emploi", category: "Aides MDPH", href: "/mdph", keywords: ["rqth", "travailleur", "handicapé", "emploi", "aménagement", "poste", "embauche", "agefiph"] },
-  { title: "Reconnaissance hors tableau", description: "Procédure de reconnaissance via le CRRMP (Alinéa 3 et 4)", category: "Maladies professionnelles", href: "/ressources#encyclopedie", keywords: ["hors tableau", "crrmp", "alinéa", "reconnaissance", "comité", "régional", "maladie", "professionnelle"] },
+  { title: "CMI Invalidite", description: "Carte Mobilite Inclusion mention invalidite — taux superieur ou egal a 80%", category: "Aides MDPH", href: "/ressources#encyclopedie", keywords: ["cmi", "carte", "mobilite", "inclusion", "invalidite", "80", "handicap", "demi-part", "fiscal", "priorite"] },
+  { title: "CMI Priorite", description: "Carte Mobilite Inclusion mention priorite — station debout penible", category: "Aides MDPH", href: "/ressources#encyclopedie", keywords: ["cmi", "carte", "mobilite", "priorite", "station debout", "file d'attente", "place", "transport"] },
+  { title: "CMI Stationnement", description: "Carte Mobilite Inclusion mention stationnement — perimetre de marche limite", category: "Aides MDPH", href: "/ressources#encyclopedie", keywords: ["cmi", "carte", "stationnement", "parking", "place handicape", "voiture", "vehicule", "gic"] },
+  { title: "PCH — Aide humaine", description: "Financement d'un aidant pour les actes essentiels", category: "Aides MDPH", href: "/ressources#encyclopedie", keywords: ["pch", "aide", "humaine", "aidant", "toilette", "habillage", "alimentation", "prestation compensation", "domicile", "quotidien"] },
+  { title: "PCH — Aides techniques", description: "Fauteuil roulant, protheses, materiel adapte", category: "Aides MDPH", href: "/ressources#encyclopedie", keywords: ["pch", "aide", "technique", "fauteuil", "prothese", "materiel", "equipement", "appareillage", "adaptation"] },
+  { title: "PCH — Amenagement du logement", description: "Rampe, douche italienne, monte-escalier, domotique", category: "Aides MDPH", href: "/ressources#encyclopedie", keywords: ["pch", "logement", "amenagement", "rampe", "douche", "monte-escalier", "accessibilite", "domicile", "travaux", "maison", "appartement"] },
+  { title: "PCH — Amenagement du vehicule", description: "Adaptation du vehicule et surcouts de transport", category: "Aides MDPH", href: "/ressources#encyclopedie", keywords: ["pch", "vehicule", "voiture", "transport", "conduite", "adaptation", "permis", "deplacement"] },
+  { title: "AAH — Allocation Adultes Handicapes", description: "Aide financiere mensuelle (max 971,37 euros) pour personnes handicapees", category: "Aides MDPH", href: "/calculatrice-aah", keywords: ["aah", "allocation", "adulte", "handicape", "aide", "financiere", "revenu", "mensuel", "montant", "argent", "prestation", "971"] },
+  { title: "RQTH — Travailleur Handicape", description: "Reconnaissance ouvrant des droits en emploi — amenagement de poste, Agefiph", category: "Aides MDPH", href: "/mdph", keywords: ["rqth", "travailleur", "handicape", "emploi", "amenagement", "poste", "embauche", "agefiph", "reconnaissance", "droit", "obligation", "quota"] },
+  { title: "Reconnaissance hors tableau", description: "Procedure de reconnaissance via le CRRMP (Alinea 3 et 4)", category: "Maladies professionnelles", href: "/ressources#encyclopedie", keywords: ["hors tableau", "crrmp", "alinea", "reconnaissance", "comite", "regional", "maladie", "professionnelle", "procedure", "complementaire"] },
 ];
 
 const GUIDES = [
-  { title: "Guide : Déclarer une maladie professionnelle", description: "Étapes pour faire reconnaître votre maladie par la CPAM", category: "Guides", href: "/ressources#bibliotheque", keywords: ["guide", "déclarer", "maladie", "professionnelle", "cpam", "formulaire", "cerfa"] },
-  { title: "Guide : Se préparer à une expertise médicale", description: "Conseils et liste de contrôle", category: "Guides", href: "/ressources#bibliotheque", keywords: ["guide", "expertise", "médicale", "préparation", "médecin", "documents"] },
-  { title: "Guide : Constituer un dossier MDPH", description: "Formulaire, documents et astuces", category: "Guides", href: "/ressources#bibliotheque", keywords: ["guide", "dossier", "mdph", "formulaire", "document", "demande"] },
-  { title: "Guide : Contester un refus", description: "Droits et voies de recours", category: "Guides", href: "/ressources#bibliotheque", keywords: ["guide", "contester", "refus", "recours", "médiateur", "tribunal"] },
-  { title: "Guide : Comprendre le taux d'IPP", description: "Comment le taux est fixé et ses impacts", category: "Guides", href: "/ressources#bibliotheque", keywords: ["guide", "ipp", "taux", "incapacité", "indemnisation", "calcul"] },
-  { title: "Guide : Activer sa protection juridique", description: "Identifier et activer votre PJ", category: "Guides", href: "/ressources#bibliotheque", keywords: ["guide", "protection", "juridique", "assurance", "avocat", "pj"] },
+  { title: "Guide : Declarer une maladie professionnelle", description: "Etapes pour faire reconnaitre votre maladie par la CPAM", category: "Guides", href: "/ressources#bibliotheque", keywords: ["guide", "declarer", "maladie", "professionnelle", "cpam", "formulaire", "cerfa", "etape", "procedure", "comment", "declaration"] },
+  { title: "Guide : Se preparer a une expertise medicale", description: "Conseils et liste de controle pour votre expertise", category: "Guides", href: "/ressources#bibliotheque", keywords: ["guide", "expertise", "medicale", "preparation", "medecin", "documents", "checklist", "conseil", "astuce", "avant"] },
+  { title: "Guide : Constituer un dossier MDPH", description: "Formulaire, documents et astuces pour votre demande MDPH", category: "Guides", href: "/ressources#bibliotheque", keywords: ["guide", "dossier", "mdph", "formulaire", "document", "demande", "cerfa", "constituer", "monter", "pieces"] },
+  { title: "Guide : Contester un refus", description: "Droits et voies de recours — mediateur, tribunal", category: "Guides", href: "/ressources#bibliotheque", keywords: ["guide", "contester", "refus", "recours", "mediateur", "tribunal", "appel", "opposition", "rejet", "comment", "procedure", "delai"] },
+  { title: "Guide : Comprendre le taux d'IPP", description: "Comment le taux est fixe et ses impacts sur l'indemnisation", category: "Guides", href: "/ressources#bibliotheque", keywords: ["guide", "ipp", "taux", "incapacite", "indemnisation", "calcul", "fixation", "bareme", "medecin", "evaluation", "pourcentage"] },
+  { title: "Guide : Activer sa protection juridique", description: "Identifier et activer votre PJ — assurance, avocat", category: "Guides", href: "/ressources#bibliotheque", keywords: ["guide", "protection", "juridique", "assurance", "avocat", "pj", "activer", "contrat", "garantie", "sinistre", "declaration"] },
+];
+
+/* ── Common search intents (maps user intent to best result) ── */
+const INTENTS = [
+  { title: "Comment declarer un accident du travail ?", description: "Guide complet pour la declaration d'un AT aupres de l'employeur et la CPAM", category: "Guides", href: "/accident-travail-maladie-professionnelle", keywords: ["comment", "declarer", "accident", "travail", "declaration", "procedure", "24 heures", "employeur", "cerfa"] },
+  { title: "Comment contester une expertise medicale ?", description: "Vos droits pour contester un rapport d'expertise defavorable", category: "Guides", href: "/expertise-medicale", keywords: ["contester", "expertise", "medicale", "rapport", "defavorable", "contre-expertise", "recours", "desaccord"] },
+  { title: "Combien vais-je toucher ?", description: "Calculez votre indemnisation avec nos outils : IPP, AAH, PGPF", category: "Outils", href: "/calculatrice-ipp", keywords: ["combien", "toucher", "recevoir", "montant", "indemnite", "somme", "argent", "estimation", "calcul"] },
+  { title: "Burn-out / Epuisement professionnel", description: "Le burn-out peut etre reconnu comme maladie professionnelle via le CRRMP (hors tableau)", category: "Maladies professionnelles", href: "/ressources#encyclopedie", keywords: ["burn out", "burnout", "epuisement", "professionnel", "depression", "stress", "souffrance", "psychologique", "moral", "risque psychosocial", "rps"] },
+  { title: "Faute inexcusable de l'employeur", description: "Procedure pour faire reconnaitre la faute inexcusable et majorer votre indemnisation", category: "Indemnisation", href: "/ressources", anchor: "encyclopedie", keywords: ["faute", "inexcusable", "employeur", "majoration", "indemnisation", "procedure", "tribunal", "responsabilite", "securite"] },
+  { title: "Consolidation — Definition", description: "Moment ou l'etat de sante est stabilise — point de depart des indemnisations definitives", category: "Sections", href: "/ressources", anchor: "glossaire", keywords: ["consolidation", "stabilisation", "guerison", "fin", "arret", "date", "definition", "etat", "sante", "sequelles"] },
+  { title: "Delais de prescription", description: "Les delais importants a ne pas depasser : 2 ans maladie pro, 2 mois contestation CPAM", category: "Sections", href: "/ressources", anchor: "faq", keywords: ["delai", "prescription", "2 ans", "2 mois", "temps", "limite", "date", "depasser", "trop tard", "perime"] },
 ];
 
 export const SEARCH_INDEX = [
   ...TOOLS,
   ...PAGES,
+  ...INTENTS,
   ...AIDES,
   ...IP_PGPF,
   ...MALADIES,
@@ -138,37 +233,100 @@ export const SEARCH_INDEX = [
 
 export function searchContent(query) {
   if (!query || query.trim().length < 2) return [];
-  const terms = query.toLowerCase().trim().split(/\s+/);
+  const rawTerms = query.trim().split(/\s+/);
+  const normalizedTerms = rawTerms.map(t => normalize(t));
+
+  // Expand terms with synonyms
+  const expandedTerms = new Set(normalizedTerms);
+  for (const term of normalizedTerms) {
+    const syns = getSynonyms(term);
+    for (const s of syns) expandedTerms.add(normalize(s));
+  }
+
+  // Check for multi-word synonym match (e.g., "canal carpien")
+  const fullQueryNorm = normalize(query.trim());
+  const fullSyns = getSynonyms(fullQueryNorm);
+  for (const s of fullSyns) expandedTerms.add(normalize(s));
 
   const scored = SEARCH_INDEX.map(entry => {
-    const haystack = [
-      entry.title.toLowerCase(),
-      entry.description.toLowerCase(),
-      ...(entry.keywords || []).map(k => typeof k === 'string' ? k.toLowerCase() : k)
-    ].join(' ');
+    // Build normalized haystack
+    const haystack = normalize([
+      entry.title,
+      entry.description,
+      ...(entry.keywords || []).map(k => typeof k === 'string' ? k : String(k))
+    ].join(' '));
 
     let score = 0;
-    let allMatch = true;
-    for (const term of terms) {
+    let directMatches = 0;
+    let synonymMatches = 0;
+    const titleNorm = normalize(entry.title);
+    const keywordsNorm = (entry.keywords || []).map(k => normalize(typeof k === 'string' ? k : String(k)));
+
+    // Check each original search term
+    for (const term of normalizedTerms) {
+      if (term.length < 2) continue;
+
+      // Direct match (exact substring)
       if (haystack.includes(term)) {
-        // Boost for title match
-        if (entry.title.toLowerCase().includes(term)) score += 10;
-        // Boost for exact keyword match
-        if (entry.keywords?.some(k => k === term)) score += 5;
-        // Base match
+        directMatches++;
+        // Title match gets highest boost
+        if (titleNorm.includes(term)) score += 15;
+        // Exact keyword match
+        if (keywordsNorm.some(k => k === term)) score += 8;
+        // Keyword contains term (prefix match)
+        else if (keywordsNorm.some(k => k.startsWith(term) || k.includes(term))) score += 5;
+        // Base haystack match
         score += 3;
-      } else {
-        allMatch = false;
+      }
+      // Prefix match (user typing partial word)
+      else if (keywordsNorm.some(k => k.startsWith(term)) || haystack.split(/\s+/).some(w => w.startsWith(term))) {
+        directMatches++;
+        score += 4;
+      }
+      // Synonym match
+      else {
+        const termSyns = getSynonyms(term);
+        let synFound = false;
+        for (const syn of termSyns) {
+          const synNorm = normalize(syn);
+          if (haystack.includes(synNorm)) {
+            synonymMatches++;
+            synFound = true;
+            if (titleNorm.includes(synNorm)) score += 8;
+            else score += 3;
+            break;
+          }
+        }
+        // Check expanded terms against haystack
+        if (!synFound) {
+          for (const expanded of expandedTerms) {
+            if (expanded.length >= 3 && haystack.includes(expanded)) {
+              synonymMatches++;
+              score += 2;
+              break;
+            }
+          }
+        }
       }
     }
 
-    // Bonus for matching ALL terms
-    if (allMatch && terms.length > 1) score += 15;
+    // Bonus: all original terms matched (directly or via synonym)
+    const totalMatches = directMatches + synonymMatches;
+    if (totalMatches >= normalizedTerms.filter(t => t.length >= 2).length && normalizedTerms.length > 1) {
+      score += 20;
+    }
 
-    // Category boost only when there's at least one real match
+    // Bonus: exact phrase match in title
+    if (titleNorm.includes(fullQueryNorm)) score += 25;
+    // Bonus: exact phrase match in haystack
+    else if (haystack.includes(fullQueryNorm)) score += 10;
+
+    // Category boost
     if (score > 0) {
       if (entry.category === 'Outils') score += 5;
       if (entry.category === 'Pages') score += 2;
+      if (entry.category === 'Indemnisation') score += 3;
+      if (entry.category === 'Guides') score += 2;
     }
 
     return { ...entry, score };
@@ -176,6 +334,15 @@ export function searchContent(query) {
   .filter(e => e.score > 0)
   .sort((a, b) => b.score - a.score);
 
-  // Limit to top 15 results
-  return scored.slice(0, 15);
+  // Deduplicate by href+anchor (keep highest scored)
+  const seen = new Set();
+  const deduped = [];
+  for (const item of scored) {
+    const key = `${item.href}#${item.anchor || ''}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(item);
+  }
+
+  return deduped.slice(0, 15);
 }
