@@ -9,29 +9,25 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 - **Theme:** Warm neutral noir/or (Manrope + Playfair Display)
 - **Integrations:** Stripe (test), PayPal (test), Claude Sonnet 4.5 (Emergent LLM Key), Resend (sandbox), Algolia Search
 
-## Moteur de Recherche — Algolia (Mar 2026)
-- **Algolia App ID:** 54V9JMPOCR
-- **Index:** strategie_sante
-- **Records:** 87 (pages, outils, sections, guides, intents, maladies, MDPH, aides, IP/PGPF)
-- **Synonymes:** 29 groupes (IPP, AT, MP, MDPH, AAH, docteur/medecin, avocat/juriste, etc.)
-- **Config:** typo tolerance FR, removeStopWords FR, ignorePlurals FR, queryLanguages FR
-- **Script indexation:** `/app/backend/algolia_index.py`
-- **Composant:** `/app/frontend/src/components/GlobalSearch.jsx` (algoliasearch/lite v5)
-- Recherche instantanee debounced 200ms, resultats groupes par categorie avec icones
-- Highlight Algolia natif avec `<mark class="algolia-hl">`
-- "Aucun resultat" → lien vers chatbot
-- Attribution "Recherche par Algolia"
-- Raccourci Ctrl+K
-- Tests: 19/20 frontend (iteration 93)
+## Recherche IA (Mar 2026) — REMPLACE RECHERCHE CLASSIQUE
+- Fichier: `/app/frontend/src/components/GlobalSearch.jsx`
+- **Concept:** La barre de recherche est un point d'entree vers l'IA
+- Icone Sparkles, placeholder "Posez votre question..."
+- **Suggestions IA**: 6 questions frequentes cliquables
+- **Pendant la frappe**: Algolia montre des pages suggerees (debounce 250ms)
+- **Bouton "Demander"** dore + "Ou demander a l'IA" sous les suggestions
+- **Soumission (Enter/clic)**: dispatch `CustomEvent('strate-ask-ai')` → ChatBot ecoute et s'ouvre automatiquement avec la question pre-remplie, auto-envoyee apres 300ms
+- **Chatbot** repond via Claude Sonnet 4.5 (ou FAQ)
+- **Algolia** reste pour les suggestions de pages rapides (87 records, 29 synonymes)
+- Tests: 9/9 backend + 15/15 frontend (iteration 94)
 
 ## Mascotte "Strate" (Mar 2026)
 - TTS francais, conseils depuis DB, tracking deduplique, conversion tracking
-- Tests: 16/16 backend + 100% frontend (iteration 91)
+- Tests: 16/16 backend (iteration 91)
 
 ## Admin Conseils Strate (Mar 2026)
 - CRUD complet + sous-onglets Gestion/Statistiques
-- Analytics: Top 10, taux de clic, courbe vues/clics/jour, filtres
-- Tests: 16/16 backend + 100% frontend (iteration 91)
+- Analytics: Top 10, courbe vues/clics, filtres
 
 ## Contenu IP & PGPF (Mar 2026)
 - Integre dans: Ressources, Calculatrice IPP, Recherche, StrategiIA
