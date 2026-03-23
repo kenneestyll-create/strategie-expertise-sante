@@ -2,7 +2,7 @@
 
 /* Hero section gradient overlay for images */
 .hero-overlay {
-    background: linear-gradient(to bottom, rgba(249, 247, 242, 0.55), rgba(249, 247, 242, 0.92));
+    background: linear-gradient(to bottom, rgba(249, 247, 242, 0.25), rgba(249, 247, 242, 0.88));
 }
 
 /* Smooth page transitions */

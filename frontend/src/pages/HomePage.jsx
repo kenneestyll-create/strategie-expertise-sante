@@ -183,9 +183,9 @@ export const HomePage = () => {
             data-testid="hero-title"
           >
             Vous n'êtes plus seul face à votre{' '}
-            <span className="text-[#C9A84C]">accident du travail</span>{' '}
+            <span className="text-[#6b1c2a]">accident du travail</span>{' '}
             ou votre{' '}
-            <span className="text-[#C9A84C]">maladie professionnelle</span>
+            <span className="text-[#6b1c2a]">maladie professionnelle</span>
           </h1>
 
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-2xl mb-5" data-testid="hero-subtitle">
@@ -195,7 +195,7 @@ export const HomePage = () => {
           </p>
 
           <p
-            className="text-sm text-[#C9A84C]/70 italic max-w-2xl mb-8"
+            className="text-sm text-muted-foreground/70 italic max-w-2xl mb-8"
             style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
             data-testid="hero-tagline"
           >
