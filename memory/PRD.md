@@ -8,21 +8,25 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 - **Backend:** FastAPI + MongoDB
 - **Theme:** Warm neutral noir/or (Manrope + Playfair Display)
 
-## Chatbot IA Expert (Mar 2026) — CORRIGE
-- Fichier: `/app/backend/utils/chatbot.py`
-- **FAQ restreinte** : uniquement tarifs et contact (questions generales simples)
-- **Detection signaux medicaux** : liste MEDICAL_SIGNALS bypass la FAQ (coccyg, hernie, canal carpien, burn out, faute inexcusable, etc.)
-- **Exclusions FAQ** : must_not_contain empeche la FAQ de capturer des questions specifiques (ex: "combien toucher IPP" ne matche plus "tarifs")
-- **Prompt Claude enrichi** : tous les tableaux MP (4, 6, 16bis, 25, 30, 42, 47, 57A-E, 66, 69, 79, 97, 98), procedure hors tableau CRRMP, IP/PGPF, persona expert
-- **Orientation systematique** vers StrategiIA, Dossier Express, Calculatrice IPP en fin de reponse
+## Mascotte Strate — Redesign (Mar 2026)
+- Fichier: `/app/frontend/src/components/MascotteStrate.jsx`
+- **Suppression** grande fenetre auto-ouverte (plus d'intrusion)
+- **Bulle pulsante** "Conseil du jour" avec animation CSS pulse douce
+- **Badge date rouge** "23 mars" sur la mascotte (incite a revenir)
+- **Clic** → fenetre compacte 256px, header "CONSEIL DU [date]", fond #141414
+- **Fermeture** X discret, animation slide-in
+- **Actions** : Ecouter TTS + lien action dore
+- Tracking inchange (views, clicks, conversions)
+- Style sobre noir/or coherent avec la charte
+
+## Chatbot IA Expert (Mar 2026)
+- FAQ restreinte (tarifs, contact uniquement)
+- Signaux medicaux → Claude avec tableaux MP
 - Tests: 11/11 backend (iteration 95)
 
 ## Recherche IA (Mar 2026)
-- Barre de recherche → point d'entree IA, suggestions Algolia + envoi au chatbot
+- Barre → IA chatbot + suggestions Algolia
 - Tests: 15/15 frontend (iteration 94)
-
-## Mascotte "Strate" (Mar 2026)
-- TTS francais, conseils DB, tracking, conversion
 
 ## Admin Conseils Strate (Mar 2026)
 - CRUD + Analytics (Top 10, courbes, filtres)
