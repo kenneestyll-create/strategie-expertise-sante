@@ -7,6 +7,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ChatBot } from "@/components/ChatBot";
 import { AlerteUrgente } from "@/components/AlerteUrgente";
+import { MascotteStrate } from "@/components/MascotteStrate";
 import { StrategiIAFab } from "@/components/StrategiIAFab";
 import { AuthProvider } from "@/context/AuthContext";
 import { ForumAuthProvider } from "@/context/ForumAuthContext";
@@ -178,6 +179,7 @@ function App() {
               <ChatBot />
               <StrategiIAFab />
               <AlerteUrgente />
+              <MascotteStrate />
               <Toaster position="top-right" richColors />
             </BrowserRouter>
           </ForumAuthProvider>
