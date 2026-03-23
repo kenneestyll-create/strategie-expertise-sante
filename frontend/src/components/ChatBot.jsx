@@ -27,12 +27,35 @@ export const ChatBot = () => {
   const [questionsUsed, setQuestionsUsed] = useState(0);
   const [quotaExceeded, setQuotaExceeded] = useState(false);
   const messagesEndRef = useRef(null);
+  const pendingQuestionRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => { scrollToBottom(); }, [messages]);
+
+  // Listen for AI questions from GlobalSearch
+  useEffect(() => {
+    const handler = (e) => {
+      const question = e.detail?.question;
+      if (!question) return;
+      pendingQuestionRef.current = question;
+      setIsOpen(true);
+    };
+    window.addEventListener('strate-ask-ai', handler);
+    return () => window.removeEventListener('strate-ask-ai', handler);
+  }, []);
+
+  // Auto-send pending question when chatbot opens
+  useEffect(() => {
+    if (isOpen && pendingQuestionRef.current && !loading && !quotaExceeded) {
+      const q = pendingQuestionRef.current;
+      pendingQuestionRef.current = null;
+      // Small delay so the chat window renders first
+      setTimeout(() => handleSend(q), 300);
+    }
+  }, [isOpen]);
 
   const remaining = Math.max(0, CHAT_LIMIT - questionsUsed);
 
