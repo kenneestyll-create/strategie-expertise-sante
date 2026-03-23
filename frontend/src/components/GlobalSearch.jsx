@@ -78,15 +78,12 @@ export const GlobalSearch = () => {
       {/* Trigger button */}
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-muted/50 hover:bg-muted text-muted-foreground text-sm transition-colors"
+        className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#C9A84C]/30 bg-[#C9A84C]/5 hover:bg-[#C9A84C]/10 text-muted-foreground text-sm transition-colors"
         data-testid="global-search-trigger"
-        aria-label="Poser une question"
+        aria-label="Rechercher"
       >
-        <Sparkles className="w-3.5 h-3.5" />
-        <span className="hidden xl:inline">Posez votre question...</span>
-        <kbd className="hidden xl:inline-flex h-5 items-center gap-0.5 rounded border border-border bg-background px-1.5 text-[10px] font-mono text-muted-foreground">
-          Ctrl K
-        </kbd>
+        <Sparkles className="w-4 h-4 text-[#C9A84C]" />
+        <span className="hidden sm:inline">Votre question...</span>
       </button>
 
       {/* Overlay */}
@@ -103,7 +100,7 @@ export const GlobalSearch = () => {
                   ref={inputRef}
                   value={query}
                   onChange={e => setQuery(e.target.value)}
-                  placeholder="Posez votre question a notre assistant IA..."
+                  placeholder="Votre question..."
                   className="flex-1 bg-transparent outline-none text-base placeholder:text-muted-foreground"
                   data-testid="global-search-input"
                 />

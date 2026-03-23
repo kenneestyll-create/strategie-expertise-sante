@@ -36,7 +36,7 @@ export const LogoFull = ({ className = '', textColor = '#1a1a1a' }) => (
     {/* Text */}
     <text x="48" y="23" fontFamily="'Playfair Display', 'Cinzel', Georgia, serif" fontSize="16" fontWeight="700" fill={textColor} letterSpacing="0.3">Stratégie &amp; Expertise Santé</text>
     <line x1="48" y1="33" x2="68" y2="33" stroke="url(#logoGold)" strokeWidth="0.6" strokeLinecap="round"/>
-    <text x="73" y="37" fontFamily="'Playfair Display', 'Cinzel', Georgia, serif" fontSize="6.5" fill="#C9A84C" letterSpacing="4.2" fontWeight="400">PIONNIER EN FRANCE</text>
-    <line x1="224" y1="33" x2="244" y2="33" stroke="url(#logoGold)" strokeWidth="0.6" strokeLinecap="round"/>
+    <text x="73" y="38" fontFamily="'Playfair Display', 'Cinzel', Georgia, serif" fontSize="8" fill="#C9A84C" letterSpacing="3.5" fontWeight="600">PIONNIER EN FRANCE</text>
+    <line x1="237" y1="33" x2="260" y2="33" stroke="url(#logoGold)" strokeWidth="0.6" strokeLinecap="round"/>
   </svg>
 );
