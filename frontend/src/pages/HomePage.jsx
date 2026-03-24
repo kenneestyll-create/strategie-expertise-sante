@@ -208,7 +208,7 @@ export const HomePage = () => {
             L'intelligence artificielle comme outil de précision.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-8">
             <Link to="/contact">
               <Button
                 size="lg"
@@ -230,14 +230,13 @@ export const HomePage = () => {
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
+            {visitorCount > 0 && (
+              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Eye className="w-3.5 h-3.5 text-accent" />
+                <strong className="text-foreground">{visitorCount.toLocaleString('fr-FR')}</strong> visiteurs
+              </span>
+            )}
           </div>
-
-          {visitorCount > 0 && (
-            <div className="inline-flex items-center gap-2 text-sm text-muted-foreground bg-background/80 backdrop-blur-sm px-4 py-2 rounded-full">
-              <Eye className="w-4 h-4 text-accent" />
-              <span><strong className="text-foreground">{visitorCount.toLocaleString('fr-FR')}</strong> visiteurs nous ont fait confiance</span>
-            </div>
-          )}
         </div>
       </section>
 
