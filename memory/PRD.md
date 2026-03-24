@@ -19,7 +19,10 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 Hero premium sombre avec overlay, titre "accident du travail ou maladie professionnelle" en doré. Risques, Méthode S.E.S, Solutions, Confiance, Chiffres, Fondateur, Médecin Conseil, Témoignages, CTA
 
 ## Header — Refonte Premium (Mar 2026) — DONE
-Fond sombre #0a0a08, navigation simplifiée (À propos, Expertises, Outils, Plus), CTA "Réserver un appel" doré visible à droite, "Urgence 97€" rouge, glassmorphism au scroll, menu mobile catégorisé
+Fond sombre #0a0a08, navigation ultra-simplifiée (À propos, Accompagnements, StratégiIA, Tarifs), CTA unique "Réserver un appel" doré à droite, glassmorphism au scroll. Urgence 97€ déplacé en bouton flottant bas-gauche.
+
+## Chatbot Mascotte Straté (Mar 2026) — DONE
+Bouton robot SVG noir/or, bulle texte "StratégiIA — Je vous aide à analyser votre situation", animation pulse, apparition après 2.5s, indicateur online vert.
 
 ## Page Medecin Conseil (Mar 2026) — DONE
 Page stratégique SEO/conversion avec tracking clics/vues
