@@ -17,7 +17,6 @@ export const Header = () => {
   const location = useLocation();
 
   const mainNavigation = [
-    { name: 'Accueil', href: '/' },
     { name: 'À propos', href: '/a-propos' },
   ];
 
@@ -32,7 +31,6 @@ export const Header = () => {
 
   const servicesItems = [
     { name: 'Tarifs', href: '/tarifs' },
-    { name: 'Dossier Express IA', href: '/dossier-express' },
     { name: 'Simulateur', href: '/simulateur' },
     { name: 'Calculatrice IPP', href: '/calculatrice-ipp' },
     { name: 'Calculatrice AAH', href: '/calculatrice-aah' },
@@ -80,10 +78,10 @@ export const Header = () => {
           {/* Logo */}
           <Link 
             to="/" 
-            className="logo-shimmer flex items-center gap-0 text-foreground hover:opacity-90 transition-opacity"
+            className="logo-shimmer flex items-center gap-0 text-foreground hover:opacity-90 transition-opacity flex-shrink-0 mr-4"
             data-testid="header-logo"
           >
-            <LogoFull className="h-12 w-auto flex-shrink-0" />
+            <LogoFull className="h-12 w-auto" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -171,24 +169,24 @@ export const Header = () => {
           <StrategiIA />
 
           {/* CTA Buttons - Desktop */}
-          <div className="hidden lg:flex items-center gap-1.5">
+          <div className="hidden lg:flex items-center gap-1">
             <GlobalSearch />
             <Link to="/dossier-express">
               <Button
                 variant="ghost"
                 size="sm"
-                className="rounded-full px-3 gap-1.5 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 font-semibold"
+                className="rounded-full px-2.5 gap-1 text-[11px] text-red-600 hover:text-red-700 hover:bg-red-50 font-semibold whitespace-nowrap"
                 data-testid="header-dossier-express-btn"
               >
-                <Zap className="w-3.5 h-3.5" />
-                Dossier Express
+                <Zap className="w-3 h-3" />
+                Urgence
               </Button>
             </Link>
             <Link to="/espace-client">
               <Button 
                 variant="ghost"
                 size="sm"
-                className="rounded-full px-2.5 text-xs"
+                className="rounded-full px-2.5 text-[11px] whitespace-nowrap"
                 data-testid="header-client-button"
               >
                 Espace client
@@ -197,7 +195,7 @@ export const Header = () => {
             <Link to="/agenda">
               <Button 
                 size="sm"
-                className="btn-scale rounded-full px-4 gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground whitespace-nowrap text-xs"
+                className="btn-scale rounded-full px-4 gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground whitespace-nowrap text-[11px]"
                 data-testid="header-cta-button"
               >
                 Réserver un appel
