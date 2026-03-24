@@ -54,16 +54,16 @@ export const AlerteUrgente = () => {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 left-6 flex items-center gap-2 px-5 py-3 rounded-full shadow-lg text-white font-semibold text-sm transition-all hover:scale-105 animate-pulse hover:animate-none"
+          className="fixed bottom-6 left-6 flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg text-white font-semibold text-xs transition-all hover:scale-105"
           style={{
-            zIndex: 'var(--z-chatbot)',
+            zIndex: 39,
             background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
           }}
           data-testid="alerte-urgente-button"
           aria-label="Question urgente"
         >
-          <Zap className="w-5 h-5" />
-          <span className="hidden sm:inline">Question urgente ? Réponse sous 2h</span>
+          <Zap className="w-4 h-4" />
+          <span className="hidden sm:inline">Réponse sous 2h</span>
         </button>
       )}
 

@@ -168,77 +168,94 @@ export const HomePage = () => {
       />
 
       {/* ══════════════════════════════════════════════════════════
-          HERO — Chaleur + Empathie + Réassurance
+          HERO — Premium sombre, lisible, haut de gamme
       ══════════════════════════════════════════════════════════ */}
       <section className="relative min-h-screen flex items-center pt-20" data-testid="hero-section">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url('https://images.unsplash.com/photo-1598016677484-ad34c3fd766e?auto=format&fit=crop&w=1920&q=60')" }}
         />
-        <div className="absolute inset-0 hero-overlay" />
+        <div className="absolute inset-0 bg-black/55" />
 
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
-          <div className="inline-flex items-center gap-2.5 bg-foreground text-primary-foreground px-5 py-2.5 rounded-full mb-8 shadow-lg" data-testid="pioneer-badge">
-            <Sparkles className="w-4 h-4 text-accent" />
-            <span className="text-xs font-bold uppercase tracking-wider">Service pionnier en France</span>
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 text-center">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/15 text-white/90 px-4 py-2 rounded-full mb-8" data-testid="pioneer-badge">
+            <Sparkles className="w-3.5 h-3.5 text-[#C9A84C]" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.15em]">Service pionnier en France</span>
           </div>
 
+          {/* Titre */}
           <h1
-            className="text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground leading-[1.2] mb-6 max-w-3xl"
+            className="text-2xl sm:text-3xl md:text-4xl font-semibold text-white leading-[1.2] mb-4 max-w-3xl mx-auto"
             data-testid="hero-title"
           >
-            Vous n'êtes plus seul face à votre{' '}
-            <span className="text-[#6b1c2a]">accident du travail</span>{' '}
-            ou votre{' '}
-            <span className="text-[#6b1c2a]">maladie professionnelle</span>
+            Vous n'êtes plus seul face à votre accident du travail
           </h1>
 
-          <p className="text-sm sm:text-base text-foreground leading-relaxed max-w-2xl mb-5" data-testid="hero-subtitle">
-            Un accompagnement stratégique pour obtenir la reconnaissance de votre situation,
-            éviter les erreurs qui peuvent vous coûter des milliers d'euros
-            et maximiser vos droits à indemnisation.
+          {/* Sous-titre */}
+          <p className="text-base sm:text-lg text-white/80 leading-relaxed max-w-2xl mx-auto mb-8" data-testid="hero-subtitle">
+            Maximisez vos droits et évitez des pertes de plusieurs milliers d'euros
           </p>
 
-          <p
-            className="text-sm text-foreground/90 italic max-w-2xl mb-8"
-            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-            data-testid="hero-tagline"
-          >
-            L'expertise humaine au c&oelig;ur de chaque dossier.
-            <br />
-            L'intelligence artificielle comme outil de précision.
-          </p>
+          {/* 3 points clés */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 mb-10">
+            <div className="flex items-center gap-2 text-white/70 text-sm">
+              <CheckCircle className="w-4 h-4 text-[#C9A84C]" />
+              <span>Accompagnement stratégique personnalisé</span>
+            </div>
+            <div className="flex items-center gap-2 text-white/70 text-sm">
+              <CheckCircle className="w-4 h-4 text-[#C9A84C]" />
+              <span>Expertise AT/MP et régimes spéciaux</span>
+            </div>
+            <div className="flex items-center gap-2 text-white/70 text-sm">
+              <CheckCircle className="w-4 h-4 text-[#C9A84C]" />
+              <span>Analyse assistée par intelligence artificielle</span>
+            </div>
+          </div>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-8">
+          {/* Boutons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
             <Link to="/contact">
               <Button
                 size="lg"
-                className="rounded-full px-8 gap-2 bg-foreground hover:bg-foreground/90 text-primary-foreground"
+                className="rounded-full px-8 gap-2 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-semibold"
                 data-testid="hero-cta-primary"
               >
                 <Phone className="w-4 h-4" />
-                Nous contacter
+                Être accompagné maintenant
               </Button>
             </Link>
             <Link to="/simulateur">
               <Button
                 variant="outline"
                 size="lg"
-                className="rounded-full px-8 gap-2"
+                className="rounded-full px-8 gap-2 border-white/25 text-white hover:bg-white/10"
                 data-testid="hero-cta-secondary"
               >
                 Analyser ma situation gratuitement
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
-            {visitorCount > 0 && (
-              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Eye className="w-3.5 h-3.5 text-accent" />
-                <strong className="text-foreground">{visitorCount.toLocaleString('fr-FR')}</strong> visiteurs
-              </span>
-            )}
           </div>
+
+          {/* Compteur visiteurs */}
+          {visitorCount > 0 && (
+            <div className="inline-flex items-center gap-2 text-xs text-white/40">
+              <Eye className="w-3.5 h-3.5" />
+              <span><strong className="text-white/60">{visitorCount.toLocaleString('fr-FR')}</strong> visiteurs nous ont fait confiance</span>
+            </div>
+          )}
         </div>
+
+        {/* Badge flottant urgence — bas gauche */}
+        <Link
+          to="/dossier-express"
+          className="absolute bottom-6 left-6 flex items-center gap-2 bg-red-600 text-white px-4 py-2.5 rounded-full shadow-lg hover:bg-red-700 transition-all hover:scale-105 z-10"
+          data-testid="hero-urgence-badge"
+        >
+          <Zap className="w-4 h-4 text-yellow-300" />
+          <span className="text-xs font-bold">Réponse sous 2h</span>
+        </Link>
       </section>
 
       {/* ══════════════════════════════════════════════════════════
