@@ -30,20 +30,54 @@ const StrateSVG = ({ size = 52 }) => (
   </svg>
 );
 
-/* ── TTS FR ── */
+/* ── TTS FR (robuste mobile + desktop) ── */
 function speakFrench(text, onStart, onEnd, onError) {
   if (typeof speechSynthesis === 'undefined') return;
   speechSynthesis.cancel();
+
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'fr-FR'; u.rate = 0.9; u.pitch = 1;
-  u.onstart = onStart; u.onend = onEnd; u.onerror = onError;
-  const go = () => {
+  u.lang = 'fr-FR';
+  u.rate = 0.9;
+  u.pitch = 1;
+  u.onstart = onStart;
+  u.onend = onEnd;
+  u.onerror = onError;
+
+  const findFrenchVoice = () => {
     const v = speechSynthesis.getVoices();
-    const fr = v.find(x => x.lang === 'fr-FR') || v.find(x => x.lang.startsWith('fr'));
+    return v.find(x => x.lang === 'fr-FR')
+      || v.find(x => x.lang === 'fr_FR')
+      || v.find(x => x.lang.startsWith('fr'));
+  };
+
+  const speak = () => {
+    const fr = findFrenchVoice();
     if (fr) u.voice = fr;
     speechSynthesis.speak(u);
   };
-  speechSynthesis.getVoices().length > 0 ? go() : (speechSynthesis.onvoiceschanged = () => { go(); speechSynthesis.onvoiceschanged = null; });
+
+  // Voices déjà chargées → parler immédiatement
+  if (speechSynthesis.getVoices().length > 0) {
+    speak();
+    return;
+  }
+
+  // Écouter onvoiceschanged
+  speechSynthesis.onvoiceschanged = () => {
+    speechSynthesis.onvoiceschanged = null;
+    speak();
+  };
+
+  // Fallback mobile : retry toutes les 100ms pendant 2s si onvoiceschanged ne se déclenche pas
+  let attempts = 0;
+  const retry = setInterval(() => {
+    attempts++;
+    if (speechSynthesis.getVoices().length > 0 || attempts > 20) {
+      clearInterval(retry);
+      speechSynthesis.onvoiceschanged = null;
+      speak();
+    }
+  }, 100);
 }
 
 /* ── Tracking ── */
