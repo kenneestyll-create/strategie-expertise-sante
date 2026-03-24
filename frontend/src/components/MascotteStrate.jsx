@@ -64,7 +64,125 @@ export function trackStrateConversion(action) {
   fetch(`${API}/conseils/conversion`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conseil_id: id, action }) }).catch(() => {});
 }
 
-/* ── COMPOSANT ── */
+/* ═══════════════════════════════════════════
+   WIDGET DESKTOP — Flottant en bas à droite
+   ═══════════════════════════════════════════ */
+const DesktopWidget = ({ conseil, isOpen, setIsOpen, isSpeaking, speak, close }) => (
+  <div className="hidden md:block fixed" style={{ bottom: '7.5rem', right: '1.5rem', zIndex: 40 }} data-testid="mascotte-strate-desktop">
+    {/* Fenêtre conseil */}
+    {isOpen && (
+      <div
+        className="absolute bottom-16 right-0 mb-2 w-64 rounded-xl shadow-2xl border border-border overflow-hidden bg-background"
+        style={{ animation: 'strateIn .25s ease-out' }}
+        data-testid="strate-bubble"
+      >
+        <div className="flex items-center justify-between px-3 py-2 border-b border-border">
+          <span className="text-[#C9A84C] text-[10px] font-semibold tracking-widest uppercase">Conseil du {getDateLabel()}</span>
+          <button onClick={close} className="text-muted-foreground hover:text-foreground transition-colors" data-testid="strate-close" aria-label="Fermer">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+        <div className="px-3 py-2.5">
+          <p className="text-foreground text-[13px] leading-relaxed font-medium" data-testid="strate-conseil-text">{conseil.text}</p>
+        </div>
+        <div className="px-3 pb-2.5 flex items-center gap-1.5">
+          <button
+            onClick={speak}
+            disabled={isSpeaking}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${isSpeaking ? 'bg-accent/20 text-accent animate-pulse' : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'}`}
+            data-testid="strate-speak-btn"
+          >
+            <Volume2 className="w-3 h-3" />
+            {isSpeaking ? 'Lecture...' : 'Écouter'}
+          </button>
+          <Link
+            to={conseil.link}
+            onClick={() => { trackClick(conseil.id); close(); }}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-foreground text-primary-foreground hover:bg-foreground/90 transition-all"
+            data-testid="strate-action-btn"
+          >
+            {conseil.label} <ArrowRight className="w-2.5 h-2.5" />
+          </Link>
+        </div>
+      </div>
+    )}
+
+    {/* Mascotte + bulle pulsante */}
+    <div className="flex items-end gap-2">
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="mb-1 px-3 py-1.5 rounded-full text-[11px] font-semibold border border-foreground/20 hover:border-foreground/40 transition-all cursor-pointer bg-background shadow-sm"
+          style={{ color: '#000000', animation: 'stratePulse 2.5s ease-in-out infinite' }}
+          data-testid="strate-hint-bubble"
+        >
+          Conseil du jour
+        </button>
+      )}
+      <button
+        onClick={() => setIsOpen(o => !o)}
+        className="group relative w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95 border border-[#C9A84C]/30 hover:border-[#C9A84C]/60"
+        style={{ background: '#1a1a1a' }}
+        data-testid="strate-mascot-btn"
+        aria-label="Straté - Conseil du jour"
+      >
+        <StrateSVG size={32} />
+        {!isOpen && (
+          <span className="absolute -top-2.5 -left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white whitespace-nowrap" style={{ background: '#c0392b' }} data-testid="strate-date-badge">
+            {getDateLabel()}
+          </span>
+        )}
+      </button>
+    </div>
+  </div>
+);
+
+/* ═══════════════════════════════════════════
+   WIDGET MOBILE — Intégré dans le flux
+   ═══════════════════════════════════════════ */
+const MobileWidget = ({ conseil, isSpeaking, speak }) => (
+  <div className="md:hidden" data-testid="mascotte-strate-mobile">
+    <div className="flex items-start gap-3 bg-card border border-border rounded-xl p-3.5 shadow-sm">
+      {/* Avatar mascotte */}
+      <div className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center border border-[#C9A84C]/30" style={{ background: '#1a1a1a' }}>
+        <StrateSVG size={26} />
+      </div>
+
+      {/* Contenu */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className="text-[10px] font-semibold text-[#C9A84C] uppercase tracking-widest">Conseil du {getDateLabel()}</span>
+        </div>
+        <p className="text-foreground text-[13px] leading-relaxed font-medium mb-2.5" data-testid="strate-mobile-text">
+          {conseil.text}
+        </p>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <button
+            onClick={speak}
+            disabled={isSpeaking}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${isSpeaking ? 'bg-accent/20 text-accent animate-pulse' : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'}`}
+            data-testid="strate-mobile-speak"
+          >
+            <Volume2 className="w-3 h-3" />
+            {isSpeaking ? 'Lecture...' : 'Écouter'}
+          </button>
+          <Link
+            to={conseil.link}
+            onClick={() => trackClick(conseil.id)}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-foreground text-primary-foreground hover:bg-foreground/90 transition-all"
+            data-testid="strate-mobile-action"
+          >
+            {conseil.label} <ArrowRight className="w-2.5 h-2.5" />
+          </Link>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+/* ═══════════════════════════════════════════
+   COMPOSANT PRINCIPAL
+   ═══════════════════════════════════════════ */
 export const MascotteStrate = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -94,87 +212,8 @@ export const MascotteStrate = () => {
   if (!conseil || isAdmin) return null;
 
   return (
-    <div className="fixed z-40" style={{ bottom: '7.5rem', right: '1.5rem' }} data-testid="mascotte-strate">
-
-      {/* ── Fenetre compacte conseil ── */}
-      {isOpen && (
-        <div
-          className="absolute bottom-16 right-0 mb-2 w-64 rounded-xl shadow-2xl border border-border overflow-hidden bg-background"
-          style={{ animation: 'strateIn .25s ease-out' }}
-          data-testid="strate-bubble"
-        >
-          {/* Header compact */}
-          <div className="flex items-center justify-between px-3 py-2 border-b border-border">
-            <span className="text-[#C9A84C] text-[10px] font-semibold tracking-widest uppercase">Conseil du {getDateLabel()}</span>
-            <button onClick={close} className="text-muted-foreground hover:text-foreground transition-colors" data-testid="strate-close" aria-label="Fermer">
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {/* Conseil */}
-          <div className="px-3 py-2.5">
-            <p className="text-foreground text-[13px] leading-relaxed font-medium" data-testid="strate-conseil-text">{conseil.text}</p>
-          </div>
-
-          {/* Actions */}
-          <div className="px-3 pb-2.5 flex items-center gap-1.5">
-            <button
-              onClick={speak}
-              disabled={isSpeaking}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${
-                isSpeaking ? 'bg-accent/20 text-accent animate-pulse' : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
-              }`}
-              data-testid="strate-speak-btn"
-            >
-              <Volume2 className="w-3 h-3" />
-              {isSpeaking ? 'Lecture...' : 'Ecouter'}
-            </button>
-            <Link
-              to={conseil.link}
-              onClick={() => { trackClick(conseil.id); close(); }}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-foreground text-primary-foreground hover:bg-foreground/90 transition-all"
-              data-testid="strate-action-btn"
-            >
-              {conseil.label} <ArrowRight className="w-2.5 h-2.5" />
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {/* ── Mascotte + bulle pulsante ── */}
-      <div className="flex items-end gap-2">
-
-        {/* Bulle "Conseil du jour" pulsante */}
-        {!isOpen && (
-          <button
-            onClick={() => setIsOpen(true)}
-            className="mb-1 px-3 py-1.5 rounded-full text-[11px] font-semibold border border-foreground/20 hover:border-foreground/40 transition-all cursor-pointer bg-background shadow-sm"
-            style={{ color: '#000000', animation: 'stratePulse 2.5s ease-in-out infinite' }}
-            data-testid="strate-hint-bubble"
-          >
-            Conseil du jour
-          </button>
-        )}
-
-        {/* Mascotte bouton */}
-        <button
-          onClick={() => setIsOpen(o => !o)}
-          className="group relative w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95 border border-[#C9A84C]/30 hover:border-[#C9A84C]/60"
-          style={{ background: '#1a1a1a' }}
-          data-testid="strate-mascot-btn"
-          aria-label="Strate - Conseil du jour"
-        >
-          <StrateSVG size={32} />
-
-          {/* Badge date rouge */}
-          {!isOpen && (
-            <span className="absolute -top-2.5 -left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white whitespace-nowrap" style={{ background: '#c0392b' }} data-testid="strate-date-badge">
-              {getDateLabel()}
-            </span>
-          )}
-        </button>
-      </div>
-
+    <>
+      <DesktopWidget conseil={conseil} isOpen={isOpen} setIsOpen={setIsOpen} isSpeaking={isSpeaking} speak={speak} close={close} />
       <style>{`
         @keyframes stratePulse {
           0%, 100% { opacity: .75; transform: scale(1); }
@@ -185,6 +224,33 @@ export const MascotteStrate = () => {
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
       `}</style>
-    </div>
+    </>
   );
+};
+
+/* Export mobile widget séparément pour l'intégrer dans le flux de la page */
+export const MascotteMobileWidget = () => {
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [conseil, setConseil] = useState(null);
+  const location = useLocation();
+  const isAdmin = location.pathname.startsWith('/admin');
+
+  useEffect(() => {
+    if (isAdmin) return;
+    fetch(`${API}/conseils/today`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(data => {
+        setConseil({ id: data.id, text: data.text, cat: data.category, link: data.link || '/ressources', label: data.link_label || 'En savoir plus' });
+      })
+      .catch(() => setConseil({ id: FALLBACK.id, text: FALLBACK.text, cat: FALLBACK.category, link: FALLBACK.link, label: FALLBACK.link_label }));
+  }, [isAdmin]);
+
+  const speak = useCallback(() => {
+    if (!conseil) return;
+    speakFrench(conseil.text, () => setIsSpeaking(true), () => setIsSpeaking(false), () => setIsSpeaking(false));
+  }, [conseil]);
+
+  if (!conseil || isAdmin) return null;
+
+  return <MobileWidget conseil={conseil} isSpeaking={isSpeaking} speak={speak} />;
 };

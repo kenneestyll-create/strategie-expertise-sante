@@ -34,6 +34,7 @@ import {
   TrendingUp,
   Brain
 } from 'lucide-react';
+import { MascotteMobileWidget } from '@/components/MascotteStrate';
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -285,6 +286,11 @@ export const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* ── Conseil du jour — Mobile (dans le flux) ── */}
+      <div className="md:hidden px-4 py-4 bg-background">
+        <MascotteMobileWidget />
+      </div>
 
       {/* ══════════════════════════════════════════════════════════
           SECTION RISQUES
