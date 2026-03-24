@@ -530,7 +530,7 @@ export const StrategiIA = () => {
                       </Link>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Premier échange toujours gratuit et sans engagement.
+                      Première consultation toujours gratuite (10 min) et sans engagement.
                     </p>
                   </div>
                 )}

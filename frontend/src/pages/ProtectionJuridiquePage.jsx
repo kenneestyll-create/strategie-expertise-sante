@@ -382,7 +382,7 @@ export const ProtectionJuridiquePage = () => {
           </Card>
 
           <p className="text-center text-primary-foreground/50 text-sm mt-6">
-            Premier échange téléphonique gratuit et sans engagement
+            Première consultation téléphonique gratuite — 10 minutes pour évaluer votre situation
           </p>
         </div>
       </section>

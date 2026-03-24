@@ -151,7 +151,7 @@ export const TarifsPage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Tarifs et prestations" description="Découvrez nos tarifs : pré-analyse gratuite assistée par StratégiIA, Dossier Express IA 97€, accompagnement personnalisé 150-500€. Premier échange gratuit." path="/tarifs" />
+      <SEO title="Tarifs et prestations" description="Découvrez nos tarifs : pré-analyse gratuite assistée par StratégiIA, Dossier Express IA 97€, accompagnement personnalisé 150-500€. Première consultation gratuite — 10 minutes." path="/tarifs" />
       {/* Hero */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
@@ -461,10 +461,10 @@ export const TarifsPage = () => {
       {/* CTA */}
       <section className="section-padding">
         <div className="max-w-3xl mx-auto text-center reveal" ref={ctaRef}>
-          <h3 className="text-2xl font-semibold mb-3">Premier échange gratuit</h3>
+          <h3 className="text-2xl font-semibold mb-3">Première consultation gratuite</h3>
           <p className="text-muted-foreground mb-6 text-sm">
             Chaque situation est unique. Avant tout engagement, je vous propose un premier
-            échange téléphonique gratuit de 20 minutes.
+            échange téléphonique gratuit de 10 minutes.
           </p>
           <Link to="/contact">
             <Button size="lg" className="rounded-full px-8 gap-2" data-testid="tarifs-cta">

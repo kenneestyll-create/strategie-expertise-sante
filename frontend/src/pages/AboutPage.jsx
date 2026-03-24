@@ -344,7 +344,7 @@ export const AboutPage = () => {
             Prêt à être accompagné ?
           </h2>
           <p className="text-primary-foreground/70 mb-8 max-w-2xl mx-auto">
-            Contactez-moi pour discuter de votre situation. Le premier échange est gratuit et sans engagement.
+            Contactez-moi pour discuter de votre situation. La première consultation téléphonique est gratuite — 10 minutes pour évaluer votre situation.
           </p>
           <Link to="/contact">
             <Button 

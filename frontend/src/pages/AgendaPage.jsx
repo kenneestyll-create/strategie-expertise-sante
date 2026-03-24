@@ -139,7 +139,7 @@ export const AgendaPage = () => {
               Prendre rendez-vous
             </h1>
             <p className="text-lg text-muted-foreground">
-              Réservez un créneau pour un premier échange gratuit par téléphone ou en visioconférence. 
+              Réservez un créneau pour une première consultation téléphonique gratuite — 10 minutes pour évaluer votre situation.
               Choisissez la date et l'heure qui vous conviennent.
             </p>
           </div>
@@ -287,7 +287,7 @@ export const AgendaPage = () => {
                     <Button type="submit" className="w-full rounded-lg gap-2" disabled={submitting || !selectedDate || !selectedSlot} data-testid="confirm-booking-button">
                       {submitting ? <><Loader2 className="w-4 h-4 animate-spin" />Confirmation...</> : <><CalendarIcon className="w-4 h-4" />Confirmer le rendez-vous</>}
                     </Button>
-                    <p className="text-xs text-muted-foreground text-center">Premier échange gratuit et sans engagement.</p>
+                    <p className="text-xs text-muted-foreground text-center">Première consultation gratuite — 10 minutes, sans engagement.</p>
                   </form>
                 </CardContent>
               </Card>

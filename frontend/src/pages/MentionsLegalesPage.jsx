@@ -206,6 +206,7 @@ export const MentionsLegalesPage = () => {
                   </p>
                   <p>
                     Le premier échange téléphonique est gratuit et sans engagement.
+                    Première consultation téléphonique gratuite — 10 minutes pour évaluer votre situation.
                   </p>
                 </CardContent>
               </Card>

@@ -184,8 +184,8 @@ const getResults = (answers) => {
     recommendations.push("La préparation est cruciale pour faire valoir vos droits. Ne sous-estimez pas cette étape.");
   } else {
     profile = 'Situation spécifique';
-    recommendations.push("Votre situation mérite une analyse personnalisée lors d'un premier échange gratuit.");
-    demarches.push("Prendre contact pour un premier échange gratuit et sans engagement");
+    recommendations.push("Votre situation mérite une analyse personnalisée lors d'une première consultation gratuite de 10 minutes.");
+    demarches.push("Prendre contact pour une première consultation gratuite de 10 minutes, sans engagement");
   }
 
   if (accompagnement === 'seul') {
@@ -196,7 +196,7 @@ const getResults = (answers) => {
   }
 
   if (besoin === 'comprendre') {
-    recommendations.push("Un premier échange gratuit vous permettra de comprendre vos droits et les démarches à entreprendre.");
+    recommendations.push("Une première consultation gratuite de 10 minutes vous permettra de comprendre vos droits et les démarches à entreprendre.");
   }
 
   if (recommendations.length === 0) {
@@ -296,7 +296,7 @@ const generatePDF = (results, email) => {
     doc.text(svcText, margin + 6, y + 19);
     doc.setFontSize(8);
     doc.setTextColor(...muted);
-    doc.text("Premier échange gratuit et sans engagement", margin + 6, y + 26);
+    doc.text("Première consultation gratuite — 10 min, sans engagement", margin + 6, y + 26);
     y += 38;
   }
 

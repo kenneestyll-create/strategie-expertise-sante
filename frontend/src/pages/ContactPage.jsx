@@ -90,7 +90,7 @@ export const ContactPage = () => {
   if (submitted) {
     return (
       <main className="page-transition pt-20 min-h-screen flex items-center">
-      <SEO title="Contact" description="Contactez Stratégie & Expertise Santé pour un premier échange gratuit sur votre dossier maladie professionnelle, AT/MP ou MDPH." path="/contact" />
+      <SEO title="Contact" description="Contactez Stratégie & Expertise Santé pour une première consultation gratuite de 10 minutes sur votre dossier maladie professionnelle, AT/MP ou MDPH." path="/contact" />
         <div className="max-w-2xl mx-auto px-4 text-center py-20">
           <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-accent" strokeWidth={1.5} />
@@ -139,7 +139,7 @@ export const ContactPage = () => {
               <div>
                 <h2 className="text-2xl font-semibold mb-4">Informations</h2>
                 <p className="text-muted-foreground mb-8">
-                  Le premier échange est gratuit et sans engagement. N'hésitez pas à me contacter 
+                  La première consultation est gratuite (10 minutes) et sans engagement. N'hésitez pas à me contacter 
                   pour discuter de votre situation.
                 </p>
               </div>

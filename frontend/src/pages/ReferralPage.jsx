@@ -247,7 +247,7 @@ export const ReferralPage = () => {
             Besoin d'un accompagnement ?
           </h2>
           <p className="text-primary-foreground/70 mb-8">
-            Premier échange gratuit et sans engagement.
+            Première consultation gratuite — 10 minutes, sans engagement.
           </p>
           <Link to="/contact">
             <Button 

@@ -162,7 +162,7 @@ export const HomePage = () => {
     <main className="page-transition">
       <SEO
         title="Accueil"
-        description="Stratégie & Expertise Santé : accompagnement expert en maladie professionnelle, accident du travail, MDPH et protection juridique. Premier échange gratuit."
+        description="Stratégie & Expertise Santé : accompagnement expert en maladie professionnelle, accident du travail, MDPH et protection juridique. Première consultation téléphonique gratuite — 10 minutes."
         path="/"
       />
 
@@ -671,7 +671,7 @@ export const HomePage = () => {
             Besoin d'aide pour y voir plus clair ?
           </h2>
           <p className="text-primary-foreground/70 mb-8 max-w-2xl mx-auto">
-            Chaque situation est unique. Contactez-moi pour un premier échange gratuit
+            Chaque situation est unique. Contactez-moi pour une première consultation gratuite de 10 minutes
             et sans engagement. Ensemble, nous verrons comment je peux vous accompagner.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

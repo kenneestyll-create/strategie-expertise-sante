@@ -164,7 +164,7 @@ async def send_relance_email(item_id: str, admin: dict = Depends(get_current_adm
     error_detail = ""
     if RESEND_AVAILABLE and resend.api_key and resend.api_key != '':
         try:
-            resend.Emails.send({"from": SENDER_EMAIL, "to": item["email"], "subject": "Stratégie & Expertise Santé - Finalisez votre démarche", "html": f"""<h2>Bonjour {item.get('name', '')},</h2><p>Vous aviez commencé à réserver notre prestation <strong>{item.get('package_name', '')}</strong>.</p><p>N'hésitez pas à finaliser votre inscription ou à nous contacter si vous avez des questions.</p><p>Premier échange gratuit et sans engagement.</p><p>Cordialement,<br>Stratégie & Expertise Santé</p>"""})
+            resend.Emails.send({"from": SENDER_EMAIL, "to": item["email"], "subject": "Stratégie & Expertise Santé - Finalisez votre démarche", "html": f"""<h2>Bonjour {item.get('name', '')},</h2><p>Vous aviez commencé à réserver notre prestation <strong>{item.get('package_name', '')}</strong>.</p><p>N'hésitez pas à finaliser votre inscription ou à nous contacter si vous avez des questions.</p><p>Première consultation gratuite — 10 minutes, sans engagement.</p><p>Cordialement,<br>Stratégie & Expertise Santé</p>"""})
             email_sent = True
         except Exception as e:
             logger.error(f"Resend error: {e}")

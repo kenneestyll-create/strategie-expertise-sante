@@ -73,7 +73,7 @@ export const ServicesPage = () => {
     {
       step: "1",
       title: "Premier contact gratuit",
-      description: "Échange téléphonique ou visio de 20 minutes pour comprendre votre situation et voir si je peux vous aider."
+      description: "Première consultation téléphonique gratuite — 10 minutes pour évaluer votre situation."
     },
     {
       step: "2",
@@ -111,7 +111,7 @@ export const ServicesPage = () => {
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-accent" />
-                <span>Premier échange gratuit</span>
+                <span>Consultation gratuite — 10 min</span>
               </div>
               <div className="flex items-center gap-2">
                 <MessageCircle className="w-4 h-4 text-accent" />
@@ -314,7 +314,7 @@ export const ServicesPage = () => {
             Besoin d'un accompagnement personnalisé ?
           </h2>
           <p className="text-primary-foreground/70 mb-8 max-w-2xl mx-auto">
-            Contactez-moi pour un premier échange gratuit. Nous verrons ensemble 
+            Contactez-moi pour une première consultation gratuite de 10 minutes. Nous verrons ensemble 
             comment je peux vous aider dans votre situation.
           </p>
           <Link to="/contact">

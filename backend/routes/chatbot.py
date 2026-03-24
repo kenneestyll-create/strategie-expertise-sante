@@ -24,7 +24,7 @@ async def chatbot_message(chat_input: ChatMessage):
                      "- [Réservez un appel gratuit](/agenda) avec notre expert\n"
                      "- [Découvrez le Dossier Express IA](/dossier-express) pour une analyse complète\n"
                      "- [Consultez nos tarifs](/tarifs) pour un accompagnement personnalisé\n\n"
-                     "Premier échange toujours gratuit et sans engagement.",
+                     "Première consultation téléphonique gratuite — 10 minutes pour évaluer votre situation.",
             is_faq=False,
             session_id=session_id
         )

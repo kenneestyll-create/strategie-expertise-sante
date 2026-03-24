@@ -65,7 +65,7 @@ const faqPageSchema = {
     {
       "@type": "Question",
       "name": "Combien coûte un accompagnement en maladie professionnelle ?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Les tarifs varient de la pré-analyse gratuite assistée par StratégiIA au Dossier Express IA à 97€, jusqu'à l'accompagnement complet à 500€. Le premier échange est toujours gratuit et sans engagement." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Les tarifs varient de la pré-analyse gratuite assistée par StratégiIA au Dossier Express IA à 97€, jusqu'à l'accompagnement complet à 500€. Première consultation téléphonique gratuite — 10 minutes pour évaluer votre situation." }
     }
   ]
 };
