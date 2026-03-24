@@ -232,8 +232,7 @@ export const HomePage = () => {
                 className="rounded-full px-10 py-6 gap-2.5 border-white/20 text-white/90 hover:bg-white/10 hover:border-white/30 text-base transition-all"
                 data-testid="hero-cta-secondary"
               >
-                Analyser ma situation gratuitement
-                <ArrowRight className="w-4 h-4" />
+                Analyser ma situation avec StratégiIA
               </Button>
             </Link>
           </div>
@@ -690,7 +689,7 @@ export const HomePage = () => {
                 className="rounded-full px-8 gap-2 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/5"
                 data-testid="cta-simulateur-button"
               >
-                Analyser ma situation gratuitement
+                Analyser avec StratégiIA
               </Button>
             </Link>
           </div>

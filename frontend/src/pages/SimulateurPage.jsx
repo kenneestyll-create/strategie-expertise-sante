@@ -385,7 +385,7 @@ export const SimulateurPage = () => {
 
   const getShareText = () => {
     const result = getResults(answers);
-    return `J'ai réalisé mon diagnostic sur Stratégie & Expertise Santé. Profil : ${result.profile}. Faites le vôtre :`;
+    return `J'ai réalisé mon analyse StratégiIA sur Stratégie & Expertise Santé. Profil : ${result.profile}. Faites le vôtre :`;
   };
 
   const getShareUrl = () => `${window.location.origin}/simulateur`;
@@ -397,7 +397,7 @@ export const SimulateurPage = () => {
     window.open(`sms:?body=${encodeURIComponent(getShareText() + ' ' + getShareUrl())}`, '_blank');
   };
   const handleShareEmail = () => {
-    window.open(`mailto:?subject=${encodeURIComponent('Mon diagnostic — Stratégie & Expertise Santé')}&body=${encodeURIComponent(getShareText() + '\n\n' + getShareUrl())}`, '_blank');
+    window.open(`mailto:?subject=${encodeURIComponent('Mon analyse StratégiIA — Stratégie & Expertise Santé')}&body=${encodeURIComponent(getShareText() + '\n\n' + getShareUrl())}`, '_blank');
   };
   const handleCopyLink = () => {
     navigator.clipboard.writeText(getShareUrl());
@@ -419,13 +419,13 @@ export const SimulateurPage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Simulateur de droits" description="Simulez gratuitement vos droits en cas de maladie professionnelle, accident du travail ou handicap." path="/simulateur" />
+      <SEO title="StratégiIA — Analyse de votre situation" description="Analysez gratuitement votre situation avec StratégiIA en cas de maladie professionnelle, accident du travail ou handicap." path="/simulateur" />
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-3xl">
-            <span className="text-sm font-medium text-accent uppercase tracking-wider">Diagnostic</span>
+            <span className="text-sm font-medium text-accent uppercase tracking-wider">StratégiIA</span>
             <h1 className="text-4xl sm:text-5xl font-semibold mt-2 mb-6" data-testid="simulator-title">
-              Évaluez votre situation
+              Analyse StratégiIA — Évaluez votre situation
             </h1>
             <p className="text-lg text-muted-foreground">
               Répondez à quelques questions pour obtenir un rapport personnalisé avec vos droits,
