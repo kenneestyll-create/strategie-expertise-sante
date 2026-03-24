@@ -296,7 +296,7 @@ export const HomePage = () => {
           SECTION RISQUES
       ══════════════════════════════════════════════════════════ */}
       <section className="section-padding bg-card" data-testid="risques-section">
-        <div className="max-w-5xl mx-auto" ref={risquesRef}>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8" ref={risquesRef}>
           <div className="text-center mb-12 reveal">
             <AlertTriangle className="w-8 h-8 text-amber-600 mx-auto mb-4" />
             <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-3">
@@ -346,7 +346,7 @@ export const HomePage = () => {
           SECTION MÉTHODE S.E.S
       ══════════════════════════════════════════════════════════ */}
       <section className="section-padding bg-background" data-testid="methode-section">
-        <div className="max-w-7xl mx-auto" ref={methodeRef}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" ref={methodeRef}>
           <div className="text-center max-w-2xl mx-auto mb-14 reveal">
             <span className="text-sm font-medium text-accent uppercase tracking-[0.15em]">Notre approche</span>
             <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mt-2 mb-4">
@@ -385,7 +385,7 @@ export const HomePage = () => {
           SECTION SOLUTIONS
       ══════════════════════════════════════════════════════════ */}
       <section className="section-padding bg-secondary" data-testid="solutions-section">
-        <div className="max-w-7xl mx-auto" ref={solutionsRef}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" ref={solutionsRef}>
           <div className="text-center max-w-2xl mx-auto mb-14 reveal">
             <span className="text-sm font-medium text-accent uppercase tracking-[0.15em]">Nos solutions</span>
             <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mt-2 mb-4">
@@ -426,7 +426,7 @@ export const HomePage = () => {
           CHIFFRES CLÉS
       ══════════════════════════════════════════════════════════ */}
       <section className="section-padding bg-background" data-testid="chiffres-section" id="chiffres">
-        <div className="max-w-7xl mx-auto" ref={chiffresRef}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" ref={chiffresRef}>
           <div className="text-center max-w-2xl mx-auto mb-14 reveal">
             <span className="text-sm font-medium text-accent uppercase tracking-wider">Contexte national</span>
             <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mt-2 mb-4">Le défi en chiffres</h2>
@@ -471,7 +471,7 @@ export const HomePage = () => {
           SECTION CONFIANCE
       ══════════════════════════════════════════════════════════ */}
       <section className="section-padding bg-accent/5 border-y border-accent/10" data-testid="confiance-section">
-        <div className="max-w-7xl mx-auto" ref={confianceRef}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" ref={confianceRef}>
           <div className="text-center max-w-2xl mx-auto mb-14 reveal">
             <span className="text-sm font-medium text-accent uppercase tracking-[0.15em]">Crédibilité</span>
             <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mt-2 mb-4">
@@ -526,10 +526,10 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           MÉDECIN CONSEIL — Strategic section
       ══════════════════════════════════════════════════════════ */}
-      <section className="section-padding bg-accent/5 border-y border-accent/10">
-        <div className="max-w-7xl mx-auto">
+      <section className="section-padding bg-accent/5 border-y border-accent/10" data-testid="medecin-conseil-home-section">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
+            <div className="min-w-0">
               <span className="text-sm font-medium text-accent uppercase tracking-wider">Orientation stratégique</span>
               <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mt-2 mb-4" data-testid="home-medecin-conseil-title">
                 Le choix du médecin conseil : un enjeu financier majeur
@@ -543,25 +543,25 @@ export const HomePage = () => {
                 et à votre stratégie juridique.
               </p>
               <Link to="/medecin-conseil">
-                <Button className="rounded-full px-6 gap-2 bg-accent hover:bg-accent/90 text-accent-foreground" data-testid="home-medecin-conseil-cta">
-                  <Stethoscope className="w-4 h-4" />
-                  Être accompagné dans le choix de mon médecin conseil
-                  <ArrowRight className="w-4 h-4" />
+                <Button className="rounded-full px-5 gap-2 bg-accent hover:bg-accent/90 text-accent-foreground whitespace-normal text-left h-auto py-2.5 text-sm" data-testid="home-medecin-conseil-cta">
+                  <Stethoscope className="w-4 h-4 flex-shrink-0" />
+                  <span>Être accompagné dans le choix de mon médecin conseil</span>
+                  <ArrowRight className="w-4 h-4 flex-shrink-0" />
                 </Button>
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 min-w-0">
               <div className="bg-foreground text-primary-foreground p-5 rounded-xl">
-                <p className="text-3xl font-bold text-accent mb-1">800 - 3 000 €</p>
+                <p className="text-2xl sm:text-3xl font-bold text-accent mb-1">800 - 3 000 €</p>
                 <p className="text-xs text-primary-foreground/60">Coût moyen d'un médecin conseil</p>
               </div>
               <div className="bg-foreground text-primary-foreground p-5 rounded-xl">
-                <p className="text-3xl font-bold text-accent mb-1">x10</p>
+                <p className="text-2xl sm:text-3xl font-bold text-accent mb-1">x10</p>
                 <p className="text-xs text-primary-foreground/60">Retour sur investissement potentiel</p>
               </div>
               <div className="sm:col-span-2 bg-foreground text-primary-foreground p-5 rounded-xl">
                 <div className="flex items-center gap-2 mb-2">
-                  <AlertTriangle className="w-5 h-5 text-amber-500" />
+                  <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0" />
                   <p className="font-semibold text-sm">Risque d'un mauvais choix</p>
                 </div>
                 <p className="text-xs text-primary-foreground/60 leading-relaxed">
@@ -655,7 +655,7 @@ export const HomePage = () => {
           CTA FINAL
       ══════════════════════════════════════════════════════════ */}
       <section className="section-padding bg-foreground text-primary-foreground">
-        <div className="max-w-4xl mx-auto text-center reveal" ref={ctaRef}>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center reveal" ref={ctaRef}>
           <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-6">
             Besoin d'aide pour y voir plus clair ?
           </h2>
