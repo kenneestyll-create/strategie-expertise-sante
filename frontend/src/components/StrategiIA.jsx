@@ -219,8 +219,6 @@ export const StrategiIA = () => {
     return () => timers.forEach(clearTimeout);
   }, [step]);
 
-  return (
-    if (!text) return { tier1: '', tier2: '', tier3: '' };
   // Split analysis into 3 tiers based on ---SECTION--- markers
   const splitAnalysis = (text) => {
     if (!text) return { tier1: '', tier2: '', tier3: '' };
@@ -228,21 +226,6 @@ export const StrategiIA = () => {
     if (parts.length >= 3) {
       return { tier1: parts[0].trim(), tier2: parts[1].trim(), tier3: parts[2].trim() };
     }
-    const lines = text.split('\n');
-    const t1 = Math.ceil(lines.length / 3);
-    const t2 = Math.ceil(lines.length * 2 / 3);
-    return {
-      tier1: lines.slice(0, t1).join('\n'),
-      tier2: lines.slice(t1, t2).join('\n'),
-      tier3: lines.slice(t2).join('\n'),
-    };
-  };
-
-    const parts = text.split(/---SECTION_[123]---/).filter(p => p.trim());
-    if (parts.length >= 3) {
-      return { tier1: parts[0].trim(), tier2: parts[1].trim(), tier3: parts[2].trim() };
-    }
-    // Fallback: split by rough thirds
     const lines = text.split('\n');
     const t1 = Math.ceil(lines.length / 3);
     const t2 = Math.ceil(lines.length * 2 / 3);

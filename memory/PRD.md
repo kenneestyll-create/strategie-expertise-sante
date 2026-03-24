@@ -9,35 +9,38 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 - **Theme:** Warm neutral noir/or (Manrope + Playfair Display)
 
 ## Entonnoir de Conversion (Mar 2026) — DONE
-- **Chatbot** : Réponses utiles mais volontairement incomplètes, ouverture systématique vers StratégiIA/Dossier Express
-- **Prompt Light** : Questions simples, sans tableaux MP, réponse rapide
-- **Prompt Full** : Questions complexes/médicales, avec tableaux MP, toujours limitée
-- **CTA Visuels** : Boutons "Analyse complète avec StratégiIA" + "Dossier Express 97€" après chaque réponse IA
-- Flow: Chatbot attire → StratégiIA convertit → Dossier Express monétise
+- **Chatbot** : Reponses utiles mais volontairement incompletes, ouverture systematique vers StrategiIA/Dossier Express
+- **Prompt Light** : Questions simples, sans tableaux MP, reponse rapide
+- **Prompt Full** : Questions complexes/medicales, avec tableaux MP, toujours limitee
+- **CTA Visuels** : Boutons "Analyse complete avec StrategiIA" + "Dossier Express 97EUR" apres chaque reponse IA
+- Flow: Chatbot attire -> StrategiIA convertit -> Dossier Express monetise
 
 ## Page d'Accueil — Refonte (Mar 2026) — DONE
-Hero premium sombre avec overlay, titre "accident du travail ou maladie professionnelle" en doré. Risques, Méthode S.E.S, Solutions, Confiance, Chiffres, Fondateur, Médecin Conseil, Témoignages, CTA
+Hero premium sombre avec overlay, titre "accident du travail ou maladie professionnelle" en dore. Risques, Methode S.E.S, Solutions, Confiance, Chiffres, Fondateur, Medecin Conseil, Temoignages, CTA
 
 ## Header — Refonte Premium (Mar 2026) — DONE
-Fond sombre #0a0a08, navigation épurée mais complète: À propos, Accompagnements▾ (6 sous-pages), Outils▾ (11 sous-pages dont Simulateur, Calculatrice IPP/AAH, Ressources, Forum, etc.), StratégiIA (ouvre le modal d'analyse), Tarifs, Dossier Express IA. CTA "Réserver un appel" doré à droite. Menu mobile avec sections dépliables.
+Fond sombre #0a0a08, navigation epuree mais complete: A propos, Accompagnements (6 sous-pages), Outils (11 sous-pages dont Simulateur, Calculatrice IPP/AAH, Ressources, Forum, etc.), StrategiIA (ouvre le modal d'analyse), Tarifs, Dossier Express IA. CTA "Reserver un appel" dore a droite. Menu mobile avec sections depliables.
 
 ## StrategiIA — Entonnoir 3 paliers (Mar 2026) — DONE
-Palier 1 (gratuit, sans email): 1/3 de l'analyse (résumé + droits identifiés) avec dégradé + CTA email.
-Palier 2 (après email): ~50% (analyse approfondie + démarches) + éléments premium verrouillés + CTA 29€.
-Palier 3 (premium 29€): Analyse complète + jurisprudences + score + PDF + stratégie détaillée.
-Backend async polling (POST /analyze → job_id, GET /status/{id} polling 3s). Prompt structuré avec marqueurs ---SECTION_1/2/3---. ReactMarkdown pour le rendu. Retry 3x. Claude Sonnet 4.5.
+Palier 1 (gratuit, sans email): 1/3 de l'analyse (resume + droits identifies) avec degrade + CTA email.
+Palier 2 (apres email): ~50% (analyse approfondie + demarches) + elements premium verrouilles + CTA 29EUR.
+Palier 3 (premium 29EUR): Analyse complete + jurisprudences + score + PDF + strategie detaillee.
+Backend async polling (POST /analyze -> job_id, GET /status/{id} polling 3s). Prompt structure avec marqueurs ---SECTION_1/2/3---. ReactMarkdown pour le rendu. Retry 3x. Claude Sonnet 4.5.
+- Barre de progression animee avec 4 etapes pendant le chargement (Mar 2026) — DONE
+- Option "Regimes speciaux RATP/SNCF" dans le dropdown (Mar 2026) — DONE
+- Correction bug syntaxe splitAnalysis duplique (Mar 2026) — DONE
 
 ## Page Medecin Conseil (Mar 2026) — DONE
-Page stratégique SEO/conversion avec tracking clics/vues
+Page strategique SEO/conversion avec tracking clics/vues
 
 ## Mascotte Strate (Mar 2026) — DONE
-Bulle pulsante, texte noir lisible, TTS français, CRUD Admin + Stats
+Bulle pulsante, texte noir lisible, TTS francais, CRUD Admin + Stats
 
 ## Chatbot IA Expert (Mar 2026) — DONE
-Animation d'attente enrichie, prompt optimisé, entonnoir conversion
+Animation d'attente enrichie, prompt optimise, entonnoir conversion
 
 ## Recherche IA (Mar 2026) — DONE
-Barre → IA chatbot + suggestions Algolia
+Barre -> IA chatbot + suggestions Algolia
 
 ## Tracking Conversions (Mar 2026) — DONE
 /api/tracking/event + /api/tracking/stats
@@ -45,9 +48,9 @@ Barre → IA chatbot + suggestions Algolia
 ## Taches a venir
 - **P1:** Dashboard admin pour stats tracking/conversions
 - **P1:** Activer les paiements en production (Stripe/PayPal)
-- **P2:** Intégration HubSpot (en attente de credentials)
+- **P2:** Integration HubSpot (en attente de credentials)
 - **P2:** Audit logging complet
-- **P3:** Finalisation du contenu légal
+- **P3:** Finalisation du contenu legal
 - **P3:** Refactoring EmailTemplateEditor.jsx
 
 ## Integrations 3rd party
