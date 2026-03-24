@@ -50,20 +50,21 @@ export const AlerteUrgente = () => {
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Button — Urgence bottom-left */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 left-6 flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg text-white font-semibold text-xs transition-all hover:scale-105"
+          className="fixed bottom-6 left-6 flex items-center gap-2 px-4 py-2.5 rounded-full shadow-xl text-white font-semibold text-xs transition-all hover:scale-105 border border-red-500/30"
           style={{
             zIndex: 39,
-            background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+            background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
           }}
           data-testid="alerte-urgente-button"
           aria-label="Question urgente"
         >
-          <Zap className="w-4 h-4" />
-          <span className="hidden sm:inline">Réponse sous 2h</span>
+          <Zap className="w-4 h-4 text-yellow-300" />
+          <span className="hidden sm:inline">Urgence — réponse sous 2h</span>
+          <span className="sm:hidden">Urgence</span>
         </button>
       )}
 

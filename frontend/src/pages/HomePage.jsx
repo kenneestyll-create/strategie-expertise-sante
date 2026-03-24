@@ -26,7 +26,6 @@ import {
   ShieldAlert,
   CircleSlash,
   Compass,
-  UserCheck,
   Focus,
   RefreshCcw,
   HeartHandshake,
@@ -177,51 +176,52 @@ export const HomePage = () => {
         />
         <div className="absolute inset-0 bg-black/55" />
 
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/15 text-white/90 px-4 py-2 rounded-full mb-8" data-testid="pioneer-badge">
-            <Sparkles className="w-3.5 h-3.5 text-[#C9A84C]" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.15em]">Service pionnier en France</span>
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32 text-center">
+          {/* Badge — Valorisé */}
+          <div className="inline-flex items-center gap-2.5 bg-[#C9A84C]/15 backdrop-blur-sm border border-[#C9A84C]/30 text-[#C9A84C] px-5 py-2.5 rounded-full mb-10" data-testid="pioneer-badge">
+            <Award className="w-4 h-4" />
+            <span className="text-xs font-bold uppercase tracking-[0.18em]">Pionnier en France</span>
           </div>
 
           {/* Titre */}
           <h1
-            className="text-2xl sm:text-3xl md:text-4xl font-semibold text-white leading-[1.2] mb-4 max-w-3xl mx-auto"
+            className="text-3xl sm:text-4xl md:text-5xl font-semibold text-white leading-[1.15] mb-6 max-w-3xl mx-auto"
+            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
             data-testid="hero-title"
           >
             Vous n'êtes plus seul face à votre{' '}<span className="text-[#C9A84C]">accident du travail</span>{' '}ou votre{' '}<span className="text-[#C9A84C]">maladie professionnelle</span>
           </h1>
 
           {/* Sous-titre */}
-          <p className="text-base sm:text-lg text-white/80 leading-relaxed max-w-2xl mx-auto mb-8" data-testid="hero-subtitle">
+          <p className="text-base sm:text-lg text-white/75 leading-relaxed max-w-2xl mx-auto mb-10" data-testid="hero-subtitle">
             Maximisez vos droits et évitez des pertes de plusieurs milliers d'euros
           </p>
 
           {/* 3 points clés */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 mb-10">
-            <div className="flex items-center gap-2 text-white/70 text-sm">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-12">
+            <div className="flex items-center gap-2.5 text-white/60 text-sm">
               <CheckCircle className="w-4 h-4 text-[#C9A84C]" />
               <span>Accompagnement stratégique personnalisé</span>
             </div>
-            <div className="flex items-center gap-2 text-white/70 text-sm">
+            <div className="flex items-center gap-2.5 text-white/60 text-sm">
               <CheckCircle className="w-4 h-4 text-[#C9A84C]" />
               <span>Expertise AT/MP et régimes spéciaux</span>
             </div>
-            <div className="flex items-center gap-2 text-white/70 text-sm">
+            <div className="flex items-center gap-2.5 text-white/60 text-sm">
               <CheckCircle className="w-4 h-4 text-[#C9A84C]" />
               <span>Analyse assistée par intelligence artificielle</span>
             </div>
           </div>
 
-          {/* Boutons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
+          {/* Boutons — Hiérarchie visuelle renforcée */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
             <Link to="/contact">
               <Button
                 size="lg"
-                className="rounded-full px-8 gap-2 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-semibold"
+                className="rounded-full px-10 py-6 gap-2.5 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-bold text-base shadow-xl shadow-[#C9A84C]/25 transition-all hover:shadow-[#C9A84C]/40 hover:scale-[1.02]"
                 data-testid="hero-cta-primary"
               >
-                <Phone className="w-4 h-4" />
+                <Phone className="w-5 h-5" />
                 Être accompagné maintenant
               </Button>
             </Link>
@@ -229,7 +229,7 @@ export const HomePage = () => {
               <Button
                 variant="outline"
                 size="lg"
-                className="rounded-full px-8 gap-2 border-white/25 text-white hover:bg-white/10"
+                className="rounded-full px-10 py-6 gap-2.5 border-white/20 text-white/90 hover:bg-white/10 hover:border-white/30 text-base transition-all"
                 data-testid="hero-cta-secondary"
               >
                 Analyser ma situation gratuitement
@@ -240,22 +240,13 @@ export const HomePage = () => {
 
           {/* Compteur visiteurs */}
           {visitorCount > 0 && (
-            <div className="inline-flex items-center gap-2 text-xs text-white/40">
+            <div className="inline-flex items-center gap-2 text-xs text-white/35">
               <Eye className="w-3.5 h-3.5" />
-              <span><strong className="text-white/60">{visitorCount.toLocaleString('fr-FR')}</strong> visiteurs nous ont fait confiance</span>
+              <span><strong className="text-white/55">{visitorCount.toLocaleString('fr-FR')}</strong> visiteurs nous ont fait confiance</span>
             </div>
           )}
         </div>
 
-        {/* Badge flottant urgence — bas gauche */}
-        <Link
-          to="/dossier-express"
-          className="absolute bottom-6 left-6 flex items-center gap-2 bg-red-600 text-white px-4 py-2.5 rounded-full shadow-lg hover:bg-red-700 transition-all hover:scale-105 z-10"
-          data-testid="hero-urgence-badge"
-        >
-          <Zap className="w-4 h-4 text-yellow-300" />
-          <span className="text-xs font-bold">Réponse sous 2h</span>
-        </Link>
       </section>
 
       {/* ══════════════════════════════════════════════════════════

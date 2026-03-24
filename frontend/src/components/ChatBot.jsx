@@ -75,8 +75,21 @@ const LoadingBubble = () => {
   );
 };
 
+const StrateMascotIcon = ({ size = 40 }) => (
+  <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="4" y="8" width="32" height="24" rx="6" fill="#0a0a08" stroke="#C9A84C" strokeWidth="1.5"/>
+    <rect x="10" y="14" width="6" height="5" rx="1.5" fill="#C9A84C"/>
+    <rect x="24" y="14" width="6" height="5" rx="1.5" fill="#C9A84C"/>
+    <rect x="16" y="24" width="8" height="2" rx="1" fill="#C9A84C" opacity="0.6"/>
+    <rect x="15" y="2" width="10" height="4" rx="2" fill="#C9A84C" opacity="0.4"/>
+    <line x1="20" y1="6" x2="20" y2="8" stroke="#C9A84C" strokeWidth="1.5" opacity="0.4"/>
+  </svg>
+);
+
 export const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showBubble, setShowBubble] = useState(false);
+  const [bubbleDismissed, setBubbleDismissed] = useState(false);
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -96,6 +109,13 @@ export const ChatBot = () => {
   };
 
   useEffect(() => { scrollToBottom(); }, [messages]);
+
+  // Delayed appearance of the bubble
+  useEffect(() => {
+    if (isOpen || bubbleDismissed) return;
+    const timer = setTimeout(() => setShowBubble(true), 2500);
+    return () => clearTimeout(timer);
+  }, [isOpen, bubbleDismissed]);
 
   // Listen for AI questions from GlobalSearch
   useEffect(() => {
@@ -175,17 +195,45 @@ export const ChatBot = () => {
 
   return (
     <>
-      {/* Chat Button */}
+      {/* Mascot Floating Button — Premium */}
       {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 bg-accent hover:bg-accent/90 text-accent-foreground rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-105"
-          style={{ zIndex: 'var(--z-chatbot)' }}
-          data-testid="chatbot-button"
-          aria-label="Ouvrir le chat"
-        >
-          <MessageCircle className="w-6 h-6" />
-        </button>
+        <div className="fixed bottom-6 right-6 flex items-end gap-3" style={{ zIndex: 'var(--z-chatbot)' }} data-testid="chatbot-fab-wrapper">
+          {/* Text Bubble */}
+          {showBubble && !bubbleDismissed && (
+            <div
+              className="relative bg-[#0a0a08] border border-[#C9A84C]/25 rounded-2xl rounded-br-sm px-4 py-3 shadow-xl max-w-[220px] sm:max-w-[260px] cursor-pointer"
+              style={{ animation: 'chatBubbleFadeIn 0.4s ease-out' }}
+              onClick={() => { setBubbleDismissed(true); setIsOpen(true); }}
+              data-testid="chatbot-bubble-text"
+            >
+              <button
+                className="absolute -top-2 -right-2 w-5 h-5 bg-[#1a1a1a] border border-[#C9A84C]/20 rounded-full flex items-center justify-center text-white/40 hover:text-white/70 transition-colors"
+                onClick={(e) => { e.stopPropagation(); setBubbleDismissed(true); }}
+                aria-label="Fermer"
+              >
+                <X className="w-3 h-3" />
+              </button>
+              <p className="text-[11px] sm:text-xs text-[#f5f0e8]/90 leading-relaxed">
+                <span className="font-semibold text-[#C9A84C]">StratégiIA</span>
+                <span className="text-[#f5f0e8]/50"> — </span>
+                Je vous aide à analyser votre situation
+              </p>
+            </div>
+          )}
+
+          {/* Robot Mascot Button */}
+          <button
+            onClick={() => { setIsOpen(true); setBubbleDismissed(true); }}
+            className="group relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#0a0a08] border-2 border-[#C9A84C]/40 shadow-xl shadow-[#C9A84C]/10 flex items-center justify-center transition-all duration-300 hover:border-[#C9A84C]/70 hover:shadow-[#C9A84C]/25 hover:scale-105"
+            style={{ animation: 'mascotPulse 3s ease-in-out infinite' }}
+            data-testid="chatbot-button"
+            aria-label="Ouvrir StratégiIA"
+          >
+            <StrateMascotIcon size={36} />
+            {/* Online indicator */}
+            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-[#0a0a08]" />
+          </button>
+        </div>
       )}
 
       {/* Chat Window */}
