@@ -19,7 +19,7 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 Hero premium sombre avec overlay, titre "accident du travail ou maladie professionnelle" en doré. Risques, Méthode S.E.S, Solutions, Confiance, Chiffres, Fondateur, Médecin Conseil, Témoignages, CTA
 
 ## Header — Refonte Premium (Mar 2026) — DONE
-Fond sombre #0a0a08, navigation épurée mais complète: À propos, Accompagnements▾ (6 sous-pages), Outils▾ (10 sous-pages dont Calculatrice IPP/AAH, Ressources, Forum, etc.), StratégiIA, Tarifs, Dossier Express IA. CTA "Réserver un appel" doré à droite. Menu mobile avec sections dépliables.
+Fond sombre #0a0a08, navigation épurée mais complète: À propos, Accompagnements▾ (6 sous-pages), Outils▾ (11 sous-pages dont Simulateur, Calculatrice IPP/AAH, Ressources, Forum, etc.), StratégiIA (ouvre le modal d'analyse), Tarifs, Dossier Express IA. CTA "Réserver un appel" doré à droite. Menu mobile avec sections dépliables.
 
 ## Chatbot Mascotte Straté (Mar 2026) — DONE
 Bouton robot SVG noir/or, bulle texte "StratégiIA — Je vous aide à analyser votre situation", animation pulse, apparition après 2.5s, indicateur online vert.
