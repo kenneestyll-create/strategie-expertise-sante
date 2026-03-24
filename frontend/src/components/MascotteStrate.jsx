@@ -126,7 +126,7 @@ export function trackStrateConversion(action) {
    WIDGET DESKTOP — Flottant en bas à droite
    ═══════════════════════════════════════════ */
 const DesktopWidget = ({ conseil, isOpen, setIsOpen, isSpeaking, speak, close }) => (
-  <div className="hidden md:block fixed" style={{ bottom: '7.5rem', right: '1.5rem', zIndex: 40 }} data-testid="mascotte-strate-desktop">
+  <div className="hidden md:block fixed" style={{ bottom: 'calc(7.5rem + env(safe-area-inset-bottom, 0px))', right: '1rem', zIndex: 40 }} data-testid="mascotte-strate-desktop">
     {/* Fenêtre conseil */}
     {isOpen && (
       <div

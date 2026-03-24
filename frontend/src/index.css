@@ -87,12 +87,48 @@ h1, h2, h3, h4, h5, h6 {
 html {
     scroll-behavior: auto;
     overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
 }
 body {
     overflow-x: hidden;
+    /* iOS safe area — bottom padding for home indicator */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 a[href^="#"] {
     scroll-behavior: smooth;
+}
+
+/* ── Mobile-first input zoom prevention (iOS) ── */
+input, textarea, select, .select-trigger {
+    font-size: max(16px, 1em) !important;
+}
+@media (min-width: 768px) {
+    input, textarea, select, .select-trigger {
+        font-size: inherit !important;
+    }
+}
+
+/* ── Safe area helpers ── */
+.safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* ── Mobile-friendly min-height with dvh fallback ── */
+.min-h-screen-safe {
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+.h-screen-safe {
+    height: 100vh;
+    height: 100dvh;
+}
+.max-h-screen-safe {
+    max-height: 100vh;
+    max-height: 100dvh;
 }
 
 /* Link underline animation */
@@ -132,7 +168,19 @@ a[href^="#"] {
 
 /* Section padding utility */
 .section-padding {
-    @apply px-4 sm:px-6 lg:px-8 py-16 lg:py-24;
+    @apply px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24;
+}
+
+/* ── Floating elements safe positioning ── */
+.fixed-bottom-right {
+    position: fixed;
+    bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    right: 1.5rem;
+}
+.fixed-bottom-left {
+    position: fixed;
+    bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    left: 1.5rem;
 }
 
 /* Page transition */

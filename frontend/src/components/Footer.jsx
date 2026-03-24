@@ -96,8 +96,8 @@ export const Footer = () => {
                   <p className="text-xs text-primary-foreground/50">Nous reviendrons vers vous rapidement.</p>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="rounded-xl border border-primary-foreground/10 bg-primary-foreground/[0.04] p-5 space-y-3" data-testid="partner-form">
-                  <div className="grid grid-cols-2 gap-3">
+                <form onSubmit={handleSubmit} className="rounded-xl border border-primary-foreground/10 bg-primary-foreground/[0.04] p-4 sm:p-5 space-y-3" data-testid="partner-form">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <label className="text-[11px] text-primary-foreground/50 font-medium">Nom *</label>
                       <div className="relative">

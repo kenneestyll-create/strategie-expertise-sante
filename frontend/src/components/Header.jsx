@@ -69,15 +69,17 @@ export const Header = () => {
   return (
     <header
       className={`fixed top-0 left-0 right-0 transition-all duration-300 ${
-        scrolled
-          ? 'bg-[#0a0a08]/95 backdrop-blur-md shadow-lg shadow-black/10'
-          : 'bg-[#0a0a08]/80 backdrop-blur-sm'
+        isMenuOpen
+          ? 'bg-[#0a0a08]'
+          : scrolled
+            ? 'bg-[#0a0a08]/95 backdrop-blur-md shadow-lg shadow-black/10'
+            : 'bg-[#0a0a08]/80 backdrop-blur-sm'
       }`}
       style={{ zIndex: 'var(--z-header, 9999)' }}
       data-testid="header"
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-[68px]">
+        <div className="flex items-center justify-between min-h-[4rem] lg:min-h-[4.25rem]">
           {/* Logo */}
           <Link
             to="/"
@@ -188,7 +190,7 @@ export const Header = () => {
 
         {/* ═══ Mobile Navigation ═══ */}
         {isMenuOpen && (
-          <div className="lg:hidden border-t border-[#C9A84C]/10 max-h-[85vh] overflow-y-auto" data-testid="mobile-menu">
+          <div className="lg:hidden border-t border-[#C9A84C]/10 overflow-y-auto bg-[#0a0a08]" style={{ maxHeight: 'calc(85vh - env(safe-area-inset-top, 0px))', maxHeight: 'calc(85dvh - env(safe-area-inset-top, 0px))' }} data-testid="mobile-menu">
             <div className="flex flex-col py-2">
               {/* Accueil */}
               <Link to="/" className={`px-4 py-3 text-sm font-medium ${isActive('/') ? 'text-[#C9A84C] bg-[#C9A84C]/5' : 'text-[#f5f0e8]/70 hover:text-[#f5f0e8] hover:bg-white/5'}`} data-testid="mobile-nav-accueil">

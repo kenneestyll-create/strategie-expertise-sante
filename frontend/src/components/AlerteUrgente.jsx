@@ -54,10 +54,12 @@ export const AlerteUrgente = () => {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 left-6 flex items-center gap-2 px-4 py-2.5 rounded-full shadow-xl text-white font-semibold text-xs transition-all hover:scale-105 border border-red-500/30"
+          className="fixed flex items-center gap-2 px-4 py-2.5 rounded-full shadow-xl text-white font-semibold text-xs transition-all hover:scale-105 border border-red-500/30"
           style={{
             zIndex: 39,
             background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+            bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))',
+            left: '1rem',
           }}
           data-testid="alerte-urgente-button"
           aria-label="Question urgente"

@@ -169,23 +169,23 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           HERO — Premium sombre, lisible, haut de gamme
       ══════════════════════════════════════════════════════════ */}
-      <section className="relative min-h-screen flex items-center pt-20" data-testid="hero-section">
+      <section className="relative flex items-center pt-20 min-h-screen-safe" data-testid="hero-section">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url('https://images.unsplash.com/photo-1598016677484-ad34c3fd766e?auto=format&fit=crop&w=1920&q=60')" }}
         />
         <div className="absolute inset-0 bg-black/55" />
 
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32 text-center">
+        <div className="relative w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32 text-center">
           {/* Badge — Valorisé */}
-          <div className="inline-flex items-center gap-2.5 bg-[#C9A84C]/15 backdrop-blur-sm border border-[#C9A84C]/30 text-[#C9A84C] px-5 py-2.5 rounded-full mb-10" data-testid="pioneer-badge">
-            <Award className="w-4 h-4" />
-            <span className="text-xs font-bold uppercase tracking-[0.18em]">Pionnier en France</span>
+          <div className="inline-flex items-center gap-2 sm:gap-2.5 bg-[#C9A84C]/15 backdrop-blur-sm border border-[#C9A84C]/30 text-[#C9A84C] px-4 sm:px-5 py-2 sm:py-2.5 rounded-full mb-8 sm:mb-10" data-testid="pioneer-badge">
+            <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.14em] sm:tracking-[0.18em]">Pionnier en France</span>
           </div>
 
           {/* Titre */}
           <h1
-            className="text-3xl sm:text-4xl md:text-5xl font-semibold text-white leading-[1.15] mb-6 max-w-3xl mx-auto"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-white leading-[1.18] mb-6 max-w-3xl mx-auto"
             style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
             data-testid="hero-title"
           >
@@ -198,45 +198,45 @@ export const HomePage = () => {
           </p>
 
           {/* 3 points clés */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-12">
-            <div className="flex items-center gap-2.5 text-white/60 text-sm">
-              <CheckCircle className="w-4 h-4 text-[#C9A84C]" />
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-8 mb-8 sm:mb-12">
+            <div className="flex items-center gap-2 text-white/60 text-xs sm:text-sm">
+              <CheckCircle className="w-4 h-4 text-[#C9A84C] flex-shrink-0" />
               <span>Accompagnement stratégique personnalisé</span>
             </div>
-            <div className="flex items-center gap-2.5 text-white/60 text-sm">
-              <CheckCircle className="w-4 h-4 text-[#C9A84C]" />
+            <div className="flex items-center gap-2 text-white/60 text-xs sm:text-sm">
+              <CheckCircle className="w-4 h-4 text-[#C9A84C] flex-shrink-0" />
               <span>Expertise AT/MP et régimes spéciaux</span>
             </div>
-            <div className="flex items-center gap-2.5 text-white/60 text-sm">
-              <CheckCircle className="w-4 h-4 text-[#C9A84C]" />
+            <div className="flex items-center gap-2 text-white/60 text-xs sm:text-sm">
+              <CheckCircle className="w-4 h-4 text-[#C9A84C] flex-shrink-0" />
               <span>Analyse assistée par intelligence artificielle</span>
             </div>
           </div>
 
           {/* Boutons — Hiérarchie visuelle renforcée */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
-            <Link to="/contact">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-10 px-2">
+            <Link to="/contact" className="w-full sm:w-auto">
               <Button
                 size="lg"
-                className="rounded-full px-10 py-6 gap-2.5 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-bold text-base shadow-xl shadow-[#C9A84C]/25 transition-all hover:shadow-[#C9A84C]/40 hover:scale-[1.02]"
+                className="w-full sm:w-auto rounded-full px-6 sm:px-10 py-5 sm:py-6 gap-2.5 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-bold text-sm sm:text-base shadow-xl shadow-[#C9A84C]/25 transition-all hover:shadow-[#C9A84C]/40 hover:scale-[1.02]"
                 data-testid="hero-cta-primary"
               >
-                <Phone className="w-5 h-5" />
+                <Phone className="w-5 h-5 flex-shrink-0" />
                 Être accompagné maintenant
               </Button>
             </Link>
             <button
               onClick={() => window.dispatchEvent(new Event('strategiia:open'))}
-              className="cursor-pointer"
+              className="cursor-pointer w-full sm:w-auto"
             >
               <Button
                 variant="outline"
                 size="lg"
-                className="rounded-full px-10 py-6 gap-2.5 border-white/20 text-white/90 hover:bg-white/10 hover:border-white/30 text-base transition-all"
+                className="w-full sm:w-auto rounded-full px-6 sm:px-10 py-5 sm:py-6 gap-2.5 border-white/20 text-white/90 hover:bg-white/10 hover:border-white/30 text-sm sm:text-base transition-all"
                 data-testid="hero-cta-secondary"
               >
                 Analyser ma situation avec StratégiIA
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 flex-shrink-0" />
               </Button>
             </button>
           </div>
@@ -258,40 +258,40 @@ export const HomePage = () => {
       <section className="relative overflow-hidden urgent-glow" data-testid="dossier-express-banner">
         <div className="absolute inset-0 bg-gradient-to-r from-red-700 via-red-600 to-red-700" />
         <div className="absolute inset-0 shimmer" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center float">
-                <Zap className="w-7 h-7 text-yellow-300" />
+            <div className="flex items-start sm:items-center gap-3 sm:gap-4">
+              <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center float">
+                <Zap className="w-5 h-5 sm:w-7 sm:h-7 text-yellow-300" />
               </div>
-              <div className="text-white">
+              <div className="text-white min-w-0">
                 <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                  <span className="text-xs font-bold uppercase tracking-wider text-yellow-300 bg-yellow-300/15 px-2 py-0.5 rounded">Urgence</span>
-                  <Clock className="w-3.5 h-3.5 text-red-200" />
-                  <span className="text-xs text-red-200">Livré sous 2h</span>
+                  <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-yellow-300 bg-yellow-300/15 px-2 py-0.5 rounded">Urgence</span>
+                  <Clock className="w-3.5 h-3.5 text-red-200 hidden sm:block" />
+                  <span className="text-[10px] sm:text-xs text-red-200">Livré sous 2h</span>
                   {dossierCount > 0 && (
-                    <span className="text-xs text-red-100 bg-white/10 px-2 py-0.5 rounded-full" data-testid="dossier-express-counter">
+                    <span className="text-[10px] sm:text-xs text-red-100 bg-white/10 px-2 py-0.5 rounded-full" data-testid="dossier-express-counter">
                       <strong className="text-yellow-300 count-pulse inline-block">{dossierCount}</strong> dossiers traités cette semaine
                     </span>
                   )}
                 </div>
-                <p className="font-bold text-base sm:text-lg leading-tight">
+                <p className="font-bold text-sm sm:text-base lg:text-lg leading-tight">
                   Expertise médicale imminente ? Dossier bloqué ?
                 </p>
-                <p className="text-sm text-red-100 font-medium">
-                  Obtenez votre rapport d'analyse complet en 2h, préparé avec l'aide de StratégiIA — <span className="text-yellow-300 font-bold text-base">97€</span>
+                <p className="text-xs sm:text-sm text-red-100 font-medium">
+                  Obtenez votre rapport d'analyse complet en 2h, préparé avec l'aide de StratégiIA — <span className="text-yellow-300 font-bold text-sm sm:text-base">97€</span>
                 </p>
               </div>
             </div>
-            <Link to="/dossier-express" className="flex-shrink-0">
+            <Link to="/dossier-express" className="flex-shrink-0 w-full md:w-auto">
               <Button
                 size="lg"
-                className="bg-white text-red-700 hover:bg-yellow-50 font-bold rounded-full px-8 gap-2 shadow-xl hover:shadow-2xl transition-all hover:scale-105"
+                className="w-full md:w-auto bg-white text-red-700 hover:bg-yellow-50 font-bold rounded-full px-6 sm:px-8 gap-2 shadow-xl hover:shadow-2xl transition-all hover:scale-105 text-sm sm:text-base"
                 data-testid="dossier-express-banner-cta"
               >
-                <Zap className="w-4 h-4" />
-                Accéder au Dossier Express IA
-                <ArrowRight className="w-4 h-4" />
+                <Zap className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">Accéder au Dossier Express IA</span>
+                <ArrowRight className="w-4 h-4 flex-shrink-0" />
               </Button>
             </Link>
           </div>
@@ -509,14 +509,14 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           FONDATEUR — Citation crédibilité
       ══════════════════════════════════════════════════════════ */}
-      <section className="relative py-16 sm:py-20 overflow-hidden" data-testid="home-founder-quote">
+      <section className="relative py-12 sm:py-16 lg:py-20 overflow-hidden" data-testid="home-founder-quote">
         <div className="absolute inset-0 bg-[#0c0c0c]" />
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23D4AF37\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <span className="text-[#D4AF37] text-sm font-medium uppercase tracking-[0.2em]">Le mot du fondateur</span>
+          <div className="text-center mb-6 sm:mb-8">
+            <span className="text-[#D4AF37] text-xs sm:text-sm font-medium uppercase tracking-[0.2em]">Le mot du fondateur</span>
           </div>
-          <div className="relative p-8 sm:p-10 rounded-2xl border border-[#D4AF37]/20 bg-[#0f0d08]/80 backdrop-blur-sm" data-testid="home-founder-card">
+          <div className="relative p-6 sm:p-8 md:p-10 rounded-2xl border border-[#D4AF37]/20 bg-[#0f0d08]/80 backdrop-blur-sm" data-testid="home-founder-card">
             <div className="absolute -top-4 left-8 w-8 h-8 flex items-center justify-center rounded-full bg-[#D4AF37] text-[#0c0c0c]">
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983z"/></svg>
             </div>
@@ -562,15 +562,15 @@ export const HomePage = () => {
               </Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 min-w-0">
-              <div className="bg-foreground text-primary-foreground p-5 rounded-xl">
-                <p className="text-2xl sm:text-3xl font-bold text-accent mb-1">800 - 3 000 €</p>
+              <div className="bg-foreground text-primary-foreground p-4 sm:p-5 rounded-xl">
+                <p className="text-xl sm:text-2xl md:text-3xl font-bold text-accent mb-1">800 - 3 000 €</p>
                 <p className="text-xs text-primary-foreground/60">Coût moyen d'un médecin conseil</p>
               </div>
-              <div className="bg-foreground text-primary-foreground p-5 rounded-xl">
-                <p className="text-2xl sm:text-3xl font-bold text-accent mb-1">x10</p>
+              <div className="bg-foreground text-primary-foreground p-4 sm:p-5 rounded-xl">
+                <p className="text-xl sm:text-2xl md:text-3xl font-bold text-accent mb-1">x10</p>
                 <p className="text-xs text-primary-foreground/60">Retour sur investissement potentiel</p>
               </div>
-              <div className="sm:col-span-2 bg-foreground text-primary-foreground p-5 rounded-xl">
+              <div className="sm:col-span-2 bg-foreground text-primary-foreground p-4 sm:p-5 rounded-xl">
                 <div className="flex items-center gap-2 mb-2">
                   <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0" />
                   <p className="font-semibold text-sm">Risque d'un mauvais choix</p>
@@ -587,19 +587,19 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           TÉMOIGNAGES
       ══════════════════════════════════════════════════════════ */}
-      <section className="relative py-16 sm:py-20 overflow-hidden" data-testid="testimonials-section">
+      <section className="relative py-12 sm:py-16 lg:py-20 overflow-hidden" data-testid="testimonials-section">
         <div className="absolute inset-0 bg-[#0c0c0c]" />
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <span className="text-[#C9A84C] text-sm font-medium uppercase tracking-[0.2em]">Ils ont fait confiance</span>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mt-3 text-[#f5f0e8]">
+          <div className="text-center mb-8 sm:mb-12">
+            <span className="text-[#C9A84C] text-xs sm:text-sm font-medium uppercase tracking-[0.2em]">Ils ont fait confiance</span>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mt-2 sm:mt-3 text-[#f5f0e8]">
               Des parcours transformés
             </h2>
             <p className="text-[#f5f0e8]/40 mt-3 max-w-xl mx-auto text-sm">
               Témoignages anonymisés de personnes accompagnées par Stratégie & Expertise Santé.
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {[
               { initials: "M.L.", age: "52 ans", badge: "AT", text: "Après 18 mois de refus par la CPAM, mon accident du travail a enfin été reconnu. Sans cet accompagnement, j'aurais abandonné les démarches.", result: "AT reconnue — Rente obtenue" },
               { initials: "P.D.", age: "45 ans", badge: "PTIA", badgeGold: true, text: "Mon assureur refusait de reconnaître ma PTIA malgré l'avis de trois médecins. Grâce à une stratégie méthodique, la garantie a été activée après 8 mois de recours.", result: "Garantie PTIA activée" },

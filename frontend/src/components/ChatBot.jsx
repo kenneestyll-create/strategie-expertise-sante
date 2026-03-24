@@ -197,7 +197,7 @@ export const ChatBot = () => {
     <>
       {/* Mascot Floating Button — Premium */}
       {!isOpen && (
-        <div className="fixed bottom-6 right-6 flex items-end gap-3" style={{ zIndex: 'var(--z-chatbot)' }} data-testid="chatbot-fab-wrapper">
+        <div className="fixed flex items-end gap-3" style={{ zIndex: 'var(--z-chatbot)', bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))', right: '1rem' }} data-testid="chatbot-fab-wrapper">
           {/* Text Bubble */}
           {showBubble && !bubbleDismissed && (
             <div
@@ -238,7 +238,10 @@ export const ChatBot = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 w-[380px] max-w-[calc(100vw-2rem)] h-[550px] max-h-[calc(100vh-6rem)] flex flex-col bg-background border border-border rounded-2xl shadow-2xl overflow-hidden" style={{ zIndex: 'var(--z-chatbot)' }}>
+        <div
+          className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 w-full sm:w-[380px] sm:max-w-[calc(100vw-2rem)] h-full sm:h-[550px] sm:max-h-[min(550px,calc(100vh-6rem))] flex flex-col bg-background sm:border sm:border-border sm:rounded-2xl shadow-2xl overflow-hidden"
+          style={{ zIndex: 'var(--z-chatbot)', maxHeight: '100dvh' }}
+        >
           {/* Header */}
           <div className="flex items-center justify-between p-4 bg-foreground text-primary-foreground">
             <div className="flex items-center gap-3">

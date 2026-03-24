@@ -250,8 +250,8 @@ export const StrategiIA = () => {
       {isOpen && (
         <div className="fixed inset-0" style={{ zIndex: 'var(--z-modal)' }}>
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleClose} />
-          <div className="relative max-w-2xl mx-auto mt-[5vh] mx-4 max-h-[90vh] flex flex-col">
-            <div className="bg-background border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" data-testid="strategiia-modal">
+          <div className="relative w-full max-w-2xl mx-auto mt-[2vh] sm:mt-[5vh] px-3 sm:px-4 flex flex-col" style={{ maxHeight: '96vh', maxHeight: '96dvh' }}>
+            <div className="bg-background border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col" style={{ maxHeight: '92vh', maxHeight: '92dvh' }} data-testid="strategiia-modal">
               {/* Header */}
               <div className="flex items-center justify-between p-5 bg-foreground text-primary-foreground flex-shrink-0">
                 <div className="flex items-center gap-3">
