@@ -189,7 +189,7 @@ export const HomePage = () => {
             className="text-2xl sm:text-3xl md:text-4xl font-semibold text-white leading-[1.2] mb-4 max-w-3xl mx-auto"
             data-testid="hero-title"
           >
-            Vous n'êtes plus seul face à votre accident du travail
+            Vous n'êtes plus seul face à votre{' '}<span className="text-[#C9A84C]">accident du travail</span>{' '}ou votre{' '}<span className="text-[#C9A84C]">maladie professionnelle</span>
           </h1>
 
           {/* Sous-titre */}
