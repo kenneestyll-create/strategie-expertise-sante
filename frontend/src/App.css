@@ -15,6 +15,34 @@
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* StrategiIA loading progress animation */
+.strategiia-progress-bar {
+  animation: strategiiaProgress 12s ease-out forwards;
+}
+@keyframes strategiiaProgress {
+  0% { width: 0%; }
+  10% { width: 15%; }
+  25% { width: 35%; }
+  50% { width: 55%; }
+  70% { width: 72%; }
+  85% { width: 85%; }
+  100% { width: 95%; }
+}
+
+.strategiia-step-2 { animation: strategiiaStepIn 0.3s ease-out 2s forwards; }
+.strategiia-step-3 { animation: strategiiaStepIn 0.3s ease-out 5s forwards; }
+.strategiia-step-4 { animation: strategiiaStepIn 0.3s ease-out 8s forwards; }
+@keyframes strategiiaStepIn {
+  to { opacity: 1; }
+}
+
+.strategiia-progress-pct {
+  animation: strategiiaPct 12s linear forwards;
+}
+@keyframes strategiiaPct {
+  0% { content: '0%'; }
+}
+
 /* ═══ MOBILE TEXT — anti-troncature global ═══ */
 @media (max-width: 768px) {
   /* Texte : retour à la ligne forcé */

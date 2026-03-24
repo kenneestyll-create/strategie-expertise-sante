@@ -36,6 +36,7 @@ const REGIMES = [
   { value: 'agricole', label: "MSA (agricole)" },
   { value: 'fonctionnaire', label: "Fonction publique" },
   { value: 'independant', label: "Indépendant / TNS" },
+  { value: 'ratp_sncf', label: "Régimes spéciaux RATP / SNCF" },
   { value: 'autre', label: "Autre" },
 ];
 
@@ -203,9 +204,40 @@ export const StrategiIA = () => {
     setConsent(false); setPremiumPdf(false); setAnalysePremium(false); setScoreData(null);
   };
 
+  const [loadingStep, setLoadingStep] = useState(0);
+  const [loadingPct, setLoadingPct] = useState(0);
+
+  // Progress animation during loading
+  useEffect(() => {
+    if (step !== 'loading') { setLoadingStep(0); setLoadingPct(0); return; }
+    const timers = [
+      setTimeout(() => { setLoadingStep(1); setLoadingPct(15); }, 500),
+      setTimeout(() => { setLoadingStep(2); setLoadingPct(35); }, 2500),
+      setTimeout(() => { setLoadingStep(3); setLoadingPct(60); }, 5500),
+      setTimeout(() => { setLoadingStep(4); setLoadingPct(85); }, 8500),
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, [step]);
+
+  return (
+    if (!text) return { tier1: '', tier2: '', tier3: '' };
   // Split analysis into 3 tiers based on ---SECTION--- markers
   const splitAnalysis = (text) => {
     if (!text) return { tier1: '', tier2: '', tier3: '' };
+    const parts = text.split(/---SECTION_[123]---/).filter(p => p.trim());
+    if (parts.length >= 3) {
+      return { tier1: parts[0].trim(), tier2: parts[1].trim(), tier3: parts[2].trim() };
+    }
+    const lines = text.split('\n');
+    const t1 = Math.ceil(lines.length / 3);
+    const t2 = Math.ceil(lines.length * 2 / 3);
+    return {
+      tier1: lines.slice(0, t1).join('\n'),
+      tier2: lines.slice(t1, t2).join('\n'),
+      tier3: lines.slice(t2).join('\n'),
+    };
+  };
+
     const parts = text.split(/---SECTION_[123]---/).filter(p => p.trim());
     if (parts.length >= 3) {
       return { tier1: parts[0].trim(), tier2: parts[1].trim(), tier3: parts[2].trim() };
@@ -312,12 +344,57 @@ export const StrategiIA = () => {
                   </div>
                 )}
 
-                {/* LOADING */}
+                {/* LOADING — Barre de progression animée */}
                 {step === 'loading' && (
-                  <div className="py-16 text-center" data-testid="strategiia-loading">
-                    <Loader2 className="w-10 h-10 text-accent animate-spin mx-auto mb-4" />
-                    <p className="font-semibold">Votre dossier est en cours d'analyse...</p>
-                    <p className="text-sm text-muted-foreground mt-2">Notre outil StratégiIA prépare votre pré-analyse en croisant jurisprudences et statistiques</p>
+                  <div className="py-10 space-y-6" data-testid="strategiia-loading">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center">
+                        <Brain className="w-7 h-7 text-accent animate-pulse" />
+                      </div>
+                      <p className="font-semibold text-base">Analyse en cours...</p>
+                    </div>
+
+                    {/* Progress bar */}
+                    <div className="max-w-md mx-auto space-y-2">
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-accent rounded-full transition-all duration-1000 ease-out"
+                          style={{ width: `${loadingPct}%` }}
+                          data-testid="strategiia-progress-bar"
+                        />
+                      </div>
+                      <div className="flex justify-between text-[11px] text-muted-foreground">
+                        <span>StratégiIA</span>
+                        <span>{loadingPct}%</span>
+                      </div>
+                    </div>
+
+                    {/* Dynamic step indicators */}
+                    <div className="max-w-sm mx-auto space-y-3">
+                      {[
+                        'Identification du type de dossier',
+                        'Croisement des jurisprudences',
+                        'Recherche de cas similaires',
+                        'Génération de votre pré-analyse',
+                      ].map((label, i) => {
+                        const stepNum = i + 1;
+                        const isDone = loadingStep > stepNum;
+                        const isActive = loadingStep === stepNum;
+                        return (
+                          <div
+                            key={i}
+                            className={`flex items-center gap-3 text-sm transition-opacity duration-500 ${loadingStep >= stepNum ? 'opacity-100' : 'opacity-30'}`}
+                          >
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${isDone ? 'bg-accent/20' : isActive ? 'bg-accent/10' : 'bg-muted'}`}>
+                              {isDone ? <Check className="w-3.5 h-3.5 text-accent" /> : isActive ? <Loader2 className="w-3.5 h-3.5 text-accent animate-spin" /> : <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30" />}
+                            </div>
+                            <span className={isDone ? 'text-foreground/80' : isActive ? 'text-foreground' : ''}>{label}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <p className="text-xs text-muted-foreground text-center">Cela prend généralement 10 à 15 secondes</p>
                   </div>
                 )}
 
