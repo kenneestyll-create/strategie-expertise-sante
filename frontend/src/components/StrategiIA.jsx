@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -88,8 +89,13 @@ export const StrategiIA = () => {
       setFullResult(data.analysis);
       setCasesFound(data.cases_found);
       setStep('teaser');
-    } catch {
-      toast.error("Erreur lors de l'analyse. Réessayez.");
+    } catch (err) {
+      const status = err?.response?.status;
+      if (status === 503) {
+        toast.error("Le service d'analyse est temporairement indisponible. Réessayez dans quelques minutes.");
+      } else {
+        toast.error("Erreur lors de l'analyse. Veuillez réessayer.");
+      }
       setStep('form');
     }
   };
@@ -301,8 +307,8 @@ export const StrategiIA = () => {
                     </div>
                     {/* Tier 1 content — 1/3 visible */}
                     <div className="relative">
-                      <div className="prose prose-sm max-w-none text-sm leading-relaxed whitespace-pre-wrap bg-muted/30 p-4 rounded-xl border border-border" data-testid="strategiia-teaser-text">
-                        {splitAnalysis(fullResult).tier1}
+                      <div className="prose prose-sm max-w-none text-sm leading-relaxed bg-muted/30 p-4 rounded-xl border border-border" data-testid="strategiia-teaser-text">
+                        <ReactMarkdown>{splitAnalysis(fullResult).tier1}</ReactMarkdown>
                       </div>
                       {/* Gradient fade overlay */}
                       <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background via-background/95 to-transparent rounded-b-xl" />
@@ -362,10 +368,8 @@ export const StrategiIA = () => {
 
                     {/* Tier 1 + Tier 2 visible */}
                     <div className="relative">
-                      <div className="prose prose-sm max-w-none text-sm leading-relaxed whitespace-pre-wrap bg-muted/30 p-4 rounded-xl border border-border" data-testid="strategiia-basic-text">
-                        {splitAnalysis(fullResult).tier1}
-                        {'\n\n'}
-                        {splitAnalysis(fullResult).tier2}
+                      <div className="prose prose-sm max-w-none text-sm leading-relaxed bg-muted/30 p-4 rounded-xl border border-border" data-testid="strategiia-basic-text">
+                        <ReactMarkdown>{splitAnalysis(fullResult).tier1 + '\n\n' + splitAnalysis(fullResult).tier2}</ReactMarkdown>
                       </div>
                       {/* Gradient fade */}
                       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/95 to-transparent rounded-b-xl" />
@@ -526,7 +530,7 @@ export const StrategiIA = () => {
                       </Card>
                     )}
 
-                    <div className="prose prose-sm max-w-none text-sm leading-relaxed whitespace-pre-wrap bg-muted/30 p-4 rounded-xl border border-border" data-testid="strategiia-premium-text">{premiumResult}</div>
+                    <div className="prose prose-sm max-w-none text-sm leading-relaxed bg-muted/30 p-4 rounded-xl border border-border" data-testid="strategiia-premium-text"><ReactMarkdown>{premiumResult}</ReactMarkdown></div>
                     <Card className="border-accent/20">
                       <CardContent className="p-4 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
