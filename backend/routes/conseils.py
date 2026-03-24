@@ -145,11 +145,11 @@ async def get_today_conseil():
                 "link_label": priority.get("link_label", "En savoir plus"),
             }
 
-    # Active conseils within date range
+    # Active conseils within date range — sorted by _id for deterministic order
     active = await db.strate_conseils.find({
         "active": True,
         "$or": [{"start_date": None}, {"start_date": {"$lte": today}}],
-    }).to_list(500)
+    }).sort("_id", 1).to_list(500)
 
     valid = []
     for c in active:
@@ -169,8 +169,12 @@ async def get_today_conseil():
             }
         return {"id": "", "text": DEFAULT_CONSEILS[0]["text"], "category": "droits", "link": "/ressources", "link_label": "Voir les ressources"}
 
+    # Rotation quotidienne déterministe : jours écoulés depuis le 1er janvier 2024
+    start_date = datetime(2024, 1, 1, tzinfo=timezone.utc)
     now = datetime.now(timezone.utc)
-    day_index = math.floor(now.timestamp() / 86400) % len(valid)
+    diff_days = (now - start_date).days
+    day_index = diff_days % len(valid)
+
     conseil = valid[day_index]
     return {
         "id": str(conseil["_id"]),
