@@ -82,8 +82,20 @@
 }
 
 
-/* === SCANNER — masquer uniquement Emergent === */
+/* === Masquer le badge "Made with Emergent" === */
 [class*="emergent"],
-[id*="emergent"] {
+[id*="emergent"],
+[class*="Emergent"],
+[id*="Emergent"],
+a[href*="emergentagent"],
+div[class*="made-with"],
+iframe[src*="emergent"] {
   display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
 }

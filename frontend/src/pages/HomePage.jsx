@@ -6,9 +6,7 @@ import { SEO } from '@/components/SEO';
 import { useReveal, useRevealChildren } from '@/hooks/useReveal';
 import { 
   ArrowRight, 
-  FileSearch, 
   Shield, 
-  Heart, 
   CheckCircle, 
   Sparkles,
   Stethoscope,
@@ -22,13 +20,19 @@ import {
   ClipboardList,
   ExternalLink,
   AlertTriangle,
-  TrendingDown,
-  Search,
-  Users,
-  Target,
-  BarChart3,
-  Settings,
-  Phone
+  Phone,
+  Crosshair,
+  ScanSearch,
+  ShieldAlert,
+  CircleSlash,
+  Compass,
+  UserCheck,
+  Focus,
+  RefreshCcw,
+  HeartHandshake,
+  Award,
+  TrendingUp,
+  Brain
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -99,18 +103,18 @@ export const HomePage = () => {
   }, []);
 
   const risques = [
-    { icon: TrendingDown, text: "Sous-évaluation de votre taux d'IPP" },
-    { icon: FileSearch, text: "Mauvaise reconnaissance de l'incidence professionnelle" },
-    { icon: Stethoscope, text: "Expertise médicale défavorable" },
+    { icon: CircleSlash, text: "Sous-évaluation de votre taux d'IPP" },
+    { icon: ShieldAlert, text: "Mauvaise reconnaissance de l'incidence professionnelle" },
+    { icon: ScanSearch, text: "Expertise médicale défavorable" },
     { icon: AlertTriangle, text: "Perte financière importante et irréversible" },
   ];
 
   const methodeSES = [
-    { step: "S", num: "01", icon: Search, title: "Analyse stratégique du dossier", desc: "Étude approfondie de votre situation médicale, administrative et financière." },
-    { step: "E", num: "02", icon: AlertTriangle, title: "Identification des risques d'erreur", desc: "Repérage des failles, incohérences et points de vigilance dans votre parcours." },
-    { step: "S", num: "03", icon: Users, title: "Orientation vers les bons professionnels", desc: "Mise en relation avec les experts les plus adaptés à votre pathologie." },
-    { step: "", num: "04", icon: Target, title: "Optimisation de l'expertise médicale", desc: "Préparation stratégique pour maximiser la reconnaissance de vos séquelles." },
-    { step: "", num: "05", icon: Settings, title: "Suivi et ajustement", desc: "Accompagnement continu et adaptation de la stratégie selon l'évolution de votre dossier." },
+    { num: "01", icon: Crosshair, title: "Analyse stratégique du dossier", desc: "Étude approfondie de votre situation médicale, administrative et financière." },
+    { num: "02", icon: ShieldAlert, title: "Identification des risques d'erreur", desc: "Repérage des failles, incohérences et points de vigilance dans votre parcours." },
+    { num: "03", icon: Compass, title: "Orientation vers les bons professionnels", desc: "Mise en relation avec les experts les plus adaptés à votre pathologie." },
+    { num: "04", icon: Focus, title: "Optimisation de l'expertise médicale", desc: "Préparation stratégique pour maximiser la reconnaissance de vos séquelles." },
+    { num: "05", icon: RefreshCcw, title: "Suivi et ajustement", desc: "Accompagnement continu et adaptation de la stratégie selon l'évolution de votre dossier." },
   ];
 
   const solutions = [
@@ -123,7 +127,7 @@ export const HomePage = () => {
       accent: true,
     },
     {
-      icon: Sparkles,
+      icon: Brain,
       title: "StratégiIA",
       price: "Gratuit",
       desc: "Pré-analyse assistée par intelligence artificielle. Un premier diagnostic rapide et confidentiel de votre situation.",
@@ -141,10 +145,10 @@ export const HomePage = () => {
   ];
 
   const confiance = [
-    { icon: Heart, title: "Expertise terrain réelle", desc: "Née d'une expérience personnelle face aux mêmes épreuves que les vôtres." },
+    { icon: HeartHandshake, title: "Expertise terrain réelle", desc: "Née d'une expérience personnelle face aux mêmes épreuves que les vôtres." },
     { icon: Stethoscope, title: "Compréhension des enjeux médicaux et professionnels", desc: "Maîtrise des tableaux de maladies professionnelles, des barèmes et des procédures." },
-    { icon: Target, title: "Approche stratégique unique", desc: "Chaque dossier est traité comme un cas à part, avec une stratégie sur mesure." },
-    { icon: BarChart3, title: "Vision orientée résultats", desc: "L'objectif est clair : obtenir la reconnaissance et l'indemnisation que vous méritez." },
+    { icon: Award, title: "Approche stratégique unique", desc: "Chaque dossier est traité comme un cas à part, avec une stratégie sur mesure." },
+    { icon: TrendingUp, title: "Vision orientée résultats", desc: "L'objectif est clair : obtenir la reconnaissance et l'indemnisation que vous méritez." },
   ];
 
   const chiffresCles = [
@@ -541,7 +545,7 @@ export const HomePage = () => {
                 </Button>
               </Link>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-foreground text-primary-foreground p-5 rounded-xl">
                 <p className="text-3xl font-bold text-accent mb-1">800 - 3 000 €</p>
                 <p className="text-xs text-primary-foreground/60">Coût moyen d'un médecin conseil</p>
@@ -550,7 +554,7 @@ export const HomePage = () => {
                 <p className="text-3xl font-bold text-accent mb-1">x10</p>
                 <p className="text-xs text-primary-foreground/60">Retour sur investissement potentiel</p>
               </div>
-              <div className="col-span-2 bg-foreground text-primary-foreground p-5 rounded-xl">
+              <div className="sm:col-span-2 bg-foreground text-primary-foreground p-5 rounded-xl">
                 <div className="flex items-center gap-2 mb-2">
                   <AlertTriangle className="w-5 h-5 text-amber-500" />
                   <p className="font-semibold text-sm">Risque d'un mauvais choix</p>

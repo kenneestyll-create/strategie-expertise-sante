@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { Menu, X, ChevronDown, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { GlobalSearch } from '@/components/GlobalSearch';
 import { StrategiIA } from '@/components/StrategiIA';
@@ -173,6 +173,17 @@ export const Header = () => {
           {/* CTA Buttons - Desktop */}
           <div className="hidden lg:flex items-center gap-1.5">
             <GlobalSearch />
+            <Link to="/dossier-express">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-full px-3 gap-1.5 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 font-semibold"
+                data-testid="header-dossier-express-btn"
+              >
+                <Zap className="w-3.5 h-3.5" />
+                Dossier Express
+              </Button>
+            </Link>
             <Link to="/espace-client">
               <Button 
                 variant="ghost"
