@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
   MessageCircle, X, Send, Bot, User,
-  ArrowRight, Gauge, Lock, FileText, Phone
+  ArrowRight, Gauge, Lock, FileText, Phone, Search, Sparkles
 } from 'lucide-react';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
@@ -224,27 +224,46 @@ export const ChatBot = () => {
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/30">
             {messages.map((message, index) => (
-              <div key={index} className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${message.role === 'user' ? 'bg-accent text-accent-foreground' : 'bg-muted text-muted-foreground'}`}>
-                  {message.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
-                </div>
-                <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${message.role === 'user' ? 'bg-accent text-accent-foreground rounded-tr-sm' : 'bg-card border border-border rounded-tl-sm'}`}>
-                  <div className="text-sm prose prose-sm max-w-none">
-                    <ReactMarkdown
-                      components={{
-                        a: ({ href, children }) => (
-                          <Link to={href || '#'} className="text-accent underline hover:no-underline" onClick={() => setIsOpen(false)}>{children}</Link>
-                        ),
-                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                        ul: ({ children }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
-                        li: ({ children }) => <li className="mb-1">{children}</li>,
-                        strong: ({ children }) => <strong className="font-semibold">{children}</strong>
-                      }}
-                    >
-                      {message.content}
-                    </ReactMarkdown>
+              <div key={index}>
+                <div className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${message.role === 'user' ? 'bg-accent text-accent-foreground' : 'bg-muted text-muted-foreground'}`}>
+                    {message.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                  </div>
+                  <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${message.role === 'user' ? 'bg-accent text-accent-foreground rounded-tr-sm' : 'bg-card border border-border rounded-tl-sm'}`}>
+                    <div className="text-sm prose prose-sm max-w-none">
+                      <ReactMarkdown
+                        components={{
+                          a: ({ href, children }) => (
+                            <Link to={href || '#'} className="text-accent underline hover:no-underline" onClick={() => setIsOpen(false)}>{children}</Link>
+                          ),
+                          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                          ul: ({ children }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
+                          li: ({ children }) => <li className="mb-1">{children}</li>,
+                          strong: ({ children }) => <strong className="font-semibold">{children}</strong>
+                        }}
+                      >
+                        {message.content}
+                      </ReactMarkdown>
+                    </div>
                   </div>
                 </div>
+                {/* CTA Buttons after AI responses (not welcome msg, not FAQ) */}
+                {message.role === 'assistant' && index > 0 && !message.is_faq && (
+                  <div className="ml-11 mt-2 flex flex-col gap-1.5" data-testid={`chatbot-cta-${index}`}>
+                    <Link to="/simulateur" onClick={() => setIsOpen(false)}>
+                      <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium bg-accent/10 text-accent hover:bg-accent/20 border border-accent/20 transition-all text-left" data-testid="chatbot-cta-strategiia">
+                        <Search className="w-3.5 h-3.5 flex-shrink-0" />
+                        Analyse complète avec StratégiIA
+                      </button>
+                    </Link>
+                    <Link to="/dossier-express" onClick={() => setIsOpen(false)}>
+                      <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium bg-foreground/5 text-foreground hover:bg-foreground/10 border border-border transition-all text-left" data-testid="chatbot-cta-dossier">
+                        <FileText className="w-3.5 h-3.5 flex-shrink-0" />
+                        Analyse de dossier réel (Dossier Express — 97€)
+                      </button>
+                    </Link>
+                  </div>
+                )}
               </div>
             ))}
 

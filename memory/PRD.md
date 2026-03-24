@@ -8,40 +8,30 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 - **Backend:** FastAPI + MongoDB
 - **Theme:** Warm neutral noir/or (Manrope + Playfair Display)
 
-## Page d'Accueil — Refonte Conversion (Mar 2026) — DONE
-Structure de la page:
-1. **HERO** - Centré, noir & or, Playfair Display, titre empathique AT/MP
-2. **Dossier Express Banner** - Urgence, 97€, livré sous 2h
-3. **Section Risques** - 4 risques + accroche dorée + CTA
-4. **Méthode S.E.S** - 5 étapes visuelles numérotées
-5. **Solutions** - 3 cartes cliquables (Dossier Express, StratégiIA, Accompagnement)
-6. **Chiffres clés** - Compteurs animés
-7. **Confiance** - 4 points de crédibilité
-8. **Fondateur** - Citation avec encadré noir/or
-9. **Médecin Conseil** - Section stratégique avec CTA
-10. **Témoignages** - 6 anonymisés
-11. **Disclaimer** - Légal
-12. **CTA Final** - Double bouton (Contacter + Analyser)
-- Tests: 100% frontend (iteration 97)
+## Entonnoir de Conversion (Mar 2026) — DONE
+- **Chatbot** : Réponses utiles mais volontairement incomplètes, ouverture systématique vers StratégiIA/Dossier Express
+- **Prompt Light** : Questions simples, sans tableaux MP, réponse rapide
+- **Prompt Full** : Questions complexes/médicales, avec tableaux MP, toujours limitée
+- **CTA Visuels** : Boutons "Analyse complète avec StratégiIA" + "Dossier Express 97€" après chaque réponse IA
+- Flow: Chatbot attire → StratégiIA convertit → Dossier Express monétise
+
+## Page d'Accueil — Refonte (Mar 2026) — DONE
+Hero chaleureux fond clair, Risques, Méthode S.E.S, Solutions, Confiance, Chiffres, Fondateur, Médecin Conseil, Témoignages, CTA
 
 ## Page Medecin Conseil (Mar 2026) — DONE
-- Page stratégique SEO/conversion: `/medecin-conseil`
-- Route, liens Header/Footer/HomePage/ServicesPage/ExpertiseMedicalePage
-- CTA Hero + CTA bas + Tracking clics/vues
-- Tests: 100% backend + frontend (iteration 96)
+Page stratégique SEO/conversion avec tracking clics/vues
 
 ## Mascotte Strate (Mar 2026) — DONE
-- Bulle pulsante, Badge date rouge, TTS français
-- CRUD Admin complet + Stats (Views, Clicks, CTR)
+Bulle pulsante, texte noir lisible, TTS français, CRUD Admin + Stats
 
 ## Chatbot IA Expert (Mar 2026) — DONE
-- FAQ restreinte (tarifs, contact) + signaux médicaux → Claude
+Animation d'attente enrichie, prompt optimisé, entonnoir conversion
 
 ## Recherche IA (Mar 2026) — DONE
-- Barre → IA chatbot + suggestions Algolia
+Barre → IA chatbot + suggestions Algolia
 
 ## Tracking Conversions (Mar 2026) — DONE
-- `/api/tracking/event` + `/api/tracking/stats`
+/api/tracking/event + /api/tracking/stats
 
 ## Taches a venir
 - **P1:** Dashboard admin pour stats tracking/conversions
