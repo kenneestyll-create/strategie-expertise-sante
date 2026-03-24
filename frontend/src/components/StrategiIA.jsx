@@ -278,8 +278,8 @@ export const StrategiIA = () => {
                 {step === 'form' && (
                   <div className="space-y-4" data-testid="strategiia-form">
                     <div className="text-center pb-2">
-                      <h3 className="text-lg font-semibold mb-1">Analysez votre dossier gratuitement</h3>
-                      <p className="text-sm text-muted-foreground">Décrivez votre situation pour obtenir une pré-analyse personnalisée assistée par notre outil StratégiIA</p>
+                      <h3 className="text-lg font-semibold mb-1">Obtenez votre pré-analyse personnalisée</h3>
+                      <p className="text-sm text-muted-foreground">Décrivez votre situation pour recevoir une pré-analyse gratuite assistée par notre outil StratégiIA</p>
                     </div>
                     <div className="p-3 rounded-lg bg-amber-50 border border-amber-200/50" data-testid="strategiia-disclaimer">
                       <p className="text-[11px] text-amber-800 leading-relaxed">
@@ -318,7 +318,7 @@ export const StrategiIA = () => {
                     <DataConsentBox checked={consent} onChange={setConsent} />
 
                     <Button onClick={handleAnalyze} className="w-full rounded-lg gap-2" disabled={!typeDossier || !situation.trim() || !consent} data-testid="strategiia-analyze-button">
-                      <Brain className="w-4 h-4" /> Analyser mon dossier gratuitement
+                      <Brain className="w-4 h-4" /> Obtenir ma pré-analyse gratuite
                     </Button>
                     <p className="text-[11px] text-muted-foreground text-center flex items-center justify-center gap-1">
                       <AlertTriangle className="w-3 h-3" />

@@ -281,7 +281,7 @@ export default function MedecinConseilPage() {
             </Button>
             <Button asChild variant="outline" size="lg" className="gap-2" data-testid="medecin-conseil-cta-analyse" onClick={() => trackClick('cta-analyse-click')}>
               <Link to="/simulateur">
-                Analyser ma situation gratuitement <ArrowRight className="w-4 h-4" />
+                Obtenir ma pré-analyse gratuite <ArrowRight className="w-4 h-4" />
               </Link>
             </Button>
           </div>
