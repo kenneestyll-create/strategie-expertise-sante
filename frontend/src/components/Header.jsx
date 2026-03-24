@@ -37,7 +37,7 @@ export const Header = () => {
   ];
 
   const outilsItems = [
-    { name: 'Analyse StratégiIA', href: '/simulateur' },
+    { name: 'Auto-diagnostic', href: '/simulateur' },
     { name: 'Calculatrice IPP', href: '/calculatrice-ipp' },
     { name: 'Calculatrice AAH', href: '/calculatrice-aah' },
     { name: 'Ressources', href: '/ressources' },

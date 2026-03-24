@@ -298,12 +298,14 @@ export const ChatBot = () => {
                 {/* CTA Buttons after AI responses (not welcome msg, not FAQ) */}
                 {message.role === 'assistant' && index > 0 && !message.is_faq && (
                   <div className="ml-11 mt-2 flex flex-col gap-1.5" data-testid={`chatbot-cta-${index}`}>
-                    <Link to="/simulateur" onClick={() => setIsOpen(false)}>
-                      <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium bg-accent/10 text-accent hover:bg-accent/20 border border-accent/20 transition-all text-left" data-testid="chatbot-cta-strategiia">
-                        <Search className="w-3.5 h-3.5 flex-shrink-0" />
-                        Analyse complète avec StratégiIA
-                      </button>
-                    </Link>
+                    <button
+                      onClick={() => { setIsOpen(false); setTimeout(() => window.dispatchEvent(new Event('strategiia:open')), 300); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium bg-accent/10 text-accent hover:bg-accent/20 border border-accent/20 transition-all text-left"
+                      data-testid="chatbot-cta-strategiia"
+                    >
+                      <Search className="w-3.5 h-3.5 flex-shrink-0" />
+                      Analyse complète avec StratégiIA
+                    </button>
                     <Link to="/dossier-express" onClick={() => setIsOpen(false)}>
                       <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium bg-foreground/5 text-foreground hover:bg-foreground/10 border border-border transition-all text-left" data-testid="chatbot-cta-dossier">
                         <FileText className="w-3.5 h-3.5 flex-shrink-0" />

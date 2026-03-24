@@ -225,7 +225,10 @@ export const HomePage = () => {
                 Être accompagné maintenant
               </Button>
             </Link>
-            <Link to="/simulateur">
+            <button
+              onClick={() => window.dispatchEvent(new Event('strategiia:open'))}
+              className="cursor-pointer"
+            >
               <Button
                 variant="outline"
                 size="lg"
@@ -233,8 +236,9 @@ export const HomePage = () => {
                 data-testid="hero-cta-secondary"
               >
                 Analyser ma situation avec StratégiIA
+                <ArrowRight className="w-4 h-4" />
               </Button>
-            </Link>
+            </button>
           </div>
 
           {/* Compteur visiteurs */}
@@ -689,7 +693,7 @@ export const HomePage = () => {
                 className="rounded-full px-8 gap-2 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/5"
                 data-testid="cta-simulateur-button"
               >
-                Analyser avec StratégiIA
+                Auto-diagnostic gratuit
               </Button>
             </Link>
           </div>
