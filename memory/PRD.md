@@ -10,28 +10,28 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 
 ## Entonnoir de Conversion (Mar 2026) — DONE
 - **Chatbot** : Reponses utiles mais volontairement incompletes, ouverture systematique vers StrategiIA/Dossier Express
-- **Prompt Light** : Questions simples, sans tableaux MP, reponse rapide
-- **Prompt Full** : Questions complexes/medicales, avec tableaux MP, toujours limitee
-- **CTA Visuels** : Boutons "Analyse complete avec StrategiIA" + "Dossier Express 97EUR" apres chaque reponse IA
 - Flow: Chatbot attire -> StrategiIA convertit -> Dossier Express monetise
 
 ## Page d'Accueil — Refonte (Mar 2026) — DONE
-Hero premium sombre avec overlay, titre "accident du travail ou maladie professionnelle" en dore. Risques, Methode S.E.S, Solutions, Confiance, Chiffres, Fondateur, Medecin Conseil, Temoignages, CTA
+Hero premium sombre avec overlay, titre dore, responsive mobile-first
 
 ## Header — Refonte Premium (Mar 2026) — DONE
-Fond sombre #0a0a08, navigation epuree mais complete: A propos, Accompagnements (6 sous-pages), Outils (11 sous-pages dont Simulateur, Calculatrice IPP/AAH, Ressources, Forum, etc.), StrategiIA (ouvre le modal d'analyse), Tarifs, Dossier Express IA. CTA "Reserver un appel" dore a droite. Menu mobile avec sections depliables.
+Fond sombre #0a0a08, navigation dropdowns, menu mobile opaque
 
 ## StrategiIA — Entonnoir 3 paliers (Mar 2026) — DONE
-Palier 1 (gratuit, sans email): 1/3 de l'analyse (resume + droits identifies) avec degrade + CTA email.
-Palier 2 (apres email): ~50% (analyse approfondie + demarches) + elements premium verrouilles + CTA 29EUR.
-Palier 3 (premium 29EUR): Analyse complete + jurisprudences + score + PDF + strategie detaillee.
-Backend async polling (POST /analyze -> job_id, GET /status/{id} polling 3s). Prompt structure avec marqueurs ---SECTION_1/2/3---. ReactMarkdown pour le rendu. Retry 3x. Claude Sonnet 4.5.
-- Barre de progression animee avec 4 etapes pendant le chargement (Mar 2026) — DONE
-- Option "Regimes speciaux RATP/SNCF" dans le dropdown (Mar 2026) — DONE
-- Correction bug syntaxe splitAnalysis duplique (Mar 2026) — DONE
+Palier 1/2/3, async polling, ReactMarkdown, barre de progression animee, option RATP/SNCF
 
-## Page Medecin Conseil (Mar 2026) — DONE
-Page strategique SEO/conversion avec tracking clics/vues
+## Optimisation Mobile Complete (Mar 2026) — DONE
+- 100dvh fallback pour Safari iOS (min-h-screen-safe)
+- Safe area inset (env(safe-area-inset-bottom)) sur tous les elements flottants
+- Input font-size min 16px pour eviter zoom iOS
+- ChatBot plein ecran sur mobile (inset-0), positionne sur desktop
+- Menu mobile fond opaque (bg-[#0a0a08])
+- Hero responsive: titres adaptatifs (text-2xl -> text-5xl), boutons full-width
+- Bandeau Dossier Express responsive avec CTA full-width mobile
+- Footer formulaire partenaire en colonne simple sur mobile
+- Pas de debordement horizontal (overflow-x: hidden + layouts flex)
+- Teste sur 320px, 375px, 412px — 100% PASS
 
 ## Mascotte Strate (Mar 2026) — DONE
 Bulle pulsante, texte noir lisible, TTS francais, CRUD Admin + Stats
