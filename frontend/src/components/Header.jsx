@@ -37,6 +37,7 @@ export const Header = () => {
   ];
 
   const outilsItems = [
+    { name: 'Simulateur', href: '/simulateur' },
     { name: 'Calculatrice IPP', href: '/calculatrice-ipp' },
     { name: 'Calculatrice AAH', href: '/calculatrice-aah' },
     { name: 'Ressources', href: '/ressources' },
@@ -137,10 +138,14 @@ export const Header = () => {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* StratégiIA */}
-            <Link to="/simulateur" className={navLinkClass(isActive('/simulateur'))} data-testid="nav-strategiia">
+            {/* StratégiIA — opens modal */}
+            <button
+              onClick={() => window.dispatchEvent(new Event('strategiia:open'))}
+              className={navLinkClass(false)}
+              data-testid="nav-strategiia"
+            >
               StratégiIA
-            </Link>
+            </button>
 
             {/* Tarifs */}
             <Link to="/tarifs" className={navLinkClass(isActive('/tarifs'))} data-testid="nav-tarifs">
@@ -242,9 +247,13 @@ export const Header = () => {
               )}
 
               {/* Direct links */}
-              <Link to="/simulateur" className={`px-4 py-3 text-sm font-medium ${isActive('/simulateur') ? 'text-[#C9A84C] bg-[#C9A84C]/5' : 'text-[#f5f0e8]/70 hover:text-[#f5f0e8] hover:bg-white/5'}`} data-testid="mobile-nav-strategiia">
+              <button
+                onClick={() => { window.dispatchEvent(new Event('strategiia:open')); setIsMenuOpen(false); }}
+                className="px-4 py-3 text-sm font-medium text-left text-[#f5f0e8]/70 hover:text-[#f5f0e8] hover:bg-white/5 w-full"
+                data-testid="mobile-nav-strategiia"
+              >
                 StratégiIA
-              </Link>
+              </button>
               <Link to="/tarifs" className={`px-4 py-3 text-sm font-medium ${isActive('/tarifs') ? 'text-[#C9A84C] bg-[#C9A84C]/5' : 'text-[#f5f0e8]/70 hover:text-[#f5f0e8] hover:bg-white/5'}`} data-testid="mobile-nav-tarifs">
                 Tarifs
               </Link>
