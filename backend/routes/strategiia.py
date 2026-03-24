@@ -70,14 +70,45 @@ RÈGLES :
 - Rappelle TOUJOURS que c'est un outil d'aide à la décision et non un conseil juridique
 - Si des cas anonymisés similaires existent dans la base, mentionne les statistiques de résultats"""
 
-STRATEGIIA_BASIC_PROMPT = """Analyse BASIQUE demandée. Fournis :
-1. Une synthèse courte de la situation (3-4 lignes)
-2. Les principaux droits identifiés (liste à puces, max 4)
-3. Si applicable : évaluation rapide de l'incidence professionnelle (IP) et de la perte de gains futurs (PGPF)
-4. La première démarche prioritaire à effectuer
-5. Un score de pertinence approximatif sur 100
+STRATEGIIA_BASIC_PROMPT = """Analyse demandée. Fournis une réponse structurée et progressive.
 
-Reste concis (max 300 mots). Mentionne qu'un rapport complet est disponible pour une analyse approfondie."""
+IMPORTANT : Structure ta réponse EXACTEMENT avec ces sections séparées par les marqueurs ci-dessous.
+Le contenu doit être progressif : les informations les plus précieuses (jurisprudences exactes, stratégie détaillée, estimations chiffrées) doivent être dans les DERNIÈRES sections.
+
+---SECTION_1---
+## Première analyse de votre situation
+(Résumé clair de la situation en 4-5 lignes. Identifie le type de dossier, le contexte et les enjeux principaux. Donne une première impression encourageante qui montre que l'outil comprend la situation.)
+
+## Premiers droits identifiés
+(Liste 2-3 droits principaux identifiés, en restant général. Ne donne PAS les montants exacts ni les articles de loi.)
+
+---SECTION_2---
+## Analyse approfondie
+(Détails supplémentaires sur la situation : points forts du dossier, risques potentiels, éléments clés à surveiller. 4-5 lignes plus détaillées avec des exemples concrets.)
+
+## Démarches prioritaires
+(Liste 3-4 démarches concrètes à effectuer, avec ordre de priorité. Reste informatif mais ne donne pas encore la stratégie complète.)
+
+## Estimation préliminaire
+(Donne une fourchette LARGE d'estimation sans détailler le calcul exact. Ex: "Les indemnisations dans ce type de dossier varient généralement entre X et Y euros selon la complexité.")
+
+---SECTION_3---
+## Jurisprudences applicables
+(2-3 jurisprudences PRÉCISES avec références complètes : Cass., date, numéro de pourvoi si possible, et ce qu'elles impliquent pour CE dossier spécifiquement.)
+
+## Stratégie recommandée
+(Plan d'action détaillé en 5-6 étapes numérotées avec justification juridique pour chaque étape. C'est le cœur de la valeur.)
+
+## Incidence Professionnelle et PGPF
+(Si applicable : évaluation chiffrée de l'IP et de la PGPF, méthode de calcul, estimation personnalisée.)
+
+## Score de pertinence et chances de succès
+(Score sur 100 avec explication détaillée des facteurs. Statistiques de cas similaires. Délais importants à respecter.)
+
+## Recommandation finale
+(Synthèse stratégique finale, prochaines étapes immédiates dans les 7 jours, et pourquoi un accompagnement expert maximiserait les chances.)
+
+Sois précis, factuel et cite les textes pertinents. Total : 600-800 mots."""
 
 STRATEGIIA_PREMIUM_PROMPT = """Analyse COMPLÈTE demandée. Fournis un rapport détaillé structuré :
 
@@ -397,8 +428,11 @@ async def strategiia_analyze(request: Request):
             remaining = max(0, 3 - usage_count)
         return {"success": True, "analysis": response, "cases_found": len(similar_cases), "remaining": remaining}
     except Exception as e:
-        logger.error(f"StratégiIA error: {e}")
-        raise HTTPException(status_code=500, detail="Erreur lors de l'analyse IA")
+        error_msg = str(e)
+        logger.error(f"StratégiIA error: {error_msg}")
+        if "budget" in error_msg.lower() or "exceeded" in error_msg.lower():
+            raise HTTPException(status_code=503, detail="Le service d'analyse IA est temporairement indisponible. Veuillez réessayer dans quelques minutes.")
+        raise HTTPException(status_code=500, detail="Erreur lors de l'analyse IA. Veuillez réessayer.")
 
 @router.get("/strategiia/score")
 async def get_relevance_score(type_dossier: str, regime: str = ""):

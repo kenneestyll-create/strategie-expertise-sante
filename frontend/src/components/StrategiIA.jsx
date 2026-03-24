@@ -173,12 +173,22 @@ export const StrategiIA = () => {
     setConsent(false); setPremiumPdf(false); setAnalysePremium(false); setScoreData(null);
   };
 
-  // Get teaser text — first quarter of the analysis
-  const getTeaserText = () => {
-    if (!fullResult) return '';
-    const lines = fullResult.split('\n');
-    const cutoff = Math.max(Math.ceil(lines.length / 4), 3);
-    return lines.slice(0, cutoff).join('\n');
+  // Split analysis into 3 tiers based on ---SECTION--- markers
+  const splitAnalysis = (text) => {
+    if (!text) return { tier1: '', tier2: '', tier3: '' };
+    const parts = text.split(/---SECTION_[123]---/).filter(p => p.trim());
+    if (parts.length >= 3) {
+      return { tier1: parts[0].trim(), tier2: parts[1].trim(), tier3: parts[2].trim() };
+    }
+    // Fallback: split by rough thirds
+    const lines = text.split('\n');
+    const t1 = Math.ceil(lines.length / 3);
+    const t2 = Math.ceil(lines.length * 2 / 3);
+    return {
+      tier1: lines.slice(0, t1).join('\n'),
+      tier2: lines.slice(t1, t2).join('\n'),
+      tier3: lines.slice(t2).join('\n'),
+    };
   };
 
   return (
@@ -281,33 +291,33 @@ export const StrategiIA = () => {
                   </div>
                 )}
 
-                {/* TEASER STEP — Read wall: 1/4 visible + email registration */}
+                {/* ═══ PALIER 1 : TEASER — 1/3 visible, sans email ═══ */}
                 {step === 'teaser' && (
                   <div className="space-y-0" data-testid="strategiia-teaser">
                     <div className="flex items-center gap-2 mb-3">
                       <Sparkles className="w-5 h-5 text-accent" />
-                      <h3 className="font-semibold">Votre analyse est prête</h3>
+                      <h3 className="font-semibold">Votre pré-analyse est prête</h3>
                       {casesFound > 0 && <Badge variant="outline" className="text-xs">{casesFound} cas similaire{casesFound > 1 ? 's' : ''}</Badge>}
                     </div>
-                    {/* Teaser — first quarter visible */}
+                    {/* Tier 1 content — 1/3 visible */}
                     <div className="relative">
                       <div className="prose prose-sm max-w-none text-sm leading-relaxed whitespace-pre-wrap bg-muted/30 p-4 rounded-xl border border-border" data-testid="strategiia-teaser-text">
-                        {getTeaserText()}
+                        {splitAnalysis(fullResult).tier1}
                       </div>
                       {/* Gradient fade overlay */}
-                      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/95 to-transparent rounded-b-xl" />
+                      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background via-background/95 to-transparent rounded-b-xl" />
                     </div>
 
-                    {/* Read wall */}
-                    <div className="relative -mt-8 pt-6" data-testid="strategiia-readwall">
+                    {/* Email unlock CTA */}
+                    <div className="relative -mt-6 pt-4" data-testid="strategiia-readwall">
                       <Card className="border-accent/40 bg-gradient-to-b from-accent/5 to-accent/10 shadow-lg">
-                        <CardContent className="p-6 space-y-4 text-center">
-                          <div className="w-14 h-14 bg-accent/15 rounded-full flex items-center justify-center mx-auto">
-                            <UserPlus className="w-7 h-7 text-accent" />
+                        <CardContent className="p-5 space-y-3 text-center">
+                          <div className="w-12 h-12 bg-accent/15 rounded-full flex items-center justify-center mx-auto">
+                            <UserPlus className="w-6 h-6 text-accent" />
                           </div>
                           <div>
-                            <h4 className="font-bold text-lg" data-testid="readwall-title">Inscrivez-vous gratuitement pour accéder à votre analyse complète</h4>
-                            <p className="text-sm text-muted-foreground mt-1">Votre analyse détaillée vous attend. Entrez votre email pour la débloquer.</p>
+                            <h4 className="font-bold text-base" data-testid="readwall-title">L'analyse continue...</h4>
+                            <p className="text-sm text-muted-foreground mt-1">Entrez votre email pour débloquer l'analyse approfondie, les démarches prioritaires et une première estimation.</p>
                           </div>
                           <div className="flex gap-2 max-w-sm mx-auto">
                             <Input
@@ -338,19 +348,137 @@ export const StrategiIA = () => {
                   </div>
                 )}
 
-                {/* FULL BASIC RESULT — unlocked after email */}
+                {/* ═══ PALIER 2 : APRÈS EMAIL — ~2/4 visible + upsell premium ═══ */}
                 {step === 'basic' && (
                   <div className="space-y-4" data-testid="strategiia-basic-result">
                     <div className="flex items-center gap-2 mb-2">
                       <Sparkles className="w-5 h-5 text-accent" />
-                      <h3 className="font-semibold">Analyse complète</h3>
+                      <h3 className="font-semibold">Analyse intermédiaire</h3>
                       {casesFound > 0 && <Badge variant="outline" className="text-xs">{casesFound} cas similaire{casesFound > 1 ? 's' : ''}</Badge>}
                       {remaining !== null && remaining > 0 && (
                         <Badge className="bg-green-100 text-green-700 border-green-200 text-xs">{remaining} restante{remaining > 1 ? 's' : ''}</Badge>
                       )}
                     </div>
 
-                    {/* Relevance Score Card */}
+                    {/* Tier 1 + Tier 2 visible */}
+                    <div className="relative">
+                      <div className="prose prose-sm max-w-none text-sm leading-relaxed whitespace-pre-wrap bg-muted/30 p-4 rounded-xl border border-border" data-testid="strategiia-basic-text">
+                        {splitAnalysis(fullResult).tier1}
+                        {'\n\n'}
+                        {splitAnalysis(fullResult).tier2}
+                      </div>
+                      {/* Gradient fade */}
+                      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/95 to-transparent rounded-b-xl" />
+                    </div>
+
+                    {/* Preview locked content hints */}
+                    <div className="space-y-2 px-1">
+                      <div className="flex items-center gap-2 text-muted-foreground/60 text-xs">
+                        <Lock className="w-3.5 h-3.5" />
+                        <span className="line-through">Jurisprudences exactes applicables à votre dossier</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground/60 text-xs">
+                        <Lock className="w-3.5 h-3.5" />
+                        <span className="line-through">Stratégie complète en 5-6 étapes</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground/60 text-xs">
+                        <Lock className="w-3.5 h-3.5" />
+                        <span className="line-through">Score de pertinence et estimation chiffrée</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground/60 text-xs">
+                        <Lock className="w-3.5 h-3.5" />
+                        <span className="line-through">Rapport PDF sécurisé téléchargeable</span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-lg bg-yellow-50 border border-yellow-200/50">
+                      <p className="text-xs text-yellow-700 flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                        <strong>Outil d'aide à la décision — Les résultats sont indicatifs et ne constituent pas un conseil juridique.</strong>
+                      </p>
+                    </div>
+
+                    {/* Premium upsell — 29€ */}
+                    <Card className="border-accent/30 bg-gradient-to-b from-accent/5 to-accent/10 shadow-lg">
+                      <CardContent className="p-5 space-y-4">
+                        <div className="text-center">
+                          <div className="w-14 h-14 bg-accent/15 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <Crown className="w-7 h-7 text-accent" />
+                          </div>
+                          <h4 className="font-bold text-lg">Rapport complet StratégiIA</h4>
+                          <p className="text-sm text-muted-foreground mt-1">Débloquez l'analyse complète avec les informations les plus stratégiques</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div className="flex items-start gap-2 p-2 rounded-lg bg-background">
+                            <Check className="w-3.5 h-3.5 text-accent mt-0.5 flex-shrink-0" />
+                            <span>Jurisprudences précises avec références</span>
+                          </div>
+                          <div className="flex items-start gap-2 p-2 rounded-lg bg-background">
+                            <Check className="w-3.5 h-3.5 text-accent mt-0.5 flex-shrink-0" />
+                            <span>Stratégie détaillée étape par étape</span>
+                          </div>
+                          <div className="flex items-start gap-2 p-2 rounded-lg bg-background">
+                            <Check className="w-3.5 h-3.5 text-accent mt-0.5 flex-shrink-0" />
+                            <span>Score de pertinence personnalisé</span>
+                          </div>
+                          <div className="flex items-start gap-2 p-2 rounded-lg bg-background">
+                            <Check className="w-3.5 h-3.5 text-accent mt-0.5 flex-shrink-0" />
+                            <span>Rapport PDF sécurisé</span>
+                          </div>
+                        </div>
+
+                        {/* Options add-on */}
+                        <label className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-accent/40 cursor-pointer transition-colors" data-testid="strategiia-analyse-premium-option">
+                          <input type="checkbox" checked={analysePremium} onChange={e => setAnalysePremium(e.target.checked)} className="mt-0.5 accent-amber-500" />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">Relecture expert personnalisée</span>
+                              <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px]">+29€</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">Rapport relu et enrichi par notre expert</p>
+                          </div>
+                        </label>
+                        <label className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-accent/40 cursor-pointer transition-colors" data-testid="strategiia-premium-pdf-option">
+                          <input type="checkbox" checked={premiumPdf} onChange={e => setPremiumPdf(e.target.checked)} className="mt-0.5 accent-accent" />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <Crown className="w-4 h-4 text-accent" />
+                              <span className="text-sm font-medium">Version professionnelle PDF</span>
+                              <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">+19€</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">Sans filigrane, pour transmission à un professionnel</p>
+                          </div>
+                          <PdfCoverPreview reportType="StrategiIA" />
+                        </label>
+
+                        <Button onClick={handlePayForPremium} className="w-full rounded-lg gap-2 bg-accent hover:bg-accent/90 text-base py-5" data-testid="strategiia-buy-premium">
+                          <CreditCard className="w-4 h-4" /> Obtenir le rapport complet — {29 + (premiumPdf ? 19 : 0) + (analysePremium ? 29 : 0)}€
+                        </Button>
+                        <p className="text-[10px] text-muted-foreground text-center">Paiement sécurisé par Stripe. Satisfaction garantie.</p>
+                      </CardContent>
+                    </Card>
+
+                    <div className="flex flex-wrap gap-2">
+                      <button onClick={handleWhatsApp} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors" data-testid="strategiia-share-whatsapp"><MessageSquare className="w-3.5 h-3.5" /> WhatsApp</button>
+                      <button onClick={handleSMS} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 transition-colors" data-testid="strategiia-share-sms"><Phone className="w-3.5 h-3.5" /> SMS</button>
+                      <button onClick={handleShareEmail} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors" data-testid="strategiia-share-email"><Mail className="w-3.5 h-3.5" /> Email</button>
+                      <button onClick={handleCopyLink} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-muted hover:bg-muted/80 transition-colors" data-testid="strategiia-share-copy">{copied ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}{copied ? 'Copié !' : 'Copier'}</button>
+                    </div>
+                    <Button variant="ghost" onClick={handleReset} className="w-full gap-2 text-sm" data-testid="strategiia-new-analysis">Nouvelle analyse</Button>
+                  </div>
+                )}
+
+                {/* ═══ PALIER 3 : PREMIUM — Contenu complet + exclusivités ═══ */}
+                {step === 'premium' && (
+                  <div className="space-y-4" data-testid="strategiia-premium-result">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Crown className="w-5 h-5 text-accent" />
+                      <h3 className="font-semibold">Rapport complet StratégiIA</h3>
+                      <Badge className="bg-accent/10 text-accent border-accent/20 text-xs">Premium</Badge>
+                    </div>
+
+                    {/* Relevance Score Card — Exclusive premium */}
                     {scoreData && scoreData.score !== null && (
                       <Card className="border-accent/20 bg-gradient-to-r from-accent/5 to-transparent" data-testid="relevance-score-card">
                         <CardContent className="p-4">
@@ -362,25 +490,18 @@ export const StrategiIA = () => {
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1">
                                 <Target className="w-4 h-4 text-accent" />
-                                <span className="text-sm font-semibold">Score de pertinence</span>
+                                <span className="text-sm font-semibold">Score de pertinence personnalisé</span>
                                 <Badge variant="outline" className={`text-[10px] ${scoreData.confidence === 'high' ? 'border-green-400 text-green-600' : scoreData.confidence === 'medium' ? 'border-yellow-400 text-yellow-600' : 'border-orange-400 text-orange-600'}`}>
                                   {scoreData.confidence === 'high' ? 'Fiabilité haute' : scoreData.confidence === 'medium' ? 'Fiabilité moyenne' : 'Fiabilité limitée'}
                                 </Badge>
                               </div>
                               <p className="text-xs text-muted-foreground">{scoreData.message}</p>
-                              {/* Distribution bar */}
                               {scoreData.distribution && (scoreData.distribution.favorable + scoreData.distribution.defavorable) > 0 && (
                                 <div className="mt-2">
                                   <div className="flex h-2 rounded-full overflow-hidden bg-muted">
-                                    {scoreData.distribution.favorable > 0 && (
-                                      <div className="bg-green-500 transition-all" style={{width: `${(scoreData.distribution.favorable / scoreData.total_cases) * 100}%`}} />
-                                    )}
-                                    {scoreData.distribution.en_cours > 0 && (
-                                      <div className="bg-yellow-400 transition-all" style={{width: `${(scoreData.distribution.en_cours / scoreData.total_cases) * 100}%`}} />
-                                    )}
-                                    {scoreData.distribution.defavorable > 0 && (
-                                      <div className="bg-red-400 transition-all" style={{width: `${(scoreData.distribution.defavorable / scoreData.total_cases) * 100}%`}} />
-                                    )}
+                                    {scoreData.distribution.favorable > 0 && <div className="bg-green-500 transition-all" style={{width: `${(scoreData.distribution.favorable / scoreData.total_cases) * 100}%`}} />}
+                                    {scoreData.distribution.en_cours > 0 && <div className="bg-yellow-400 transition-all" style={{width: `${(scoreData.distribution.en_cours / scoreData.total_cases) * 100}%`}} />}
+                                    {scoreData.distribution.defavorable > 0 && <div className="bg-red-400 transition-all" style={{width: `${(scoreData.distribution.defavorable / scoreData.total_cases) * 100}%`}} />}
                                   </div>
                                   <div className="flex justify-between mt-1 text-[10px] text-muted-foreground">
                                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />{scoreData.distribution.favorable} favorable{scoreData.distribution.favorable > 1 ? 's' : ''}</span>
@@ -389,7 +510,6 @@ export const StrategiIA = () => {
                                   </div>
                                 </div>
                               )}
-                              {/* Top strategies */}
                               {scoreData.top_strategies && scoreData.top_strategies.length > 0 && (
                                 <div className="mt-2">
                                   <p className="text-[10px] font-medium text-muted-foreground mb-1">Stratégies favorables :</p>
@@ -405,70 +525,7 @@ export const StrategiIA = () => {
                         </CardContent>
                       </Card>
                     )}
-                    <div className="prose prose-sm max-w-none text-sm leading-relaxed whitespace-pre-wrap bg-muted/30 p-4 rounded-xl border border-border" data-testid="strategiia-basic-text">
-                      {fullResult}
-                    </div>
-                    <div className="p-3 rounded-lg bg-yellow-50 border border-yellow-200/50">
-                      <p className="text-xs text-yellow-700 flex items-start gap-2">
-                        <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                        <strong>Outil d'aide à la décision — Les résultats sont indicatifs et ne constituent pas un conseil juridique.</strong>
-                      </p>
-                    </div>
-                    <Card className="border-accent/30 bg-accent/5">
-                      <CardContent className="p-4 space-y-3">
-                        <div className="flex items-center gap-2">
-                          <Lock className="w-5 h-5 text-accent" />
-                          <div>
-                            <h4 className="font-semibold text-sm">Rapport complet StratégiIA — {29 + (premiumPdf ? 19 : 0) + (analysePremium ? 29 : 0)}€</h4>
-                            <p className="text-xs text-muted-foreground">Jurisprudences détaillées, stratégie complète, score de pertinence, PDF sécurisé</p>
-                          </div>
-                        </div>
-                        <label className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-accent/40 cursor-pointer transition-colors" data-testid="strategiia-analyse-premium-option">
-                          <input type="checkbox" checked={analysePremium} onChange={e => setAnalysePremium(e.target.checked)} className="mt-0.5 accent-amber-500" />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-amber-400 text-sm">&#9889;</span>
-                              <span className="text-sm font-medium">Analyse Premium</span>
-                              <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px]">+29€</Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-1">Votre rapport StratégiIA enrichi et relu personnellement par notre expert pour une analyse encore plus précise et personnalisée.</p>
-                          </div>
-                        </label>
-                        <label className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-accent/40 cursor-pointer transition-colors" data-testid="strategiia-premium-pdf-option">
-                          <input type="checkbox" checked={premiumPdf} onChange={e => setPremiumPdf(e.target.checked)} className="mt-0.5 accent-accent" />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <Crown className="w-4 h-4 text-accent" />
-                              <span className="text-sm font-medium">Version professionnelle du rapport</span>
-                              <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">+19€</Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-1">Rapport sans filigrane, mise en page optimisée pour impression ou transmission à un professionnel (avocat, médecin, expert).</p>
-                          </div>
-                          <PdfCoverPreview reportType="StrategiIA" />
-                        </label>
-                        <Button onClick={handlePayForPremium} className="w-full rounded-lg gap-2 bg-accent hover:bg-accent/90" data-testid="strategiia-buy-premium">
-                          <CreditCard className="w-4 h-4" /> Obtenir le rapport complet — {29 + (premiumPdf ? 19 : 0) + (analysePremium ? 29 : 0)}€
-                        </Button>
-                      </CardContent>
-                    </Card>
-                    <div className="flex flex-wrap gap-2">
-                      <button onClick={handleWhatsApp} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors" data-testid="strategiia-share-whatsapp"><MessageSquare className="w-3.5 h-3.5" /> WhatsApp</button>
-                      <button onClick={handleSMS} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 transition-colors" data-testid="strategiia-share-sms"><Phone className="w-3.5 h-3.5" /> SMS</button>
-                      <button onClick={handleShareEmail} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors" data-testid="strategiia-share-email"><Mail className="w-3.5 h-3.5" /> Email</button>
-                      <button onClick={handleCopyLink} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-muted hover:bg-muted/80 transition-colors" data-testid="strategiia-share-copy">{copied ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}{copied ? 'Copié !' : 'Copier'}</button>
-                    </div>
-                    <Button variant="ghost" onClick={handleReset} className="w-full gap-2 text-sm" data-testid="strategiia-new-analysis">Nouvelle analyse</Button>
-                  </div>
-                )}
 
-                {/* PREMIUM RESULT */}
-                {step === 'premium' && (
-                  <div className="space-y-4" data-testid="strategiia-premium-result">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Sparkles className="w-5 h-5 text-accent" />
-                      <h3 className="font-semibold">Rapport complet StratégiIA</h3>
-                      <Badge className="bg-accent/10 text-accent border-accent/20 text-xs">Premium</Badge>
-                    </div>
                     <div className="prose prose-sm max-w-none text-sm leading-relaxed whitespace-pre-wrap bg-muted/30 p-4 rounded-xl border border-border" data-testid="strategiia-premium-text">{premiumResult}</div>
                     <Card className="border-accent/20">
                       <CardContent className="p-4 flex items-center justify-between gap-3">
