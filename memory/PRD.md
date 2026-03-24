@@ -21,8 +21,11 @@ Hero premium sombre avec overlay, titre "accident du travail ou maladie professi
 ## Header — Refonte Premium (Mar 2026) — DONE
 Fond sombre #0a0a08, navigation épurée mais complète: À propos, Accompagnements▾ (6 sous-pages), Outils▾ (11 sous-pages dont Simulateur, Calculatrice IPP/AAH, Ressources, Forum, etc.), StratégiIA (ouvre le modal d'analyse), Tarifs, Dossier Express IA. CTA "Réserver un appel" doré à droite. Menu mobile avec sections dépliables.
 
-## Chatbot Mascotte Straté (Mar 2026) — DONE
-Bouton robot SVG noir/or, bulle texte "StratégiIA — Je vous aide à analyser votre situation", animation pulse, apparition après 2.5s, indicateur online vert.
+## StrategiIA — Entonnoir 3 paliers (Mar 2026) — DONE
+Palier 1 (gratuit, sans email): 1/3 de l'analyse (résumé + droits identifiés) avec dégradé + CTA email.
+Palier 2 (après email): ~50% (analyse approfondie + démarches) + éléments premium verrouillés + CTA 29€.
+Palier 3 (premium 29€): Analyse complète + jurisprudences + score + PDF + stratégie détaillée.
+Backend async polling (POST /analyze → job_id, GET /status/{id} polling 3s). Prompt structuré avec marqueurs ---SECTION_1/2/3---. ReactMarkdown pour le rendu. Retry 3x. Claude Sonnet 4.5.
 
 ## Page Medecin Conseil (Mar 2026) — DONE
 Page stratégique SEO/conversion avec tracking clics/vues
