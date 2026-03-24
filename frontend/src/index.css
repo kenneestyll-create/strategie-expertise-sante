@@ -38,7 +38,7 @@
 
         /* Z-index layers */
         --z-header: 50;
-        --z-dropdown: 100;
+        --z-dropdown: 250;
         --z-modal: 200;
         --z-toast: 300;
         --z-chatbot: 400;
