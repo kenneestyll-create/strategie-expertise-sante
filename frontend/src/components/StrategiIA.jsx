@@ -86,13 +86,37 @@ export const StrategiIA = () => {
       const { data } = await axios.post(`${API}/strategiia/analyze`, {
         type_dossier: typeDossier, regime, situation, premium: false
       });
-      setFullResult(data.analysis);
-      setCasesFound(data.cases_found);
-      setStep('teaser');
+      if (data.quota_exceeded) {
+        toast.error(data.message);
+        setStep('form');
+        return;
+      }
+      // Async polling — backend returns job_id immediately
+      const jobId = data.job_id;
+      const poll = setInterval(async () => {
+        try {
+          const { data: st } = await axios.get(`${API}/strategiia/status/${jobId}`);
+          if (st.status === 'done') {
+            clearInterval(poll);
+            setFullResult(st.analysis);
+            setCasesFound(st.cases_found || 0);
+            setRemaining(st.remaining ?? null);
+            setStep('teaser');
+          } else if (st.status === 'error') {
+            clearInterval(poll);
+            toast.error(st.error || "Erreur lors de l'analyse.");
+            setStep('form');
+          }
+        } catch {
+          clearInterval(poll);
+          toast.error("Erreur de connexion. Réessayez.");
+          setStep('form');
+        }
+      }, 3000);
     } catch (err) {
       const status = err?.response?.status;
       if (status === 503) {
-        toast.error("Le service d'analyse est temporairement indisponible. Réessayez dans quelques minutes.");
+        toast.error("Le service d'analyse est temporairement indisponible.");
       } else {
         toast.error("Erreur lors de l'analyse. Veuillez réessayer.");
       }

@@ -70,45 +70,40 @@ RÈGLES :
 - Rappelle TOUJOURS que c'est un outil d'aide à la décision et non un conseil juridique
 - Si des cas anonymisés similaires existent dans la base, mentionne les statistiques de résultats"""
 
-STRATEGIIA_BASIC_PROMPT = """Analyse demandée. Fournis une réponse structurée et progressive.
-
-IMPORTANT : Structure ta réponse EXACTEMENT avec ces sections séparées par les marqueurs ci-dessous.
-Le contenu doit être progressif : les informations les plus précieuses (jurisprudences exactes, stratégie détaillée, estimations chiffrées) doivent être dans les DERNIÈRES sections.
+STRATEGIIA_BASIC_PROMPT = """Fournis une analyse structurée en 3 sections EXACTEMENT délimitées par les marqueurs ci-dessous.
+La valeur doit être PROGRESSIVE : les meilleures infos (jurisprudences, estimations chiffrées) sont dans la SECTION 3.
 
 ---SECTION_1---
-## Première analyse de votre situation
-(Résumé clair de la situation en 4-5 lignes. Identifie le type de dossier, le contexte et les enjeux principaux. Donne une première impression encourageante qui montre que l'outil comprend la situation.)
+## Première analyse
+(Résumé de la situation en 3-4 lignes. Identifie le type de dossier et les enjeux. Montre que l'outil comprend bien la situation.)
 
-## Premiers droits identifiés
-(Liste 2-3 droits principaux identifiés, en restant général. Ne donne PAS les montants exacts ni les articles de loi.)
+## Droits identifiés
+(Liste 2-3 droits principaux, en restant général. Pas de montants ni articles de loi.)
 
 ---SECTION_2---
 ## Analyse approfondie
-(Détails supplémentaires sur la situation : points forts du dossier, risques potentiels, éléments clés à surveiller. 4-5 lignes plus détaillées avec des exemples concrets.)
+(Points forts et risques du dossier, 3-4 lignes. Exemples concrets.)
 
 ## Démarches prioritaires
-(Liste 3-4 démarches concrètes à effectuer, avec ordre de priorité. Reste informatif mais ne donne pas encore la stratégie complète.)
+(3-4 démarches avec ordre de priorité.)
 
 ## Estimation préliminaire
-(Donne une fourchette LARGE d'estimation sans détailler le calcul exact. Ex: "Les indemnisations dans ce type de dossier varient généralement entre X et Y euros selon la complexité.")
+(Fourchette large sans détailler le calcul.)
 
 ---SECTION_3---
 ## Jurisprudences applicables
-(2-3 jurisprudences PRÉCISES avec références complètes : Cass., date, numéro de pourvoi si possible, et ce qu'elles impliquent pour CE dossier spécifiquement.)
+(2 jurisprudences précises avec références, implications pour ce dossier.)
 
 ## Stratégie recommandée
-(Plan d'action détaillé en 5-6 étapes numérotées avec justification juridique pour chaque étape. C'est le cœur de la valeur.)
+(Plan en 4-5 étapes numérotées avec justification.)
 
-## Incidence Professionnelle et PGPF
-(Si applicable : évaluation chiffrée de l'IP et de la PGPF, méthode de calcul, estimation personnalisée.)
-
-## Score de pertinence et chances de succès
-(Score sur 100 avec explication détaillée des facteurs. Statistiques de cas similaires. Délais importants à respecter.)
+## Score et chances de succès
+(Score /100 avec facteurs explicatifs.)
 
 ## Recommandation finale
-(Synthèse stratégique finale, prochaines étapes immédiates dans les 7 jours, et pourquoi un accompagnement expert maximiserait les chances.)
+(Synthèse et prochaines étapes dans les 7 jours.)
 
-Sois précis, factuel et cite les textes pertinents. Total : 600-800 mots."""
+Sois précis et factuel. Total : 400-500 mots maximum."""
 
 STRATEGIIA_PREMIUM_PROMPT = """Analyse COMPLÈTE demandée. Fournis un rapport détaillé structuré :
 
@@ -383,6 +378,41 @@ async def dossier_express_weekly_count():
 
 # ==================== STRATEGIIA ====================
 
+# In-memory job store for async polling
+_jobs = {}
+
+async def _run_analysis(job_id, type_dossier, regime, situation, is_premium, email, similar_cases, case_context):
+    """Background task for LLM analysis with retry."""
+    last_error = ""
+    for attempt in range(3):
+        try:
+            analysis_prompt = STRATEGIIA_PREMIUM_PROMPT if is_premium else STRATEGIIA_BASIC_PROMPT
+            user_msg = f"""Type de dossier : {type_dossier}\nRégime : {regime}\nDescription de la situation : {situation}\n{case_context}\n\n{analysis_prompt}"""
+            session_id = f"strategiia_{str(uuid.uuid4())[:8]}"
+            chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id=session_id, system_message=STRATEGIIA_SYSTEM_PROMPT).with_model("anthropic", "claude-sonnet-4-5-20250929")
+            response = await chat.send_message(UserMessage(text=user_msg))
+            analysis_doc = {"id": str(uuid.uuid4()), "type_dossier": type_dossier, "regime": regime, "situation": situation[:500], "is_premium": is_premium, "email": email if email else "", "created_at": datetime.now(timezone.utc).isoformat()}
+            await db.strategiia_analyses.insert_one(analysis_doc)
+            remaining = 3
+            if not is_premium and email:
+                now = datetime.now(timezone.utc)
+                month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+                usage_count = await db.strategiia_analyses.count_documents({"email": email, "is_premium": False, "created_at": {"$gte": month_start}})
+                remaining = max(0, 3 - usage_count)
+            _jobs[job_id] = {"status": "done", "result": {"success": True, "analysis": response, "cases_found": len(similar_cases), "remaining": remaining}}
+            return
+        except Exception as e:
+            last_error = str(e)
+            logger.warning(f"StratégiIA attempt {attempt+1}/3 failed: {last_error}")
+            if attempt < 2:
+                await asyncio.sleep(3)
+    logger.error(f"StratégiIA all 3 attempts failed: {last_error}")
+    if "budget" in last_error.lower() or "exceeded" in last_error.lower():
+        _jobs[job_id] = {"status": "error", "error": "Le service d'analyse IA est temporairement indisponible."}
+    else:
+        _jobs[job_id] = {"status": "error", "error": "L'analyse a échoué après plusieurs tentatives. Veuillez réessayer."}
+
+
 @router.post("/strategiia/analyze")
 async def strategiia_analyze(request: Request):
     body = await request.json()
@@ -400,7 +430,7 @@ async def strategiia_analyze(request: Request):
         month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
         usage_count = await db.strategiia_analyses.count_documents({"email": email, "is_premium": False, "created_at": {"$gte": month_start}})
         if usage_count >= 3:
-            return {"success": False, "quota_exceeded": True, "remaining": 0, "message": "Vous avez utilisé vos 3 analyses gratuites ce mois-ci. Passez au Dossier Express IA pour une analyse complète."}
+            return {"success": False, "quota_exceeded": True, "remaining": 0, "message": "Vous avez utilisé vos 3 analyses gratuites ce mois-ci."}
 
     similar_cases = []
     if type_dossier:
@@ -411,28 +441,26 @@ async def strategiia_analyze(request: Request):
         for c in similar_cases:
             case_context += f"- Type: {c.get('type_dossier')}, Régime: {c.get('regime')}, Durée: {c.get('duree')}, Stratégie: {c.get('strategie')}, Résultat: {c.get('resultat')}, Score: {c.get('score_pertinence', 'N/A')}/100\n"
 
-    analysis_prompt = STRATEGIIA_PREMIUM_PROMPT if is_premium else STRATEGIIA_BASIC_PROMPT
-    user_msg = f"""Type de dossier : {type_dossier}\nRégime : {regime}\nDescription de la situation : {situation}\n{case_context}\n\n{analysis_prompt}"""
+    job_id = str(uuid.uuid4())[:12]
+    _jobs[job_id] = {"status": "pending"}
+    asyncio.create_task(_run_analysis(job_id, type_dossier, regime, situation, is_premium, email, similar_cases, case_context))
+    return {"job_id": job_id, "status": "pending"}
 
-    try:
-        session_id = f"strategiia_{str(uuid.uuid4())[:8]}"
-        chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id=session_id, system_message=STRATEGIIA_SYSTEM_PROMPT).with_model("anthropic", "claude-sonnet-4-5-20250929")
-        response = await chat.send_message(UserMessage(text=user_msg))
-        analysis_doc = {"id": str(uuid.uuid4()), "type_dossier": type_dossier, "regime": regime, "situation": situation[:500], "is_premium": is_premium, "email": email if email else "", "created_at": datetime.now(timezone.utc).isoformat()}
-        await db.strategiia_analyses.insert_one(analysis_doc)
-        remaining = 3
-        if not is_premium and email:
-            now = datetime.now(timezone.utc)
-            month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
-            usage_count = await db.strategiia_analyses.count_documents({"email": email, "is_premium": False, "created_at": {"$gte": month_start}})
-            remaining = max(0, 3 - usage_count)
-        return {"success": True, "analysis": response, "cases_found": len(similar_cases), "remaining": remaining}
-    except Exception as e:
-        error_msg = str(e)
-        logger.error(f"StratégiIA error: {error_msg}")
-        if "budget" in error_msg.lower() or "exceeded" in error_msg.lower():
-            raise HTTPException(status_code=503, detail="Le service d'analyse IA est temporairement indisponible. Veuillez réessayer dans quelques minutes.")
-        raise HTTPException(status_code=500, detail="Erreur lors de l'analyse IA. Veuillez réessayer.")
+
+@router.get("/strategiia/status/{job_id}")
+async def strategiia_status(job_id: str):
+    job = _jobs.get(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Analyse non trouvée")
+    if job["status"] == "done":
+        result = job["result"]
+        del _jobs[job_id]
+        return {"status": "done", **result}
+    elif job["status"] == "error":
+        error = job["error"]
+        del _jobs[job_id]
+        return {"status": "error", "error": error}
+    return {"status": "pending"}
 
 @router.get("/strategiia/score")
 async def get_relevance_score(type_dossier: str, regime: str = ""):
