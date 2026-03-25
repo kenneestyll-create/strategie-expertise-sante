@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import {
   FileSearch, Upload, Mail, Clock, Shield, CheckCircle,
@@ -36,6 +37,7 @@ const REGIMES = [
   "Régime agricole (MSA)",
   "Fonction publique",
   "Indépendant",
+  "Régimes spéciaux RATP / SNCF",
   "Autre"
 ];
 
@@ -500,17 +502,25 @@ export const DossierExpressPage = () => {
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Type de dossier</Label>
-                      <select value={form.type_dossier} onChange={e => setForm(p => ({...p, type_dossier: e.target.value}))} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" data-testid="de-type-select">
-                        <option value="">Sélectionnez...</option>
-                        {TYPES_DOSSIER.map(t => <option key={t} value={t}>{t}</option>)}
-                      </select>
+                      <Select value={form.type_dossier} onValueChange={v => setForm(p => ({...p, type_dossier: v}))}>
+                        <SelectTrigger data-testid="de-type-select">
+                          <SelectValue placeholder="Sélectionnez..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {TYPES_DOSSIER.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="space-y-2">
                       <Label>Régime</Label>
-                      <select value={form.regime} onChange={e => setForm(p => ({...p, regime: e.target.value}))} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" data-testid="de-regime-select">
-                        <option value="">Sélectionnez...</option>
-                        {REGIMES.map(r => <option key={r} value={r}>{r}</option>)}
-                      </select>
+                      <Select value={form.regime} onValueChange={v => setForm(p => ({...p, regime: v}))}>
+                        <SelectTrigger data-testid="de-regime-select">
+                          <SelectValue placeholder="Sélectionnez..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {REGIMES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
