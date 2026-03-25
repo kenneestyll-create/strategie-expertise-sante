@@ -9,52 +9,39 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 - **Theme:** Warm neutral noir/or (Manrope + Playfair Display)
 
 ## Entonnoir de Conversion (Mar 2026) — DONE
-- **Chatbot** : Reponses utiles mais volontairement incompletes, ouverture systematique vers StrategiIA/Dossier Express
 - Flow: Chatbot attire -> StrategiIA convertit -> Dossier Express monetise
+- Guides PDF avec email gate pour capture de leads (Mar 2026) — DONE
 
-## Page d'Accueil — Refonte (Mar 2026) — DONE
-Hero premium sombre avec overlay, titre dore, responsive mobile-first
+## Page d'Accueil — DONE
+Hero premium sombre, responsive mobile-first
 
-## Header — Refonte Premium (Mar 2026) — DONE
-Fond sombre #0a0a08, navigation dropdowns, menu mobile opaque
+## Header — DONE
+Navigation dropdowns, menu mobile opaque
 
-## StrategiIA — Entonnoir 3 paliers (Mar 2026) — DONE
-Palier 1/2/3, async polling, ReactMarkdown, barre de progression animee, option RATP/SNCF
-- Options payantes mobile corrigees (Mar 2026): texte non coupe, prix aligne, PdfPreview conditionnel
+## StrategiIA — Entonnoir 3 paliers — DONE
+Async polling, barre de progression, option RATP/SNCF, options payantes mobile corrigees
 
-## Optimisation Mobile Complete (Mar 2026) — DONE
-- 100dvh fallback pour Safari iOS
-- Safe area inset sur tous les elements flottants
-- Input font-size min 16px (anti-zoom iOS)
-- ChatBot plein ecran sur mobile
-- Menu mobile fond opaque
-- Hero responsive: titres adaptatifs, boutons full-width
-- Bandeau Dossier Express responsive
-- Footer formulaire single column mobile
-- Teste sur 320px, 375px, 412px — 100% PASS
+## Optimisation Mobile Complete — DONE
+- 100dvh, safe areas, input 16px, ChatBot plein ecran, menu opaque
+- Cartes empilees pour tableaux, tabs responsive, PdfPreview responsive
+- CTA MedecinConseil raccourci sur mobile
+- Footer liens legaux visibles + copyright unique + safe area bottom
 
-## Optimisation Mobile v2 (Mar 2026) — DONE
-- Tableau maladies pro: cartes empilees sur mobile (md:hidden), table sur desktop (hidden md:block)
-- ResourcesPage: 7 onglets avec wrap responsive (3 rangees sur mobile)
-- MentionsLegalesPage: tabs en colonne simple sur mobile (grid-cols-1 sm:grid-cols-3)
-- PdfCoverPreview modal: largeur responsive min(340px, calc(100vw-3rem))
-- StrategiIA options payantes: flex justify-between, badges whitespace-nowrap, PDF preview conditionnel
-- Teste iteration_103 — 100% PASS
+## Email Gate Guides PDF (Mar 2026) — DONE
+- Champ email obligatoire avant telechargement
+- Backend: POST /api/resources/request-guide (email, guide_id, category)
+- Stockage dans collection `guide_leads` pour segmentation prospects
+- Categories: Maladie professionnelle, Expertise medicale, MDPH, Recours, Accident du travail, Assurances
+- Apres soumission: telechargement auto + CTA upsell StrategiIA
+- Teste iteration_104 — 100% PASS (backend 9/9, frontend all PASS)
 
-## Mascotte Strate (Mar 2026) — DONE
-Bulle pulsante, texte noir lisible, TTS francais, CRUD Admin + Stats
-
-## Chatbot IA Expert (Mar 2026) — DONE
-Animation d'attente enrichie, prompt optimise, entonnoir conversion
-
-## Recherche IA (Mar 2026) — DONE
-Barre -> IA chatbot + suggestions Algolia
-
-## Tracking Conversions (Mar 2026) — DONE
-/api/tracking/event + /api/tracking/stats
+## Mascotte Strate — DONE
+## Chatbot IA Expert — DONE
+## Recherche IA — DONE
+## Tracking Conversions — DONE
 
 ## Taches a venir
-- **P1:** Dashboard admin pour stats tracking/conversions
+- **P1:** Dashboard admin pour stats tracking/conversions + leads guides
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Integration HubSpot (en attente de credentials)
 - **P2:** Audit logging complet
