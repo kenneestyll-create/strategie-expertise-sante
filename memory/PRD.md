@@ -42,11 +42,11 @@ Async polling, barre de progression, option RATP/SNCF
 - Teste manuellement: email envoye via Resend OK
 
 ## Correction PDF Footer (Mar 2026) — DONE
-- Bug de chevauchement footer/texte corrige dans pdf.py
-- FOOTER_MARGIN=28mm, auto page break, _space_left() check 50mm pour bloc Contact
-- Nettoyage URLs: _clean_analysis() supprime toutes URLs/domaines du LLM
-- Prompts LLM renforces: interdiction explicite de generer des URLs
-- Teste sur 6 PDFs (court, moyen, long, URLs, contact, API) — 0 overlap, 0 URL fuitee
+- DEUX moteurs PDF identifies et corriges:
+  * Backend pdf.py (FPDF) pour StrategiIA: marges, nettoyage URLs, contact block dynamique
+  * Frontend SimulateurPage.jsx (jsPDF) pour Simulateur: remplace window.location.origin par SITE_DOMAIN, footer dynamique, checkPageBreak()
+- Prompts LLM renforces: interdiction URLs
+- Teste E2E: backend 8/8 tests, frontend flux complet verifie
 
 ## Taches a venir
 - **P1:** Dashboard admin pour stats tracking/conversions + leads guides
