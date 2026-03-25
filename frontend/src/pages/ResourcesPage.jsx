@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import {
   ArrowRight, BookOpen, AlertCircle, FileText, Shield, HelpCircle, Download,
   Search, MapPin, Phone, Mail, ExternalLink, ChevronRight, Activity, Table2,
-  Scale, Users, Heart, Clipboard, Info, Briefcase, TrendingDown
+  Scale, Users, Heart, Clipboard, Info, Briefcase, TrendingDown, CheckCircle, Brain, Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -18,6 +18,100 @@ import { MDPH_DIRECTORY } from '@/data/mdphDirectory';
 import { SEO } from '@/components/SEO';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+/* ─── Sub-component: Guide Card with Email Gate ─── */
+const GuideCard = ({ guide }) => {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!email || !email.includes('@')) {
+      toast.error("Veuillez saisir une adresse email valide");
+      return;
+    }
+    setLoading(true);
+    try {
+      await axios.post(`${API}/resources/request-guide`, {
+        email,
+        guide_id: guide.id,
+        guide_title: guide.title,
+        category: guide.category,
+      });
+      setSent(true);
+      toast.success("Guide envoyé ! Le téléchargement va démarrer.");
+      // Auto-download the PDF
+      window.open(`${API}/resources/pdf/${guide.id}`, '_blank');
+    } catch {
+      toast.error("Erreur lors de l'envoi. Réessayez.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Card className="border-border flex flex-col" data-testid={`library-guide-${guide.id}`}>
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-accent/10 rounded-xl flex items-center justify-center mb-2 flex-shrink-0">
+            <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-accent" strokeWidth={1.5} />
+          </div>
+          <Badge variant="secondary" className="text-[10px] flex-shrink-0">{guide.category}</Badge>
+        </div>
+        <CardTitle className="text-sm sm:text-base leading-tight">{guide.title}</CardTitle>
+      </CardHeader>
+      <CardContent className="flex-1 flex flex-col">
+        <p className="text-xs sm:text-sm text-muted-foreground flex-1">{guide.description}</p>
+
+        {sent ? (
+          <div className="mt-4 pt-4 border-t border-border space-y-3">
+            <div className="flex items-center gap-2 text-green-600 text-sm">
+              <CheckCircle className="w-4 h-4 flex-shrink-0" />
+              <span>Guide envoyé avec succès !</span>
+            </div>
+            <button
+              onClick={() => window.dispatchEvent(new Event('strategiia:open'))}
+              className="w-full flex items-center justify-center gap-2 text-xs text-accent hover:text-accent/80 font-medium py-2 px-3 rounded-lg bg-accent/5 hover:bg-accent/10 transition-colors cursor-pointer"
+              data-testid={`guide-upsell-${guide.id}`}
+            >
+              <Brain className="w-3.5 h-3.5 flex-shrink-0" />
+              Analyse plus précise ? Lancez StratégiIA
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="mt-4 pt-4 border-t border-border space-y-2.5">
+            <label className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <Mail className="w-3.5 h-3.5 flex-shrink-0" />
+              Recevez ce guide gratuitement par email
+            </label>
+            <div className="flex gap-2">
+              <Input
+                type="email"
+                placeholder="votre@email.com"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="h-9 text-sm flex-1"
+                data-testid={`guide-email-${guide.id}`}
+                required
+              />
+              <Button
+                type="submit"
+                size="sm"
+                disabled={loading}
+                className="gap-1.5 rounded-lg h-9 flex-shrink-0 text-xs px-3"
+                data-testid={`guide-submit-${guide.id}`}
+              >
+                {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+                <span className="hidden sm:inline">Recevoir</span>
+              </Button>
+            </div>
+          </form>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
 
 /* ─── Sub-component: MDPH Search & Card ─── */
 const MdphFinder = () => {
@@ -1103,44 +1197,24 @@ export const ResourcesPage = () => {
         </div>
       </section>
 
-      {/* PDF Library */}
+      {/* PDF Library with Email Gate */}
       <section className="section-padding" id="bibliotheque">
         <div className="max-w-7xl mx-auto">
-          <div className="mb-12">
+          <div className="mb-8 sm:mb-12">
             <span className="text-sm font-medium text-accent uppercase tracking-wider">Bibliothèque</span>
-            <h2 className="text-3xl sm:text-4xl font-semibold mt-2 mb-4">Guides PDF téléchargeables</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold mt-2 mb-4">Guides PDF téléchargeables</h2>
+            <p className="text-sm text-muted-foreground max-w-2xl">Recevez gratuitement nos guides pratiques par email. Chaque guide est conçu pour vous accompagner concrètement dans vos démarches.</p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {[
-              { id: 'guide_mp', title: "Déclarer une maladie professionnelle", description: "Feuille de route complète : éligibilité, CMI, dossier CPAM, instruction et indemnisation.", category: "AT/MP" },
-              { id: 'guide_expertise', title: "Se préparer à une expertise médicale", description: "Check-list complète : documents, doléances, accompagnement et suivi post-expertise.", category: "Expertises" },
+              { id: 'guide_mp', title: "Déclarer une maladie professionnelle", description: "Feuille de route complète : éligibilité, CMI, dossier CPAM, instruction et indemnisation.", category: "Maladie professionnelle" },
+              { id: 'guide_expertise', title: "Se préparer à une expertise médicale", description: "Check-list complète : documents, doléances, accompagnement et suivi post-expertise.", category: "Expertise médicale" },
               { id: 'guide_mdph', title: "Constituer un dossier MDPH", description: "Formulaires, projet de vie, certificat médical et stratégie de recours.", category: "MDPH" },
               { id: 'guide_recours', title: "Contester un refus", description: "Stratégie étape par étape : CRA, RAPO, médiateur et tribunal judiciaire.", category: "Recours" },
-              { id: 'guide_ipp', title: "Comprendre le taux d'IPP", description: "Barème 2025, calcul de la rente, exemples concrets et contestation.", category: "AT/MP" },
+              { id: 'guide_ipp', title: "Comprendre le taux d'IPP", description: "Barème 2025, calcul de la rente, exemples concrets et contestation.", category: "Accident du travail" },
               { id: 'guide_assurance', title: "Activer sa protection juridique", description: "Où trouver sa PJ, déclaration du litige, choix de l'avocat et plafonds.", category: "Assurances" }
             ].map(g => (
-              <Card key={g.id} className="border-border flex flex-col" data-testid={`library-guide-${g.id}`}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center mb-3">
-                      <FileText className="w-6 h-6 text-accent" strokeWidth={1.5} />
-                    </div>
-                    <Badge variant="secondary">{g.category}</Badge>
-                  </div>
-                  <CardTitle className="text-base leading-tight">{g.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-1 flex flex-col">
-                  <p className="text-sm text-muted-foreground flex-1">{g.description}</p>
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-                    <span className="text-xs text-muted-foreground">PDF</span>
-                    <Button variant="outline" size="sm" className="gap-1.5 rounded-lg"
-                      onClick={() => { window.open(`${API}/resources/pdf/${g.id}`, '_blank'); }}
-                      data-testid={`download-${g.id}`}>
-                      <Download className="w-3.5 h-3.5" /> Telecharger
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <GuideCard key={g.id} guide={g} />
             ))}
           </div>
         </div>

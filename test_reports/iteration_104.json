@@ -1,0 +1,83 @@
+{
+  "summary": "Completed testing of mobile bug fixes and email gate feature for PDF guides. All features working correctly: 1) MedecinConseilPage CTA button shows shortened 'Être accompagné' on mobile (186px width, fits viewport). 2) Footer legal links (Mentions légales, Politique de confidentialité, Administration) all visible on mobile 375px with safe-area padding. 3) ResourcesPage PDF guides section has email gate working - 6 guide cards with email input, submit button, category badges. 4) Backend POST /api/resources/request-guide accepts valid email+guide_id+category (200) and rejects invalid email (400). 5) After email submission, shows 'Guide envoyé avec succès' + StrategiIA upsell CTA. 6) Single copyright line in footer (no duplicate).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_guide_email_gate.py",
+    "/app/test_reports/pytest/pytest_guide_email_gate.xml",
+    ".screenshots/mobile_medecin_conseil_hero_cta.png",
+    ".screenshots/mobile_footer_links.png",
+    ".screenshots/mobile_guide_cards.png",
+    ".screenshots/mobile_guide_submitted.png"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_guide_email_gate.py"
+  ],
+  "success_rate": {
+    "backend": "100% (9/9 tests passed)",
+    "frontend": "100% (all mobile features verified)"
+  },
+  "test_credentials": "No auth needed for these tests",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Mobile bug fixes and email gate feature fully tested. Key findings: 1) MedecinConseilPage: Hero CTA uses responsive text - 'Être accompagné' on mobile (sm:hidden for full text), button width 186px fits 375px viewport. 2) Footer: Links visible at y=732-764, safe-area padding applied, single copyright line. 3) ResourcesPage #bibliotheque: 6 guide cards with data-testid='library-guide-{id}', email input 'guide-email-{id}', submit button 'guide-submit-{id}'. After submission shows 'guide-upsell-{id}' CTA. 4) Backend: POST /api/resources/request-guide stores email+guide_id+category in 'guide_leads' collection for lead segmentation.",
+  "test_results": {
+    "medecin_conseil_page": {
+      "hero_cta_mobile": {
+        "button_text": "Être accompagné",
+        "button_width": "186px",
+        "fits_viewport": "PASS",
+        "full_text_hidden": "PASS - 'médecin conseil' hidden on mobile via sm:hidden"
+      },
+      "bottom_cta_mobile": {
+        "button_text": "Être accompagné",
+        "status": "PASS"
+      }
+    },
+    "footer_links_mobile": {
+      "mentions_legales_visible": "PASS",
+      "politique_confidentialite_visible": "PASS",
+      "administration_visible": "PASS",
+      "admin_link_position_y": "764px",
+      "copyright_count": 1,
+      "no_duplicate_copyright": "PASS",
+      "safe_area_padding": "PASS - paddingBottom: calc(1rem + env(safe-area-inset-bottom, 0px))"
+    },
+    "resources_page_guide_cards": {
+      "card_count": 6,
+      "email_input_visible": "PASS",
+      "submit_button_visible": "PASS",
+      "categories_verified": [
+        "Maladie professionnelle",
+        "Expertise médicale",
+        "MDPH",
+        "Recours",
+        "Accident du travail",
+        "Assurances"
+      ],
+      "email_submission_flow": {
+        "toast_notification": "Guide envoyé ! Le téléchargement va démarrer.",
+        "success_message": "Guide envoyé avec succès !",
+        "upsell_cta_visible": "PASS - 'Analyse plus précise ? Lancez StratégiIA'"
+      }
+    },
+    "backend_api": {
+      "endpoint": "POST /api/resources/request-guide",
+      "valid_email_response": "200 - {success: true, guide_id: '...'}",
+      "invalid_email_response": "400 - {detail: 'Adresse email invalide'}",
+      "empty_email_response": "400",
+      "missing_guide_id_response": "400",
+      "all_categories_tested": "PASS (6/6)"
+    }
+  }
+}

@@ -288,12 +288,12 @@ export const Footer = () => {
         </div>
 
         {/* Bottom */}
-        <div className="mt-12 pt-8 border-t border-primary-foreground/10">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-primary-foreground/50">
-              © {currentYear} Stratégie & Expertise Santé. Tous droits réservés.
+        <div className="mt-12 pt-8 border-t border-primary-foreground/10" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}>
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-xs text-primary-foreground/40 text-center">
+              &copy; {currentYear} Stratégie & Expertise Santé. Tous droits réservés.
             </p>
-            <div className="flex items-center gap-6">
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
               <Link 
                 to="/mentions-legales" 
                 className="text-xs text-primary-foreground/50 hover:text-primary-foreground/70 transition-colors"

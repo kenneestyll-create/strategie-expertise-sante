@@ -79,10 +79,11 @@ export default function MedecinConseilPage() {
               considérable sur l'issue de votre dossier.
             </p>
             <div className="mt-8">
-              <Button asChild size="lg" className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-8" data-testid="medecin-conseil-hero-cta" onClick={() => trackClick('hero-cta-click')}>
+              <Button asChild size="lg" className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-6 sm:px-8 text-sm sm:text-base" data-testid="medecin-conseil-hero-cta" onClick={() => trackClick('hero-cta-click')}>
                 <Link to="/contact">
-                  <Phone className="w-4 h-4" />
-                  Être accompagné dans le choix de mon médecin conseil
+                  <Phone className="w-4 h-4 flex-shrink-0" />
+                  <span className="sm:hidden">Être accompagné</span>
+                  <span className="hidden sm:inline">Être accompagné dans le choix de mon médecin conseil</span>
                 </Link>
               </Button>
             </div>
@@ -273,10 +274,11 @@ export default function MedecinConseilPage() {
             Cette étape préalable peut faire toute la différence.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90" data-testid="medecin-conseil-cta-accompagnement" onClick={() => trackClick('cta-accompagnement-click')}>
+            <Button asChild size="lg" className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 text-sm sm:text-base" data-testid="medecin-conseil-cta-accompagnement" onClick={() => trackClick('cta-accompagnement-click')}>
               <Link to="/contact">
-                <Phone className="w-4 h-4" />
-                Être accompagné dans le choix de mon médecin conseil
+                <Phone className="w-4 h-4 flex-shrink-0" />
+                <span className="sm:hidden">Être accompagné</span>
+                <span className="hidden sm:inline">Être accompagné dans le choix de mon médecin conseil</span>
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="gap-2" data-testid="medecin-conseil-cta-analyse" onClick={() => trackClick('cta-analyse-click')}>

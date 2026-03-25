@@ -280,6 +280,40 @@ async def track_resource_download(request: Request):
     return {"success": True}
 
 
+@router.post("/resources/request-guide")
+async def request_guide_by_email(request: Request):
+    """Collect email before allowing PDF download — lead generation."""
+    body = await request.json()
+    email = (body.get("email") or "").strip().lower()
+    guide_id = body.get("guide_id", "")
+    guide_title = body.get("guide_title", "")
+    category = body.get("category", "")
+
+    if not email or "@" not in email or "." not in email:
+        raise HTTPException(status_code=400, detail="Adresse email invalide")
+    if not guide_id:
+        raise HTTPException(status_code=400, detail="Guide non spécifié")
+
+    # Store lead with category for segmentation
+    await db.guide_leads.insert_one({
+        "email": email,
+        "guide_id": guide_id,
+        "guide_title": guide_title,
+        "category": category,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+
+    # Also track the download
+    await db.resource_downloads.insert_one({
+        "resource_id": guide_id,
+        "resource_title": guide_title,
+        "email": email,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
+    return {"success": True, "guide_id": guide_id}
+
+
 @router.get("/resources/pdf/{guide_id}")
 async def download_guide_pdf(guide_id: str):
     """Generate and serve a PDF guide."""
@@ -287,13 +321,6 @@ async def download_guide_pdf(guide_id: str):
     pdf_bytes = generate_guide_pdf(guide_id)
     if not pdf_bytes:
         raise HTTPException(status_code=404, detail="Guide non trouvé")
-
-    # Track the download
-    await db.resource_downloads.insert_one({
-        "resource_id": guide_id,
-        "resource_title": guide_id,
-        "created_at": datetime.now(timezone.utc).isoformat()
-    })
 
     filename = f"{guide_id}.pdf"
     return Response(
