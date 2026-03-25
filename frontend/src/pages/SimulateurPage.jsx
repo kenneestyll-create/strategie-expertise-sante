@@ -74,7 +74,7 @@ const QUESTIONS = [
   }
 ];
 
-const getResults = (answers) => {
+const getResults = (answers, autreTexte = '') => {
   const { situation, demarche, besoin, accompagnement, anciennete } = answers;
 
   let profile = '';
@@ -183,9 +183,13 @@ const getResults = (answers) => {
     services.push({ id: 'preparation_expertise', label: 'Préparation expertise médicale', prix: '200€' });
     recommendations.push("La préparation est cruciale pour faire valoir vos droits. Ne sous-estimez pas cette étape.");
   } else {
-    profile = 'Situation spécifique';
+    profile = autreTexte ? `Situation spécifique : ${autreTexte}` : 'Situation spécifique';
     recommendations.push("Votre situation mérite une analyse personnalisée lors d'une première consultation gratuite de 10 minutes.");
+    if (autreTexte) {
+      recommendations.push(`Vous avez décrit votre situation comme suit : « ${autreTexte} ». Un expert pourra analyser votre cas en détail.`);
+    }
     demarches.push("Prendre contact pour une première consultation gratuite de 10 minutes, sans engagement");
+    services.push({ id: 'consultation_personnalisee', label: 'Consultation personnalisée', prix: '100€' });
   }
 
   if (accompagnement === 'seul') {
@@ -324,6 +328,8 @@ const generatePDF = (results, email) => {
 export const SimulateurPage = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState({});
+  const [autreTexte, setAutreTexte] = useState('');
+  const [showAutreInput, setShowAutreInput] = useState(false);
   const [showEmailStep, setShowEmailStep] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [email, setEmail] = useState('');
@@ -335,6 +341,26 @@ export const SimulateurPage = () => {
     const newAnswers = { ...answers, [questionId]: value };
     setAnswers(newAnswers);
 
+    // If "Autre situation" is selected on the first question, show text input first
+    if (questionId === 'situation' && value === 'autre') {
+      setShowAutreInput(true);
+      return; // Don't advance to next step yet
+    }
+
+    setShowAutreInput(false);
+    if (currentStep < QUESTIONS.length - 1) {
+      setTimeout(() => setCurrentStep(currentStep + 1), 300);
+    } else {
+      setTimeout(() => setShowEmailStep(true), 300);
+    }
+  };
+
+  const handleAutreSubmit = () => {
+    if (!autreTexte.trim() || autreTexte.trim().length < 5) {
+      toast.error("Veuillez décrire brièvement votre situation (au moins 5 caractères)");
+      return;
+    }
+    setShowAutreInput(false);
     if (currentStep < QUESTIONS.length - 1) {
       setTimeout(() => setCurrentStep(currentStep + 1), 300);
     } else {
@@ -343,16 +369,18 @@ export const SimulateurPage = () => {
   };
 
   const handleSubmitEmail = async () => {
-    if (!email.trim() || !email.includes('@')) {
-      toast.error("Veuillez saisir un email valide");
+    const trimmed = email.trim().toLowerCase();
+    if (!trimmed || !trimmed.includes('@') || !trimmed.includes('.') || trimmed.length < 5) {
+      toast.error("Veuillez renseigner une adresse email valide pour recevoir votre rapport personnalisé.");
       return;
     }
     setSaving(true);
-    const result = getResults(answers);
+    const result = getResults(answers, autreTexte);
     try {
       await axios.post(`${API}/simulator/result`, {
         answers,
-        email,
+        autre_situation: autreTexte.trim() || undefined,
+        email: trimmed,
         profile: result.profile,
         recommendations: result.recommendations,
         droits: result.droits,
@@ -371,20 +399,15 @@ export const SimulateurPage = () => {
     }
   };
 
-  const handleSkipEmail = () => {
-    setShowEmailStep(false);
-    setShowResults(true);
-  };
-
   const handleDownloadPDF = useCallback(() => {
-    const result = getResults(answers);
+    const result = getResults(answers, autreTexte);
     const doc = generatePDF(result, email);
     doc.save('diagnostic-strategie-expertise-sante.pdf');
     toast.success("PDF téléchargé !");
-  }, [answers, email]);
+  }, [answers, email, autreTexte]);
 
   const getShareText = () => {
-    const result = getResults(answers);
+    const result = getResults(answers, autreTexte);
     return `J'ai réalisé mon auto-diagnostic sur Stratégie & Expertise Santé. Profil : ${result.profile}. Faites le vôtre :`;
   };
 
@@ -408,13 +431,15 @@ export const SimulateurPage = () => {
   const restart = () => {
     setCurrentStep(0);
     setAnswers({});
+    setAutreTexte('');
+    setShowAutreInput(false);
     setShowEmailStep(false);
     setShowResults(false);
     setEmail('');
     setSaved(false);
   };
 
-  const results = (showResults || showEmailStep) ? getResults(answers) : null;
+  const results = (showResults || showEmailStep) ? getResults(answers, autreTexte) : null;
   const progress = showResults ? 100 : showEmailStep ? 90 : ((currentStep) / QUESTIONS.length) * 100;
 
   return (
@@ -477,8 +502,36 @@ export const SimulateurPage = () => {
                 })}
               </div>
 
+              {/* Champ texte "Autre situation" */}
+              {showAutreInput && QUESTIONS[currentStep].id === 'situation' && (
+                <div className="mt-5 p-4 rounded-xl border border-accent/30 bg-accent/5 space-y-3" data-testid="autre-situation-input-wrapper">
+                  <Label htmlFor="autre-texte" className="font-medium text-sm">
+                    Décrivez brièvement votre situation
+                  </Label>
+                  <Input
+                    id="autre-texte"
+                    value={autreTexte}
+                    onChange={e => setAutreTexte(e.target.value)}
+                    placeholder="Ex. : conflit avec mon employeur suite à un reclassement..."
+                    maxLength={200}
+                    data-testid="autre-situation-input"
+                  />
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">{autreTexte.length}/200 caractères</span>
+                    <Button
+                      onClick={handleAutreSubmit}
+                      size="sm"
+                      className="gap-2 rounded-lg"
+                      data-testid="autre-situation-submit"
+                    >
+                      Continuer <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               {currentStep > 0 && (
-                <Button variant="ghost" className="mt-6 gap-2" onClick={() => setCurrentStep(currentStep - 1)} data-testid="prev-question">
+                <Button variant="ghost" className="mt-6 gap-2" onClick={() => { setShowAutreInput(false); setCurrentStep(currentStep - 1); }} data-testid="prev-question">
                   <ArrowLeft className="w-4 h-4" /> Précédent
                 </Button>
               )}
@@ -500,7 +553,7 @@ export const SimulateurPage = () => {
               <Card className="border-accent/20">
                 <CardContent className="p-6 space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="diag-email" className="font-medium">Votre adresse email</Label>
+                    <Label htmlFor="diag-email" className="font-medium">Votre adresse email <span className="text-red-500">*</span></Label>
                     <Input
                       id="diag-email"
                       value={email}
@@ -508,7 +561,9 @@ export const SimulateurPage = () => {
                       placeholder="votre@email.fr"
                       type="email"
                       data-testid="email-step-input"
+                      onKeyDown={e => e.key === 'Enter' && handleSubmitEmail()}
                     />
+                    <p className="text-xs text-muted-foreground">Votre email est nécessaire pour vous envoyer le rapport et assurer le suivi de votre dossier.</p>
                   </div>
                   <Button
                     onClick={handleSubmitEmail}
@@ -522,13 +577,6 @@ export const SimulateurPage = () => {
                       </>
                     )}
                   </Button>
-                  <button
-                    onClick={handleSkipEmail}
-                    className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
-                    data-testid="email-step-skip"
-                  >
-                    Passer cette étape
-                  </button>
                 </CardContent>
               </Card>
 

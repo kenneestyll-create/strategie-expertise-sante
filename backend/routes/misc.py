@@ -63,6 +63,7 @@ async def save_simulator_result(request: Request):
     doc['demarches'] = body.get("demarches", [])
     doc['delais'] = body.get("delais", [])
     doc['prestation'] = body.get("prestation", "")
+    doc['autre_situation'] = body.get("autre_situation", "")  # Store 'Autre situation' text
     await db.simulator_results.insert_one(doc)
 
     hubspot_portal = os.environ.get('HUBSPOT_PORTAL_ID')
