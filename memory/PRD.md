@@ -20,18 +20,26 @@ Fond sombre #0a0a08, navigation dropdowns, menu mobile opaque
 
 ## StrategiIA — Entonnoir 3 paliers (Mar 2026) — DONE
 Palier 1/2/3, async polling, ReactMarkdown, barre de progression animee, option RATP/SNCF
+- Options payantes mobile corrigees (Mar 2026): texte non coupe, prix aligne, PdfPreview conditionnel
 
 ## Optimisation Mobile Complete (Mar 2026) — DONE
-- 100dvh fallback pour Safari iOS (min-h-screen-safe)
-- Safe area inset (env(safe-area-inset-bottom)) sur tous les elements flottants
-- Input font-size min 16px pour eviter zoom iOS
-- ChatBot plein ecran sur mobile (inset-0), positionne sur desktop
-- Menu mobile fond opaque (bg-[#0a0a08])
-- Hero responsive: titres adaptatifs (text-2xl -> text-5xl), boutons full-width
-- Bandeau Dossier Express responsive avec CTA full-width mobile
-- Footer formulaire partenaire en colonne simple sur mobile
-- Pas de debordement horizontal (overflow-x: hidden + layouts flex)
+- 100dvh fallback pour Safari iOS
+- Safe area inset sur tous les elements flottants
+- Input font-size min 16px (anti-zoom iOS)
+- ChatBot plein ecran sur mobile
+- Menu mobile fond opaque
+- Hero responsive: titres adaptatifs, boutons full-width
+- Bandeau Dossier Express responsive
+- Footer formulaire single column mobile
 - Teste sur 320px, 375px, 412px — 100% PASS
+
+## Optimisation Mobile v2 (Mar 2026) — DONE
+- Tableau maladies pro: cartes empilees sur mobile (md:hidden), table sur desktop (hidden md:block)
+- ResourcesPage: 7 onglets avec wrap responsive (3 rangees sur mobile)
+- MentionsLegalesPage: tabs en colonne simple sur mobile (grid-cols-1 sm:grid-cols-3)
+- PdfCoverPreview modal: largeur responsive min(340px, calc(100vw-3rem))
+- StrategiIA options payantes: flex justify-between, badges whitespace-nowrap, PDF preview conditionnel
+- Teste iteration_103 — 100% PASS
 
 ## Mascotte Strate (Mar 2026) — DONE
 Bulle pulsante, texte noir lisible, TTS francais, CRUD Admin + Stats
