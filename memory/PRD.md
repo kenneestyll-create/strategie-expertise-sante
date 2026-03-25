@@ -41,6 +41,13 @@ Async polling, barre de progression, option RATP/SNCF
 - Admin stats: GET /api/admin/guide-leads/stats (taux ouverture/clic, par categorie)
 - Teste manuellement: email envoye via Resend OK
 
+## Correction PDF Footer (Mar 2026) — DONE
+- Bug de chevauchement footer/texte corrige dans pdf.py
+- FOOTER_MARGIN=28mm, auto page break, _space_left() check 50mm pour bloc Contact
+- Nettoyage URLs: _clean_analysis() supprime toutes URLs/domaines du LLM
+- Prompts LLM renforces: interdiction explicite de generer des URLs
+- Teste sur 6 PDFs (court, moyen, long, URLs, contact, API) — 0 overlap, 0 URL fuitee
+
 ## Taches a venir
 - **P1:** Dashboard admin pour stats tracking/conversions + leads guides
 - **P1:** Activer les paiements en production (Stripe/PayPal)

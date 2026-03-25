@@ -68,7 +68,8 @@ RÈGLES :
 - Pour l'IP : identifie les critères applicables (pénibilité, dévalorisation, reconversion, perte d'opportunités)
 - Pour la PGPF : estime si une perte de revenus future est caractérisée et suggère la méthode de calcul
 - Rappelle TOUJOURS que c'est un outil d'aide à la décision et non un conseil juridique
-- Si des cas anonymisés similaires existent dans la base, mentionne les statistiques de résultats"""
+- Si des cas anonymisés similaires existent dans la base, mentionne les statistiques de résultats
+- NE GÉNÈRE JAMAIS d'URL, de lien hypertexte, d'adresse web ou de nom de domaine dans ta réponse. Pas de https://, pas de .fr, pas de .com. Le bloc contact est géré automatiquement par le système."""
 
 STRATEGIIA_BASIC_PROMPT = """Fournis une analyse structurée en 3 sections EXACTEMENT délimitées par les marqueurs ci-dessous.
 La valeur doit être PROGRESSIVE : les meilleures infos (jurisprudences, estimations chiffrées) sont dans la SECTION 3.
@@ -134,7 +135,8 @@ STRATEGIIA_PREMIUM_PROMPT = """Analyse COMPLÈTE demandée. Fournis un rapport d
 ## Prochaines étapes immédiates
 (3 actions concrètes à réaliser dans les prochains jours)
 
-Sois exhaustif et précis (600-800 mots)."""
+Sois exhaustif et précis (600-800 mots).
+Ne génère aucune URL, aucun lien web ni aucun nom de domaine."""
 
 DOSSIER_EXPRESS_PROMPT = """Tu es un expert en droit de la sécurité sociale, accidents du travail, maladies professionnelles et handicap (MDPH).
 On te fournit les documents et la description d'un dossier client. Rédige un RAPPORT D'ANALYSE COMPLET et PROFESSIONNEL.
@@ -179,7 +181,8 @@ Structure ton rapport ainsi :
 
 Sois exhaustif, précis et professionnel (1000-1500 mots).
 Rappelle que ce rapport est un outil d'aide à la décision et ne constitue pas un avis juridique.
-Mentionne que pour un accompagnement personnalisé, le client peut contacter Stratégie & Expertise Santé."""
+Mentionne que pour un accompagnement personnalisé, le client peut contacter Stratégie & Expertise Santé.
+Ne génère aucune URL, aucun lien web ni aucun nom de domaine dans ta réponse."""
 
 
 # ==================== DOSSIER EXPRESS ====================
