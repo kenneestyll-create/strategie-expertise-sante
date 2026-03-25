@@ -9,7 +9,6 @@ import { ChatBot } from "@/components/ChatBot";
 import { AlerteUrgente } from "@/components/AlerteUrgente";
 import { MascotteStrate } from "@/components/MascotteStrate";
 import { ExitIntentPopup } from "@/components/ExitIntentPopup";
-import { StrategiIAFab } from "@/components/StrategiIAFab";
 import { StrategiIA } from "@/components/StrategiIA";
 import { AuthProvider } from "@/context/AuthContext";
 import { ForumAuthProvider } from "@/context/ForumAuthContext";
@@ -182,7 +181,6 @@ function App() {
               </Suspense>
               <ChatBot />
               <StrategiIA />
-              <StrategiIAFab />
               <AlerteUrgente />
               <MascotteStrate />
               <ExitIntentPopup />

@@ -247,15 +247,6 @@ export const StrategiIA = () => {
 
   return (
     <>
-      <button
-        onClick={() => setIsOpen(true)}
-        className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm font-medium bg-accent/10 text-accent hover:bg-accent/20 border border-accent/20 transition-all hover:scale-[1.02]"
-        data-testid="strategiia-trigger"
-      >
-        <Brain className="w-4 h-4" />
-        <span className="hidden xl:inline">StratégiIA</span>
-      </button>
-
       {isOpen && (
         <div className="fixed inset-0" style={{ zIndex: 'var(--z-modal)' }}>
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleClose} />
