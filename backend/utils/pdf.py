@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 
 
@@ -6,6 +7,44 @@ def generate_report_number():
     year = datetime.now().year
     seq = random.randint(10000, 99999)
     return f"SES-{year}-{seq}"
+
+
+# Patterns to strip from LLM output — these are rendered by the PDF structure itself
+_STRIP_PATTERNS = [
+    re.compile(r'https?://[^\s)]+'),                           # All raw URLs
+    re.compile(r'(?i)prendre\s+rendez[- ]?vous.*$'),           # "Prendre rendez-vous" lines
+    re.compile(r'(?i)premi.re\s+consultation.*gratuit.*$'),    # "Premiere consultation gratuite" lines
+    re.compile(r'(?i)strat.gie\s*&?\s*expertise\s*sant.*$'),   # "Strategie & Expertise Sante" standalone lines
+    re.compile(r'(?i)strategie-expertise-sante\.fr.*$'),       # Domain references
+    re.compile(r'(?i)mascot-tips-admin\.preview.*$'),          # Preview URLs
+    re.compile(r'^---+$'),                                      # Horizontal rules
+]
+
+
+def _clean_analysis(text: str) -> str:
+    """Remove LLM-generated footers, URLs, and contact sections from analysis text."""
+    cleaned_lines = []
+    for line in text.split("\n"):
+        stripped = line.strip()
+        if not stripped:
+            cleaned_lines.append("")
+            continue
+        # Skip lines matching strip patterns
+        skip = False
+        for pat in _STRIP_PATTERNS:
+            if pat.search(stripped):
+                skip = True
+                break
+        if skip:
+            continue
+        # Replace any remaining inline URLs
+        cleaned = re.sub(r'https?://[^\s)]+', 'strategie-expertise-sante.fr', stripped)
+        cleaned_lines.append(cleaned)
+
+    # Remove trailing empty lines
+    while cleaned_lines and not cleaned_lines[-1].strip():
+        cleaned_lines.pop()
+    return "\n".join(cleaned_lines)
 
 
 def generate_secured_pdf(
@@ -23,6 +62,12 @@ def generate_secured_pdf(
     if not report_number:
         report_number = generate_report_number()
     gen_date = datetime.now().strftime("%d/%m/%Y")
+
+    # Clean the LLM analysis before rendering
+    analysis = _clean_analysis(analysis)
+
+    FOOTER_MARGIN = 28   # Space reserved for footer (mm from bottom)
+    FOOTER_Y = -18       # Footer position from bottom edge
 
     class SecuredPDF(FPDF):
         def __init__(self, *args, **kwargs):
@@ -49,7 +94,7 @@ def generate_secured_pdf(
             self.set_xy(self.l_margin, 22)
 
         def footer(self):
-            self.set_y(-14)
+            self.set_y(FOOTER_Y)
             self.set_draw_color(200, 200, 200)
             self.line(12, self.get_y(), 198, self.get_y())
             self.ln(2)
@@ -71,12 +116,16 @@ def generate_secured_pdf(
                 self.text(cx - tw / 2, cy, text)
             self.set_xy(saved_x, saved_y)
 
+        def _space_left(self):
+            """Usable space left on current page before footer."""
+            return self.h - FOOTER_MARGIN - self.get_y()
+
     pdf = SecuredPDF()
-    pdf.set_auto_page_break(auto=True, margin=22)
+    pdf.set_auto_page_break(auto=True, margin=FOOTER_MARGIN)
     pdf.set_left_margin(12)
     pdf.set_right_margin(12)
 
-    # Cover page
+    # ── Cover page ──
     pdf._is_cover = True
     pdf.add_page()
 
@@ -133,7 +182,7 @@ def generate_secured_pdf(
     year = datetime.now().year
     pdf.cell(0, 5, f"(c) {year} Strategie & Expertise Sante -- StrategiIA", align="C")
 
-    # Content pages
+    # ── Content pages ──
     pdf._is_cover = False
     pdf.add_page()
 
@@ -152,64 +201,77 @@ def generate_secured_pdf(
 
     pdf.ln(6)
 
-    lines = analysis.split("\n")
-    for line in lines:
+    # ── Render cleaned analysis text ──
+    content_width = 186  # 210 - 12 - 12 margins
+    for line in analysis.split("\n"):
         stripped = line.strip()
         if not stripped:
             pdf.ln(3)
             continue
-        # Skip raw URLs that would render badly in PDF
-        if stripped.startswith("http://") or stripped.startswith("https://"):
-            continue
-        # Clean inline URLs from text (replace with domain only)
-        import re
-        safe = stripped
-        safe = re.sub(r'https?://[^\s)]+', 'strategie-expertise-sante.fr', safe)
-        safe = safe.encode("latin-1", "replace").decode("latin-1")
+        safe = stripped.encode("latin-1", "replace").decode("latin-1")
         pdf.set_x(pdf.l_margin)
         if stripped.startswith("# "):
             pdf.set_font("Helvetica", "B", 16)
             pdf.set_text_color(26, 26, 46)
             pdf.ln(5)
-            pdf.multi_cell(0, 8, safe[2:])
+            pdf.multi_cell(content_width, 8, safe[2:])
         elif stripped.startswith("## "):
             pdf.set_font("Helvetica", "B", 14)
             pdf.set_text_color(26, 26, 46)
             pdf.ln(4)
-            pdf.multi_cell(0, 7, safe[3:])
+            pdf.multi_cell(content_width, 7, safe[3:])
         elif stripped.startswith("### "):
             pdf.set_font("Helvetica", "B", 12)
             pdf.set_text_color(15, 52, 96)
             pdf.ln(3)
-            pdf.multi_cell(0, 7, safe[4:])
+            pdf.multi_cell(content_width, 7, safe[4:])
         elif stripped.startswith("- ") or stripped.startswith("* "):
             pdf.set_font("Helvetica", "", 10)
             pdf.set_text_color(50, 50, 50)
             pdf.set_x(20)
-            pdf.multi_cell(166, 6, f"  {safe[2:]}")
+            pdf.multi_cell(content_width - 8, 6, f"  {safe[2:]}")
         elif stripped.startswith("**") and stripped.endswith("**"):
             pdf.set_font("Helvetica", "B", 10)
             pdf.set_text_color(50, 50, 50)
-            pdf.multi_cell(0, 6, safe.strip("*"))
+            pdf.multi_cell(content_width, 6, safe.strip("*"))
         else:
             pdf.set_font("Helvetica", "", 10)
             pdf.set_text_color(50, 50, 50)
-            pdf.multi_cell(0, 6, safe)
+            pdf.multi_cell(content_width, 6, safe)
 
-    # Contact section at end of content
-    pdf.ln(8)
-    pdf.set_draw_color(185, 78, 72)
-    pdf.line(12, pdf.get_y(), 198, pdf.get_y())
-    pdf.ln(6)
-    pdf.set_font("Helvetica", "B", 11)
+    # ── Contact block: guaranteed proper layout ──
+    # If less than 50mm available, start fresh page to avoid any overlap
+    if pdf._space_left() < 50:
+        pdf.add_page()
+
+    pdf.ln(12)
+
+    # Decorative separator
+    sep_y = pdf.get_y()
+    pdf.set_fill_color(185, 78, 72)
+    pdf.rect(60, sep_y, 90, 1.5, "F")
+    pdf.ln(10)
+
+    # Contact block — all with explicit cell heights and centering
+    pdf.set_font("Helvetica", "B", 13)
     pdf.set_text_color(26, 26, 46)
-    pdf.cell(0, 7, "Strategie & Expertise Sante", align="C", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Helvetica", "", 9)
-    pdf.set_text_color(80, 80, 80)
-    pdf.cell(0, 5, "Prendre rendez-vous : strategie-expertise-sante.fr/contact", align="C", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 5, "Premiere consultation gratuite -- 10 minutes, sans engagement", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(content_width, 8, "Strategie & Expertise Sante", align="C", new_x="LMARGIN", new_y="NEXT")
 
-    # Legal page
+    pdf.ln(4)
+
+    pdf.set_font("Helvetica", "", 10)
+    pdf.set_text_color(80, 80, 80)
+    pdf.cell(content_width, 6, "Prendre rendez-vous : strategie-expertise-sante.fr/contact", align="C", new_x="LMARGIN", new_y="NEXT")
+
+    pdf.ln(2)
+
+    pdf.set_font("Helvetica", "I", 9)
+    pdf.set_text_color(120, 120, 120)
+    pdf.cell(content_width, 6, "Consultation personnalisee sur rendez-vous", align="C", new_x="LMARGIN", new_y="NEXT")
+
+    pdf.ln(6)
+
+    # ── Legal page (always on its own page) ──
     pdf.add_page()
     pdf.ln(5)
     pdf.set_fill_color(185, 78, 72)
@@ -232,8 +294,9 @@ def generate_secured_pdf(
         f"Rapport : {report_number}\n"
         f"Date de generation : {gen_date}"
     )
-    pdf.multi_cell(0, 5.5, legal_text)
+    pdf.multi_cell(content_width, 5.5, legal_text)
 
+    # Apply watermarks
     if with_watermark:
         total_pages = pdf.pages_count
         for p_num in range(1, total_pages + 1):
