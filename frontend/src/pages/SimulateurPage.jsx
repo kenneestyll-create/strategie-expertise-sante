@@ -214,18 +214,36 @@ const getResults = (answers, autreTexte = '') => {
 };
 
 /* ─── PDF Generation ─── */
+const SITE_DOMAIN = "strategie-expertise-sante.fr";
+
 const generatePDF = (results, email) => {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const w = doc.internal.pageSize.getWidth();
+  const h = doc.internal.pageSize.getHeight();
   const margin = 20;
   const contentW = w - margin * 2;
+  const footerZone = 30;
+  const maxContentY = h - footerZone - 10;
   let y = 0;
 
-  // Colors matching the site theme
-  const accent = [185, 78, 72]; // #B94E48 warm red
-  const dark = [47, 44, 40];   // #2F2C28 dark brown
+  const accent = [185, 78, 72];
+  const dark = [47, 44, 40];
   const muted = [120, 115, 108];
-  const bgLight = [249, 247, 242]; // #F9F7F2
+  const bgLight = [249, 247, 242];
+
+  const checkPageBreak = (needed) => {
+    if (y + needed > maxContentY) { doc.addPage(); y = 20; }
+  };
+
+  const drawPageFooter = () => {
+    const fy = h - footerZone;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(margin, fy, w - margin, fy);
+    doc.setTextColor(...muted);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'italic');
+    doc.text(`\u00A9 ${new Date().getFullYear()} Strat\u00e9gie & Expertise Sant\u00e9 \u2014 ${SITE_DOMAIN}`, w / 2, fy + 5, { align: 'center' });
+  };
 
   // Header band
   doc.setFillColor(...accent);
@@ -233,10 +251,10 @@ const generatePDF = (results, email) => {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text("Stratégie & Expertise Santé", margin, 18);
+  doc.text("Strat\u00e9gie & Expertise Sant\u00e9", margin, 18);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text("Rapport de diagnostic personnalisé", margin, 28);
+  doc.text("Rapport de diagnostic personnalis\u00e9", margin, 28);
   doc.text(new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }), w - margin, 28, { align: 'right' });
   y = 48;
 
@@ -246,17 +264,16 @@ const generatePDF = (results, email) => {
   doc.setTextColor(...accent);
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text("Profil identifié", margin + 6, y + 9);
+  doc.text("Profil identifi\u00e9", margin + 6, y + 9);
   doc.setTextColor(...dark);
   doc.setFontSize(11);
   doc.setFont('helvetica', 'normal');
   doc.text(results.profile, margin + 6, y + 17);
   y += 30;
 
-  // Helper for sections
-  const addSection = (title, items, icon) => {
+  const addSection = (title, items) => {
     if (!items || items.length === 0) return;
-    if (y > 260) { doc.addPage(); y = 20; }
+    checkPageBreak(20);
     doc.setFillColor(...accent);
     doc.rect(margin, y, 3, 8, 'F');
     doc.setTextColor(...dark);
@@ -269,22 +286,22 @@ const generatePDF = (results, email) => {
     doc.setFontSize(9.5);
     doc.setTextColor(...dark);
     items.forEach(item => {
-      if (y > 270) { doc.addPage(); y = 20; }
-      const lines = doc.splitTextToSize(`• ${item}`, contentW - 10);
+      const lines = doc.splitTextToSize(`\u2022 ${item}`, contentW - 10);
+      const blockH = lines.length * 5 + 2;
+      checkPageBreak(blockH);
       doc.text(lines, margin + 7, y);
-      y += lines.length * 5 + 2;
+      y += blockH;
     });
     y += 4;
   };
 
-  addSection("Résumé de votre situation", results.recommendations, "clipboard");
-  addSection("Vos droits potentiels", results.droits, "shield");
-  addSection("Démarches prioritaires", results.demarches, "list");
-  addSection("Délais importants", results.delais, "clock");
+  addSection("R\u00e9sum\u00e9 de votre situation", results.recommendations);
+  addSection("Vos droits potentiels", results.droits);
+  addSection("D\u00e9marches prioritaires", results.demarches);
+  addSection("D\u00e9lais importants", results.delais);
 
-  // Recommended service box
   if (results.services.length > 0) {
-    if (y > 240) { doc.addPage(); y = 20; }
+    checkPageBreak(38);
     doc.setFillColor(...bgLight);
     doc.roundedRect(margin, y, contentW, 30, 3, 3, 'F');
     doc.setDrawColor(...accent);
@@ -292,35 +309,51 @@ const generatePDF = (results, email) => {
     doc.setTextColor(...accent);
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text("Prestation recommandée", margin + 6, y + 10);
+    doc.text("Prestation recommand\u00e9e", margin + 6, y + 10);
     doc.setTextColor(...dark);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    const svcText = results.services.map(s => `${s.label}${s.prix ? ' — ' + s.prix : ''}`).join(' | ');
+    const svcText = results.services.map(s => `${s.label}${s.prix ? ' \u2014 ' + s.prix : ''}`).join(' | ');
     doc.text(svcText, margin + 6, y + 19);
     doc.setFontSize(8);
     doc.setTextColor(...muted);
-    doc.text("Première consultation gratuite — 10 min, sans engagement", margin + 6, y + 26);
+    doc.text("Premi\u00e8re consultation gratuite \u2014 10 min, sans engagement", margin + 6, y + 26);
     y += 38;
   }
 
-  // Footer
-  if (y > 250) { doc.addPage(); y = 20; }
-  doc.setFillColor(...dark);
-  doc.rect(0, 277, w, 20, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(9);
+  // Contact block
+  checkPageBreak(50);
+  y += 6;
+  doc.setDrawColor(...accent);
+  doc.line(60, y, w - 60, y);
+  y += 8;
+  doc.setTextColor(...dark);
+  doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text("Stratégie & Expertise Santé", margin, 285);
+  doc.text("Strat\u00e9gie & Expertise Sant\u00e9", w / 2, y, { align: 'center' });
+  y += 7;
   doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(...muted);
+  doc.text(`Prendre rendez-vous : ${SITE_DOMAIN}/contact`, w / 2, y, { align: 'center' });
+  y += 5;
+  doc.setFont('helvetica', 'italic');
   doc.setFontSize(8);
-  doc.text("Prendre rendez-vous : " + window.location.origin + "/agenda", margin, 291);
-  doc.text("Contact : " + window.location.origin + "/contact", w - margin, 291, { align: 'right' });
+  doc.text("Consultation personnalis\u00e9e sur rendez-vous", w / 2, y, { align: 'center' });
+  y += 8;
 
   // Disclaimer
   doc.setTextColor(...muted);
   doc.setFontSize(7);
-  doc.text("Ce rapport est fourni à titre indicatif et ne constitue pas un avis juridique. Consultez un professionnel pour une analyse complète.", margin, y + 4);
+  doc.setFont('helvetica', 'italic');
+  doc.text("Ce rapport est fourni \u00e0 titre indicatif et ne constitue pas un avis juridique.", w / 2, y, { align: 'center' });
+
+  // Draw footer on all pages
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let p = 1; p <= totalPages; p++) {
+    doc.setPage(p);
+    drawPageFooter();
+  }
 
   return doc;
 };
