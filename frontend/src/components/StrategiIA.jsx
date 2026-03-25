@@ -430,7 +430,7 @@ export const StrategiIA = () => {
                             </Button>
                           </div>
                           <p className="text-[11px] text-muted-foreground">
-                            Gratuit et sans engagement. 3 analyses par mois.
+                            Pré-analyse gratuite et sans engagement. 3 analyses par mois.
                           </p>
                         </CardContent>
                       </Card>
@@ -663,7 +663,7 @@ export const StrategiIA = () => {
                     <div>
                       <h3 className="text-lg font-semibold mb-2">Quota atteint</h3>
                       <p className="text-sm text-muted-foreground">
-                        Vous avez utilisé vos <strong>3 analyses gratuites</strong> ce mois-ci.
+                        Vous avez utilisé vos <strong>3 pré-analyses gratuites</strong> ce mois-ci.
                         Vos analyses se renouvellent le 1er du mois prochain.
                       </p>
                     </div>

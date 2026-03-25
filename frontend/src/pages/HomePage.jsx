@@ -129,7 +129,7 @@ export const HomePage = () => {
     {
       icon: Brain,
       title: "StratégiIA",
-      price: "Gratuit",
+      price: "Pré-analyse gratuite",
       desc: "Pré-analyse assistée par intelligence artificielle. Un premier diagnostic rapide et confidentiel de votre situation.",
       href: "/simulateur",
       accent: false,

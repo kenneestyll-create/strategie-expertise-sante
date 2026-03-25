@@ -358,9 +358,9 @@ export const ResourcesPage = () => {
                       <div className="space-y-2">
                         <p className="text-sm font-medium">Conditions requises :</p>
                         <ul className="space-y-2">
-                          <li className="text-sm flex items-start gap-2"><ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />La maladie est désignée dans un tableau</li>
-                          <li className="text-sm flex items-start gap-2"><ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />Au moins une condition du tableau n'est pas remplie</li>
-                          <li className="text-sm flex items-start gap-2"><ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />Le CRRMP établit que la maladie est directement causée par le travail</li>
+                          <li className="text-sm flex items-start gap-2"><ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" /><span>La maladie est désignée dans un tableau</span></li>
+                          <li className="text-sm flex items-start gap-2"><ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" /><span>Au moins une condition du tableau n'est pas remplie</span></li>
+                          <li className="text-sm flex items-start gap-2"><ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" /><span>Le CRRMP établit que la maladie est directement causée par le travail</span></li>
                         </ul>
                       </div>
                     </div>
@@ -375,9 +375,9 @@ export const ResourcesPage = () => {
                       <div className="space-y-2">
                         <p className="text-sm font-medium">Conditions requises :</p>
                         <ul className="space-y-2">
-                          <li className="text-sm flex items-start gap-2"><ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" /><strong>Taux d'IPP ≥ 25%</strong> (ou décès de la victime)</li>
-                          <li className="text-sm flex items-start gap-2"><ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />Lien <strong>direct et essentiel</strong> entre la maladie et le travail habituel</li>
-                          <li className="text-sm flex items-start gap-2"><ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />Avis favorable du CRRMP après instruction du dossier</li>
+                          <li className="text-sm flex items-start gap-2"><ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" /><span><strong>Taux d'IPP &ge; 25%</strong> (ou décès de la victime)</span></li>
+                          <li className="text-sm flex items-start gap-2"><ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" /><span>Lien <strong>direct et essentiel</strong> entre la maladie et le travail habituel</span></li>
+                          <li className="text-sm flex items-start gap-2"><ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" /><span>Avis favorable du CRRMP après instruction du dossier</span></li>
                         </ul>
                       </div>
                     </div>

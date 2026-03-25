@@ -186,7 +186,7 @@ export const TarifsPage = () => {
         </div>
       </section>
 
-      {/* ==================== ÉTAPE 1 : StratégiIA Gratuite ==================== */}
+      {/* ==================== ÉTAPE 1 : StratégiIA Pré-analyse gratuite ==================== */}
       <section className="section-padding" id="tarif-strategiia">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-3 mb-8">
@@ -203,7 +203,7 @@ export const TarifsPage = () => {
                 <div>
                   <div className="flex items-center gap-2 mb-3">
                     <Brain className="w-6 h-6 text-accent" />
-                    <h3 className="text-xl font-semibold">Analyse StratégiIA</h3>
+                    <h3 className="text-xl font-semibold">Pré-analyse StratégiIA</h3>
                     <Badge className="bg-green-100 text-green-700 border-green-200">Gratuit</Badge>
                   </div>
                   <p className="text-muted-foreground mb-4">
@@ -222,7 +222,7 @@ export const TarifsPage = () => {
                   <p className="text-xs text-muted-foreground mb-4">Sans engagement</p>
                   <Button className="rounded-full gap-2" data-testid="step-1-cta">
                     <Brain className="w-4 h-4" />
-                    Lancer l'analyse gratuite
+                    Lancer ma pré-analyse
                   </Button>
                   <p className="text-xs text-muted-foreground mt-2">Le bouton StratégiIA est dans le menu</p>
                 </div>
