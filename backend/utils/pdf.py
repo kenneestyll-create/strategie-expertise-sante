@@ -158,7 +158,14 @@ def generate_secured_pdf(
         if not stripped:
             pdf.ln(3)
             continue
-        safe = stripped.encode("latin-1", "replace").decode("latin-1")
+        # Skip raw URLs that would render badly in PDF
+        if stripped.startswith("http://") or stripped.startswith("https://"):
+            continue
+        # Clean inline URLs from text (replace with domain only)
+        import re
+        safe = stripped
+        safe = re.sub(r'https?://[^\s)]+', 'strategie-expertise-sante.fr', safe)
+        safe = safe.encode("latin-1", "replace").decode("latin-1")
         pdf.set_x(pdf.l_margin)
         if stripped.startswith("# "):
             pdf.set_font("Helvetica", "B", 16)
@@ -188,6 +195,19 @@ def generate_secured_pdf(
             pdf.set_font("Helvetica", "", 10)
             pdf.set_text_color(50, 50, 50)
             pdf.multi_cell(0, 6, safe)
+
+    # Contact section at end of content
+    pdf.ln(8)
+    pdf.set_draw_color(185, 78, 72)
+    pdf.line(12, pdf.get_y(), 198, pdf.get_y())
+    pdf.ln(6)
+    pdf.set_font("Helvetica", "B", 11)
+    pdf.set_text_color(26, 26, 46)
+    pdf.cell(0, 7, "Strategie & Expertise Sante", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", "", 9)
+    pdf.set_text_color(80, 80, 80)
+    pdf.cell(0, 5, "Prendre rendez-vous : strategie-expertise-sante.fr/contact", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 5, "Premiere consultation gratuite -- 10 minutes, sans engagement", align="C", new_x="LMARGIN", new_y="NEXT")
 
     # Legal page
     pdf.add_page()
