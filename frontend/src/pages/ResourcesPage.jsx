@@ -215,27 +215,27 @@ export const ResourcesPage = () => {
           </div>
 
           <Tabs defaultValue="tableaux" className="w-full" data-testid="encyclopedia-tabs">
-            <TabsList className="w-full flex flex-wrap h-auto gap-2 bg-muted/50 p-2 rounded-xl mb-8">
-              <TabsTrigger value="tableaux" className="flex-1 min-w-[100px] gap-1.5 rounded-lg" data-testid="enc-tab-tableaux">
-                <Table2 className="w-4 h-4" /> Tableaux MP
+            <TabsList className="w-full flex flex-wrap h-auto gap-1.5 sm:gap-2 bg-muted/50 p-2 rounded-xl mb-8">
+              <TabsTrigger value="tableaux" className="flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-[100px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-tableaux">
+                <Table2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Tableaux MP
               </TabsTrigger>
-              <TabsTrigger value="horstableau" className="flex-1 min-w-[100px] gap-1.5 rounded-lg" data-testid="enc-tab-horstableau">
-                <Scale className="w-4 h-4" /> Hors tableau
+              <TabsTrigger value="horstableau" className="flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-[100px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-horstableau">
+                <Scale className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Hors tableau
               </TabsTrigger>
-              <TabsTrigger value="ipp" className="flex-1 min-w-[70px] gap-1.5 rounded-lg" data-testid="enc-tab-ipp">
-                <Activity className="w-4 h-4" /> IPP
+              <TabsTrigger value="ipp" className="flex-1 min-w-[calc(33%-0.5rem)] sm:min-w-[70px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-ipp">
+                <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> IPP
               </TabsTrigger>
-              <TabsTrigger value="ip" className="flex-1 min-w-[70px] gap-1.5 rounded-lg" data-testid="enc-tab-ip">
-                <Briefcase className="w-4 h-4" /> IP
+              <TabsTrigger value="ip" className="flex-1 min-w-[calc(33%-0.5rem)] sm:min-w-[70px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-ip">
+                <Briefcase className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> IP
               </TabsTrigger>
-              <TabsTrigger value="pgpf" className="flex-1 min-w-[70px] gap-1.5 rounded-lg" data-testid="enc-tab-pgpf">
-                <TrendingDown className="w-4 h-4" /> PGPF
+              <TabsTrigger value="pgpf" className="flex-1 min-w-[calc(33%-0.5rem)] sm:min-w-[70px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-pgpf">
+                <TrendingDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> PGPF
               </TabsTrigger>
-              <TabsTrigger value="mdph" className="flex-1 min-w-[70px] gap-1.5 rounded-lg" data-testid="enc-tab-mdph">
-                <MapPin className="w-4 h-4" /> MDPH
+              <TabsTrigger value="mdph" className="flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-[70px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-mdph">
+                <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> MDPH
               </TabsTrigger>
-              <TabsTrigger value="aides" className="flex-1 min-w-[70px] gap-1.5 rounded-lg" data-testid="enc-tab-aides">
-                <Heart className="w-4 h-4" /> Aides MDPH
+              <TabsTrigger value="aides" className="flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-[70px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-aides">
+                <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Aides MDPH
               </TabsTrigger>
             </TabsList>
 
@@ -253,7 +253,8 @@ export const ResourcesPage = () => {
                     </p>
                   </CardHeader>
                   <CardContent>
-                    <div className="overflow-x-auto">
+                    {/* Desktop: tableau classique */}
+                    <div className="hidden md:block overflow-x-auto">
                       <table className="w-full text-sm" data-testid="maladies-pro-table">
                         <thead>
                           <tr className="border-b border-border">
@@ -274,6 +275,24 @@ export const ResourcesPage = () => {
                           ))}
                         </tbody>
                       </table>
+                    </div>
+
+                    {/* Mobile: cartes empilées */}
+                    <div className="md:hidden space-y-3" data-testid="maladies-pro-cards-mobile">
+                      {MALADIES_PRO_TABLEAUX.map((t, i) => (
+                        <div key={i} className="p-4 rounded-xl border border-border bg-muted/20" data-testid={`maladie-card-${t.numero}`}>
+                          <div className="flex items-start gap-3">
+                            <Badge variant="outline" className="font-mono text-sm flex-shrink-0 mt-0.5">{t.numero}</Badge>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-sm leading-snug">{t.titre}</h4>
+                              <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+                                <Activity className="w-3.5 h-3.5 flex-shrink-0 text-accent" />
+                                <span>Délai : <strong className="text-foreground">{t.delai}</strong></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>

@@ -517,28 +517,38 @@ export const StrategiIA = () => {
                         </div>
 
                         {/* Options add-on */}
-                        <label className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-accent/40 cursor-pointer transition-colors" data-testid="strategiia-analyse-premium-option">
-                          <input type="checkbox" checked={analysePremium} onChange={e => setAnalysePremium(e.target.checked)} className="mt-0.5 accent-amber-500" />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium">Relecture expert personnalisée</span>
-                              <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px]">+29€</Badge>
+                        <div className="space-y-3">
+                          <label className="flex items-start gap-3 p-3 sm:p-4 rounded-lg border border-border hover:border-accent/40 cursor-pointer transition-colors" data-testid="strategiia-analyse-premium-option">
+                            <input type="checkbox" checked={analysePremium} onChange={e => setAnalysePremium(e.target.checked)} className="mt-1 accent-amber-500 flex-shrink-0 w-4 h-4" />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-sm font-medium">Relecture expert personnalisée</span>
+                                <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px] flex-shrink-0 whitespace-nowrap">+29€</Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1">Rapport relu et enrichi par notre expert</p>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-0.5">Rapport relu et enrichi par notre expert</p>
-                          </div>
-                        </label>
-                        <label className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-accent/40 cursor-pointer transition-colors" data-testid="strategiia-premium-pdf-option">
-                          <input type="checkbox" checked={premiumPdf} onChange={e => setPremiumPdf(e.target.checked)} className="mt-0.5 accent-accent" />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <Crown className="w-4 h-4 text-accent" />
-                              <span className="text-sm font-medium">Version professionnelle PDF</span>
-                              <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">+19€</Badge>
+                          </label>
+                          <label className="block p-3 sm:p-4 rounded-lg border border-border hover:border-accent/40 cursor-pointer transition-colors" data-testid="strategiia-premium-pdf-option">
+                            <div className="flex items-start gap-3">
+                              <input type="checkbox" checked={premiumPdf} onChange={e => setPremiumPdf(e.target.checked)} className="mt-1 accent-accent flex-shrink-0 w-4 h-4" />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-1.5 min-w-0">
+                                    <Crown className="w-4 h-4 text-accent flex-shrink-0" />
+                                    <span className="text-sm font-medium">Version professionnelle PDF</span>
+                                  </div>
+                                  <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px] flex-shrink-0 whitespace-nowrap">+19€</Badge>
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1">Sans filigrane, pour transmission à un professionnel</p>
+                              </div>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-0.5">Sans filigrane, pour transmission à un professionnel</p>
-                          </div>
-                          <PdfCoverPreview reportType="StrategiIA" />
-                        </label>
+                            {premiumPdf && (
+                              <div className="mt-3 flex justify-center">
+                                <PdfCoverPreview reportType="StrategiIA" />
+                              </div>
+                            )}
+                          </label>
+                        </div>
 
                         <Button onClick={handlePayForPremium} className="w-full rounded-lg gap-2 bg-accent hover:bg-accent/90 text-base py-5" data-testid="strategiia-buy-premium">
                           <CreditCard className="w-4 h-4" /> Obtenir le rapport complet — {29 + (premiumPdf ? 19 : 0) + (analysePremium ? 29 : 0)}€

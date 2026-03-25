@@ -101,8 +101,8 @@ export const PdfCoverPreview = ({ reportType = "StrategiIA", className = "" }) =
               <X className="w-4 h-4" />
             </button>
             <div
-              className="rounded-xl overflow-hidden border-2 border-border/40 shadow-2xl"
-              style={{ width: 340, height: 480, aspectRatio: '210/297' }}
+              className="rounded-xl overflow-hidden border-2 border-border/40 shadow-2xl w-[min(340px,calc(100vw-3rem))]"
+              style={{ aspectRatio: '210/297' }}
               data-testid="pdf-cover-preview-modal"
             >
               <CoverContent reportType={reportType} large />

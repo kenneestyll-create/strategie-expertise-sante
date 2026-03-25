@@ -24,7 +24,7 @@ export const MentionsLegalesPage = () => {
       <section className="section-padding">
         <div className="max-w-4xl mx-auto">
           <Tabs defaultValue="mentions" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-8">
+            <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto gap-1 mb-8">
               <TabsTrigger value="mentions" className="gap-2">
                 <FileText className="w-4 h-4" />
                 Mentions légales
