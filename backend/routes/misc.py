@@ -337,6 +337,46 @@ async def get_resource_stats(admin: dict = Depends(get_current_admin)):
     return {"total_downloads": total, "by_resource": stats}
 
 
+@router.get("/admin/guide-leads/stats")
+async def get_guide_leads_stats(admin: dict = Depends(get_current_admin)):
+    """Stats for guide email leads and followup emails."""
+    total_leads = await db.guide_leads.count_documents({})
+    followup_sent = await db.guide_leads.count_documents({"followup_sent": True})
+    pending_followup = await db.guide_leads.count_documents({"followup_sent": {"$ne": True}})
+
+    # By category
+    cat_pipeline = [{"$group": {"_id": "$category", "count": {"$sum": 1}}}, {"$sort": {"count": -1}}]
+    by_category = await db.guide_leads.aggregate(cat_pipeline).to_list(20)
+
+    # By guide
+    guide_pipeline = [{"$group": {"_id": "$guide_id", "title": {"$first": "$guide_title"}, "category": {"$first": "$category"}, "count": {"$sum": 1}}}, {"$sort": {"count": -1}}]
+    by_guide = await db.guide_leads.aggregate(guide_pipeline).to_list(20)
+
+    # Followup email performance
+    total_followups = await db.guide_followups.count_documents({})
+    opened = await db.guide_followups.count_documents({"opened": True})
+    clicked = await db.guide_followups.count_documents({"clicked": True})
+
+    # Recent leads
+    recent = await db.guide_leads.find({}, {"_id": 0}).sort("created_at", -1).to_list(20)
+
+    return {
+        "total_leads": total_leads,
+        "followup_sent": followup_sent,
+        "pending_followup": pending_followup,
+        "by_category": by_category,
+        "by_guide": by_guide,
+        "followup_emails": {
+            "total_sent": total_followups,
+            "opened": opened,
+            "clicked": clicked,
+            "open_rate": round(opened / total_followups * 100, 1) if total_followups else 0,
+            "click_rate": round(clicked / total_followups * 100, 1) if total_followups else 0,
+        },
+        "recent_leads": recent,
+    }
+
+
 # ==================== EMAIL ADMIN ====================
 
 @router.get("/admin/email/status")

@@ -8,37 +8,38 @@ Application web complete en francais pour fournir des conseils sur les maladies 
 - **Backend:** FastAPI + MongoDB
 - **Theme:** Warm neutral noir/or (Manrope + Playfair Display)
 
-## Entonnoir de Conversion (Mar 2026) — DONE
+## Entonnoir de Conversion — DONE
 - Flow: Chatbot attire -> StrategiIA convertit -> Dossier Express monetise
-- Guides PDF avec email gate pour capture de leads (Mar 2026) — DONE
-
-## Page d'Accueil — DONE
-Hero premium sombre, responsive mobile-first
-
-## Header — DONE
-Navigation dropdowns, menu mobile opaque
+- Guides PDF avec email gate pour capture de leads
+- Email de relance automatique 48h apres telechargement guide
 
 ## StrategiIA — Entonnoir 3 paliers — DONE
-Async polling, barre de progression, option RATP/SNCF, options payantes mobile corrigees
+Async polling, barre de progression, option RATP/SNCF
+- Auto-open via URL param ?open=strategiia (pour liens email)
 
 ## Optimisation Mobile Complete — DONE
 - 100dvh, safe areas, input 16px, ChatBot plein ecran, menu opaque
 - Cartes empilees pour tableaux, tabs responsive, PdfPreview responsive
-- CTA MedecinConseil raccourci sur mobile
-- Footer liens legaux visibles + copyright unique + safe area bottom
 
 ## Email Gate Guides PDF (Mar 2026) — DONE
 - Champ email obligatoire avant telechargement
-- Backend: POST /api/resources/request-guide (email, guide_id, category)
-- Stockage dans collection `guide_leads` pour segmentation prospects
-- Categories: Maladie professionnelle, Expertise medicale, MDPH, Recours, Accident du travail, Assurances
-- Apres soumission: telechargement auto + CTA upsell StrategiIA
-- Teste iteration_104 — 100% PASS (backend 9/9, frontend all PASS)
+- POST /api/resources/request-guide
+- Collection `guide_leads` avec segmentation par categorie
 
-## Mascotte Strate — DONE
-## Chatbot IA Expert — DONE
-## Recherche IA — DONE
-## Tracking Conversions — DONE
+## Email Relance Automatique 48h (Mar 2026) — DONE
+- Scheduler background `_guide_followup_scheduler()` — check toutes les heures
+- 6 templates personnalises par categorie:
+  * Maladie professionnelle
+  * Accident du travail
+  * Expertise medicale
+  * MDPH
+  * Recours
+  * Assurances
+- Tracking: pixel ouverture + click CTA
+- Collections: `guide_followups` (sent_at, opened, clicked)
+- CTA email redirige vers /?open=strategiia (auto-open modal)
+- Admin stats: GET /api/admin/guide-leads/stats (taux ouverture/clic, par categorie)
+- Teste manuellement: email envoye via Resend OK
 
 ## Taches a venir
 - **P1:** Dashboard admin pour stats tracking/conversions + leads guides

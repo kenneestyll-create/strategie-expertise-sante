@@ -43,10 +43,19 @@ const REGIMES = [
 export const StrategiIA = () => {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Allow external trigger (mobile FAB)
+  // Allow external trigger (mobile FAB + email link)
   useEffect(() => {
     const open = () => setIsOpen(true);
     window.addEventListener('strategiia:open', open);
+
+    // Auto-open if URL has ?open=strategiia
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('open') === 'strategiia') {
+      setIsOpen(true);
+      // Clean up the URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
     return () => window.removeEventListener('strategiia:open', open);
   }, []);
   // Steps: form -> loading -> teaser -> basic -> premium | quota_exceeded
