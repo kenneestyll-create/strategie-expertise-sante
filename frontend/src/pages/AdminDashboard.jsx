@@ -1707,62 +1707,92 @@ export const AdminDashboard = () => {
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
+                    {/* Badges */}
                     <div className="flex flex-wrap gap-2 text-xs">
                       <Badge variant="outline">{dossierViewDialog.type_dossier}</Badge>
                       {dossierViewDialog.regime && <Badge variant="outline">{dossierViewDialog.regime}</Badge>}
                       {dossierViewDialog.premium_pdf && <Badge className="bg-accent/10 text-accent border-accent/20">PDF Pro</Badge>}
                     </div>
+
+                    {/* Situation client */}
                     {dossierViewDialog.situation && (
                       <div className="p-3 rounded-lg bg-muted/50 border">
                         <Label className="font-medium text-xs mb-1 block text-muted-foreground">Situation décrite par le client</Label>
                         <p className="text-sm leading-relaxed max-h-[120px] overflow-y-auto">{dossierViewDialog.situation}</p>
                       </div>
                     )}
-                    {/* Documents analysés */}
-                    {dossierViewDialog.document_details && dossierViewDialog.document_details.length > 0 && (
-                      <div data-testid="doc-details-block">
-                        <Label className="font-medium text-sm mb-2 block flex items-center gap-1.5">
-                          <FileText className="w-4 h-4 text-amber-600" />
-                          Documents analysés ({dossierViewDialog.document_details.length})
-                        </Label>
-                        <div className="space-y-2">
-                          {dossierViewDialog.document_details.map((doc, idx) => (
-                            <div key={idx} className="p-3 rounded-lg border bg-muted/30" data-testid={`doc-detail-${idx}`}>
-                              <div className="flex items-center justify-between gap-2 mb-1.5">
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <span className="text-sm font-medium truncate">{doc.name}</span>
-                                  {doc.size_kb > 0 && <span className="text-[10px] text-muted-foreground flex-shrink-0">{doc.size_kb} Ko</span>}
+
+                    {/* Base documentaire — Encart preview */}
+                    {dossierViewDialog.document_details && dossierViewDialog.document_details.length > 0 && (() => {
+                      const docs = dossierViewDialog.document_details;
+                      const totalPages = docs.reduce((s, d) => s + (d.pages || 0), 0);
+                      const statuses = docs.map(d => d.status || '');
+                      const level = statuses.every(s => s === 'text_extracted') ? 'Excellente'
+                        : statuses.every(s => s === 'ocr_extracted') ? 'Bonne'
+                        : statuses.every(s => ['text_extracted','ocr_extracted'].includes(s)) && statuses.some(s => s === 'ocr_extracted') ? 'Très bonne'
+                        : statuses.some(s => ['text_extracted','ocr_extracted'].includes(s)) ? 'Partielle'
+                        : 'Limitée';
+                      const levelColor = { Excellente: 'text-emerald-600', 'Très bonne': 'text-emerald-600', Bonne: 'text-blue-600', Partielle: 'text-amber-600', 'Limitée': 'text-red-500' }[level] || 'text-muted-foreground';
+
+                      return (
+                        <div className="rounded-xl border border-amber-200/60 bg-gradient-to-b from-amber-50/40 to-transparent p-4" data-testid="base-documentaire-encart">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-1 h-5 rounded-full bg-amber-500" />
+                            <h4 className="text-sm font-semibold">Base documentaire prise en compte</h4>
+                          </div>
+                          <p className="text-xs text-muted-foreground mb-3 pl-3">
+                            Ce rapport a été établi à partir des pièces transmises au moment de la demande.
+                          </p>
+
+                          {/* Metrics row */}
+                          <div className="grid grid-cols-3 gap-3 mb-3 pl-3">
+                            <div className="text-center p-2.5 rounded-lg bg-background border">
+                              <span className="block text-lg font-bold">{docs.length}</span>
+                              <span className="text-[10px] text-muted-foreground">Documents analysés</span>
+                            </div>
+                            <div className="text-center p-2.5 rounded-lg bg-background border">
+                              <span className="block text-lg font-bold">{totalPages}</span>
+                              <span className="text-[10px] text-muted-foreground">Pages exploitées</span>
+                            </div>
+                            <div className="text-center p-2.5 rounded-lg bg-background border">
+                              <span className={`block text-sm font-bold ${levelColor}`}>{level}</span>
+                              <span className="text-[10px] text-muted-foreground">Lisibilité documentaire</span>
+                            </div>
+                          </div>
+
+                          {/* Per-file details */}
+                          <div className="space-y-1.5 pl-3 mb-3">
+                            {docs.map((doc, idx) => (
+                              <div key={idx} className="flex items-center justify-between gap-2 py-1.5 px-2.5 rounded-md bg-background/60 border border-border/40" data-testid={`doc-detail-${idx}`}>
+                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                  <FileText className="w-3.5 h-3.5 text-muted-foreground/60 flex-shrink-0" />
+                                  <span className="text-xs font-medium truncate">{doc.name}</span>
+                                  <span className="text-[10px] text-muted-foreground flex-shrink-0">
+                                    {doc.pages > 0 && `${doc.pages}p`}{doc.size_kb > 0 && ` · ${doc.size_kb} Ko`}
+                                  </span>
                                 </div>
-                                <Badge
-                                  variant="outline"
-                                  className={`flex-shrink-0 text-[10px] ${
-                                    doc.status === 'text_extracted' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                                    doc.status === 'ocr_extracted' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                    doc.status === 'ocr_empty' ? 'bg-orange-50 text-orange-600 border-orange-200' :
-                                    'bg-red-50 text-red-600 border-red-200'
-                                  }`}
-                                >
+                                <Badge variant="outline" className={`flex-shrink-0 text-[10px] ${
+                                  doc.status === 'text_extracted' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                  doc.status === 'ocr_extracted' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                  doc.status === 'ocr_empty' ? 'bg-orange-50 text-orange-600 border-orange-200' :
+                                  'bg-red-50 text-red-600 border-red-200'
+                                }`}>
                                   {doc.status === 'text_extracted' ? 'Texte extrait' :
                                    doc.status === 'ocr_extracted' ? 'OCR utilisé' :
-                                   doc.status === 'ocr_empty' ? 'Partiellement lisible' :
-                                   'Non lisible'}
+                                   doc.status === 'ocr_empty' ? 'Partiellement lisible' : 'Non lisible'}
                                 </Badge>
                               </div>
-                              <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                                <span>{doc.method}</span>
-                                {doc.pages > 0 && <span>{doc.pages} page{doc.pages > 1 ? 's' : ''}</span>}
-                                {doc.text_length > 0 && <span>{doc.text_length.toLocaleString('fr-FR')} car.</span>}
-                              </div>
-                              {doc.preview && (
-                                <p className="mt-1.5 text-xs text-muted-foreground/80 italic line-clamp-2 bg-background/50 rounded px-2 py-1 border border-border/30">
-                                  « {doc.preview}... »
-                                </p>
-                              )}
-                            </div>
-                          ))}
+                            ))}
+                          </div>
+
+                          <p className="text-[11px] text-muted-foreground/70 italic pl-3">
+                            Certaines pièces peuvent nécessiter une relecture humaine complémentaire lorsqu'elles sont scannées, manuscrites ou de qualité inégale.
+                          </p>
                         </div>
-                      </div>
-                    )}
+                      );
+                    })()}
+
+                    {/* Analyse */}
                     <div>
                       <Label className="font-medium text-sm mb-2 block">Analyse générée par Dossier Express IA</Label>
                       {dossierViewDialog.analysis ? (
@@ -1774,7 +1804,32 @@ export const AdminDashboard = () => {
                       )}
                     </div>
                   </div>
-                  <DialogFooter>
+
+                  <DialogFooter className="flex-col sm:flex-row gap-2">
+                    {dossierViewDialog.analysis && (
+                      <Button
+                        variant="outline"
+                        className="gap-2"
+                        data-testid="preview-pdf-btn"
+                        onClick={async () => {
+                          try {
+                            toast.info('Génération du PDF en cours...');
+                            const res = await axios.get(
+                              `${API}/admin/dossier-express/${dossierViewDialog.id}/preview-pdf`,
+                              { ...axiosConfig, responseType: 'blob' }
+                            );
+                            const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+                            window.open(url, '_blank');
+                            toast.success('PDF ouvert dans un nouvel onglet');
+                          } catch {
+                            toast.error('Erreur lors de la génération du PDF');
+                          }
+                        }}
+                      >
+                        <FileText className="w-4 h-4" />
+                        Prévisualiser le PDF
+                      </Button>
+                    )}
                     <Button variant="outline" onClick={() => setDossierViewDialog(null)}>Fermer</Button>
                   </DialogFooter>
                 </DialogContent>

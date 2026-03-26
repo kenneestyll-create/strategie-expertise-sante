@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi.responses import Response
 from typing import List, Optional
 from datetime import datetime, timezone, timedelta
 import asyncio
@@ -441,6 +442,33 @@ async def get_dossier_express_analysis(dossier_id: str, admin: dict = Depends(ge
         "created_at": dossier.get("created_at", ""),
         "completed_at": dossier.get("completed_at", ""),
     }
+
+
+@router.get("/admin/dossier-express/{dossier_id}/preview-pdf")
+async def preview_dossier_express_pdf(dossier_id: str, admin: dict = Depends(get_current_admin)):
+    """Generate and return the PDF for admin preview/download."""
+    from utils.pdf import generate_dossier_pdf
+    dossier = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0})
+    if not dossier:
+        raise HTTPException(status_code=404, detail="Dossier non trouvé")
+    analysis = dossier.get("analysis", "")
+    if not analysis:
+        raise HTTPException(status_code=400, detail="Aucune analyse disponible pour ce dossier")
+    pdf_bytes = generate_dossier_pdf(
+        name=dossier.get("name", ""),
+        email=dossier.get("email", ""),
+        type_dossier=dossier.get("type_dossier", ""),
+        regime=dossier.get("regime", ""),
+        analysis=analysis,
+        premium_pdf=dossier.get("premium_pdf", False),
+        document_details=dossier.get("document_details", []),
+    )
+    safe_name = dossier.get("name", "dossier").replace(" ", "_")[:30]
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'inline; filename="Rapport_DossierExpress_{safe_name}_{dossier_id[:8]}.pdf"'}
+    )
 
 
 
