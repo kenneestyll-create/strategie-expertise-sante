@@ -95,8 +95,18 @@ Async polling, barre de progression, option RATP/SNCF
 - Securite: endpoints admin strictement proteges par JWT admin (403/401 sans token)
 - Tests: site public verifie propre (0 elements parasites), admin dashboard verifie fonctionnel
 
+## Correction Freeze Middleware ASGI (Mar 2026) — DONE
+- **Cause racine:** Les `@app.middleware("http")` de Starlette utilisent `BaseHTTPMiddleware` en interne, provoquant `RuntimeError: No response returned.` quand une route appelle `await request.json()`
+- **Endpoints affectes:** `POST /api/strategiia/analyze` et `POST /api/strategiia/admin-bypass-premium`
+- **Fix:** Conversion des 2 middleware (SecurityHeaders + CacheControl) en **pure ASGI middleware classes** sans BaseHTTPMiddleware
+- **Debug statements nettoyes** dans strategiia.py
+- **Performance:** Reponse endpoint en 0.12s (retour immediat du job_id)
+- **Tests:** 100% backend (8/8 curl), 100% frontend (8/8 playwright), testing agent iteration 111
+
 ## Taches a venir
 - **P1:** Dashboard admin pour stats tracking/conversions + leads guides
+- **P0:** Finaliser Mode Admin Test Premium (Relecture expert, alertes email, badge dashboard)
+- **P0:** Enrichissement rapport premium (1.5 pages, phrase cloture emotionnelle, orientation service)
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Integration HubSpot (en attente de credentials)
 - **P2:** Audit logging complet
