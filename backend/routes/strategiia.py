@@ -165,39 +165,21 @@ Structure ton rapport ainsi :
 ## Stratégie & Expertise Santé
 
 ### 1. SYNTHÈSE DU DOSSIER
-(Résumé factuel de la situation en 5-6 lignes)
+(Résumé factuel de la situation, cadre juridique applicable, textes de loi pertinents)
 
-### 2. ANALYSE DES DOCUMENTS
-(Analyse détaillée de chaque document fourni, points forts et faiblesses)
+### 2. DROITS ET INDEMNISATIONS IDENTIFIÉS
+(Liste exhaustive des droits, incluant l'incidence professionnelle et la perte de gains futurs si applicable)
 
-### 3. CADRE JURIDIQUE APPLICABLE
-(Textes de loi, articles du Code de la Sécurité Sociale, jurisprudences pertinentes)
+### 3. FORCES ET POINTS DE VIGILANCE
+(Points forts du dossier, pièces manquantes, risques identifiés)
 
-### 4. DROITS IDENTIFIÉS
-(Liste exhaustive des droits avec explications claires)
+### 4. STRATÉGIE RECOMMANDÉE ET PROCHAINES ÉTAPES
+(Plan d'action en étapes numérotées avec délais, estimation des chances de succès)
 
-### 5. POINTS DE VIGILANCE
-(Faiblesses du dossier, pièces manquantes, risques identifiés)
-
-### 6. INCIDENCE PROFESSIONNELLE (IP)
-(Évaluation des conséquences sur la carrière : pénibilité accrue, dévalorisation sur le marché du travail, perte d'opportunités professionnelles, nécessité de reconversion. Critères retenus et estimation.)
-
-### 7. PERTE DE GAINS PROFESSIONNELS FUTURS (PGPF)
-(Analyse de la perte de revenus après consolidation. Méthode de calcul applicable : projection de carrière, évolution salariale prévisible, impact du handicap, capitalisation. Estimation si les éléments le permettent.)
-
-### 8. STRATÉGIE RECOMMANDÉE
-(Plan d'action en étapes numérotées avec justification et délais)
-
-### 9. ESTIMATION DES CHANCES DE SUCCÈS
-(Score sur 100 avec explication des facteurs)
-
-### 10. PROCHAINES ÉTAPES IMMÉDIATES
-(5 actions concrètes prioritaires à réaliser)
-
-### 11. CONCLUSION ET RECOMMANDATIONS
+### 5. CONCLUSION
 (Synthèse finale et orientation vers un accompagnement personnalisé si nécessaire)
 
-Sois exhaustif, précis et professionnel (1000-1500 mots).
+Sois exhaustif, précis et professionnel (800 mots maximum).
 Rappelle que ce rapport est un outil d'aide à la décision et ne constitue pas un avis juridique.
 Mentionne que pour un accompagnement personnalisé, le client peut contacter Stratégie & Expertise Santé.
 Ne génère aucune URL, aucun lien web ni aucun nom de domaine dans ta réponse."""
@@ -301,15 +283,16 @@ CONTENU DES DOCUMENTS FOURNIS :
 {DOSSIER_EXPRESS_PROMPT}"""
 
         session_id_llm = f"dossier_{dossier_id[:8]}"
-        chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id=session_id_llm, system_message=STRATEGIIA_SYSTEM_PROMPT).with_model("anthropic", "claude-sonnet-4-5-20250929")
-        analysis = await chat.send_message(UserMessage(text=user_msg))
+        analysis = await asyncio.to_thread(
+            _llm_sync_call, EMERGENT_LLM_KEY, session_id_llm, STRATEGIIA_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
+        )
 
         pdf_bytes = generate_dossier_pdf(name, email, type_dossier, regime, analysis, premium_pdf=premium_pdf)
 
         email_sent = False
         if RESEND_AVAILABLE and resend.api_key:
             try:
-                resend.Emails.send({
+                await asyncio.to_thread(resend.Emails.send, {
                     "from": SENDER_EMAIL,
                     "to": [email],
                     "subject": "Votre Rapport Dossier Express IA - Stratégie & Expertise Santé",
@@ -406,7 +389,11 @@ def _llm_sync_call(api_key, session_id, system_message, user_text, provider, mod
     """Run LLM in a separate thread to avoid blocking the asyncio event loop.
     emergentintegrations uses litellm.completion() (synchronous) internally."""
     import asyncio as _aio
+    import litellm as _lt
+    _lt.request_timeout = 180
     chat = LlmChat(api_key=api_key, session_id=session_id, system_message=system_message).with_model(provider, model)
+    chat.extra_params["timeout"] = 180
+    chat.extra_params["request_timeout"] = 180
     return _aio.run(chat.send_message(UserMessage(text=user_text)))
 
 
