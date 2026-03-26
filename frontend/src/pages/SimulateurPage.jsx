@@ -213,86 +213,144 @@ const getResults = (answers, autreTexte = '') => {
   return { profile, urgency, recommendations, services, droits, demarches, delais, prestation };
 };
 
-/* ─── PDF Generation ─── */
-const SITE_DOMAIN = "strategie-expertise-sante.fr";
-
+/* ─── Premium PDF Generation (Noir / Or / Ivoire) ─── */
 const generatePDF = (results, email) => {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const w = doc.internal.pageSize.getWidth();
   const h = doc.internal.pageSize.getHeight();
-  const margin = 20;
-  const contentW = w - margin * 2;
-  const footerZone = 30;
-  const maxContentY = h - footerZone - 10;
+  const LM = 16;
+  const RM = 16;
+  const CW = w - LM - RM;
+  const FOOTER_Y = h - 14;
+  const maxY = FOOTER_Y - 4;
   let y = 0;
 
-  const accent = [185, 78, 72];
-  const dark = [47, 44, 40];
-  const muted = [120, 115, 108];
-  const bgLight = [249, 247, 242];
+  /* ── Palette premium ── */
+  const BLACK    = [26, 26, 26];
+  const GOLD     = [201, 168, 76];
+  const GOLD_LT  = [218, 195, 130];
+  const IVORY    = [250, 248, 243];
+  const DARK_TXT = [35, 35, 35];
+  const BODY_TXT = [55, 55, 55];
+  const MUTED    = [130, 125, 118];
 
-  const checkPageBreak = (needed) => {
-    if (y + needed > maxContentY) { doc.addPage(); y = 20; }
-  };
+  const genDate = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  const reportNum = `SES-${new Date().getFullYear()}-${String(Math.floor(10000 + Math.random() * 90000))}`;
+  const year = new Date().getFullYear();
 
-  const drawPageFooter = () => {
-    const fy = h - footerZone;
-    doc.setDrawColor(200, 200, 200);
-    doc.line(margin, fy, w - margin, fy);
-    doc.setTextColor(...muted);
+  /* ── Header (repeated on each page) ── */
+  const drawHeader = () => {
+    doc.setFillColor(...BLACK);
+    doc.rect(0, 0, w, 22, 'F');
+    doc.setFillColor(...GOLD);
+    doc.rect(0, 22, w, 0.6, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text("Strat\u00e9gie & Expertise Sant\u00e9", LM, 10);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(...GOLD_LT);
+    doc.text("PIONNIER EN FRANCE", LM, 16);
     doc.setFontSize(7);
-    doc.setFont('helvetica', 'italic');
-    doc.text(`\u00A9 ${new Date().getFullYear()} Strat\u00e9gie & Expertise Sant\u00e9 \u2014 ${SITE_DOMAIN}`, w / 2, fy + 5, { align: 'center' });
+    doc.setTextColor(180, 180, 180);
+    doc.text(genDate, w - RM, 10, { align: 'right' });
+    doc.setTextColor(...GOLD_LT);
+    doc.text(reportNum, w - RM, 16, { align: 'right' });
+    y = 26;
   };
 
-  // Header band
-  doc.setFillColor(...accent);
-  doc.rect(0, 0, w, 38, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(20);
-  doc.setFont('helvetica', 'bold');
-  doc.text("Strat\u00e9gie & Expertise Sant\u00e9", margin, 18);
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text("Rapport de diagnostic personnalis\u00e9", margin, 28);
-  doc.text(new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }), w - margin, 28, { align: 'right' });
-  y = 48;
+  /* ── Footer (drawn once per page at the end) ── */
+  const drawFooter = () => {
+    doc.setDrawColor(...GOLD);
+    doc.setLineWidth(0.3);
+    doc.line(LM, FOOTER_Y, w - RM, FOOTER_Y);
+    doc.setTextColor(...MUTED);
+    doc.setFontSize(6);
+    doc.setFont('helvetica', 'normal');
+    doc.text(
+      `\u00A9 ${year} Strat\u00e9gie & Expertise Sant\u00e9  \u2014  strategie-expertise-sante.fr  \u2014  Document confidentiel`,
+      w / 2, FOOTER_Y + 5, { align: 'center' }
+    );
+  };
 
-  // Profile box
-  doc.setFillColor(...bgLight);
-  doc.roundedRect(margin, y, contentW, 22, 3, 3, 'F');
-  doc.setTextColor(...accent);
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text("Profil identifi\u00e9", margin + 6, y + 9);
-  doc.setTextColor(...dark);
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
-  doc.text(results.profile, margin + 6, y + 17);
-  y += 30;
+  /* ── Watermark ── */
+  const drawWatermark = () => {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(38);
+    doc.setTextColor(240, 238, 232);
+    doc.text("Strat\u00e9gie & Expertise Sant\u00e9", w / 2, h / 2, { align: 'center', angle: 35 });
+  };
 
+  /* ── Page break helper ── */
+  const checkBreak = (needed) => {
+    if (y + needed > maxY) {
+      doc.addPage();
+      drawHeader();
+    }
+  };
+
+  /* ═══════════════ PAGE 1 ═══════════════ */
+  drawHeader();
+
+  /* Client info bar */
+  doc.setFillColor(...IVORY);
+  doc.rect(LM, y, CW, 10, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...DARK_TXT);
+  doc.text(email || 'Client', LM + 4, y + 4.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.setTextColor(...GOLD);
+  doc.text("Rapport Auto-diagnostic", LM + 4, y + 8.5);
+  doc.setFontSize(7);
+  doc.setTextColor(...MUTED);
+  doc.text(genDate, w - RM - 4, y + 6, { align: 'right' });
+  y += 14;
+
+  /* Profile block */
+  doc.setFillColor(...IVORY);
+  doc.roundedRect(LM, y, CW, 14, 2, 2, 'F');
+  doc.setFillColor(...GOLD);
+  doc.rect(LM, y, 2, 14, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(...BLACK);
+  doc.text("Profil identifi\u00e9", LM + 6, y + 5.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(...BODY_TXT);
+  doc.text(results.profile, LM + 6, y + 11);
+  y += 20;
+
+  /* ── Section renderer ── */
   const addSection = (title, items) => {
     if (!items || items.length === 0) return;
-    checkPageBreak(20);
-    doc.setFillColor(...accent);
-    doc.rect(margin, y, 3, 8, 'F');
-    doc.setTextColor(...dark);
-    doc.setFontSize(12);
+    checkBreak(16);
+    /* Gold left accent */
+    doc.setFillColor(...GOLD);
+    doc.rect(LM, y, 2, 5.5, 'F');
     doc.setFont('helvetica', 'bold');
-    doc.text(title, margin + 7, y + 6);
-    y += 14;
+    doc.setFontSize(9.5);
+    doc.setTextColor(...BLACK);
+    doc.text(title, LM + 5, y + 4);
+    y += 9;
 
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9.5);
-    doc.setTextColor(...dark);
+    doc.setFontSize(8);
     items.forEach(item => {
-      const lines = doc.splitTextToSize(`\u2022 ${item}`, contentW - 10);
-      const blockH = lines.length * 5 + 2;
-      checkPageBreak(blockH);
-      doc.text(lines, margin + 7, y);
+      const lines = doc.splitTextToSize(item, CW - 12);
+      const blockH = lines.length * 4 + 1.5;
+      checkBreak(blockH);
+      /* Gold bullet */
+      doc.setFillColor(...GOLD);
+      doc.rect(LM + 4, y + 0.8, 1.2, 1.2, 'F');
+      doc.setTextColor(...BODY_TXT);
+      doc.text(lines, LM + 8, y + 2.5);
       y += blockH;
     });
-    y += 4;
+    y += 3;
   };
 
   addSection("R\u00e9sum\u00e9 de votre situation", results.recommendations);
@@ -300,59 +358,56 @@ const generatePDF = (results, email) => {
   addSection("D\u00e9marches prioritaires", results.demarches);
   addSection("D\u00e9lais importants", results.delais);
 
+  /* Services block */
   if (results.services.length > 0) {
-    checkPageBreak(38);
-    doc.setFillColor(...bgLight);
-    doc.roundedRect(margin, y, contentW, 30, 3, 3, 'F');
-    doc.setDrawColor(...accent);
-    doc.roundedRect(margin, y, contentW, 30, 3, 3, 'S');
-    doc.setTextColor(...accent);
-    doc.setFontSize(11);
+    checkBreak(22);
+    doc.setFillColor(...IVORY);
+    doc.roundedRect(LM, y, CW, 18, 2, 2, 'F');
+    doc.setDrawColor(...GOLD);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(LM, y, CW, 18, 2, 2, 'S');
     doc.setFont('helvetica', 'bold');
-    doc.text("Prestation recommand\u00e9e", margin + 6, y + 10);
-    doc.setTextColor(...dark);
-    doc.setFontSize(10);
+    doc.setFontSize(8.5);
+    doc.setTextColor(...BLACK);
+    doc.text("Prestation recommand\u00e9e", LM + 5, y + 6);
     doc.setFont('helvetica', 'normal');
-    const svcText = results.services.map(s => `${s.label}${s.prix ? ' \u2014 ' + s.prix : ''}`).join(' | ');
-    doc.text(svcText, margin + 6, y + 19);
     doc.setFontSize(8);
-    doc.setTextColor(...muted);
-    doc.text("Premi\u00e8re consultation gratuite \u2014 10 min, sans engagement", margin + 6, y + 26);
-    y += 38;
+    doc.setTextColor(...BODY_TXT);
+    const svcTxt = results.services.map(s => `${s.label}${s.prix ? ' \u2014 ' + s.prix : ''}`).join(' | ');
+    doc.text(svcTxt, LM + 5, y + 12);
+    doc.setFontSize(6.5);
+    doc.setTextColor(...MUTED);
+    doc.text("Premi\u00e8re consultation gratuite \u2014 10 min, sans engagement", LM + 5, y + 16);
+    y += 24;
   }
 
-  // Contact block
-  checkPageBreak(50);
-  y += 6;
-  doc.setDrawColor(...accent);
-  doc.line(60, y, w - 60, y);
-  y += 8;
-  doc.setTextColor(...dark);
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text("Strat\u00e9gie & Expertise Sant\u00e9", w / 2, y, { align: 'center' });
-  y += 7;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(...muted);
-  doc.text(`Prendre rendez-vous : ${SITE_DOMAIN}/contact`, w / 2, y, { align: 'center' });
+  /* Contact & CTA */
+  checkBreak(24);
+  y += 4;
+  doc.setDrawColor(...GOLD);
+  doc.setLineWidth(0.3);
+  doc.line(65, y, 145, y);
   y += 5;
-  doc.setFont('helvetica', 'italic');
-  doc.setFontSize(8);
-  doc.text("Consultation personnalis\u00e9e sur rendez-vous", w / 2, y, { align: 'center' });
-  y += 8;
-
-  // Disclaimer
-  doc.setTextColor(...muted);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(...BLACK);
+  doc.text("Strat\u00e9gie & Expertise Sant\u00e9", w / 2, y, { align: 'center' });
+  y += 5;
+  doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
+  doc.setTextColor(...MUTED);
+  doc.text("Prendre rendez-vous : strategie-expertise-sante.fr/contact", w / 2, y, { align: 'center' });
+  y += 4;
   doc.setFont('helvetica', 'italic');
-  doc.text("Ce rapport est fourni \u00e0 titre indicatif et ne constitue pas un avis juridique.", w / 2, y, { align: 'center' });
+  doc.setFontSize(6.5);
+  doc.text("Consultation personnalis\u00e9e sur rendez-vous \u2014 Premi\u00e8re consultation gratuite", w / 2, y, { align: 'center' });
 
-  // Draw footer on all pages
+  /* ── Apply footer + watermark on every page ── */
   const totalPages = doc.internal.getNumberOfPages();
   for (let p = 1; p <= totalPages; p++) {
     doc.setPage(p);
-    drawPageFooter();
+    drawWatermark();
+    drawFooter();
   }
 
   return doc;
@@ -435,7 +490,7 @@ export const SimulateurPage = () => {
   const handleDownloadPDF = useCallback(() => {
     const result = getResults(answers, autreTexte);
     const doc = generatePDF(result, email);
-    doc.save('diagnostic-strategie-expertise-sante.pdf');
+    doc.save(`rapport-diagnostic-SES-${new Date().getFullYear()}.pdf`);
     toast.success("PDF téléchargé !");
   }, [answers, email, autreTexte]);
 
