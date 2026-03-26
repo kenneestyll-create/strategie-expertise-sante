@@ -192,6 +192,14 @@ Problèmes réels identifiés et corrigés:
 - **Preview PDF** : Nouvel endpoint `GET /api/admin/dossier-express/{id}/preview-pdf` + bouton "Prévisualiser le PDF" qui ouvre le rapport dans un nouvel onglet
 - Tests: iteration 122 — backend 100% (6/6), frontend 100%
 
+## Refonte Modal Admin Dossier Express — Onglets (Mar 2026) — DONE
+- **3 onglets internes** dans la modal de consultation :
+  * **Analyse** : Situation client + Encart Base documentaire (grille 3 métriques) + Texte analyse
+  * **Documents uploadés** : Liste détaillée par fichier (icône, nom, type, pages, taille, badge lisibilité couleur, méthode, aperçu du contenu)
+  * **Prévisualisation PDF** : Boutons "Visualiser le PDF final" (nouvel onglet) + "Télécharger le PDF" + résumé contenu
+- **Boutons existants préservés** : Traiter (25) et Notifier (38) dans AdminPremiumReview intacts
+- Tests: iteration 123 — backend 100%, frontend 100%
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Corriger TTS mascotte Straté (parle anglais au lieu de français)
