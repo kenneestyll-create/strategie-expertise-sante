@@ -1,0 +1,70 @@
+{
+  "summary": "Tested PDF 'Base documentaire prise en compte' encart feature. 13/13 tests passed. Found 1 BUG in readability level logic: all ocr_extracted shows 'Tres bonne' instead of 'Bonne'.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "/app/backend/utils/pdf.py lines 291-294",
+        "issue": "Readability level logic bug: when all documents are ocr_extracted, shows 'Tres bonne' instead of 'Bonne'. The condition order is wrong - 'Tres bonne' condition (mixed text+ocr) matches before 'Bonne' (all ocr) because all(s in ('text_extracted', 'ocr_extracted')) is TRUE for all ocr_extracted.",
+        "priority": "HIGH",
+        "fix": "Reorder conditions: check 'all ocr_extracted' BEFORE 'mixed text+ocr'. Move lines 293-294 before lines 291-292."
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_pdf_document_encart.py",
+    "/app/test_reports/pytest/pytest_pdf_document_encart.xml"
+  ],
+  "action_items": [
+    "FIX BUG: Reorder readability level conditions in /app/backend/utils/pdf.py lines 288-298. Move 'all ocr_extracted' check BEFORE 'mixed text+ocr' check."
+  ],
+  "critical_code_review_comments": [
+    "PDF 'Base documentaire prise en compte' section renders correctly with document count, page count, and readability level",
+    "Readability levels work correctly for: Excellente (all text_extracted), Partielle (some ocr_empty), Limitee (all failed)",
+    "BUG: 'Bonne' level never triggers because 'Tres bonne' condition matches first for all ocr_extracted documents",
+    "Backwards compatibility maintained - PDF without document_details generates correctly",
+    "No technical jargon (OCR score, parsing, confidence) in PDF output - PASS",
+    "Reassurance note about scanned/manuscript documents present - PASS",
+    "Admin bypass endpoint correctly stores and retrieves document_details",
+    "_process_dossier_express correctly fetches document_details from DB for PDF generation"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_pdf_document_encart.py"
+  ],
+  "success_rate": {
+    "backend": "100% (13/13 tests passed)"
+  },
+  "test_credentials": "Admin: admin@accompagn-sante.fr / Admin2024!",
+  "seed_data_creation": "Created test dossiers with document_details via admin-bypass endpoint during testing",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "PDF 'Base documentaire prise en compte' encart feature tested. Key findings: 1) Encart renders correctly with document count, page count, readability level, 2) BUG: readability level 'Bonne' never shows for all OCR documents - shows 'Tres bonne' instead due to condition order bug in pdf.py lines 291-294, 3) All other readability levels work correctly, 4) Backwards compatibility maintained, 5) No technical jargon in output.",
+  "features_tested": {
+    "backend": [
+      "PDF with all text_extracted shows 'Excellente' - PASS",
+      "PDF with mixed text+ocr shows 'Tres bonne' - PASS",
+      "PDF with all ocr_extracted shows 'Bonne' - FAIL (shows 'Tres bonne' - BUG)",
+      "PDF with some ocr_empty shows 'Partielle' - PASS",
+      "PDF with all extraction_failed shows 'Limitee' - PASS",
+      "PDF without document_details (backwards compatible) - PASS",
+      "PDF with empty document_details list - PASS",
+      "PDF no technical jargon - PASS",
+      "PDF reassurance note present - PASS",
+      "generate_secured_pdf with document_details - PASS",
+      "PDF page count calculation - PASS",
+      "Admin bypass stores document_details - PASS",
+      "Process dossier fetches document_details for PDF - PASS"
+    ]
+  },
+  "bug_details": {
+    "location": "/app/backend/utils/pdf.py lines 288-298",
+    "current_code": "if all(s == 'text_extracted' for s in statuses):\n    level = 'Excellente'\nelif all(s in ('text_extracted', 'ocr_extracted') for s in statuses) and any(s == 'ocr_extracted' for s in statuses):\n    level = 'Tres bonne'\nelif all(s == 'ocr_extracted' for s in statuses):\n    level = 'Bonne'",
+    "problem": "When all documents are ocr_extracted, the 'Tres bonne' condition (line 291-292) matches BEFORE the 'Bonne' condition (line 293-294) can be checked. This is because all(s in ('text_extracted', 'ocr_extracted')) is TRUE for all ocr_extracted.",
+    "fix": "Reorder conditions to check 'all ocr_extracted' BEFORE 'mixed text+ocr':\n\nif all(s == 'text_extracted' for s in statuses):\n    level = 'Excellente'\nelif all(s == 'ocr_extracted' for s in statuses):\n    level = 'Bonne'\nelif all(s in ('text_extracted', 'ocr_extracted') for s in statuses) and any(s == 'ocr_extracted' for s in statuses):\n    level = 'Tres bonne'"
+  }
+}

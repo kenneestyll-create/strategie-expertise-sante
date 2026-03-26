@@ -72,6 +72,7 @@ def generate_secured_pdf(
     with_watermark: bool = True,
     report_number: str = "",
     relecture_expert: bool = False,
+    document_details: list = None,
 ) -> bytes:
     from fpdf import FPDF
 
@@ -278,6 +279,90 @@ def generate_secured_pdf(
         else:
             body_text(stripped)
 
+    # ── Base documentaire prise en compte ──
+    if document_details:
+        total_docs = len(document_details)
+        total_pages = sum(d.get("pages", 0) for d in document_details)
+        statuses = [d.get("status", "") for d in document_details]
+
+        # Readability level
+        if all(s == "text_extracted" for s in statuses):
+            level = "Excellente"
+        elif all(s in ("text_extracted", "ocr_extracted") for s in statuses) and any(s == "ocr_extracted" for s in statuses):
+            level = "Tres bonne"
+        elif all(s == "ocr_extracted" for s in statuses):
+            level = "Bonne"
+        elif any(s in ("text_extracted", "ocr_extracted") for s in statuses):
+            level = "Partielle"
+        else:
+            level = "Limitee"
+
+        # Ensure enough space
+        space_doc = pdf.h - 16 - pdf.get_y()
+        if space_doc < 42:
+            pdf.add_page()
+
+        pdf.ln(5)
+        # Subtle separator
+        sep_y = pdf.get_y()
+        pdf.set_draw_color(*_LIGHT_LINE)
+        pdf.set_line_width(0.2)
+        pdf.line(LM + 10, sep_y, LM + CW - 10, sep_y)
+        pdf.ln(4)
+
+        # Title with gold accent
+        ty = pdf.get_y()
+        pdf.set_fill_color(*_GOLD)
+        pdf.rect(LM, ty, 1.5, 4.5, "F")
+        pdf.set_x(LM + 4)
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_text_color(*_DARK_TEXT)
+        pdf.cell(CW - 4, 4.5, _safe("Base documentaire prise en compte"))
+        pdf.ln(7)
+
+        # Intro line
+        pdf.set_x(LM + 4)
+        pdf.set_font("Helvetica", "", 7)
+        pdf.set_text_color(*_BODY_TEXT)
+        pdf.multi_cell(CW - 8, 3.5, _safe(
+            "Ce rapport a ete etabli a partir des pieces transmises au moment de votre demande."
+        ))
+        pdf.ln(2)
+
+        # Metrics row inside a light box
+        by = pdf.get_y()
+        box_h = 11
+        pdf.set_fill_color(*_IVORY)
+        pdf.rect(LM + 4, by, CW - 8, box_h, "F")
+
+        col_w = (CW - 8) / 3
+        for i, (label, value) in enumerate([
+            ("Documents analyses", str(total_docs)),
+            ("Pages exploitees", str(total_pages)),
+            ("Lisibilite documentaire", level),
+        ]):
+            cx = LM + 4 + col_w * i
+            pdf.set_xy(cx, by + 1.5)
+            pdf.set_font("Helvetica", "B", 8)
+            pdf.set_text_color(*_DARK_TEXT)
+            pdf.cell(col_w, 4, _safe(value), align="C")
+            pdf.set_xy(cx, by + 5.5)
+            pdf.set_font("Helvetica", "", 6)
+            pdf.set_text_color(*_MUTED)
+            pdf.cell(col_w, 3.5, _safe(label), align="C")
+
+        pdf.set_y(by + box_h + 3)
+
+        # Reassurance note
+        pdf.set_x(LM + 4)
+        pdf.set_font("Helvetica", "I", 6.5)
+        pdf.set_text_color(*_MUTED)
+        pdf.multi_cell(CW - 8, 3.2, _safe(
+            "Certaines pieces peuvent necessiter une relecture humaine complementaire "
+            "lorsqu'elles sont scannees, manuscrites ou de qualite inegale."
+        ))
+        pdf.ln(2)
+
     # ── Signature emotionnelle de marque ──
     space = pdf.h - 16 - pdf.get_y()
     if space < 35:
@@ -326,7 +411,7 @@ def generate_secured_pdf(
     return bytes(pdf.output())
 
 
-def generate_dossier_pdf(name, email, type_dossier, regime, analysis, premium_pdf=False):
+def generate_dossier_pdf(name, email, type_dossier, regime, analysis, premium_pdf=False, document_details=None):
     return generate_secured_pdf(
         analysis=analysis,
         report_type="Dossier Express IA",
@@ -335,4 +420,5 @@ def generate_dossier_pdf(name, email, type_dossier, regime, analysis, premium_pd
         type_dossier=type_dossier,
         regime=regime,
         with_watermark=not premium_pdf,
+        document_details=document_details,
     )

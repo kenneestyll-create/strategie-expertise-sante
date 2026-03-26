@@ -528,7 +528,11 @@ CONTENU DES DOCUMENTS FOURNIS :
         # Step 3: Generating PDF
         await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"progress_step": "generating"}})
 
-        pdf_bytes = generate_dossier_pdf(name, email, type_dossier, regime, analysis, premium_pdf=premium_pdf)
+        # Fetch document_details from DB for the PDF encart
+        dossier_doc = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0, "document_details": 1})
+        doc_details = dossier_doc.get("document_details", []) if dossier_doc else []
+
+        pdf_bytes = generate_dossier_pdf(name, email, type_dossier, regime, analysis, premium_pdf=premium_pdf, document_details=doc_details)
 
         # Step 4: Sending email
         await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"progress_step": "sending"}})
