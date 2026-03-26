@@ -723,75 +723,135 @@ export const DossierExpressPage = () => {
     const docsExtracted = pollStatus?.documents_extracted || false;
 
     const STEPS = [
-      { key: 'uploading', label: `${filesCount > 0 ? filesCount + ' document' + (filesCount > 1 ? 's' : '') + ' reçu' + (filesCount > 1 ? 's' : '') : 'Documents reçus'}`, icon: Upload },
-      { key: 'reading', label: docsExtracted ? 'Lecture des pièces transmises' : 'Lecture des informations fournies', icon: FileText },
-      { key: 'analyzing', label: 'Analyse de votre dossier', icon: Brain },
-      { key: 'generating', label: 'Rédaction de votre synthèse personnalisée', icon: Sparkles },
-      { key: 'sending', label: 'Préparation de votre rapport final', icon: Mail },
+      { key: 'uploading', label: `${filesCount > 0 ? filesCount + ' document' + (filesCount > 1 ? 's' : '') + ' reçu' + (filesCount > 1 ? 's' : '') : 'Documents reçus'}`, icon: Upload, detail: 'Vos fichiers ont été transmis avec succès.' },
+      { key: 'reading', label: docsExtracted ? 'Lecture des pièces transmises' : 'Lecture des informations fournies', icon: FileText, detail: 'Extraction et structuration du contenu de vos documents.' },
+      { key: 'analyzing', label: 'Analyse de votre dossier', icon: Brain, detail: 'Croisement avec les jurisprudences, barèmes et cas similaires.' },
+      { key: 'generating', label: 'Rédaction de votre synthèse personnalisée', icon: Sparkles, detail: 'Construction de votre rapport avec stratégie et recommandations.' },
+      { key: 'sending', label: 'Préparation de votre rapport final', icon: Mail, detail: 'Mise en forme PDF et envoi sécurisé par email.' },
     ];
 
     const currentProgress = pollStatus?.progress_step || 'uploading';
     const currentIdx = STEPS.findIndex(s => s.key === currentProgress);
-    const progressPct = Math.max(10, Math.min(95, ((currentIdx + 1) / STEPS.length) * 100));
+    const progressPct = Math.max(8, Math.min(95, ((currentIdx + 1) / STEPS.length) * 100));
+    const activeStep = STEPS[currentIdx] || STEPS[0];
 
     return (
       <main className="page-transition pt-20">
         <section className="section-padding">
-          <div className="max-w-lg mx-auto text-center">
-            <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Brain className="w-10 h-10 text-amber-500 animate-pulse" />
-            </div>
-            <h2 className="text-2xl font-bold mb-3" data-testid="processing-title">Analyse en cours...</h2>
-            <p className="text-muted-foreground mb-2 text-sm">
-              Votre dossier est en cours d'analyse. Vous recevrez votre rapport par email à <strong className="text-foreground">{form.email || pollStatus?.email}</strong>.
-            </p>
-            {filesCount > 0 && (
-              <p className="text-xs text-amber-600 font-medium mb-6" data-testid="docs-info">
-                {filesCount} document{filesCount > 1 ? 's' : ''} {docsExtracted ? 'lu' + (filesCount > 1 ? 's' : '') + ' et intégré' + (filesCount > 1 ? 's' : '') : 'joint' + (filesCount > 1 ? 's' : '')} à l'analyse
+          <div className="max-w-xl mx-auto">
+
+            {/* Header premium */}
+            <div className="text-center mb-8">
+              <div className="relative w-20 h-20 mx-auto mb-5">
+                <div className="absolute inset-0 bg-amber-500/20 rounded-full animate-ping" style={{ animationDuration: '2.5s' }} />
+                <div className="relative w-20 h-20 bg-gradient-to-br from-amber-500/15 to-amber-600/10 rounded-full flex items-center justify-center border border-amber-500/20">
+                  <Brain className="w-9 h-9 text-amber-500" />
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold mb-2" data-testid="processing-title">
+                Votre dossier est en cours d'analyse
+              </h2>
+              <p className="text-muted-foreground text-sm leading-relaxed max-w-md mx-auto">
+                Vos documents ont bien été reçus. Notre moteur d'analyse documentaire examine actuellement votre dossier afin de produire une synthèse structurée et exploitable.
               </p>
-            )}
+            </div>
+
+            {/* Dynamic status message */}
+            <div className="bg-amber-500/[0.06] border border-amber-500/15 rounded-xl p-4 mb-6 text-center" data-testid="dynamic-status">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <Loader2 className="w-4 h-4 text-amber-600 animate-spin" />
+                <span className="text-sm font-semibold text-amber-700">{activeStep.label}</span>
+              </div>
+              <p className="text-xs text-amber-600/80">{activeStep.detail}</p>
+            </div>
 
             {/* Progress bar */}
-            <div className="w-full bg-muted rounded-full h-2.5 mb-8 overflow-hidden" data-testid="progress-bar">
+            <div className="relative w-full bg-muted rounded-full h-2 mb-1 overflow-hidden" data-testid="progress-bar">
               <div
-                className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all duration-1000 ease-out"
-                style={{ width: `${progressPct}%` }}
+                className="h-full rounded-full transition-all duration-1000 ease-out"
+                style={{
+                  width: `${progressPct}%`,
+                  background: 'linear-gradient(90deg, #f59e0b, #d97706)'
+                }}
               />
             </div>
+            <p className="text-[11px] text-muted-foreground text-right mb-6">{Math.round(progressPct)}%</p>
 
-            {/* Steps */}
-            <Card className="text-left mb-6">
-              <CardContent className="p-5 space-y-0">
+            {/* Steps timeline */}
+            <Card className="mb-6 border-border/60">
+              <CardContent className="p-0">
                 {STEPS.map((s, i) => {
                   const isDone = i < currentIdx || (pollStatus?.status === 'completed');
                   const isActive = i === currentIdx && pollStatus?.status !== 'completed';
                   const StepIcon = s.icon;
                   return (
-                    <div key={s.key} className="flex items-center gap-3 py-3 border-b border-border/50 last:border-0" data-testid={`step-${s.key}`}>
+                    <div
+                      key={s.key}
+                      className={`flex items-center gap-3.5 px-5 py-3.5 border-b border-border/40 last:border-0 transition-all duration-500 ${
+                        isActive ? 'bg-amber-50/50' : ''
+                      }`}
+                      data-testid={`step-${s.key}`}
+                    >
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ${
                         isDone ? 'bg-emerald-100 text-emerald-600' :
-                        isActive ? 'bg-amber-100 text-amber-600' :
-                        'bg-muted text-muted-foreground'
+                        isActive ? 'bg-amber-100 text-amber-600 ring-2 ring-amber-200' :
+                        'bg-muted text-muted-foreground/50'
                       }`}>
                         {isDone ? <CheckCircle className="w-4 h-4" /> :
                          isActive ? <Loader2 className="w-4 h-4 animate-spin" /> :
-                         <StepIcon className="w-4 h-4" />}
+                         <StepIcon className="w-3.5 h-3.5" />}
                       </div>
-                      <span className={`text-sm transition-colors ${
-                        isDone ? 'text-emerald-600 font-medium' :
-                        isActive ? 'text-amber-600 font-semibold' :
-                        'text-muted-foreground'
-                      }`}>
-                        {s.label}
-                      </span>
+                      <div className="flex-1 min-w-0">
+                        <span className={`text-sm block transition-colors ${
+                          isDone ? 'text-emerald-600 font-medium' :
+                          isActive ? 'text-amber-700 font-semibold' :
+                          'text-muted-foreground/60'
+                        }`}>
+                          {s.label}
+                        </span>
+                        {isActive && (
+                          <span className="text-[11px] text-amber-600/70 block mt-0.5">{s.detail}</span>
+                        )}
+                      </div>
+                      {isDone && <span className="text-[10px] text-emerald-500 font-medium flex-shrink-0">Terminé</span>}
                     </div>
                   );
                 })}
               </CardContent>
             </Card>
-            <p className="text-xs text-muted-foreground">
-              Vous pouvez fermer cette page. Le rapport sera envoyé sous 2 heures maximum.
-            </p>
+
+            {/* Reassurance block */}
+            <Card className="border-accent/15 bg-accent/[0.02]">
+              <CardContent className="p-5">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <ShieldCheck className="w-5 h-5 text-accent" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold mb-1.5">Vous n'avez pas besoin de rester sur cette page</h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                      L'analyse se poursuit automatiquement sur nos serveurs. Votre rapport vous sera envoyé par email à <strong className="text-foreground">{form.email || pollStatus?.email}</strong> dès qu'il sera prêt.
+                    </p>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+                      <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-accent/60" />
+                        Livraison sous 2 heures maximum
+                      </span>
+                      <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                        <Lock className="w-3 h-3 text-accent/60" />
+                        Données chiffrées et protégées
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {filesCount > 0 && (
+              <p className="text-xs text-center text-amber-600/70 font-medium mt-4" data-testid="docs-info">
+                {filesCount} document{filesCount > 1 ? 's' : ''} {docsExtracted ? 'lu' + (filesCount > 1 ? 's' : '') + ' et intégré' + (filesCount > 1 ? 's' : '') : 'joint' + (filesCount > 1 ? 's' : '')} à l'analyse
+              </p>
+            )}
           </div>
         </section>
       </main>
