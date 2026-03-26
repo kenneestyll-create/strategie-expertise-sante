@@ -41,6 +41,11 @@ Async polling, barre de progression, option RATP/SNCF
 - Admin stats: GET /api/admin/guide-leads/stats (taux ouverture/clic, par categorie)
 - Teste manuellement: email envoye via Resend OK
 
+## Correction Menu Mobile + Conseil du Jour (Mar 2026) — DONE
+- Menu mobile: etend bord-a-bord (-mx-4), overflow-x hidden, scrollbar invisible
+- Conseil du jour: corrige blocage priorite sans end_date, auto-expiration, rotation fiable
+- Tests: backend 16/16, frontend verifie, 0 overflow horizontal
+
 ## Correction PDF Footer (Mar 2026) — DONE
 - DEUX moteurs PDF identifies et corriges:
   * Backend pdf.py (FPDF) pour StrategiIA: marges, nettoyage URLs, contact block dynamique
