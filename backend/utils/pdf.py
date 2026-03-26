@@ -1,5 +1,8 @@
 import re
+import os
 from datetime import datetime
+
+_LOGO_PATH = os.path.join(os.path.dirname(__file__), "shield_logo.png")
 
 
 def generate_report_number():
@@ -13,10 +16,13 @@ _STRIP_PATTERNS = [
     re.compile(r'https?://[^\s)]+'),
     re.compile(r'(?i)prendre\s+rendez[- ]?vous.*$'),
     re.compile(r'(?i)premi.re\s+consultation.*gratuit.*$'),
-    re.compile(r'(?i)strat.gie\s*&?\s*expertise\s*sant.*$'),
+    re.compile(r'(?i)^\W*strat.gie\s*&?\s*expertise\s*sant[eé]?\s*\.?\s*$'),
     re.compile(r'(?i)strategie-expertise-sante\.fr.*$'),
     re.compile(r'(?i)mascot-tips-admin\.preview.*$'),
     re.compile(r'^---+$'),
+    # Strip LLM-generated closing phrase (it's hardcoded in the PDF template)
+    re.compile(r'(?i)^\W*vous\s+n.{0,3}tes\s+plus\s+seul'),
+    re.compile(r'(?i)^\W*d.sormais.*devient\s+votre\s+bouclier'),
 ]
 
 
@@ -88,15 +94,22 @@ def generate_secured_pdf(
             self.set_fill_color(*_GOLD)
             self.rect(0, 22, 210, 0.6, "F")
 
+            # Shield logo (left)
+            if os.path.isfile(_LOGO_PATH):
+                self.image(_LOGO_PATH, LM, 3, 9, 9)
+                text_x = LM + 11
+            else:
+                text_x = LM
+
             # Left: brand name
             self.set_text_color(255, 255, 255)
             self.set_font("Helvetica", "B", 11)
-            self.set_xy(LM, 4)
+            self.set_xy(text_x, 4)
             self.cell(80, 5, "Strategie & Expertise Sante")
             # Subtitle
             self.set_font("Helvetica", "", 6.5)
             self.set_text_color(*_GOLD_LIGHT)
-            self.set_xy(LM, 10)
+            self.set_xy(text_x, 10)
             self.cell(80, 4, "PIONNIER EN FRANCE")
 
             # Right: date & report number
@@ -253,19 +266,34 @@ def generate_secured_pdf(
         else:
             body_text(stripped)
 
-    # ── Contact & CTA block ──
+    # ── Signature emotionnelle de marque ──
     space = pdf.h - 16 - pdf.get_y()
-    if space < 22:
+    if space < 35:
         pdf.add_page()
 
-    pdf.ln(3)
+    pdf.ln(4)
     # Gold thin separator
     sep_y = pdf.get_y()
     pdf.set_draw_color(*_GOLD)
     pdf.set_line_width(0.3)
-    pdf.line(65, sep_y, 145, sep_y)
+    pdf.line(55, sep_y, 155, sep_y)
+    pdf.ln(5)
+
+    pdf.set_font("Helvetica", "I", 9)
+    pdf.set_text_color(*_BLACK)
+    pdf.cell(CW, 5, _safe("Vous n'etes plus seul(e) face a votre situation."), align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", "BI", 9)
+    pdf.set_text_color(*_GOLD)
+    pdf.cell(CW, 5, _safe("Desormais, Strategie & Expertise Sante devient votre bouclier."), align="C", new_x="LMARGIN", new_y="NEXT")
+
+    pdf.ln(4)
+    # Second gold separator
+    sep_y2 = pdf.get_y()
+    pdf.set_draw_color(*_GOLD)
+    pdf.line(55, sep_y2, 155, sep_y2)
     pdf.ln(4)
 
+    # ── Contact & CTA block ──
     pdf.set_font("Helvetica", "B", 8.5)
     pdf.set_text_color(*_BLACK)
     pdf.cell(CW, 4, "Strategie & Expertise Sante", align="C", new_x="LMARGIN", new_y="NEXT")

@@ -108,24 +108,35 @@ export const StrategiIA = () => {
       }
       // Async polling — backend returns job_id immediately
       const jobId = data.job_id;
+      let pollErrors = 0;
+      let jobCompleted = false; // Flag to prevent race condition with in-flight requests
       const poll = setInterval(async () => {
+        if (jobCompleted) return; // Skip if already done
         try {
           const { data: st } = await axios.get(`${API}/strategiia/status/${jobId}`);
+          pollErrors = 0; // reset on success
           if (st.status === 'done') {
+            jobCompleted = true;
             clearInterval(poll);
             setFullResult(st.analysis);
             setCasesFound(st.cases_found || 0);
             setRemaining(st.remaining ?? null);
             setStep('teaser');
           } else if (st.status === 'error') {
+            jobCompleted = true;
             clearInterval(poll);
             toast.error(st.error || "Erreur lors de l'analyse.");
             setStep('form');
           }
         } catch {
-          clearInterval(poll);
-          toast.error("Erreur de connexion. Réessayez.");
-          setStep('form');
+          if (jobCompleted) return; // Ignore errors from in-flight requests after completion
+          pollErrors++;
+          if (pollErrors >= 3) {
+            jobCompleted = true;
+            clearInterval(poll);
+            toast.error("Erreur de connexion persistante. Veuillez réessayer.");
+            setStep('form');
+          }
         }
       }, 3000);
     } catch (err) {
@@ -191,20 +202,30 @@ export const StrategiIA = () => {
         }, { headers: { 'Authorization': `Bearer ${adminToken}` } });
         if (premiumPdf) setPremiumPdf(true);
         const jobId = data.job_id;
+        let pollErrors2 = 0;
+        let jobCompleted2 = false; // Flag to prevent race condition
         const poll = setInterval(async () => {
+          if (jobCompleted2) return;
           try {
             const { data: st } = await axios.get(`${API}/strategiia/status/${jobId}`);
+            pollErrors2 = 0;
             if (st.status === 'done') {
+              jobCompleted2 = true;
               clearInterval(poll);
               setPremiumResult(st.analysis);
               setStep('premium');
               toast.success("Mode Admin : rapport premium généré (test interne).");
             } else if (st.status === 'error') {
+              jobCompleted2 = true;
               clearInterval(poll);
               toast.error(st.error || "Erreur lors de l'analyse premium.");
               setStep('basic');
             }
-          } catch { clearInterval(poll); setStep('basic'); }
+          } catch {
+            if (jobCompleted2) return;
+            pollErrors2++;
+            if (pollErrors2 >= 3) { jobCompleted2 = true; clearInterval(poll); toast.error("Erreur de connexion persistante."); setStep('basic'); }
+          }
         }, 3000);
       } catch { toast.error("Erreur bypass admin."); setStep('basic'); }
       return;
