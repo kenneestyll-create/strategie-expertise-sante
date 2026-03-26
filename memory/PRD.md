@@ -132,6 +132,14 @@ Async polling, barre de progression, option RATP/SNCF
 - **Stepper Dossier Express** : Ajout de 5 étapes dynamiques dans la vue processing (Téléversement → Lecture → Analyse → Génération → Envoi) avec barre de progression animée. Backend met à jour `progress_step` à chaque étape du traitement.
 - Tests: iteration 115 — backend 100% (16/16 pytest), frontend 100%
 
+## Fix validation réelle Dossier Express (Mar 2026) — DONE
+Problèmes réels identifiés et corrigés:
+- **Cause A — Documents absents dans l'admin** : `premium_analyses` n'était jamais créé pour les dossiers admin-bypass ni pour les soumissions standards. Fix: `_process_dossier_express` crée automatiquement un `premium_analyses` lié par `dossier_id` à chaque dossier complété. Le lien utilise `dossier_id` (fiable) au lieu de `email` (fragile avec dossiers multiples).
+- **Cause B — Stepper invisible** : Le stepper existait dans le DOM mais la page restait scrollée au bas du formulaire. Fix: `window.scrollTo({ top: 0, behavior: 'smooth' })` après `setStep('processing')`.
+- **Mode admin perdu** : `isAdminMode` était stocké uniquement en mémoire React, perdu lors de navigation entre pages. Fix: persistance dans `sessionStorage`.
+- **Consultation directe** : Nouveau endpoint `GET /api/admin/dossier-express/{id}/analysis` + bouton "Consulter l'analyse" dans la liste admin pour accéder directement à l'analyse d'un dossier complété.
+- Tests: iteration 116 — backend 100% (15/15 pytest), frontend 100%. Validation avec 8+ soumissions réelles, screenshots du stepper dynamique avec progression en temps réel.
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Corriger TTS mascotte Straté (parle anglais au lieu de français)
