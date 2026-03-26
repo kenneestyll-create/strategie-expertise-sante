@@ -125,13 +125,19 @@ Async polling, barre de progression, option RATP/SNCF
 - **UX ameliore** : Messages de chargement explicites ("Televersement en cours...", "Analyse en cours..."), bouton desactive pendant l'envoi, gestion d'erreurs detaillee (413, 400, etc.), polling resilient (5 erreurs avant abandon).
 - Tests: iteration 114 — backend 100% (9/9 pytest), frontend 100%
 
+## Restructuration Admin & Fix Relecture Expert (Mar 2026) — DONE
+- **Bug "Relire et valider"** : Le dialogue de relecture ne chargeait pas le contenu complet pour les Dossier Express (champ `context` manquant). Fix: nouveau endpoint `GET /api/admin/premium-analyses/{id}/full-content` qui récupère l'analyse depuis la bonne collection (strategiia_analyses ou dossier_express). Le dialogue affiche maintenant la situation client, le type de dossier, le régime, et le texte d'analyse complet.
+- **Séparation Admin** : L'ancien onglet "Premium" unique a été remplacé par deux onglets distincts : "StrategiIA" (avec section Relecture expert — StrategiIA) et "Dossier Express" (avec stats production + section Relecture expert — Dossier Express IA + historique soumissions). Composant réutilisable `AdminPremiumReview.jsx` créé pour le workflow de relecture. Badges de notification sur chaque onglet indiquant les items en attente.
+- **Fix send-reviewed** : L'endpoint `POST /api/admin/premium-analyses/{id}/send-reviewed` utilise maintenant le bon `report_type` (StrategiIA ou Dossier Express IA) au lieu du hardcodé "StrategiIA".
+- **Stepper Dossier Express** : Ajout de 5 étapes dynamiques dans la vue processing (Téléversement → Lecture → Analyse → Génération → Envoi) avec barre de progression animée. Backend met à jour `progress_step` à chaque étape du traitement.
+- Tests: iteration 115 — backend 100% (16/16 pytest), frontend 100%
+
 ## Taches a venir
-- **P1:** Dashboard admin pour stats tracking/conversions + leads guides
-- **P0:** Finaliser Mode Admin Test Premium (Relecture expert, alertes email, badge dashboard)
-- **P0:** Enrichissement rapport premium (1.5 pages, phrase cloture emotionnelle, orientation service)
 - **P1:** Activer les paiements en production (Stripe/PayPal)
+- **P2:** Corriger TTS mascotte Straté (parle anglais au lieu de français)
+- **P2:** Construire système Admin CRUD pour les conseils Straté
 - **P2:** Integration HubSpot (en attente de credentials)
-- **P2:** Audit logging complet
+- **P3:** Audit logging complet
 - **P3:** Finalisation du contenu legal
 - **P3:** Refactoring EmailTemplateEditor.jsx
 
