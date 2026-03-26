@@ -106,6 +106,10 @@ html body[data-scroll-locked] {
     padding-right: 0 !important;
     margin-right: 0 !important;
 }
+/* Hide scrollbar in mobile nav menu */
+[data-testid="mobile-menu"]::-webkit-scrollbar {
+    display: none;
+}
 a[href^="#"] {
     scroll-behavior: smooth;
 }

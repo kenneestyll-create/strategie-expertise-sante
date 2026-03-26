@@ -190,7 +190,7 @@ export const Header = () => {
 
         {/* ═══ Mobile Navigation ═══ */}
         {isMenuOpen && (
-          <div className="lg:hidden border-t border-[#C9A84C]/10 overflow-y-auto bg-[#0a0a08]" style={{ maxHeight: 'calc(85vh - env(safe-area-inset-top, 0px))', maxHeight: 'calc(85dvh - env(safe-area-inset-top, 0px))' }} data-testid="mobile-menu">
+          <div className="lg:hidden border-t border-[#C9A84C]/10 bg-[#0a0a08] -mx-4 sm:-mx-6 px-4 sm:px-6 overflow-y-auto overflow-x-hidden" style={{ maxHeight: 'calc(85dvh - env(safe-area-inset-top, 0px))', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }} data-testid="mobile-menu">
             <div className="flex flex-col py-2">
               {/* Accueil */}
               <Link to="/" className={`px-4 py-3 text-sm font-medium ${isActive('/') ? 'text-[#C9A84C] bg-[#C9A84C]/5' : 'text-[#f5f0e8]/70 hover:text-[#f5f0e8] hover:bg-white/5'}`} data-testid="mobile-nav-accueil">

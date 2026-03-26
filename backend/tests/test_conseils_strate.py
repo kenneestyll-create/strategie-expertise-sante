@@ -18,22 +18,28 @@ class TestConseilsPublicEndpoints:
     """Public endpoints - no auth required"""
     
     def test_get_today_conseil_returns_200(self):
-        """GET /api/conseils/today should return a conseil object"""
+        """GET /api/conseils/today should return a conseil object with id, text, category, link, link_label"""
         response = requests.get(f"{BASE_URL}/api/conseils/today")
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
-        # Verify required fields
+        # Verify required fields for public endpoint
+        assert "id" in data, "Response missing 'id' field"
         assert "text" in data, "Response missing 'text' field"
         assert "category" in data, "Response missing 'category' field"
         assert "link" in data, "Response missing 'link' field"
         assert "link_label" in data, "Response missing 'link_label' field"
-        assert "active" in data, "Response missing 'active' field"
         
         # Verify data types
+        assert isinstance(data["id"], str), "id should be string"
         assert isinstance(data["text"], str), "text should be string"
         assert isinstance(data["category"], str), "category should be string"
         assert len(data["text"]) >= 5, "text should be at least 5 chars"
+        
+        # Verify conseil is NOT the old stuck one
+        assert "contestation" not in data["text"].lower() or "CPAM" not in data["text"], \
+            "Conseil should not be the old stuck 'contestation CPAM' conseil"
+        
         print(f"✓ GET /api/conseils/today returned conseil: {data['text'][:50]}...")
     
     def test_get_today_conseil_has_valid_category(self):

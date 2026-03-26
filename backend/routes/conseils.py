@@ -129,14 +129,23 @@ async def get_today_conseil():
     await ensure_seed()
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
-    # Priority conseil for today
+    # Priority conseil — only if start_date matches today exactly (one-day highlight)
     priority = await db.strate_conseils.find_one({
         "active": True, "priority": True,
-        "$or": [{"start_date": None}, {"start_date": {"$lte": today}}],
     })
     if priority:
-        end = priority.get("end_date")
-        if not end or end >= today:
+        p_start = priority.get("start_date")
+        p_end = priority.get("end_date")
+        # Priority is valid only if: start_date <= today AND (end_date is None or today, meaning same-day priority, OR end_date >= today)
+        start_ok = not p_start or p_start <= today
+        # Auto-expire: if no end_date, treat it as same-day-only (priority valid only on start_date)
+        if p_end:
+            end_ok = p_end >= today
+        else:
+            # No end_date: valid only on the start_date itself (or if no start_date, valid today only then auto-clear)
+            end_ok = (p_start == today) if p_start else False
+
+        if start_ok and end_ok:
             return {
                 "id": str(priority["_id"]),
                 "text": priority["text"],
@@ -144,6 +153,12 @@ async def get_today_conseil():
                 "link": priority.get("link", "/ressources"),
                 "link_label": priority.get("link_label", "En savoir plus"),
             }
+        else:
+            # Priority expired — auto-clear the flag
+            await db.strate_conseils.update_one(
+                {"_id": priority["_id"]},
+                {"$set": {"priority": False}}
+            )
 
     # Active conseils within date range — sorted by _id for deterministic order
     active = await db.strate_conseils.find({
@@ -311,7 +326,7 @@ async def highlight_conseil(conseil_id: str, admin: dict = Depends(get_current_a
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     result = await db.strate_conseils.update_one(
         {"_id": ObjectId(conseil_id)},
-        {"$set": {"priority": True, "active": True, "start_date": today}}
+        {"$set": {"priority": True, "active": True, "start_date": today, "end_date": today}}
     )
     if result.matched_count == 0:
         raise HTTPException(404, "Conseil non trouve.")

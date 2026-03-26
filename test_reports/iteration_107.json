@@ -1,0 +1,73 @@
+{
+  "summary": "Verified two bug fixes: 1) Mobile hamburger menu no longer shows horizontal overflow when expanding Accompagnements/Outils submenus. 2) Conseil du jour rotation is working correctly - no longer stuck on same conseil. Both fixes confirmed working.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_conseils_strate.py",
+    "/app/test_reports/pytest/pytest_conseils_strate_bugfix.xml",
+    ".screenshots/mobile_menu_initial.png",
+    ".screenshots/mobile_menu_accompagnements.png",
+    ".screenshots/mobile_menu_outils.png",
+    ".screenshots/conseil_du_jour_desktop.png"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Header.jsx mobile menu: -mx-4 sm:-mx-6 px-4 sm:px-6 extends background edge-to-edge, overflow-x-hidden prevents horizontal scroll",
+    "index.css: [data-testid='mobile-menu']::-webkit-scrollbar { display: none } hides scrollbar",
+    "conseils.py /today endpoint: priority conseils auto-expire when end_date < today or when no end_date and start_date != today",
+    "conseils.py /highlight endpoint: sets end_date=today for same-day expiry"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_conseils_strate.py"
+  ],
+  "success_rate": {
+    "backend": "100% (16/16 tests passed)",
+    "frontend": "100% (mobile menu + conseil widget verified)"
+  },
+  "test_credentials": "admin@accompagn-sante.fr / Admin2024!",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Both bugs fixed and verified: 1) Mobile menu overflow fixed with -mx-4 sm:-mx-6 px-4 sm:px-6 and overflow-x-hidden. 2) Conseil rotation uses formula: index = (days_since_2024-01-01) % total_active_conseils. For March 26 2026, expected index is 5. Highlight endpoint sets end_date=today for same-day expiry.",
+  "test_results": {
+    "mobile_menu_overflow": {
+      "test": "Open hamburger menu, expand Accompagnements and Outils submenus",
+      "viewport": "390x844 (mobile)",
+      "body_overflow": "PASS - scrollWidth == clientWidth",
+      "html_overflow": "PASS - scrollWidth == clientWidth",
+      "menu_overflow": "PASS - scrollWidth == clientWidth",
+      "menu_full_width": "PASS - left=0, right=390, width=390"
+    },
+    "conseil_du_jour_api": {
+      "endpoint": "GET /api/conseils/today",
+      "returns_200": "PASS",
+      "has_required_fields": "PASS - id, text, category, link, link_label",
+      "not_stuck_conseil": "PASS - returns rotated conseil, not 'contestation CPAM'"
+    },
+    "conseil_rotation": {
+      "days_since_2024_01_01": 815,
+      "expected_index": 5,
+      "actual_conseil": "Vous pouvez être assisté par un médecin lors d'une expertise.",
+      "matches_expected": "PASS"
+    },
+    "conseil_highlight": {
+      "endpoint": "POST /api/conseils/admin/{id}/highlight",
+      "sets_end_date_today": "PASS - end_date=2026-03-26",
+      "priority_shows_in_today": "PASS - highlighted conseil returned by /today",
+      "auto_clears_after_expiry": "PASS - priority cleared when end_date < today"
+    },
+    "conseil_frontend_widget": {
+      "desktop_widget_visible": "PASS",
+      "shows_conseil_text": "PASS",
+      "has_ecouter_button": "PASS",
+      "has_action_link": "PASS"
+    }
+  }
+}
