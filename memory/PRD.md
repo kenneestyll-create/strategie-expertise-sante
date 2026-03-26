@@ -109,6 +109,15 @@ Async polling, barre de progression, option RATP/SNCF
 - **Bug 3 — Phrase de cloture tronquee** : Le regex _clean_analysis supprimait "Strategie & Expertise Sante" y compris dans la phrase "devient votre bouclier". Fix: regex modifie pour ne matcher qu'en debut de ligne + phrase hardcodee dans le template PDF + patterns de dedup pour eviter les doublons.
 - Tests: iteration 112 — 100% backend (8/8 pytest), 100% frontend (6/6 playwright)
 
+## Workflow Relecture Expert Personnalisee (Mar 2026) — DONE
+- **Fix critique event loop** : `litellm.completion()` (synchrone) bloquait l'event loop asyncio pendant 40-70s. Fix: `asyncio.to_thread()` pour executer le LLM dans un thread pool. Le serveur reste reactif pendant toute la duree LLM.
+- **Workflow 4 etapes** : en_attente → en_cours → valide → envoye. Aucun envoi automatique du document si Relecture Expert selectionne.
+- **Admin dashboard** : 5 KPIs, boutons Traiter / Relire-Valider / Envoyer au client, dialog de relecture avec textarea et notes internes.
+- **Endpoint send-reviewed** : POST /api/admin/premium-analyses/{id}/send-reviewed — genere le PDF avec marqueur "Version expert finalisee" et envoie par email via Resend.
+- **Frontend client** : mention "24h a 48h ouvrees", etape "En attente de relecture expert" avec message rassurant (intervention humaine, delai, envoi par email).
+- **PDF marqueur** : bandeau discret "Document relu et finalise dans le cadre de l'option Relecture expert personnalisee" dans le header.
+- Tests: iteration 113 — backend 100% (10/10 pytest), frontend 100%
+
 ## Taches a venir
 - **P1:** Dashboard admin pour stats tracking/conversions + leads guides
 - **P0:** Finaliser Mode Admin Test Premium (Relecture expert, alertes email, badge dashboard)
