@@ -103,6 +103,12 @@ Async polling, barre de progression, option RATP/SNCF
 - **Performance:** Reponse endpoint en 0.12s (retour immediat du job_id)
 - **Tests:** 100% backend (8/8 curl), 100% frontend (8/8 playwright), testing agent iteration 111
 
+## Correction 3 Bugs StrategiIA (Mar 2026) — DONE
+- **Bug 1 — Erreurs de connexion intermittentes** : Le polling abandonnait au 1er echec reseau. Fix: compteur pollErrors (3 echecs consecutifs avant abandon) + flag jobCompleted contre race condition requetes en vol.
+- **Bug 2 — Logo bouclier absent du PDF** : Le PDF backend (FPDF) n'avait jamais integre d'image. Fix: shield_logo.png (264x288, 9926 bytes) decode et sauvegarde dans backend/utils/, integre dans le header PDF (9mm a gauche du nom).
+- **Bug 3 — Phrase de cloture tronquee** : Le regex _clean_analysis supprimait "Strategie & Expertise Sante" y compris dans la phrase "devient votre bouclier". Fix: regex modifie pour ne matcher qu'en debut de ligne + phrase hardcodee dans le template PDF + patterns de dedup pour eviter les doublons.
+- Tests: iteration 112 — 100% backend (8/8 pytest), 100% frontend (6/6 playwright)
+
 ## Taches a venir
 - **P1:** Dashboard admin pour stats tracking/conversions + leads guides
 - **P0:** Finaliser Mode Admin Test Premium (Relecture expert, alertes email, badge dashboard)
