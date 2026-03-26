@@ -186,6 +186,12 @@ Problèmes réels identifiés et corrigés:
 - Bug logique de priorité des conditions corrigé (Bonne vs Très bonne)
 - Tests: iteration 121 — 13/13 backend + validation manuelle des 5 niveaux
 
+## Prévisualisation Admin et Encart Documentaire (Mar 2026) — DONE
+- **Encart PDF** : "Base documentaire prise en compte" intégré dans le rapport PDF avec 3 métriques + note de réassurance (fait précédemment)
+- **Encart admin** : Réplique visuelle de l'encart PDF dans la modal admin avec grille de 3 métriques (documents, pages, lisibilité), liste de fichiers avec badges statut, note de réassurance
+- **Preview PDF** : Nouvel endpoint `GET /api/admin/dossier-express/{id}/preview-pdf` + bouton "Prévisualiser le PDF" qui ouvre le rapport dans un nouvel onglet
+- Tests: iteration 122 — backend 100% (6/6), frontend 100%
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Corriger TTS mascotte Straté (parle anglais au lieu de français)
