@@ -21,7 +21,7 @@ const STATUS_CONFIG = {
   termine: { label: 'Terminé', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', border: 'border-emerald-500/30 bg-emerald-50/50' },
 };
 
-export const AdminPremiumReview = ({ items, stats, productType, productLabel, icon: Icon, accentColor, axiosConfig, onRefresh }) => {
+export const AdminPremiumReview = ({ items, stats, productType, productLabel, icon: Icon, accentColor, axiosConfig, onRefresh, onViewDossierAnalysis }) => {
   const [reviewDialog, setReviewDialog] = useState(null);
   const [loadingContent, setLoadingContent] = useState(false);
 
@@ -161,6 +161,14 @@ export const AdminPremiumReview = ({ items, stats, productType, productLabel, ic
                         }} data-testid={`premium-notify-${item.id}`}>
                         <Bell className="w-3 h-3" /> {item.client_notified ? 'Relancer' : 'Notifier'}
                       </Button>
+                      {/* Consulter l'analyse (3 onglets) */}
+                      {item.dossier_id && onViewDossierAnalysis && (
+                        <Button size="sm" variant="outline" className="text-xs h-7 gap-1 border-amber-500/30 text-amber-600 hover:bg-amber-50"
+                          onClick={() => onViewDossierAnalysis(item.dossier_id)}
+                          data-testid={`premium-view-analysis-${item.id}`}>
+                          <FileSearch className="w-3 h-3" /> Consulter l'analyse
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>

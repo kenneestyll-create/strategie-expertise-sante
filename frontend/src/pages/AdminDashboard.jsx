@@ -1636,6 +1636,12 @@ export const AdminDashboard = () => {
               accentColor="text-amber-600"
               axiosConfig={axiosConfig}
               onRefresh={fetchData}
+              onViewDossierAnalysis={async (dossierId) => {
+                try {
+                  const res = await axios.get(`${API}/admin/dossier-express/${dossierId}/analysis`, axiosConfig);
+                  setDossierViewDialog(res.data);
+                } catch { toast.error("Impossible de charger l'analyse"); }
+              }}
             />
 
             {/* Recent Dossier Express submissions with analysis access */}
