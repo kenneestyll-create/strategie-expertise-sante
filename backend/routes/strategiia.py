@@ -8,7 +8,7 @@ import os
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 from config import db, EMERGENT_LLM_KEY, STRIPE_API_KEY, RESEND_AVAILABLE, SENDER_EMAIL, logger
-from utils.auth import get_current_admin
+from utils.auth import get_current_admin, get_optional_admin
 from utils.email import notify_admin_premium_analysis
 from utils.pdf import generate_secured_pdf, generate_dossier_pdf
 
@@ -382,7 +382,7 @@ async def dossier_express_weekly_count():
 # In-memory job store for async polling
 _jobs = {}
 
-async def _run_analysis(job_id, type_dossier, regime, situation, is_premium, email, similar_cases, case_context):
+async def _run_analysis(job_id, type_dossier, regime, situation, is_premium, email, similar_cases, case_context, is_admin_test=False):
     """Background task for LLM analysis with retry."""
     last_error = ""
     for attempt in range(3):
@@ -392,7 +392,7 @@ async def _run_analysis(job_id, type_dossier, regime, situation, is_premium, ema
             session_id = f"strategiia_{str(uuid.uuid4())[:8]}"
             chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id=session_id, system_message=STRATEGIIA_SYSTEM_PROMPT).with_model("anthropic", "claude-sonnet-4-5-20250929")
             response = await chat.send_message(UserMessage(text=user_msg))
-            analysis_doc = {"id": str(uuid.uuid4()), "type_dossier": type_dossier, "regime": regime, "situation": situation[:500], "is_premium": is_premium, "email": email if email else "", "created_at": datetime.now(timezone.utc).isoformat()}
+            analysis_doc = {"id": str(uuid.uuid4()), "type_dossier": type_dossier, "regime": regime, "situation": situation[:500], "is_premium": is_premium, "email": email if email else "", "admin_test": is_admin_test, "created_at": datetime.now(timezone.utc).isoformat()}
             await db.strategiia_analyses.insert_one(analysis_doc)
             remaining = 3
             if not is_premium and email:
@@ -415,18 +415,20 @@ async def _run_analysis(job_id, type_dossier, regime, situation, is_premium, ema
 
 
 @router.post("/strategiia/analyze")
-async def strategiia_analyze(request: Request):
+async def strategiia_analyze(request: Request, admin: dict = Depends(get_optional_admin)):
     body = await request.json()
     situation = body.get("situation", "")
     type_dossier = body.get("type_dossier", "")
     regime = body.get("regime", "")
     is_premium = body.get("premium", False)
     email = body.get("email", "").strip().lower()
+    is_admin_test = body.get("admin_test", False) and admin is not None
     if not situation.strip():
         raise HTTPException(status_code=400, detail="Description de la situation requise")
     if not EMERGENT_LLM_KEY:
         raise HTTPException(status_code=503, detail="Service IA non disponible")
-    if not is_premium and email:
+    # Admin bypass: skip quota check
+    if not is_admin_test and not is_premium and email:
         now = datetime.now(timezone.utc)
         month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
         usage_count = await db.strategiia_analyses.count_documents({"email": email, "is_premium": False, "created_at": {"$gte": month_start}})
@@ -444,8 +446,8 @@ async def strategiia_analyze(request: Request):
 
     job_id = str(uuid.uuid4())[:12]
     _jobs[job_id] = {"status": "pending"}
-    asyncio.create_task(_run_analysis(job_id, type_dossier, regime, situation, is_premium, email, similar_cases, case_context))
-    return {"job_id": job_id, "status": "pending"}
+    asyncio.create_task(_run_analysis(job_id, type_dossier, regime, situation, is_premium, email, similar_cases, case_context, is_admin_test=is_admin_test))
+    return {"job_id": job_id, "status": "pending", "admin_test": is_admin_test}
 
 
 @router.get("/strategiia/status/{job_id}")
@@ -616,11 +618,15 @@ async def strategiia_quota(email: str):
     return {"remaining": remaining, "limit": 3, "used": min(usage_count, 3)}
 
 @router.post("/strategiia/register-email")
-async def strategiia_register_email(request: Request):
+async def strategiia_register_email(request: Request, admin: dict = Depends(get_optional_admin)):
     body = await request.json()
     email = body.get("email", "").strip().lower()
+    is_admin_test = body.get("admin_test", False) and admin is not None
     if not email or "@" not in email:
         raise HTTPException(status_code=400, detail="Email invalide")
+    # Admin test: don't create leads, return unlimited quota
+    if is_admin_test:
+        return {"success": True, "email": email, "remaining": 999, "admin_test": True}
     await db.leads.update_one({"email": email}, {"$set": {"email": email, "source": "strategiia_readwall", "updated_at": datetime.now(timezone.utc).isoformat()}, "$setOnInsert": {"created_at": datetime.now(timezone.utc).isoformat()}}, upsert=True)
     now = datetime.now(timezone.utc)
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
@@ -666,6 +672,56 @@ async def strategiia_checkout(request: Request):
     except Exception as e:
         logger.error(f"StratégiIA checkout error: {e}")
         raise HTTPException(status_code=500, detail="Erreur de paiement")
+
+
+@router.post("/strategiia/admin-bypass-premium")
+async def strategiia_admin_bypass(request: Request, admin: dict = Depends(get_current_admin)):
+    """Admin bypass: skips Stripe checkout and runs premium analysis directly."""
+    body = await request.json()
+    situation = body.get("situation", "")
+    type_dossier = body.get("type_dossier", "")
+    regime = body.get("regime", "")
+    email = admin.get("email", "admin@test")
+    if not situation.strip() or not EMERGENT_LLM_KEY:
+        raise HTTPException(status_code=400, detail="Situation requise et service IA actif")
+    similar_cases = []
+    if type_dossier:
+        similar_cases = await db.cas_anonymises.find({"type_dossier": type_dossier}, {"_id": 0}).sort("score_pertinence", -1).to_list(5)
+    case_context = ""
+    if similar_cases:
+        case_context = "\n\nCAS SIMILAIRES ANONYMISÉS DANS LA BASE :\n"
+        for c in similar_cases:
+            case_context += f"- Type: {c.get('type_dossier')}, Régime: {c.get('regime')}, Durée: {c.get('duree')}, Stratégie: {c.get('strategie')}, Résultat: {c.get('resultat')}, Score: {c.get('score_pertinence', 'N/A')}/100\n"
+    job_id = str(uuid.uuid4())[:12]
+    _jobs[job_id] = {"status": "pending"}
+    asyncio.create_task(_run_analysis(job_id, type_dossier, regime, situation, True, email, similar_cases, case_context, is_admin_test=True))
+    return {"job_id": job_id, "status": "pending", "admin_test": True}
+
+
+@router.post("/dossier-express/admin-bypass")
+async def dossier_express_admin_bypass(request: Request, admin: dict = Depends(get_current_admin)):
+    """Admin bypass: process Dossier Express without Stripe payment."""
+    body = await request.json()
+    email = admin.get("email", "admin@test")
+    name = body.get("name", "Admin Test")
+    situation = body.get("situation", "")
+    type_dossier = body.get("type_dossier", "")
+    regime = body.get("regime", "")
+    documents_text = body.get("documents_text", "")
+    premium_pdf = body.get("premium_pdf", False)
+    if not situation.strip():
+        raise HTTPException(status_code=400, detail="Description requise")
+    dossier_id = str(uuid.uuid4())
+    dossier_doc = {
+        "id": dossier_id, "email": email, "name": name, "situation": situation[:5000],
+        "type_dossier": type_dossier, "regime": regime,
+        "documents_text": documents_text[:10000], "premium_pdf": premium_pdf,
+        "status": "processing", "payment_verified": True, "admin_test": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.dossier_express.insert_one(dossier_doc)
+    asyncio.create_task(_process_dossier_express(dossier_id, email, name, situation, type_dossier, regime, documents_text, premium_pdf=premium_pdf))
+    return {"success": True, "dossier_id": dossier_id, "admin_test": True}
 
 @router.post("/strategiia/generate-pdf")
 async def strategiia_generate_pdf(request: Request):

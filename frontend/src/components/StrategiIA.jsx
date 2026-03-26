@@ -12,11 +12,12 @@ import {
   X, Brain, Loader2, FileText, Download, Lock,
   MessageSquare, Phone, Mail, Copy, Check,
   AlertTriangle, CreditCard, ArrowRight, Sparkles, UserPlus, Crown,
-  Target
+  Target, Shield
 } from 'lucide-react';
 import axios from 'axios';
 import { DataConsentBox } from '@/components/DataConsentBox';
 import { PdfCoverPreview } from '@/components/PdfCoverPreview';
+import { useAdminTest } from '@/components/AdminTestBanner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -42,6 +43,7 @@ const REGIMES = [
 
 export const StrategiIA = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { isAdminMode, adminToken } = useAdminTest();
 
   // Allow external trigger (mobile FAB + email link)
   useEffect(() => {
@@ -93,9 +95,12 @@ export const StrategiIA = () => {
     }
     setStep('loading');
     try {
+      const headers = {};
+      if (isAdminMode && adminToken) headers['Authorization'] = `Bearer ${adminToken}`;
       const { data } = await axios.post(`${API}/strategiia/analyze`, {
-        type_dossier: typeDossier, regime, situation, premium: false
-      });
+        type_dossier: typeDossier, regime, situation, premium: false,
+        admin_test: isAdminMode
+      }, { headers });
       if (data.quota_exceeded) {
         toast.error(data.message);
         setStep('form');
@@ -136,15 +141,26 @@ export const StrategiIA = () => {
 
   // Register email to unlock full result
   const handleRegisterEmail = async () => {
+    // Admin bypass: skip email validation, don't create leads
+    if (isAdminMode && adminToken) {
+      setEmail('admin-test@ses-interne.fr');
+      setRemaining(999);
+      setStep('basic');
+      toast.success("Mode Admin : email bypass, pas de lead créé.");
+      return;
+    }
     if (!email.trim() || !email.includes('@')) {
       toast.error("Veuillez entrer un email valide");
       return;
     }
     setRegisterLoading(true);
     try {
+      const headers = {};
+      if (isAdminMode && adminToken) headers['Authorization'] = `Bearer ${adminToken}`;
       const { data } = await axios.post(`${API}/strategiia/register-email`, {
-        email: email.trim().toLowerCase()
-      });
+        email: email.trim().toLowerCase(),
+        admin_test: isAdminMode
+      }, { headers });
       setRemaining(data.remaining);
       if (data.remaining <= 0) {
         setStep('quota_exceeded');
@@ -161,6 +177,33 @@ export const StrategiIA = () => {
   };
 
   const handlePayForPremium = async () => {
+    // Admin bypass: skip Stripe, run premium analysis directly
+    if (isAdminMode && adminToken) {
+      setStep('loading');
+      toast.info("Mode Admin : bypass paiement, analyse premium en cours...");
+      try {
+        const { data } = await axios.post(`${API}/strategiia/admin-bypass-premium`, {
+          situation, type_dossier: typeDossier, regime
+        }, { headers: { 'Authorization': `Bearer ${adminToken}` } });
+        const jobId = data.job_id;
+        const poll = setInterval(async () => {
+          try {
+            const { data: st } = await axios.get(`${API}/strategiia/status/${jobId}`);
+            if (st.status === 'done') {
+              clearInterval(poll);
+              setPremiumResult(st.analysis);
+              setStep('premium');
+              toast.success("Mode Admin : rapport premium généré (test interne).");
+            } else if (st.status === 'error') {
+              clearInterval(poll);
+              toast.error(st.error || "Erreur lors de l'analyse premium.");
+              setStep('basic');
+            }
+          } catch { clearInterval(poll); setStep('basic'); }
+        }, 3000);
+      } catch { toast.error("Erreur bypass admin."); setStep('basic'); }
+      return;
+    }
     try {
       const { data } = await axios.post(`${API}/strategiia/checkout`, {
         origin_url: window.location.origin, email,
@@ -261,7 +304,13 @@ export const StrategiIA = () => {
                   <div>
                     <h3 className="font-semibold text-base flex items-center gap-2">
                       StratégiIA
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-accent/20 text-accent border-0">Exclusif</Badge>
+                      {isAdminMode ? (
+                        <Badge data-testid="strategiia-admin-badge" className="text-[10px] px-1.5 py-0 bg-amber-500/30 text-amber-300 border-amber-400/50">
+                          <Shield className="w-3 h-3 mr-0.5" />Admin
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-accent/20 text-accent border-0">Exclusif</Badge>
+                      )}
                     </h3>
                     <p className="text-xs text-primary-foreground/60">Outil d'aide à l'analyse stratégique</p>
                   </div>

@@ -80,6 +80,18 @@ async def get_optional_forum_user(credentials: HTTPAuthorizationCredentials = De
     except:
         return None
 
+async def get_optional_admin(credentials: HTTPAuthorizationCredentials = Depends(security_optional)):
+    """Returns admin payload if valid admin token is present, None otherwise."""
+    if credentials is None:
+        return None
+    try:
+        payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        if payload.get("is_admin"):
+            return payload
+        return None
+    except:
+        return None
+
 async def get_current_client(credentials: HTTPAuthorizationCredentials = Depends(security)):
     try:
         payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])

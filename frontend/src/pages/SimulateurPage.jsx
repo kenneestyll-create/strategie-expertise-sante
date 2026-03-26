@@ -14,6 +14,7 @@ import axios from 'axios';
 import jsPDF from 'jspdf';
 import { SEO } from '@/components/SEO';
 import { SHIELD_B64 } from './shieldLogo';
+import { useAdminTest } from '@/components/AdminTestBanner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -451,6 +452,7 @@ export const SimulateurPage = () => {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { isAdminMode } = useAdminTest();
 
   const handleAnswer = (questionId, value) => {
     const newAnswers = { ...answers, [questionId]: value };
@@ -484,6 +486,15 @@ export const SimulateurPage = () => {
   };
 
   const handleSubmitEmail = async () => {
+    // Admin bypass: skip email gate entirely
+    if (isAdminMode) {
+      setEmail('admin-test@ses-interne.fr');
+      setSaved(true);
+      setShowEmailStep(false);
+      setShowResults(true);
+      toast.success("Mode Admin : email bypass, aucun lead créé.");
+      return;
+    }
     const trimmed = email.trim().toLowerCase();
     if (!trimmed || !trimmed.includes('@') || !trimmed.includes('.') || trimmed.length < 5) {
       toast.error("Veuillez renseigner une adresse email valide pour recevoir votre rapport personnalisé.");

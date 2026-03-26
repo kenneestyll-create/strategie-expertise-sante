@@ -19,6 +19,7 @@ import { useReveal, useRevealChildren } from '@/hooks/useReveal';
 import { DataConsentBox } from '@/components/DataConsentBox';
 import { PdfCoverPreview } from '@/components/PdfCoverPreview';
 import { DocumentUploader } from '@/components/DocumentUploader';
+import { useAdminTest } from '@/components/AdminTestBanner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -136,6 +137,7 @@ export const DossierExpressPage = () => {
   const [searchParams] = useSearchParams();
   const [step, setStep] = useState('landing');
   const [loading, setLoading] = useState(false);
+  const { isAdminMode, adminToken } = useAdminTest();
   const [consent, setConsent] = useState(false);
   const [form, setForm] = useState({
     email: '', name: '', situation: '',
@@ -204,6 +206,15 @@ export const DossierExpressPage = () => {
       toast.error("Veuillez renseigner votre nom et email");
       return;
     }
+    // Admin bypass: skip Stripe, go directly to form
+    if (isAdminMode && adminToken) {
+      sessionStorage.setItem('dossier_express_form', JSON.stringify(form));
+      sessionStorage.setItem('dossier_express_premium_pdf', premiumPdf ? '1' : '0');
+      sessionStorage.setItem('dossier_express_admin_bypass', '1');
+      setStep('form');
+      toast.success("Mode Admin : paiement bypass, accès direct au formulaire.");
+      return;
+    }
     sessionStorage.setItem('dossier_express_form', JSON.stringify(form));
     sessionStorage.setItem('dossier_express_premium_pdf', premiumPdf ? '1' : '0');
     sessionStorage.setItem('dossier_express_analyse_premium', analysePremium ? '1' : '0');
@@ -237,22 +248,29 @@ export const DossierExpressPage = () => {
         documentsText += `\n--- ${file.name} (${file.type}, ${(file.size / 1024).toFixed(0)} Ko) ---\n[Document joint]\n`;
       }
     }
+    // Admin bypass: use admin endpoint instead of regular submit
+    const isAdminBypass = isAdminMode && adminToken;
     try {
       const isPremium = sessionStorage.getItem('dossier_express_premium_pdf') === '1';
-      const res = await axios.post(`${API}/dossier-express/submit`, {
+      const endpoint = isAdminBypass ? `${API}/dossier-express/admin-bypass` : `${API}/dossier-express/submit`;
+      const payload = isAdminBypass ? {
+        name: form.name, situation: form.situation,
+        type_dossier: form.type_dossier, regime: form.regime,
+        documents_text: documentsText, premium_pdf: isPremium
+      } : {
         session_id: searchParams.get('session_id') || '',
-        email: form.email,
-        name: form.name,
-        situation: form.situation,
-        type_dossier: form.type_dossier,
-        regime: form.regime,
-        documents_text: documentsText,
-        premium_pdf: isPremium
-      });
+        email: form.email, name: form.name,
+        situation: form.situation, type_dossier: form.type_dossier,
+        regime: form.regime, documents_text: documentsText, premium_pdf: isPremium
+      };
+      const headers = isAdminBypass ? { 'Authorization': `Bearer ${adminToken}` } : {};
+      const res = await axios.post(endpoint, payload, { headers });
       setDossierId(res.data.dossier_id);
       setStep('processing');
       sessionStorage.removeItem('dossier_express_form');
       sessionStorage.removeItem('dossier_express_premium_pdf');
+      sessionStorage.removeItem('dossier_express_admin_bypass');
+      if (isAdminBypass) toast.info("Mode Admin : dossier soumis en test (pas de vrai paiement).");
     } catch (err) {
       if (err.response?.status === 402) {
         toast.error("Paiement requis. Veuillez procéder au paiement d'abord.");

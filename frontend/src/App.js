@@ -11,6 +11,7 @@ import { MascotteStrate } from "@/components/MascotteStrate";
 import { ExitIntentPopup } from "@/components/ExitIntentPopup";
 import { StrategiIA } from "@/components/StrategiIA";
 import { AuthProvider } from "@/context/AuthContext";
+import { AdminTestProvider } from "@/components/AdminTestBanner";
 import { ForumAuthProvider } from "@/context/ForumAuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -138,6 +139,7 @@ function App() {
     <HelmetProvider>
       <div className="App grain-texture">
         <AuthProvider>
+          <AdminTestProvider>
           <ForumAuthProvider>
             <BrowserRouter>
               <ScrollToTop />
@@ -187,6 +189,7 @@ function App() {
               <Toaster position="top-right" richColors />
             </BrowserRouter>
           </ForumAuthProvider>
+          </AdminTestProvider>
         </AuthProvider>
       </div>
     </HelmetProvider>
