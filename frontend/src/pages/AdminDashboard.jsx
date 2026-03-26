@@ -1718,6 +1718,51 @@ export const AdminDashboard = () => {
                         <p className="text-sm leading-relaxed max-h-[120px] overflow-y-auto">{dossierViewDialog.situation}</p>
                       </div>
                     )}
+                    {/* Documents analysés */}
+                    {dossierViewDialog.document_details && dossierViewDialog.document_details.length > 0 && (
+                      <div data-testid="doc-details-block">
+                        <Label className="font-medium text-sm mb-2 block flex items-center gap-1.5">
+                          <FileText className="w-4 h-4 text-amber-600" />
+                          Documents analysés ({dossierViewDialog.document_details.length})
+                        </Label>
+                        <div className="space-y-2">
+                          {dossierViewDialog.document_details.map((doc, idx) => (
+                            <div key={idx} className="p-3 rounded-lg border bg-muted/30" data-testid={`doc-detail-${idx}`}>
+                              <div className="flex items-center justify-between gap-2 mb-1.5">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span className="text-sm font-medium truncate">{doc.name}</span>
+                                  {doc.size_kb > 0 && <span className="text-[10px] text-muted-foreground flex-shrink-0">{doc.size_kb} Ko</span>}
+                                </div>
+                                <Badge
+                                  variant="outline"
+                                  className={`flex-shrink-0 text-[10px] ${
+                                    doc.status === 'text_extracted' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                    doc.status === 'ocr_extracted' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                    doc.status === 'ocr_empty' ? 'bg-orange-50 text-orange-600 border-orange-200' :
+                                    'bg-red-50 text-red-600 border-red-200'
+                                  }`}
+                                >
+                                  {doc.status === 'text_extracted' ? 'Texte extrait' :
+                                   doc.status === 'ocr_extracted' ? 'OCR utilisé' :
+                                   doc.status === 'ocr_empty' ? 'Partiellement lisible' :
+                                   'Non lisible'}
+                                </Badge>
+                              </div>
+                              <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                                <span>{doc.method}</span>
+                                {doc.pages > 0 && <span>{doc.pages} page{doc.pages > 1 ? 's' : ''}</span>}
+                                {doc.text_length > 0 && <span>{doc.text_length.toLocaleString('fr-FR')} car.</span>}
+                              </div>
+                              {doc.preview && (
+                                <p className="mt-1.5 text-xs text-muted-foreground/80 italic line-clamp-2 bg-background/50 rounded px-2 py-1 border border-border/30">
+                                  « {doc.preview}... »
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div>
                       <Label className="font-medium text-sm mb-2 block">Analyse générée par Dossier Express IA</Label>
                       {dossierViewDialog.analysis ? (

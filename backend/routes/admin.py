@@ -437,6 +437,7 @@ async def get_dossier_express_analysis(dossier_id: str, admin: dict = Depends(ge
         "type_dossier": dossier.get("type_dossier", ""),
         "regime": dossier.get("regime", ""),
         "premium_pdf": dossier.get("premium_pdf", False),
+        "document_details": dossier.get("document_details", []),
         "created_at": dossier.get("created_at", ""),
         "completed_at": dossier.get("completed_at", ""),
     }

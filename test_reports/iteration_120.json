@@ -1,0 +1,74 @@
+{
+  "summary": "Verified PDF extraction pipeline for Dossier Express IA. All 13 backend tests passed. Frontend 'Documents analysés' block displays correctly in admin dashboard with file name, status badge (color-coded), method, pages, and preview.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_pdf_extraction_pipeline.py",
+    "/app/test_reports/pytest/pytest_pdf_extraction_pipeline.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "POST /api/extract-document-text correctly extracts text from PDFs using pdfplumber (text PDFs) and pypdfium2+tesseract (scanned PDFs)",
+    "Image OCR extraction works via tesseract with fra+eng language support",
+    "Response includes details array with per-file metadata: name, method, status, pages, text_length, preview",
+    "POST /api/dossier-express/admin-bypass accepts and stores document_details in DB",
+    "GET /api/dossier-express/status/{id} returns document_details array",
+    "GET /api/admin/dossier-express/{id}/analysis returns document_details array",
+    "Admin dashboard 'Documents analysés' block displays correctly with color-coded status badges (emerald=text_extracted, blue=ocr_extracted, orange=ocr_empty, red=extraction_failed)",
+    "Frontend pdfExtractor.js calls extractTextFromFiles and sends document_details in payload"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_pdf_extraction_pipeline.py"
+  ],
+  "success_rate": {
+    "backend": "100% (13/13 tests passed)",
+    "frontend": "100% (all UI checks passed)"
+  },
+  "test_credentials": "Admin: admin@accompagn-sante.fr / Admin2024!",
+  "seed_data_creation": "Created test dossiers with document_details via admin-bypass endpoint during testing",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "PDF extraction pipeline fully tested. Key verification points: 1) POST /api/extract-document-text extracts text from PDFs and images, 2) document_details stored in DB via admin-bypass and submit endpoints, 3) Admin dashboard shows 'Documents analysés' block with file details when viewing completed dossiers via 'Consulter l'analyse' button. Status colors: text_extracted=emerald, ocr_extracted=blue, ocr_empty=orange, extraction_failed=red.",
+  "features_tested": {
+    "backend": [
+      "POST /api/extract-document-text - extracts text from PDF files (base64 encoded) - PASS",
+      "POST /api/extract-document-text - handles image files with OCR - PASS",
+      "POST /api/extract-document-text - returns proper details array with per-file metadata - PASS",
+      "POST /api/extract-document-text - handles empty files list - PASS",
+      "POST /api/extract-document-text - handles text files - PASS",
+      "POST /api/dossier-express/admin-bypass - accepts document_details field and stores in DB - PASS",
+      "POST /api/dossier-express/admin-bypass - requires authentication (401 without token) - PASS",
+      "GET /api/dossier-express/status/{id} - returns document_details array - PASS",
+      "GET /api/dossier-express/status/{invalid-id} - returns 404 - PASS",
+      "GET /api/admin/dossier-express/{id}/analysis - returns document_details array - PASS",
+      "GET /api/admin/dossier-express/{id}/analysis - requires authentication - PASS",
+      "GET /api/admin/dossier-express/{invalid-id}/analysis - returns 404 - PASS",
+      "Existing dossier status check - PASS"
+    ],
+    "frontend": [
+      "Admin dashboard Dossier Express tab loads correctly - PASS",
+      "'Consulter l'analyse' button visible for completed dossiers - PASS",
+      "Dossier view dialog opens with document_details block - PASS",
+      "'Documents analysés' block shows file count - PASS",
+      "Each document shows: name, status badge, method, pages, character count, preview - PASS",
+      "Status badge colors: text_extracted=emerald, ocr_extracted=blue - PASS",
+      "Frontend pdfExtractor.js sends document_details in payload - PASS (code verified)"
+    ]
+  },
+  "verification_checklist": {
+    "extract_document_text_endpoint": "PASS - Returns extracted_text, files_processed, details array",
+    "details_array_structure": "PASS - Contains name, method, status, pages, text_length, preview, has_text, size_kb",
+    "admin_bypass_stores_document_details": "PASS - document_details stored in dossier_express collection",
+    "status_endpoint_returns_document_details": "PASS - GET /api/dossier-express/status/{id} includes document_details",
+    "admin_analysis_returns_document_details": "PASS - GET /api/admin/dossier-express/{id}/analysis includes document_details",
+    "admin_dashboard_doc_details_block": "PASS - 'Documents analysés' block visible with data-testid='doc-details-block'",
+    "status_badge_colors": "PASS - emerald for text_extracted, blue for ocr_extracted"
+  }
+}

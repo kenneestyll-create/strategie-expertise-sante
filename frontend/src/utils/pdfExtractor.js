@@ -1,5 +1,6 @@
 /**
- * Extract text from files using backend API (pdfplumber for PDFs)
+ * Extract text from files using backend API
+ * Pipeline: PDF texte (pdfplumber) → PDF scanné (OCR tesseract) → Images (OCR)
  */
 import axios from 'axios';
 
@@ -27,16 +28,13 @@ export async function extractTextFromFiles(files, existingOcrText = '') {
     const isText = file.type === 'text/plain' || file.name?.toLowerCase().endsWith('.txt');
     const isImage = file.type?.startsWith('image/');
 
-    if (isPdf || isText) {
+    if (isPdf || isText || isImage) {
       try {
         const data = await fileToBase64(file);
         filesToExtract.push({ name: file.name, type: file.type || '', data });
       } catch {
         filesToExtract.push({ name: file.name, type: file.type || '', data: '' });
       }
-    } else if (isImage) {
-      // Images use OCR (already done by DocumentUploader)
-      filesToExtract.push({ name: file.name, type: file.type || '', data: '' });
     } else {
       filesToExtract.push({ name: file.name, type: file.type || '', data: '' });
     }
@@ -54,22 +52,23 @@ export async function extractTextFromFiles(files, existingOcrText = '') {
       extractedCount = details.filter(d => d.has_text).length;
     } catch (err) {
       console.warn('Server-side extraction failed:', err.message);
-      // Fallback: just record file names
       for (const f of filesToExtract) {
         combinedText += `\n--- ${f.name} ---\n[Extraction serveur indisponible]\n`;
       }
     }
   } else {
-    // No files with extractable data — just list them
     for (const f of filesToExtract) {
       combinedText += `\n--- ${f.name} (${f.type || 'inconnu'}) ---\n[Document joint]\n`;
     }
   }
 
-  // Append OCR text for images if available
+  // Append frontend OCR text for images if available and not already processed
   if (existingOcrText && existingOcrText.trim()) {
-    combinedText += `\n\n--- Contenu extrait par OCR (images) ---\n${existingOcrText.substring(0, 4000)}\n`;
-    if (!extractedCount) extractedCount = 1;
+    const hasImageOcr = details.some(d => d.status === 'ocr_extracted' && d.name?.match(/\.(jpg|jpeg|png|gif|webp|heic)$/i));
+    if (!hasImageOcr) {
+      combinedText += `\n\n--- Contenu extrait par OCR (images) ---\n${existingOcrText.substring(0, 4000)}\n`;
+      if (!extractedCount) extractedCount = 1;
+    }
   }
 
   return {

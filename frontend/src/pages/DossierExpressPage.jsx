@@ -262,12 +262,14 @@ export const DossierExpressPage = () => {
     setLoading(true);
 
     let documentsText = "";
+    let documentDetails = [];
     try {
       if (files.length > 0) {
         toast.info(`Lecture de ${files.length} document${files.length > 1 ? 's' : ''}...`);
         const { extractTextFromFiles } = await import('@/utils/pdfExtractor');
         const extraction = await extractTextFromFiles(files, form.documents_text || '');
         documentsText = extraction.combinedText;
+        documentDetails = extraction.results || [];
         const extractedCount = extraction.extractedCount;
         if (extractedCount > 0) {
           toast.success(`${extractedCount}/${files.length} document${extractedCount > 1 ? 's' : ''} lu${extractedCount > 1 ? 's' : ''} avec succès`);
@@ -275,12 +277,10 @@ export const DossierExpressPage = () => {
           toast.info("Contenu OCR des images inclus dans l'analyse");
         }
       } else if (form.documents_text) {
-        // No files but OCR text was extracted earlier
         documentsText = `--- Contenu extrait par OCR ---\n${form.documents_text}`;
       }
     } catch (fileErr) {
       console.error('File extraction error:', fileErr);
-      // Fallback: include OCR text and file metadata
       if (form.documents_text) {
         documentsText = `--- Contenu extrait par OCR ---\n${form.documents_text}\n`;
       }
@@ -297,12 +297,12 @@ export const DossierExpressPage = () => {
       const payload = isAdminBypass ? {
         name: form.name, email: form.email, situation: form.situation,
         type_dossier: form.type_dossier, regime: form.regime,
-        documents_text: documentsText, premium_pdf: isPremium
+        documents_text: documentsText, document_details: documentDetails, premium_pdf: isPremium
       } : {
         session_id: searchParams.get('session_id') || '',
         email: form.email, name: form.name,
         situation: form.situation, type_dossier: form.type_dossier,
-        regime: form.regime, documents_text: documentsText, premium_pdf: isPremium
+        regime: form.regime, documents_text: documentsText, document_details: documentDetails, premium_pdf: isPremium
       };
       const headers = isAdminBypass ? { 'Authorization': `Bearer ${adminToken}` } : {};
       const res = await axios.post(endpoint, payload, { headers });

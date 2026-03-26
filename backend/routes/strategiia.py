@@ -224,57 +224,65 @@ Ne génère aucune URL, aucun lien web ni aucun nom de domaine dans ta réponse.
 
 @router.post("/extract-document-text")
 async def extract_document_text(request: Request):
-    """Extract text from uploaded documents (PDF, images) server-side."""
+    """Extract text from uploaded documents with full pipeline: pdfplumber → OCR → metadata."""
     import io
     body = await request.json()
     files_data = body.get("files", [])
     if not files_data:
-        return {"extracted_text": "", "files_processed": 0}
+        return {"extracted_text": "", "files_processed": 0, "details": []}
 
     results = []
-    for file_info in files_data[:10]:  # Limit to 10 files
+    for file_info in files_data[:10]:
         name = file_info.get("name", "unknown")
         file_type = file_info.get("type", "")
         data_b64 = file_info.get("data", "")
         if not data_b64:
-            results.append({"name": name, "text": "", "method": "pas de données"})
+            results.append({"name": name, "text": "", "method": "pas de données", "pages": 0, "size_kb": 0, "status": "no_data"})
             continue
 
         try:
             file_bytes = base64.b64decode(data_b64)
         except Exception:
-            results.append({"name": name, "text": "", "method": "erreur décodage"})
+            results.append({"name": name, "text": "", "method": "erreur décodage", "pages": 0, "size_kb": 0, "status": "decode_error"})
             continue
 
+        size_kb = round(len(file_bytes) / 1024, 1)
         extracted = ""
         method = "non supporté"
+        pages = 0
+        status = "unsupported"
 
         if file_type == "application/pdf" or name.lower().endswith(".pdf"):
-            try:
-                import pdfplumber
-                pdf = pdfplumber.open(io.BytesIO(file_bytes))
-                pages_text = []
-                for i, page in enumerate(pdf.pages[:20]):
-                    text = page.extract_text()
-                    if text and text.strip():
-                        pages_text.append(f"[Page {i+1}] {text.strip()}")
-                pdf.close()
-                extracted = "\n\n".join(pages_text)
-                method = f"extraction PDF ({len(pdf.pages)} pages)" if pages_text else "PDF sans texte extractible"
-            except Exception as e:
-                method = f"erreur PDF: {str(e)[:50]}"
+            extracted, method, pages, status = await asyncio.to_thread(
+                _extract_pdf_full_pipeline, file_bytes, name
+            )
 
         elif file_type and file_type.startswith("image/"):
-            method = "image (contenu visuel non extractible côté serveur)"
+            extracted, method, status = await asyncio.to_thread(
+                _extract_image_ocr, file_bytes, name
+            )
+            pages = 1
 
         elif file_type in ("text/plain",) or name.lower().endswith(".txt"):
             try:
                 extracted = file_bytes.decode("utf-8", errors="replace")
-                method = "lecture texte"
+                method = "lecture texte directe"
+                status = "text_extracted"
             except Exception:
                 method = "erreur lecture texte"
+                status = "text_error"
 
-        results.append({"name": name, "text": extracted[:5000], "method": method})
+        preview = extracted[:200].strip() if extracted else ""
+        results.append({
+            "name": name,
+            "text": extracted[:8000],
+            "method": method,
+            "pages": pages,
+            "size_kb": size_kb,
+            "status": status,
+            "preview": preview,
+            "text_length": len(extracted)
+        })
 
     combined = ""
     for r in results:
@@ -287,8 +295,105 @@ async def extract_document_text(request: Request):
     return {
         "extracted_text": combined.strip(),
         "files_processed": len(results),
-        "details": [{"name": r["name"], "method": r["method"], "has_text": len(r["text"]) > 10} for r in results]
+        "details": [{
+            "name": r["name"],
+            "method": r["method"],
+            "has_text": len(r["text"]) > 10,
+            "pages": r["pages"],
+            "size_kb": r["size_kb"],
+            "status": r["status"],
+            "preview": r.get("preview", ""),
+            "text_length": r.get("text_length", 0)
+        } for r in results]
     }
+
+
+def _extract_pdf_full_pipeline(file_bytes: bytes, name: str):
+    """3-level PDF extraction: pdfplumber → pypdfium2+tesseract OCR → metadata fallback."""
+    import io
+
+    # Level 1: pdfplumber (text PDFs)
+    try:
+        import pdfplumber
+        pdf = pdfplumber.open(io.BytesIO(file_bytes))
+        total_pages = len(pdf.pages)
+        pages_text = []
+        for i, page in enumerate(pdf.pages[:30]):
+            text = page.extract_text()
+            if text and text.strip() and len(text.strip()) > 20:
+                pages_text.append(f"[Page {i+1}] {text.strip()}")
+        pdf.close()
+
+        if pages_text:
+            extracted = "\n\n".join(pages_text)
+            method = f"PDF texte — {total_pages} page{'s' if total_pages > 1 else ''}, extraction directe"
+            logger.info(f"PDF '{name}': extraction texte réussie ({len(extracted)} chars, {total_pages} pages)")
+            return extracted, method, total_pages, "text_extracted"
+    except Exception as e:
+        logger.warning(f"PDF '{name}': pdfplumber failed: {e}")
+        total_pages = 0
+
+    # Level 2: OCR via pypdfium2 (render) + tesseract
+    try:
+        import pypdfium2
+        import pytesseract
+        from PIL import Image
+
+        pdf_doc = pypdfium2.PdfDocument(io.BytesIO(file_bytes))
+        total_pages = len(pdf_doc)
+        ocr_pages = []
+        pages_to_ocr = min(total_pages, 15)
+
+        for i in range(pages_to_ocr):
+            page = pdf_doc[i]
+            bitmap = page.render(scale=2)
+            pil_image = bitmap.to_pil()
+            text = pytesseract.image_to_string(pil_image, lang='fra+eng')
+            if text and text.strip() and len(text.strip()) > 10:
+                ocr_pages.append(f"[Page {i+1} — OCR] {text.strip()}")
+            pil_image.close()
+
+        pdf_doc.close()
+
+        if ocr_pages:
+            extracted = "\n\n".join(ocr_pages)
+            method = f"PDF scanné — {total_pages} page{'s' if total_pages > 1 else ''}, OCR automatique ({pages_to_ocr} pages traitées)"
+            logger.info(f"PDF '{name}': OCR réussi ({len(extracted)} chars, {pages_to_ocr}/{total_pages} pages)")
+            return extracted, method, total_pages, "ocr_extracted"
+        else:
+            method = f"PDF scanné — {total_pages} page{'s' if total_pages > 1 else ''}, OCR sans résultat exploitable"
+            logger.warning(f"PDF '{name}': OCR returned no text")
+            return "", method, total_pages, "ocr_empty"
+
+    except Exception as e:
+        logger.error(f"PDF '{name}': OCR pipeline failed: {e}")
+
+    # Level 3: Metadata fallback
+    method = f"PDF — {total_pages} page{'s' if total_pages > 1 else ''}, contenu non extractible"
+    return "", method, total_pages, "extraction_failed"
+
+
+def _extract_image_ocr(file_bytes: bytes, name: str):
+    """OCR on image files using tesseract."""
+    try:
+        import pytesseract
+        from PIL import Image
+        import io
+
+        img = Image.open(io.BytesIO(file_bytes))
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+        text = pytesseract.image_to_string(img, lang='fra+eng')
+        img.close()
+
+        if text and text.strip() and len(text.strip()) > 10:
+            logger.info(f"Image '{name}': OCR réussi ({len(text)} chars)")
+            return text.strip(), "Image — OCR automatique", "ocr_extracted"
+        else:
+            return "", "Image — OCR sans résultat exploitable", "ocr_empty"
+    except Exception as e:
+        logger.error(f"Image '{name}': OCR failed: {e}")
+        return "", f"Image — erreur OCR: {str(e)[:50]}", "ocr_error"
 
 
 
@@ -303,6 +408,7 @@ async def dossier_express_submit(request: Request):
     regime = body.get("regime", "")
     documents_text = body.get("documents_text", "")
     premium_pdf = body.get("premium_pdf", False)
+    document_details = body.get("document_details", [])
 
     if not email or not situation:
         raise HTTPException(status_code=400, detail="Email et description requis")
@@ -346,7 +452,8 @@ async def dossier_express_submit(request: Request):
     dossier = {
         "id": dossier_id, "session_id": session_id, "email": email, "name": name,
         "situation": situation, "type_dossier": type_dossier, "regime": regime,
-        "documents_text": documents_text[:10000], "premium_pdf": premium_pdf,
+        "documents_text": documents_text[:10000], "document_details": document_details,
+        "premium_pdf": premium_pdf,
         "status": "processing", "payment_verified": payment_verified,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
@@ -920,13 +1027,15 @@ async def dossier_express_admin_bypass(request: Request):
     regime = body.get("regime", "")
     documents_text = body.get("documents_text", "")
     premium_pdf = body.get("premium_pdf", False)
+    document_details = body.get("document_details", [])
     if not situation.strip():
         raise HTTPException(status_code=400, detail="Description requise")
     dossier_id = str(uuid.uuid4())
     dossier_doc = {
         "id": dossier_id, "email": email, "name": name, "situation": situation[:5000],
         "type_dossier": type_dossier, "regime": regime,
-        "documents_text": documents_text[:10000], "premium_pdf": premium_pdf,
+        "documents_text": documents_text[:10000], "document_details": document_details,
+        "premium_pdf": premium_pdf,
         "status": "processing", "payment_verified": True, "admin_test": True,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
