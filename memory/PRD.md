@@ -148,6 +148,21 @@ Problèmes réels identifiés et corrigés:
 - **Admin** : Label "Analyse générée par StratégiIA" → "Analyse générée par Dossier Express IA".
 - Tests: iteration 118 — backend 100% (8/8), frontend 100%
 
+## Refonte UX Phase d'Attente Dossier Express (Mar 2026) — DONE
+- **Contexte** : Le traitement backend est 100% asynchrone (continue même si le client ferme la page). L'ancienne phrase "Vous pouvez fermer cette page" était ambiguë et non premium.
+- **Nouvelle vue processing** :
+  * Titre clair : "Votre dossier est en cours d'analyse"
+  * Sous-titre explicatif : "Vos documents ont bien été reçus. Notre moteur d'analyse documentaire examine actuellement votre dossier."
+  * Bloc dynamique amber montrant l'étape active + détail ("Croisement avec les jurisprudences, barèmes et cas similaires.")
+  * Barre de progression avec pourcentage visible
+  * Timeline avec label "Terminé" sur chaque étape complétée
+  * Détail contextuel sous l'étape active (texte explicatif)
+  * Bloc de réassurance avec icône bouclier : "Vous n'avez pas besoin de rester sur cette page. Votre rapport vous sera automatiquement envoyé par email dès qu'il sera prêt."
+  * Indicateurs "Livraison sous 2h" + "Données chiffrées"
+  * Cercle pulsant autour de l'icône Brain (animation ping 2.5s)
+  * Ring amber sur l'étape active + fond surélevé
+- Tests: iteration 119 — backend 100% (6/6), frontend 100%
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Corriger TTS mascotte Straté (parle anglais au lieu de français)
