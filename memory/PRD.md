@@ -140,6 +140,14 @@ Problèmes réels identifiés et corrigés:
 - **Consultation directe** : Nouveau endpoint `GET /api/admin/dossier-express/{id}/analysis` + bouton "Consulter l'analyse" dans la liste admin pour accéder directement à l'analyse d'un dossier complété.
 - Tests: iteration 116 — backend 100% (15/15 pytest), frontend 100%. Validation avec 8+ soumissions réelles, screenshots du stepper dynamique avec progression en temps réel.
 
+## Séparation Dossier Express IA / StratégiIA (Mar 2026) — DONE
+- **Bug bloquant** : Le pipeline Dossier Express utilisait `STRATEGIIA_SYSTEM_PROMPT` comme prompt système, créant une confusion d'identité. De plus, l'absence de retry logic causait des blocages de 3-5 minutes sur erreurs LLM (502, budget exceeded).
+- **Cause frontend** : Le stepper affichait "Analyse juridique par StratégiIA" au lieu de labels propres à Dossier Express.
+- **Fix backend** : Création de `DOSSIER_EXPRESS_SYSTEM_PROMPT` (identité propre). Ajout retry logic (3 tentatives avec délai) dans `_process_dossier_express`. Gestion d'erreur améliorée avec `progress_step: "error"`.
+- **Fix frontend** : Remplacement de TOUS les labels "StratégiIA" par "Dossier Express IA" dans la landing page, le formulaire, le stepper et l'admin. Nouveaux labels stepper : "Documents reçus", "Lecture des pièces transmises", "Analyse de votre dossier", "Rédaction de votre synthèse personnalisée", "Préparation de votre rapport final". Vue d'erreur dédiée avec bouton "Réessayer".
+- **Admin** : Label "Analyse générée par StratégiIA" → "Analyse générée par Dossier Express IA".
+- Tests: iteration 118 — backend 100% (8/8), frontend 100%
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Corriger TTS mascotte Straté (parle anglais au lieu de français)
