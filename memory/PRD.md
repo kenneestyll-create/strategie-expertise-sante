@@ -80,6 +80,18 @@ Async polling, barre de progression, option RATP/SNCF
 - Module shieldLogo.js cree pour le logo base64 (importe dans SimulateurPage.jsx)
 - Tests: 100% backend + 100% frontend (flux E2E + analyse visuelle PDF confirme)
 
+## Mode Admin/Test pour tunnels premium (Mar 2026) — DONE
+- AdminTestProvider + useAdminTest hook pour toggle Mode Admin/Mode Client
+- Toggle flottant en bas a gauche, visible uniquement quand admin connecte
+- Backend: 3 endpoints admin bypass:
+  * POST /api/strategiia/admin-bypass-premium (bypass Stripe, analyse premium directe)
+  * POST /api/dossier-express/admin-bypass (bypass paiement, traitement direct)
+  * POST /api/strategiia/register-email avec admin_test (quota illimite, pas de lead)
+- Frontend: bypass email gate + payment gate sur StrategiIA, DossierExpress, Simulateur
+- Toutes les donnees admin marquees admin_test=true en base
+- Securite: endpoints admin strictement proteges par JWT admin (403/401 sans token)
+- Tests: backend 92% + frontend 100% via testing agent
+
 ## Taches a venir
 - **P1:** Dashboard admin pour stats tracking/conversions + leads guides
 - **P1:** Activer les paiements en production (Stripe/PayPal)
