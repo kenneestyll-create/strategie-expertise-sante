@@ -200,6 +200,14 @@ Problèmes réels identifiés et corrigés:
 - **Boutons existants préservés** : Traiter (25) et Notifier (38) dans AdminPremiumReview intacts
 - Tests: iteration 123 — backend 100%, frontend 100%
 
+## Bouton "Consulter l'analyse" dans Relecture Expert (Mar 2026) — DONE
+- **Problème** : Les 3 onglets (Analyse/Documents/PDF) étaient accessibles uniquement via une liste tout en bas de la page, invisible pour l'utilisateur
+- **Fix** : Ajout d'un bouton "Consulter l'analyse" (amber) directement dans chaque entrée de la section "Relecture expert – Dossier Express IA" (AdminPremiumReview.jsx)
+- Le bouton n'apparaît que pour les entrées ayant un `dossier_id` lié (35 sur 38)
+- Les boutons Traiter (25), Notifier (38), Relire/Valider (10), Envoyer (1) restent intacts
+- Le bouton n'apparaît PAS dans l'onglet StratégiIA (prop non passée)
+- Tests: iteration 124 — backend 100%, frontend 100%
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Corriger TTS mascotte Straté (parle anglais au lieu de français)
