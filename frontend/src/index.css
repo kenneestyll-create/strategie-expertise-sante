@@ -87,7 +87,7 @@ h1, h2, h3, h4, h5, h6 {
 html {
     scroll-behavior: auto;
     overflow-x: hidden;
-    scrollbar-gutter: stable;
+    overflow-y: scroll;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
 }
@@ -95,6 +95,16 @@ body {
     overflow-x: hidden;
     /* iOS safe area — bottom padding for home indicator */
     padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+/* Prevent Radix Select/Dialog scroll lock from causing layout shift.
+   react-remove-scroll-bar injects .with-scroll-bars-hidden { padding-right: Xpx }
+   and body[data-scroll-locked] { margin-right: Xpx } to compensate for hidden scrollbar.
+   Since html has overflow-y: scroll, our scrollbar never disappears, so we force 0.
+   Using html prefix for highest specificity to beat dynamically injected styles. */
+html body.with-scroll-bars-hidden,
+html body[data-scroll-locked] {
+    padding-right: 0 !important;
+    margin-right: 0 !important;
 }
 a[href^="#"] {
     scroll-behavior: smooth;
