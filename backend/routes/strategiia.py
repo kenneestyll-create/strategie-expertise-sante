@@ -257,6 +257,9 @@ async def _process_dossier_express(dossier_id: str, email: str, name: str, situa
             await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"status": "error", "error": "Service IA non disponible"}})
             return
 
+        # Step 1: Reading documents
+        await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"progress_step": "reading"}})
+
         similar_cases = []
         if type_dossier:
             similar_cases = await db.cas_anonymises.find({"type_dossier": type_dossier}, {"_id": 0}).sort("score_pertinence", -1).to_list(5)
@@ -266,6 +269,9 @@ async def _process_dossier_express(dossier_id: str, email: str, name: str, situa
             case_context = "\n\nCAS SIMILAIRES DANS LA BASE :\n"
             for c in similar_cases:
                 case_context += f"- Type: {c.get('type_dossier')}, Régime: {c.get('regime')}, Stratégie: {c.get('strategie')}, Résultat: {c.get('resultat')}\n"
+
+        # Step 2: Analyzing
+        await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"progress_step": "analyzing"}})
 
         user_msg = f"""DOSSIER EXPRESS - Analyse complète demandée
 
@@ -287,7 +293,13 @@ CONTENU DES DOCUMENTS FOURNIS :
             _llm_sync_call, EMERGENT_LLM_KEY, session_id_llm, STRATEGIIA_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
         )
 
+        # Step 3: Generating PDF
+        await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"progress_step": "generating"}})
+
         pdf_bytes = generate_dossier_pdf(name, email, type_dossier, regime, analysis, premium_pdf=premium_pdf)
+
+        # Step 4: Sending email
+        await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"progress_step": "sending"}})
 
         email_sent = False
         if RESEND_AVAILABLE and resend.api_key:

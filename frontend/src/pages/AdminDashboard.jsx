@@ -52,9 +52,10 @@ import { useAuth } from '@/context/AuthContext';
 import { useAdminTest } from '@/components/AdminTestBanner';
 import axios from 'axios';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { BarChart3, BellRing, Download, FlaskConical, PenTool } from 'lucide-react';
+import { BarChart3, BellRing, Download, FlaskConical, PenTool, FileSearch } from 'lucide-react';
 import { EmailTemplateEditor } from '@/components/EmailTemplateEditor';
 import { AdminConseilsStrate } from '@/components/AdminConseilsStrate';
+import { AdminPremiumReview } from '@/components/AdminPremiumReview';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -292,6 +293,7 @@ export const AdminDashboard = () => {
   const [casAnonymises, setCasAnonymises] = useState({ items: [], total: 0 });
   const [premiumAnalyses, setPremiumAnalyses] = useState({ items: [], stats: { total: 0, en_attente: 0, en_cours: 0, valide: 0, envoye: 0, termine: 0 } });
   const [reviewDialog, setReviewDialog] = useState(null);
+  const [dossierExpressAdmin, setDossierExpressAdmin] = useState({ items: [], stats: { total: 0, completed: 0, processing: 0, errors: 0 } });
   const [analyticsData, setAnalyticsData] = useState(null);
   const [analyticsPeriod, setAnalyticsPeriod] = useState('30d');
   const [newCas, setNewCas] = useState({ type_dossier: '', regime: '', duree: '', strategie: '', resultat: '', score_pertinence: 0, notes: '' });
@@ -369,6 +371,7 @@ export const AdminDashboard = () => {
       setPremiumAnalyses(premiumRes.data);
       setAnalyticsData(analyticsRes.data);
       // Fetch admin docs & email status separately (non-critical)
+      axios.get(`${API}/admin/dossier-express`, axiosConfig).then(r => setDossierExpressAdmin(r.data)).catch(() => {});
       axios.get(`${API}/admin/documents`, axiosConfig).then(r => setAdminDocs(r.data)).catch(() => {});
       axios.get(`${API}/admin/email/status`, axiosConfig).then(r => setEmailStatus(r.data)).catch(() => {});
       axios.get(`${API}/admin/completeness-notifications`, axiosConfig).then(r => setCompletenessNotifs(r.data)).catch(() => {});
@@ -593,7 +596,7 @@ export const AdminDashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-6xl" style={{gridTemplateColumns: 'repeat(14, 1fr)'}}>
+          <TabsList className="grid w-full max-w-6xl flex-wrap" style={{gridTemplateColumns: 'repeat(15, 1fr)'}}>
             <TabsTrigger value="contacts" className="gap-1 text-xs sm:text-sm">
               <Users className="w-3 h-3 sm:w-4 sm:h-4" />
               Contacts
@@ -629,15 +632,18 @@ export const AdminDashboard = () => {
               <Star className="w-3 h-3 sm:w-4 sm:h-4 text-[#C9A84C]" />
               Strate
             </TabsTrigger>
-            <TabsTrigger value="strategiia" className="gap-1 text-xs sm:text-sm" data-testid="tab-strategiia">
+            <TabsTrigger value="strategiia" className="gap-1 text-xs sm:text-sm relative" data-testid="tab-strategiia">
               <Brain className="w-3 h-3 sm:w-4 sm:h-4" />
               StratégiIA
+              {premiumAnalyses.items.filter(i => i.type === 'strategiia' && i.status === 'en_attente').length > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">{premiumAnalyses.items.filter(i => i.type === 'strategiia' && i.status === 'en_attente').length}</span>
+              )}
             </TabsTrigger>
-            <TabsTrigger value="premium" className="gap-1 text-xs sm:text-sm relative" data-testid="tab-premium">
-              <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-amber-500" />
-              Premium
-              {premiumAnalyses.stats.en_attente > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">{premiumAnalyses.stats.en_attente}</span>
+            <TabsTrigger value="dossier-express" className="gap-1 text-xs sm:text-sm relative" data-testid="tab-dossier-express">
+              <FileSearch className="w-3 h-3 sm:w-4 sm:h-4 text-amber-600" />
+              Dossier Express
+              {premiumAnalyses.items.filter(i => i.type === 'dossier_express' && i.status === 'en_attente').length > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">{premiumAnalyses.items.filter(i => i.type === 'dossier_express' && i.status === 'en_attente').length}</span>
               )}
             </TabsTrigger>
             <TabsTrigger value="analytics" className="gap-1 text-xs sm:text-sm" data-testid="tab-analytics">
@@ -1595,178 +1601,80 @@ export const AdminDashboard = () => {
                 </Card>
               </div>
             )}
-          </TabsContent>
 
-          {/* Premium Analyses Tab */}
-          <TabsContent value="premium" className="space-y-6" data-testid="premium-tab-content">
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{premiumAnalyses.stats.total}</p><p className="text-xs text-muted-foreground">Total</p></CardContent></Card>
-              <Card className="border-amber-500/30"><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-amber-500">{premiumAnalyses.stats.en_attente}</p><p className="text-xs text-muted-foreground">En attente</p></CardContent></Card>
-              <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-blue-500">{premiumAnalyses.stats.en_cours}</p><p className="text-xs text-muted-foreground">En cours</p></CardContent></Card>
-              <Card className="border-green-500/30"><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-green-600">{premiumAnalyses.stats.valide || 0}</p><p className="text-xs text-muted-foreground">Validé</p></CardContent></Card>
-              <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-emerald-600">{premiumAnalyses.stats.envoye || 0}</p><p className="text-xs text-muted-foreground">Envoyé</p></CardContent></Card>
+            {/* StrategiIA Premium Review section */}
+            <AdminPremiumReview
+              items={premiumAnalyses.items}
+              stats={premiumAnalyses.stats}
+              productType="strategiia"
+              productLabel="StrategiIA"
+              icon={Brain}
+              accentColor="text-accent"
+              axiosConfig={axiosConfig}
+              onRefresh={fetchData}
+            />
+          </TabsContent>
+          {/* Dossier Express IA Admin Tab — NEW */}
+          <TabsContent value="dossier-express" className="space-y-6" data-testid="dossier-express-tab-content">
+            {/* Dossier Express Production Stats */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{dossierExpressAdmin.stats?.total || 0}</p><p className="text-xs text-muted-foreground">Total dossiers</p></CardContent></Card>
+              <Card className="border-green-500/30"><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-green-600">{dossierExpressAdmin.stats?.completed || 0}</p><p className="text-xs text-muted-foreground">Terminés</p></CardContent></Card>
+              <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-blue-500">{dossierExpressAdmin.stats?.processing || 0}</p><p className="text-xs text-muted-foreground">En cours</p></CardContent></Card>
+              <Card className="border-red-500/30"><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-red-500">{dossierExpressAdmin.stats?.errors || 0}</p><p className="text-xs text-muted-foreground">Erreurs</p></CardContent></Card>
             </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Zap className="w-5 h-5 text-amber-500" />
-                  File Relecture expert
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {premiumAnalyses.items.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">Aucune demande pour le moment.</p>
-                ) : (
-                  <div className="space-y-3">
-                    {premiumAnalyses.items.map(item => {
-                      const statusConfig = {
-                        en_attente: { label: 'En attente', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', border: 'border-amber-500/30 bg-amber-50/50' },
-                        en_cours: { label: 'En cours', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', border: 'border-blue-500/30 bg-blue-50/50' },
-                        valide: { label: 'Validé — prêt', color: 'bg-green-500/10 text-green-600 border-green-500/20', border: 'border-green-500/30 bg-green-50/50' },
-                        envoye: { label: 'Envoyé', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', border: 'border-emerald-500/30 bg-emerald-50/50' },
-                        termine: { label: 'Terminé', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', border: 'border-emerald-500/30 bg-emerald-50/50' },
-                      };
-                      const sc = statusConfig[item.status] || statusConfig.en_attente;
-                      return (
-                        <div key={item.id} className={`p-4 rounded-xl border ${sc.border}`} data-testid={`premium-item-${item.id}`}>
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <Badge className={`text-[10px] ${sc.color}`}>{sc.label}</Badge>
-                                <Badge variant="outline" className="text-[10px]">{item.type === 'strategiia' ? 'StrategiIA' : 'Dossier Express IA'}</Badge>
-                                {item.premium_pdf && <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">PDF Pro</Badge>}
-                                {item.relecture_expert_required && <Badge className="bg-red-500/10 text-red-600 border-red-500/20 text-[10px] font-bold">Relecture Expert</Badge>}
-                                {item.admin_test && <Badge className="bg-zinc-500/10 text-zinc-500 border-zinc-500/20 text-[10px]">Test Admin</Badge>}
-                                <span className="text-xs text-muted-foreground">{item.amount}€</span>
-                              </div>
-                              <p className="font-medium text-sm mt-1.5">{item.email || item.name || 'Client'}</p>
-                              {item.context && <p className="text-xs text-muted-foreground mt-0.5 truncate">{item.context}</p>}
-                              <p className="text-xs text-muted-foreground mt-1">{new Date(item.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
-                              {item.sent_at && <p className="text-[10px] text-green-600 mt-0.5">Envoyé le {new Date(item.sent_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>}
-                            </div>
-                            <div className="flex gap-1.5 flex-shrink-0 flex-wrap">
-                              {/* Step 1: En attente → En cours */}
-                              {item.status === 'en_attente' && (
-                                <Button size="sm" variant="outline" className="text-xs h-7 gap-1 border-blue-500/30 text-blue-600 hover:bg-blue-50"
-                                  onClick={async () => {
-                                    await axios.patch(`${API}/admin/premium-analyses/${item.id}`, { status: 'en_cours' }, axiosConfig);
-                                    fetchData(); toast.success("Dossier pris en charge");
-                                  }} data-testid={`premium-start-${item.id}`}>
-                                  <Eye className="w-3 h-3" /> Traiter
-                                </Button>
-                              )}
-                              {/* Step 2: En cours → open review dialog */}
-                              {item.status === 'en_cours' && (
-                                <Button size="sm" variant="outline" className="text-xs h-7 gap-1 border-green-500/30 text-green-600 hover:bg-green-50"
-                                  onClick={() => setReviewDialog(item)} data-testid={`premium-review-${item.id}`}>
-                                  <PenTool className="w-3 h-3" /> Relire / Valider
-                                </Button>
-                              )}
-                              {/* Step 3: Validé → Envoyer */}
-                              {item.status === 'valide' && (
-                                <Button size="sm" className="text-xs h-7 gap-1 bg-emerald-600 hover:bg-emerald-500 text-white"
-                                  onClick={async () => {
-                                    try {
-                                      const res = await axios.post(`${API}/admin/premium-analyses/${item.id}/send-reviewed`, {
-                                        reviewed_analysis: item.reviewed_analysis || ''
-                                      }, axiosConfig);
-                                      toast.success(res.data.email_sent ? `Document envoyé à ${res.data.email}` : 'Document validé (email non configuré)');
-                                      fetchData();
-                                    } catch { toast.error("Erreur lors de l'envoi"); }
-                                  }} data-testid={`premium-send-${item.id}`}>
-                                  <Send className="w-3 h-3" /> Envoyer au client
-                                </Button>
-                              )}
-                              {/* Consulter (always available) */}
-                              {item.reviewed_analysis && (
-                                <Button size="sm" variant="outline" className="text-xs h-7 gap-1"
-                                  onClick={() => setReviewDialog(item)}>
-                                  <Eye className="w-3 h-3" /> Consulter
-                                </Button>
-                              )}
-                              {/* Notify */}
-                              <Button size="sm" variant="outline" className={`text-xs h-7 gap-1 ${item.client_notified ? 'border-green-500/30 text-green-600' : 'border-accent/30 text-accent hover:bg-accent/5'}`}
-                                onClick={async () => {
-                                  const notifType = item.status === 'envoye' ? 'report_ready' : item.status === 'valide' ? 'analyse_premium_ready' : item.status === 'en_cours' ? 'dossier_in_progress' : 'payment_confirmed';
-                                  try {
-                                    const res = await axios.post(`${API}/admin/premium-analyses/${item.id}/notify`, { type: notifType }, axiosConfig);
-                                    toast.success(res.data.client_found ? 'Notification envoyée' : 'Client non inscrit — notification enregistrée');
-                                    fetchData();
-                                  } catch { toast.error("Erreur d'envoi"); }
-                                }} data-testid={`premium-notify-${item.id}`}>
-                                <Bell className="w-3 h-3" /> {item.client_notified ? 'Relancer' : 'Notifier'}
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            {/* Premium Review section for Dossier Express */}
+            <AdminPremiumReview
+              items={premiumAnalyses.items}
+              stats={premiumAnalyses.stats}
+              productType="dossier_express"
+              productLabel="Dossier Express IA"
+              icon={FileSearch}
+              accentColor="text-amber-600"
+              axiosConfig={axiosConfig}
+              onRefresh={fetchData}
+            />
 
-            {/* Review/Edit Dialog */}
-            {reviewDialog && (
-              <Dialog open onOpenChange={() => setReviewDialog(null)}>
-                <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                      <PenTool className="w-5 h-5 text-accent" />
-                      Relecture expert — {reviewDialog.email || 'Client'}
-                    </DialogTitle>
-                    <DialogDescription>
-                      Relisez, modifiez si nécessaire, puis validez pour préparer l'envoi.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap gap-2 text-xs">
-                      <Badge variant="outline">{reviewDialog.type === 'strategiia' ? 'StrategiIA' : 'Dossier Express'}</Badge>
-                      {reviewDialog.context && <Badge variant="outline" className="max-w-[300px] truncate">{reviewDialog.context}</Badge>}
-                      <Badge variant="outline">{reviewDialog.amount}€</Badge>
-                    </div>
-                    <div>
-                      <Label className="font-medium text-sm mb-2 block">Analyse à relire / modifier</Label>
-                      <textarea
-                        className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[350px] resize-y font-mono leading-relaxed"
-                        defaultValue={reviewDialog.reviewed_analysis || reviewDialog.context || ''}
-                        data-testid="review-textarea"
-                        onChange={(e) => setReviewDialog(prev => ({ ...prev, reviewed_analysis: e.target.value }))}
-                      />
-                    </div>
-                    <div>
-                      <Label className="font-medium text-sm mb-2 block">Notes internes (optionnel)</Label>
-                      <Textarea
-                        placeholder="Notes privées sur cette relecture..."
-                        defaultValue={reviewDialog.admin_notes || ''}
-                        className="min-h-[60px]"
-                        onChange={(e) => setReviewDialog(prev => ({ ...prev, admin_notes: e.target.value }))}
-                      />
-                    </div>
+            {/* Recent Dossier Express submissions */}
+            {dossierExpressAdmin.items?.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <FileText className="w-5 h-5 text-teal-600" />
+                    Historique des soumissions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/30 border-b"><tr>
+                        <th className="py-2 px-3 text-left font-medium text-muted-foreground">Client</th>
+                        <th className="py-2 px-3 text-left font-medium text-muted-foreground">Type</th>
+                        <th className="py-2 px-3 text-left font-medium text-muted-foreground">Statut</th>
+                        <th className="py-2 px-3 text-left font-medium text-muted-foreground">Date</th>
+                      </tr></thead>
+                      <tbody>
+                        {dossierExpressAdmin.items.slice(0, 20).map(d => (
+                          <tr key={d.id} className="border-b last:border-0 hover:bg-muted/20" data-testid={`de-row-${d.id}`}>
+                            <td className="py-2 px-3">
+                              <p className="font-medium text-sm">{d.name || d.email}</p>
+                              <p className="text-[10px] text-muted-foreground">{d.email}</p>
+                            </td>
+                            <td className="py-2 px-3"><Badge variant="outline" className="text-[10px]">{d.type_dossier || '—'}</Badge></td>
+                            <td className="py-2 px-3">
+                              <Badge className={`text-[10px] ${d.status === 'completed' ? 'bg-green-100 text-green-700' : d.status === 'processing' ? 'bg-blue-100 text-blue-700' : d.status === 'error' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                                {d.status === 'completed' ? 'Terminé' : d.status === 'processing' ? 'En cours' : d.status === 'error' ? 'Erreur' : d.status}
+                              </Badge>
+                            </td>
+                            <td className="py-2 px-3 text-muted-foreground text-xs">{d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                  <DialogFooter className="gap-2 mt-4">
-                    <Button variant="outline" onClick={() => setReviewDialog(null)}>Annuler</Button>
-                    <Button
-                      className="gap-1.5 bg-green-600 hover:bg-green-500"
-                      data-testid="review-validate-btn"
-                      onClick={async () => {
-                        try {
-                          await axios.patch(`${API}/admin/premium-analyses/${reviewDialog.id}`, {
-                            status: 'valide',
-                            reviewed_analysis: reviewDialog.reviewed_analysis || reviewDialog.context || '',
-                            notes: reviewDialog.admin_notes || ''
-                          }, axiosConfig);
-                          toast.success("Dossier validé — prêt à envoyer");
-                          setReviewDialog(null);
-                          fetchData();
-                        } catch { toast.error("Erreur de validation"); }
-                      }}>
-                      <CheckCircle className="w-4 h-4" /> Valider — prêt à envoyer
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                </CardContent>
+              </Card>
             )}
           </TabsContent>
 

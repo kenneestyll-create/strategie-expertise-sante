@@ -392,6 +392,29 @@ async def notify_client_premium(analysis_id: str, request: Request, admin: dict 
     return {"success": True, "client_found": client_user is not None, "email": email}
 
 
+@router.get("/admin/premium-analyses/{analysis_id}/full-content")
+async def get_premium_analysis_full_content(analysis_id: str, admin: dict = Depends(get_current_admin)):
+    """Fetch full analysis content for admin review. Pulls from the correct collection based on type."""
+    analysis = await db.premium_analyses.find_one({"id": analysis_id}, {"_id": 0})
+    if not analysis:
+        raise HTTPException(status_code=404, detail="Analyse non trouvée")
+    full_text = analysis.get("reviewed_analysis", "")
+    source_data = {}
+    if analysis.get("type") == "dossier_express":
+        dossier = await db.dossier_express.find_one({"email": analysis.get("email", "")}, {"_id": 0, "documents_text": 0})
+        if dossier:
+            full_text = full_text or dossier.get("analysis", "")
+            source_data = {"situation": dossier.get("situation", ""), "type_dossier": dossier.get("type_dossier", ""), "regime": dossier.get("regime", ""), "name": dossier.get("name", ""), "dossier_status": dossier.get("status", "")}
+    else:
+        if not full_text and analysis.get("context"):
+            full_text = analysis["context"]
+        strat = await db.strategiia_analyses.find_one({"email": analysis.get("email", "")}, {"_id": 0})
+        if strat:
+            full_text = full_text or strat.get("analysis", "") or strat.get("context", "")
+            source_data = {"type_dossier": strat.get("type_dossier", ""), "regime": strat.get("regime", ""), "name": strat.get("name", "")}
+    return {"id": analysis_id, "type": analysis.get("type"), "full_text": full_text, "source_data": source_data, "email": analysis.get("email", ""), "status": analysis.get("status", ""), "admin_notes": analysis.get("admin_notes", "")}
+
+
 @router.post("/admin/premium-analyses/{analysis_id}/send-reviewed")
 async def send_reviewed_document(analysis_id: str, request: Request, admin: dict = Depends(get_current_admin)):
     """Admin sends the final reviewed document to the client — triggers actual delivery."""
@@ -403,15 +426,26 @@ async def send_reviewed_document(analysis_id: str, request: Request, admin: dict
     if not reviewed_text:
         raise HTTPException(status_code=400, detail="Aucune analyse relue à envoyer")
     email = analysis.get("email", "")
-    type_label = "StrategiIA" if analysis.get("type") == "strategiia" else "Dossier Express IA"
+    analysis_type = analysis.get("type", "strategiia")
+    type_label = "StrategiIA" if analysis_type == "strategiia" else "Dossier Express IA"
     name = analysis.get("name", email)
-    type_dossier = analysis.get("context", "").split(" - ")[0] if analysis.get("context") else ""
+    type_dossier = ""
+    regime = ""
+    if analysis_type == "dossier_express":
+        dossier = await db.dossier_express.find_one({"email": email}, {"_id": 0, "type_dossier": 1, "regime": 1, "name": 1})
+        if dossier:
+            type_dossier = dossier.get("type_dossier", "")
+            regime = dossier.get("regime", "")
+            name = dossier.get("name", name)
+    else:
+        type_dossier = analysis.get("context", "").split(" - ")[0] if analysis.get("context") else ""
     premium_pdf = analysis.get("premium_pdf", True)
+    report_type = "Dossier Express IA" if analysis_type == "dossier_express" else "StrategiIA"
     # Generate the reviewed PDF with expert marker
     from utils.pdf import generate_secured_pdf
     pdf_bytes = generate_secured_pdf(
-        analysis=reviewed_text, report_type="StrategiIA", name=name,
-        type_dossier=type_dossier, regime="", with_watermark=not premium_pdf,
+        analysis=reviewed_text, report_type=report_type, name=name,
+        type_dossier=type_dossier, regime=regime, with_watermark=not premium_pdf,
         relecture_expert=True
     )
     # Send the PDF via email to the client

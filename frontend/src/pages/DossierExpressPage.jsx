@@ -697,30 +697,68 @@ export const DossierExpressPage = () => {
 
   // ==================== PROCESSING VIEW ====================
   if (step === 'processing') {
+    const STEPS = [
+      { key: 'uploading', label: 'Téléversement de vos documents', icon: Upload },
+      { key: 'reading', label: 'Lecture et préparation de votre dossier', icon: FileText },
+      { key: 'analyzing', label: 'Analyse par StratégiIA en cours', icon: Brain },
+      { key: 'generating', label: 'Génération de votre synthèse', icon: Sparkles },
+      { key: 'sending', label: 'Envoi par email', icon: Mail },
+    ];
+
+    const currentProgress = pollStatus?.progress_step || 'uploading';
+    const currentIdx = STEPS.findIndex(s => s.key === currentProgress);
+    const progressPct = Math.max(10, Math.min(95, ((currentIdx + 1) / STEPS.length) * 100));
+
     return (
       <main className="page-transition pt-20">
         <section className="section-padding">
           <div className="max-w-lg mx-auto text-center">
-            <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
-              <Brain className="w-10 h-10 text-amber-500" />
+            <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Brain className="w-10 h-10 text-amber-500 animate-pulse" />
             </div>
             <h2 className="text-2xl font-bold mb-3" data-testid="processing-title">Analyse en cours...</h2>
-            <p className="text-muted-foreground mb-8 text-sm">
-              Votre dossier est en cours d'analyse par StratégiIA. Vous recevrez votre rapport par email à <strong className="text-foreground">{form.email}</strong>.
+            <p className="text-muted-foreground mb-6 text-sm">
+              Votre dossier est en cours d'analyse. Vous recevrez votre rapport par email à <strong className="text-foreground">{form.email}</strong>.
             </p>
+
+            {/* Progress bar */}
+            <div className="w-full bg-muted rounded-full h-2 mb-8 overflow-hidden" data-testid="progress-bar">
+              <div
+                className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all duration-1000 ease-out"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+
+            {/* Steps */}
             <Card className="text-left mb-6">
-              <CardContent className="p-5 space-y-3">
-                {[
-                  { label: "Réception du dossier", done: true },
-                  { label: "Analyse en cours par StratégiIA", done: false, active: true },
-                  { label: "Génération du rapport PDF", done: false },
-                  { label: "Envoi par email", done: false }
-                ].map((s, i) => (
-                  <div key={i} className={`flex items-center gap-3 text-sm ${s.done ? 'text-emerald-600' : s.active ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
-                    {s.done ? <CheckCircle className="w-5 h-5" /> : s.active ? <Loader2 className="w-5 h-5 animate-spin" /> : <div className="w-5 h-5 rounded-full border-2 border-muted" />}
-                    {s.label}
-                  </div>
-                ))}
+              <CardContent className="p-5 space-y-0">
+                {STEPS.map((s, i) => {
+                  const isDone = i < currentIdx || (pollStatus?.status === 'completed');
+                  const isActive = i === currentIdx && pollStatus?.status !== 'completed';
+                  const isPending = i > currentIdx && pollStatus?.status !== 'completed';
+                  const StepIcon = s.icon;
+                  return (
+                    <div key={s.key} className="flex items-center gap-3 py-3 border-b border-border/50 last:border-0" data-testid={`step-${s.key}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ${
+                        isDone ? 'bg-emerald-100 text-emerald-600' :
+                        isActive ? 'bg-amber-100 text-amber-600' :
+                        'bg-muted text-muted-foreground'
+                      }`}>
+                        {isDone ? <CheckCircle className="w-4 h-4" /> :
+                         isActive ? <Loader2 className="w-4 h-4 animate-spin" /> :
+                         <StepIcon className="w-4 h-4" />}
+                      </div>
+                      <span className={`text-sm transition-colors ${
+                        isDone ? 'text-emerald-600 font-medium' :
+                        isActive ? 'text-amber-600 font-semibold' :
+                        'text-muted-foreground'
+                      }`}>
+                        {s.label}
+                        {isDone && ' ✓'}
+                      </span>
+                    </div>
+                  );
+                })}
               </CardContent>
             </Card>
             <p className="text-xs text-muted-foreground">
