@@ -220,11 +220,11 @@ export const TarifsPage = () => {
                 <div className="text-center sm:text-right">
                   <p className="text-4xl font-bold text-accent mb-2">Gratuit</p>
                   <p className="text-xs text-muted-foreground mb-4">Sans engagement</p>
-                  <Button className="rounded-full gap-2" data-testid="step-1-cta">
+                  <Button className="rounded-full gap-2" data-testid="step-1-cta" onClick={() => window.dispatchEvent(new Event('strategiia:open'))}>
                     <Brain className="w-4 h-4" />
                     Lancer ma pré-analyse
                   </Button>
-                  <p className="text-xs text-muted-foreground mt-2">Le bouton StratégiIA est dans le menu</p>
+                  <p className="text-xs text-muted-foreground mt-2">Gratuit, sans engagement, 2 minutes</p>
                 </div>
               </div>
             </CardContent>
