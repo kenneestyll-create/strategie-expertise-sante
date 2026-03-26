@@ -156,12 +156,47 @@ STRUCTURE EXACTE A RESPECTER :
 Sois exhaustif, precis et concret tout en restant fluide et elegant.
 Ne genere aucune URL, aucun lien web ni aucun nom de domaine."""
 
-DOSSIER_EXPRESS_PROMPT = """Tu es un expert en droit de la sécurité sociale, accidents du travail, maladies professionnelles et handicap (MDPH).
-On te fournit les documents et la description d'un dossier client. Rédige un RAPPORT D'ANALYSE COMPLET et PROFESSIONNEL.
+DOSSIER_EXPRESS_SYSTEM_PROMPT = """Tu es l'assistant d'analyse de Dossier Express IA, le service de rapport documentaire de Stratégie & Expertise Santé.
+
+Tu analyses les dossiers complets de victimes d'accidents du travail, maladies professionnelles, litiges assurantiels et demandes MDPH en t'appuyant sur :
+
+1. JURISPRUDENCES DE RÉFÉRENCE :
+- Cass. soc. 2019 : Obligation de sécurité de résultat de l'employeur
+- Cass. 2e civ. 2020 : Le taux d'IPP doit tenir compte de l'incidence professionnelle réelle
+- CE 2018 : La MDPH doit motiver ses décisions et répondre sous 4 mois
+- Cass. 2e civ. 2021 : Faute inexcusable même en cas de respect partiel des normes
+- Cass. 2e civ. 2022 : Le silence de la CPAM au-delà du délai vaut acceptation implicite
+
+2. STATISTIQUES CNAM :
+- ~650 000 AT/an, ~50 000 MP/an reconnues
+- TMS (Tableau 57) = 87% des MP reconnues
+- Taux moyen IPP AT : 9%, MP : 14%
+- Taux de contestation aboutissant : ~35% en CRA, ~45% au tribunal
+
+3. BARÈMES IPP OFFICIELS :
+- Taux < 10% : capital forfaitaire
+- Taux >= 10% : rente = salaire x taux utile
+
+4. INCIDENCE PROFESSIONNELLE (IP) :
+- Pénibilité accrue, dévalorisation sur le marché, perte d'opportunités, nécessité de reconversion
+- Indemnisation : de 15 000€ (reclassement simple) à 100 000€+ (reconversion totale)
+
+5. PERTE DE GAINS PROFESSIONNELS FUTURS (PGPF) :
+- Compensation de la réduction définitive de revenus après consolidation
+- Méthode : (salaire sans accident - salaire avec séquelles) x euro de rente
+
+RÈGLES :
+- Réponds TOUJOURS en français
+- Sois exhaustif, précis et professionnel
+- Cite les textes et jurisprudences pertinents
+- Rappelle que ce rapport est un outil d'aide à la décision, pas un avis juridique
+- NE GÉNÈRE JAMAIS d'URL, de lien ou de nom de domaine"""
+
+DOSSIER_EXPRESS_PROMPT = """Rédige un RAPPORT D'ANALYSE COMPLET et PROFESSIONNEL pour le service Dossier Express IA de Stratégie & Expertise Santé.
 
 Structure ton rapport ainsi :
 
-# RAPPORT D'ANALYSE - DOSSIER EXPRESS
+# RAPPORT D'ANALYSE - DOSSIER EXPRESS IA
 ## Stratégie & Expertise Santé
 
 ### 1. SYNTHÈSE DU DOSSIER
@@ -324,7 +359,7 @@ async def _process_dossier_express(dossier_id: str, email: str, name: str, situa
     try:
         if not EMERGENT_LLM_KEY:
             logger.error("Dossier Express IA: EMERGENT_LLM_KEY not available")
-            await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"status": "error", "error": "Service IA non disponible"}})
+            await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"status": "error", "error": "Service IA non disponible", "progress_step": "error"}})
             return
 
         # Step 1: Reading documents
@@ -340,10 +375,10 @@ async def _process_dossier_express(dossier_id: str, email: str, name: str, situa
             for c in similar_cases:
                 case_context += f"- Type: {c.get('type_dossier')}, Régime: {c.get('regime')}, Stratégie: {c.get('strategie')}, Résultat: {c.get('resultat')}\n"
 
-        # Step 2: Analyzing
+        # Step 2: Analyzing (Dossier Express IA - pipeline propre)
         await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"progress_step": "analyzing"}})
 
-        user_msg = f"""DOSSIER EXPRESS - Analyse complète demandée
+        user_msg = f"""DOSSIER EXPRESS IA - Analyse complète demandée
 
 Client : {name}
 Type de dossier : {type_dossier}
@@ -358,10 +393,30 @@ CONTENU DES DOCUMENTS FOURNIS :
 
 {DOSSIER_EXPRESS_PROMPT}"""
 
-        session_id_llm = f"dossier_{dossier_id[:8]}"
-        analysis = await asyncio.to_thread(
-            _llm_sync_call, EMERGENT_LLM_KEY, session_id_llm, STRATEGIIA_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
-        )
+        # Retry logic (3 attempts) - propre à Dossier Express IA
+        analysis = None
+        last_error = ""
+        for attempt in range(3):
+            try:
+                session_id_llm = f"dexpress_{dossier_id[:8]}_{attempt}"
+                analysis = await asyncio.to_thread(
+                    _llm_sync_call, EMERGENT_LLM_KEY, session_id_llm, DOSSIER_EXPRESS_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
+                )
+                logger.info(f"Dossier Express IA {dossier_id}: analyse réussie (tentative {attempt+1})")
+                break
+            except Exception as e:
+                last_error = str(e)
+                logger.warning(f"Dossier Express IA {dossier_id}: tentative {attempt+1}/3 échouée: {last_error[:120]}")
+                if attempt < 2:
+                    await asyncio.sleep(3)
+
+        if not analysis:
+            error_msg = "L'analyse a échoué après plusieurs tentatives."
+            if "budget" in last_error.lower() or "exceeded" in last_error.lower():
+                error_msg = "Le service d'analyse IA est temporairement indisponible (budget épuisé)."
+            logger.error(f"Dossier Express IA {dossier_id}: toutes les tentatives ont échoué: {last_error[:200]}")
+            await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"status": "error", "error": error_msg, "progress_step": "error"}})
+            return
 
         # Step 3: Generating PDF
         await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"progress_step": "generating"}})
@@ -381,30 +436,26 @@ CONTENU DES DOCUMENTS FOURNIS :
                     "html": f"""<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                         <h1 style="color: #1a1a2e;">Votre Rapport Dossier Express IA</h1>
                         <p>Bonjour {name or 'Madame, Monsieur'},</p>
-                        <p>Merci pour votre confiance. Veuillez trouver ci-joint votre rapport d'analyse complet réalisé par notre outil StratégiIA.</p>
+                        <p>Merci pour votre confiance. Veuillez trouver ci-joint votre rapport d'analyse complet réalisé par Dossier Express IA.</p>
                         <p>Ce rapport contient :</p><ul><li>L'analyse détaillée de votre situation</li><li>Le cadre juridique applicable</li><li>Vos droits identifiés</li><li>La stratégie recommandée</li><li>Les prochaines étapes à suivre</li></ul>
-                        <p>Pour un accompagnement personnalisé, n'hésitez pas à nous contacter :</p>
-                        <p><a href="https://mascot-tips-admin.preview.emergentagent.com/contact" style="color: #0f3460;">Prendre rendez-vous</a></p>
+                        <p>Pour un accompagnement personnalisé, n'hésitez pas à nous contacter.</p>
                         <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
                         <p style="font-size: 12px; color: #666;">Ce rapport est un outil d'aide à la décision et ne constitue pas un avis juridique.<br>Stratégie & Expertise Santé</p></div>""",
                     "attachments": [{"filename": f"Rapport_Dossier_Express_{dossier_id[:8]}.pdf", "content": list(pdf_bytes)}]
                 })
                 email_sent = True
-                logger.info(f"Dossier Express IA {dossier_id}: email sent to {email}")
+                logger.info(f"Dossier Express IA {dossier_id}: email envoyé à {email}")
             except Exception as e:
                 logger.error(f"Dossier Express IA email error: {e}")
 
         await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"status": "completed", "analysis": analysis[:5000], "email_sent": email_sent, "completed_at": datetime.now(timezone.utc).isoformat(), "progress_step": "completed"}})
 
         # Auto-register in premium_analyses for admin review workflow
-        # Check if a premium_analyses entry already exists for this dossier (created during checkout)
         existing_pa = await db.premium_analyses.find_one({"type": "dossier_express", "email": email, "dossier_id": {"$exists": False}})
         if existing_pa:
-            # Link existing premium_analyses entry to this dossier
             await db.premium_analyses.update_one({"id": existing_pa["id"]}, {"$set": {"dossier_id": dossier_id}})
             logger.info(f"Dossier Express {dossier_id}: linked to existing premium_analyses {existing_pa['id']}")
         else:
-            # Create new premium_analyses entry for admin review
             pa_id = str(uuid.uuid4())
             await db.premium_analyses.insert_one({
                 "id": pa_id, "type": "dossier_express", "email": email, "name": name,
@@ -415,7 +466,7 @@ CONTENU DES DOCUMENTS FOURNIS :
             logger.info(f"Dossier Express {dossier_id}: created premium_analyses entry {pa_id}")
     except Exception as e:
         logger.error(f"Dossier Express IA processing error: {e}")
-        await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"status": "error", "error": str(e)}})
+        await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"status": "error", "error": str(e), "progress_step": "error"}})
 
 
 @router.post("/dossier-express/checkout")

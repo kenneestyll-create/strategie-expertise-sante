@@ -197,8 +197,14 @@ export const DossierExpressPage = () => {
           clearInterval(interval);
           toast.success("Votre rapport est prêt ! Vérifiez votre email.");
         } else if (res.data.status === 'error') {
-          toast.error("Une erreur est survenue lors de l'analyse. Notre équipe a été notifiée.");
           clearInterval(interval);
+          const errorMsg = res.data.error || "Une erreur est survenue lors de l'analyse.";
+          if (errorMsg.toLowerCase().includes('budget')) {
+            toast.error("Le service d'analyse est temporairement indisponible. Notre équipe a été notifiée. Vous serez contacté par email.", { duration: 10000 });
+          } else {
+            toast.error(`Erreur : ${errorMsg}`, { duration: 8000 });
+          }
+          setStep('error');
         }
       } catch {
         pollErrors++;
@@ -327,7 +333,7 @@ export const DossierExpressPage = () => {
   if (step === 'landing') {
     return (
       <main className="page-transition pt-20">
-      <SEO title="Dossier Express IA — Rapport d'analyse sous 2h" description="Uploadez vos documents, notre équipe les analyse avec l'aide de StratégiIA et vous recevez un rapport PDF complet sous 2 heures pour 97€." path="/dossier-express" />
+      <SEO title="Dossier Express IA — Rapport d'analyse sous 2h" description="Uploadez vos documents, notre outil Dossier Express IA les analyse et vous recevez un rapport PDF complet sous 2 heures pour 97€." path="/dossier-express" />
 
         {/* Hero */}
         <section className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f3460 100%)' }}>
@@ -353,7 +359,7 @@ export const DossierExpressPage = () => {
                   <span className="text-amber-400">complet et personnalisé</span>
                 </h1>
                 <p className="text-base lg:text-lg text-white/70 mb-6 leading-relaxed max-w-xl">
-                  Uploadez vos documents, notre outil StratégiIA croise <strong className="text-white">jurisprudences, barèmes et cas similaires</strong> pour identifier vos droits et construire votre stratégie.
+                  Uploadez vos documents, notre outil Dossier Express IA croise <strong className="text-white">jurisprudences, barèmes et cas similaires</strong> pour identifier vos droits et construire votre stratégie.
                 </p>
 
                 {/* Price + CTA */}
@@ -386,7 +392,7 @@ export const DossierExpressPage = () => {
                 {[
                   { icon: Upload, title: "1. Décrivez votre situation", desc: "Type de dossier, régime, description et documents optionnels", accent: false },
                   { icon: CreditCard, title: "2. Paiement sécurisé — 97€", desc: "Par carte bancaire via Stripe. Traitement immédiat.", accent: false },
-                  { icon: Brain, title: "3. Analyse par StratégiIA", desc: "Croisement de jurisprudences, barèmes officiels et cas similaires", accent: true },
+                  { icon: Brain, title: "3. Analyse par Dossier Express IA", desc: "Croisement de jurisprudences, barèmes officiels et cas similaires", accent: true },
                   { icon: Mail, title: "4. Rapport PDF par email sous 2h", desc: "Droits identifiés, stratégie recommandée, prochaines étapes concrètes", accent: false }
                 ].map((s, i) => (
                   <div key={i} className={`flex items-start gap-4 rounded-xl p-4 backdrop-blur-sm transition-all duration-300 hover:translate-x-1 ${
@@ -541,7 +547,7 @@ export const DossierExpressPage = () => {
                   {hasPaid ? 'Complétez votre dossier' : 'Votre Dossier Express IA'}
                 </h2>
                 <p className="text-muted-foreground mb-6 text-sm">
-                  {hasPaid ? 'Décrivez votre situation pour lancer l\'analyse StratégiIA.' : 'Remplissez les informations ci-dessous pour lancer l\'analyse.'}
+                  {hasPaid ? 'Décrivez votre situation pour lancer l\'analyse Dossier Express IA.' : 'Remplissez les informations ci-dessous pour lancer l\'analyse.'}
                 </p>
 
                 <div className="space-y-5">
@@ -677,7 +683,7 @@ export const DossierExpressPage = () => {
                       disabled={loading || !form.situation.trim() || !form.email || !consent}
                       data-testid="de-submit-button"
                     >
-                      {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi et analyse en cours...</> : <><Brain className="w-5 h-5" /> Lancer l'analyse StratégiIA</>}
+                      {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi et analyse en cours...</> : <><Brain className="w-5 h-5" /> Lancer l'analyse Dossier Express IA</>}
                     </Button>
                   ) : (
                     <Button
@@ -717,11 +723,11 @@ export const DossierExpressPage = () => {
     const docsExtracted = pollStatus?.documents_extracted || false;
 
     const STEPS = [
-      { key: 'uploading', label: `${filesCount > 0 ? filesCount + ' document' + (filesCount > 1 ? 's' : '') + ' reçu' + (filesCount > 1 ? 's' : '') : 'Réception du dossier'}`, icon: Upload },
-      { key: 'reading', label: docsExtracted ? 'Vérification et lecture des pièces' : 'Lecture des informations fournies', icon: FileText },
-      { key: 'analyzing', label: 'Analyse juridique par StratégiIA', icon: Brain },
-      { key: 'generating', label: 'Génération de votre rapport personnalisé', icon: Sparkles },
-      { key: 'sending', label: 'Envoi du rapport par email', icon: Mail },
+      { key: 'uploading', label: `${filesCount > 0 ? filesCount + ' document' + (filesCount > 1 ? 's' : '') + ' reçu' + (filesCount > 1 ? 's' : '') : 'Documents reçus'}`, icon: Upload },
+      { key: 'reading', label: docsExtracted ? 'Lecture des pièces transmises' : 'Lecture des informations fournies', icon: FileText },
+      { key: 'analyzing', label: 'Analyse de votre dossier', icon: Brain },
+      { key: 'generating', label: 'Rédaction de votre synthèse personnalisée', icon: Sparkles },
+      { key: 'sending', label: 'Préparation de votre rapport final', icon: Mail },
     ];
 
     const currentProgress = pollStatus?.progress_step || 'uploading';
@@ -834,6 +840,55 @@ export const DossierExpressPage = () => {
               <Link to="/tarifs">
                 <Button variant="outline" className="rounded-full px-6">
                   Voir nos prestations
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  // ==================== ERROR VIEW ====================
+  if (step === 'error') {
+    return (
+      <main className="page-transition pt-20">
+        <section className="section-padding">
+          <div className="max-w-lg mx-auto text-center">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertTriangle className="w-10 h-10 text-red-600" />
+            </div>
+            <h2 className="text-2xl font-bold mb-3" data-testid="error-title">Analyse interrompue</h2>
+            <p className="text-muted-foreground mb-6 text-sm">
+              Le traitement de votre dossier a rencontré une erreur technique.
+              Notre équipe a été notifiée et vous serez contacté à <strong className="text-foreground">{form.email || pollStatus?.email}</strong>.
+            </p>
+            <Card className="text-left mb-8">
+              <CardContent className="p-5">
+                <h3 className="font-semibold mb-3 text-sm">Que faire maintenant ?</h3>
+                <ul className="space-y-2.5">
+                  {[
+                    "Notre équipe technique travaille à résoudre le problème",
+                    "Vous pouvez réessayer dans quelques minutes",
+                    "Si le problème persiste, contactez-nous directement",
+                    "Votre dossier est sauvegardé, aucune donnée n'est perdue"
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <ChevronRight className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button className="rounded-full px-6 gap-2" onClick={() => { setStep('form'); setDossierId(null); setPollStatus(null); }}>
+                <RefreshCw className="w-4 h-4" />
+                Réessayer
+              </Button>
+              <Link to="/contact">
+                <Button variant="outline" className="rounded-full px-6">
+                  Nous contacter
                 </Button>
               </Link>
             </div>

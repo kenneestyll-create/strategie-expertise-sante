@@ -1719,7 +1719,7 @@ export const AdminDashboard = () => {
                       </div>
                     )}
                     <div>
-                      <Label className="font-medium text-sm mb-2 block">Analyse générée par StratégiIA</Label>
+                      <Label className="font-medium text-sm mb-2 block">Analyse générée par Dossier Express IA</Label>
                       {dossierViewDialog.analysis ? (
                         <div className="p-4 rounded-lg border bg-background whitespace-pre-wrap text-sm leading-relaxed max-h-[400px] overflow-y-auto font-mono">
                           {dossierViewDialog.analysis}
