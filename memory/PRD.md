@@ -208,6 +208,12 @@ Problèmes réels identifiés et corrigés:
 - Le bouton n'apparaît PAS dans l'onglet StratégiIA (prop non passée)
 - Tests: iteration 124 — backend 100%, frontend 100%
 
+## Suppression de dossiers dans l'Admin (Mar 2026) — DONE
+- Icône poubelle sur chaque ligne de la section "Relecture expert – Dossier Express IA"
+- Confirmation `window.confirm` avant suppression irréversible
+- Backend: `DELETE /api/admin/premium-analyses/{id}` supprime l'entrée ET le dossier lié dans `dossier_express`
+- Tests: iteration 125 — 100% backend (4/4), frontend (33 icônes, tous boutons existants intacts)
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Corriger TTS mascotte Straté (parle anglais au lieu de français)
