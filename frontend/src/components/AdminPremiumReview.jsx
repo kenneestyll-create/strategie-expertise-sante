@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import {
-  Zap, Eye, Bell, Send, CheckCircle, PenTool, Loader2, Brain, FileSearch, Clock
+  Zap, Eye, Bell, Send, CheckCircle, PenTool, Loader2, Brain, FileSearch, Clock, Trash2
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -169,6 +169,18 @@ export const AdminPremiumReview = ({ items, stats, productType, productLabel, ic
                           <FileSearch className="w-3 h-3" /> Consulter l'analyse
                         </Button>
                       )}
+                      {/* Supprimer */}
+                      <Button size="sm" variant="ghost" className="text-xs h-7 w-7 p-0 text-muted-foreground/50 hover:text-red-600 hover:bg-red-50"
+                        onClick={() => {
+                          if (window.confirm(`Supprimer le dossier de ${item.name || item.email} ? Cette action est irréversible.`)) {
+                            axios.delete(`${API}/admin/premium-analyses/${item.id}`, axiosConfig)
+                              .then(() => { toast.success('Dossier supprimé'); onRefresh(); })
+                              .catch(() => toast.error('Erreur lors de la suppression'));
+                          }
+                        }}
+                        data-testid={`premium-delete-${item.id}`}>
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
                     </div>
                   </div>
                 </div>

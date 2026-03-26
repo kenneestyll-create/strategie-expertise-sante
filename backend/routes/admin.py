@@ -548,6 +548,22 @@ async def send_reviewed_document(analysis_id: str, request: Request, admin: dict
     return {"success": True, "email_sent": email_sent, "email": email}
 
 
+
+@router.delete("/admin/premium-analyses/{analysis_id}")
+async def delete_premium_analysis(analysis_id: str, admin: dict = Depends(get_current_admin)):
+    """Delete a premium analysis entry and optionally its linked dossier."""
+    analysis = await db.premium_analyses.find_one({"id": analysis_id}, {"_id": 0})
+    if not analysis:
+        raise HTTPException(status_code=404, detail="Entrée non trouvée")
+    # Delete linked dossier_express if exists
+    dossier_id = analysis.get("dossier_id")
+    if dossier_id:
+        await db.dossier_express.delete_one({"id": dossier_id})
+    await db.premium_analyses.delete_one({"id": analysis_id})
+    logger.info(f"Admin deleted premium_analysis {analysis_id} (dossier: {dossier_id or 'none'})")
+    return {"success": True, "deleted_dossier": bool(dossier_id)}
+
+
 @router.post("/admin/notify-document-rejected/{client_id}")
 async def notify_document_rejected(client_id: str, request: Request, admin: dict = Depends(get_current_admin)):
     body = await request.json()
