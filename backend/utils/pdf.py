@@ -9,27 +9,24 @@ def generate_report_number():
     return f"SES-{year}-{seq}"
 
 
-# Patterns to strip from LLM output — these are rendered by the PDF structure itself
 _STRIP_PATTERNS = [
-    re.compile(r'https?://[^\s)]+'),                           # All raw URLs
-    re.compile(r'(?i)prendre\s+rendez[- ]?vous.*$'),           # "Prendre rendez-vous" lines
-    re.compile(r'(?i)premi.re\s+consultation.*gratuit.*$'),    # "Premiere consultation gratuite" lines
-    re.compile(r'(?i)strat.gie\s*&?\s*expertise\s*sant.*$'),   # "Strategie & Expertise Sante" standalone lines
-    re.compile(r'(?i)strategie-expertise-sante\.fr.*$'),       # Domain references
-    re.compile(r'(?i)mascot-tips-admin\.preview.*$'),          # Preview URLs
-    re.compile(r'^---+$'),                                      # Horizontal rules
+    re.compile(r'https?://[^\s)]+'),
+    re.compile(r'(?i)prendre\s+rendez[- ]?vous.*$'),
+    re.compile(r'(?i)premi.re\s+consultation.*gratuit.*$'),
+    re.compile(r'(?i)strat.gie\s*&?\s*expertise\s*sant.*$'),
+    re.compile(r'(?i)strategie-expertise-sante\.fr.*$'),
+    re.compile(r'(?i)mascot-tips-admin\.preview.*$'),
+    re.compile(r'^---+$'),
 ]
 
 
 def _clean_analysis(text: str) -> str:
-    """Remove LLM-generated footers, URLs, and contact sections from analysis text."""
     cleaned_lines = []
     for line in text.split("\n"):
         stripped = line.strip()
         if not stripped:
             cleaned_lines.append("")
             continue
-        # Skip lines matching strip patterns
         skip = False
         for pat in _STRIP_PATTERNS:
             if pat.search(stripped):
@@ -37,14 +34,26 @@ def _clean_analysis(text: str) -> str:
                 break
         if skip:
             continue
-        # Replace any remaining inline URLs
         cleaned = re.sub(r'https?://[^\s)]+', 'strategie-expertise-sante.fr', stripped)
         cleaned_lines.append(cleaned)
-
-    # Remove trailing empty lines
     while cleaned_lines and not cleaned_lines[-1].strip():
         cleaned_lines.pop()
     return "\n".join(cleaned_lines)
+
+
+# ── Premium color palette ──
+_BLACK = (26, 26, 26)        # #1A1A1A
+_GOLD = (201, 168, 76)       # #C9A84C
+_GOLD_LIGHT = (218, 195, 130)
+_IVORY = (250, 248, 243)     # warm cream
+_DARK_TEXT = (35, 35, 35)
+_BODY_TEXT = (55, 55, 55)
+_MUTED = (130, 125, 118)
+_LIGHT_LINE = (220, 215, 205)
+
+
+def _safe(text: str) -> str:
+    return text.encode("latin-1", "replace").decode("latin-1")
 
 
 def generate_secured_pdf(
@@ -62,252 +71,202 @@ def generate_secured_pdf(
     if not report_number:
         report_number = generate_report_number()
     gen_date = datetime.now().strftime("%d/%m/%Y")
-
-    # Clean the LLM analysis before rendering
+    year = datetime.now().year
     analysis = _clean_analysis(analysis)
 
-    FOOTER_MARGIN = 28   # Space reserved for footer (mm from bottom)
-    FOOTER_Y = -18       # Footer position from bottom edge
+    LM = 16   # left margin
+    RM = 16   # right margin
+    CW = 210 - LM - RM   # content width = 178mm
 
-    class SecuredPDF(FPDF):
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            self._is_cover = True
-
+    class PremiumPDF(FPDF):
         def header(self):
-            if self._is_cover:
-                return
-            self.set_fill_color(26, 26, 46)
-            self.rect(0, 0, 210, 18, "F")
+            # ── Elegant dark header band ──
+            self.set_fill_color(*_BLACK)
+            self.rect(0, 0, 210, 22, "F")
+
+            # Gold accent line
+            self.set_fill_color(*_GOLD)
+            self.rect(0, 22, 210, 0.6, "F")
+
+            # Left: brand name
             self.set_text_color(255, 255, 255)
-            self.set_font("Helvetica", "B", 9)
-            self.set_y(4)
-            self.set_x(12)
-            self.cell(0, 5, "Strategie & Expertise Sante", new_x="LMARGIN", new_y="NEXT")
+            self.set_font("Helvetica", "B", 11)
+            self.set_xy(LM, 4)
+            self.cell(80, 5, "Strategie & Expertise Sante")
+            # Subtitle
+            self.set_font("Helvetica", "", 6.5)
+            self.set_text_color(*_GOLD_LIGHT)
+            self.set_xy(LM, 10)
+            self.cell(80, 4, "PIONNIER EN FRANCE")
+
+            # Right: date & report number
             self.set_font("Helvetica", "", 7)
-            self.set_x(12)
-            self.set_text_color(200, 200, 210)
-            self.cell(100, 4, "strategie-expertise-sante.fr")
-            self.set_x(-60)
-            self.set_font("Helvetica", "", 7)
-            self.cell(0, 4, report_number, align="R")
-            self.set_xy(self.l_margin, 22)
+            self.set_text_color(180, 180, 180)
+            self.set_xy(-RM - 60, 5)
+            self.cell(60, 4, gen_date, align="R")
+            self.set_xy(-RM - 60, 10)
+            self.set_text_color(*_GOLD_LIGHT)
+            self.cell(60, 4, report_number, align="R")
+
+            # Reset position
+            self.set_xy(LM, 26)
 
         def footer(self):
-            self.set_y(FOOTER_Y)
-            self.set_draw_color(200, 200, 200)
-            self.line(12, self.get_y(), 198, self.get_y())
+            self.set_y(-12)
+            # Gold thin line
+            self.set_draw_color(*_GOLD)
+            self.set_line_width(0.3)
+            self.line(LM, self.get_y(), 210 - RM, self.get_y())
             self.ln(2)
-            self.set_font("Helvetica", "I", 7)
-            self.set_text_color(140, 140, 140)
-            year = datetime.now().year
-            self.cell(0, 5, f"(c) {year} Strategie & Expertise Sante -- strategie-expertise-sante.fr", align="C")
+            self.set_font("Helvetica", "", 6)
+            self.set_text_color(*_MUTED)
+            self.cell(
+                CW, 4,
+                f"(c) {year} Strategie & Expertise Sante  --  strategie-expertise-sante.fr  --  Document confidentiel",
+                align="C",
+            )
 
-        def _draw_watermark(self):
+        def _watermark(self):
             if not with_watermark:
                 return
-            saved_x, saved_y = self.x, self.y
-            self.set_font("Helvetica", "B", 42)
-            self.set_text_color(230, 228, 222)
+            sx, sy = self.x, self.y
+            self.set_font("Helvetica", "B", 38)
+            self.set_text_color(240, 238, 232)
             cx, cy = self.w / 2, self.h / 2
-            text = "Strategie & Expertise Sante"
-            tw = self.get_string_width(text)
-            with self.rotation(40, cx, cy):
-                self.text(cx - tw / 2, cy, text)
-            self.set_xy(saved_x, saved_y)
+            txt = "Strategie & Expertise Sante"
+            tw = self.get_string_width(txt)
+            with self.rotation(35, cx, cy):
+                self.text(cx - tw / 2, cy, txt)
+            self.set_xy(sx, sy)
 
-        def _space_left(self):
-            """Usable space left on current page before footer."""
-            return self.h - FOOTER_MARGIN - self.get_y()
-
-    pdf = SecuredPDF()
-    pdf.set_auto_page_break(auto=True, margin=FOOTER_MARGIN)
-    pdf.set_left_margin(12)
-    pdf.set_right_margin(12)
-
-    # ── Cover page ──
-    pdf._is_cover = True
+    pdf = PremiumPDF()
+    pdf.set_auto_page_break(auto=True, margin=16)
+    pdf.set_left_margin(LM)
+    pdf.set_right_margin(RM)
     pdf.add_page()
 
-    pdf.set_fill_color(26, 26, 46)
-    pdf.rect(0, 0, 210, 297, "F")
-
-    pdf.set_fill_color(185, 78, 72)
-    pdf.rect(0, 85, 210, 4, "F")
-
-    pdf.set_text_color(255, 255, 255)
-    pdf.set_font("Helvetica", "B", 28)
-    pdf.set_y(100)
-    pdf.cell(0, 14, "Strategie & Expertise Sante", align="C", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Helvetica", "", 12)
-    pdf.set_text_color(200, 200, 210)
-    pdf.cell(0, 8, "strategie-expertise-sante.fr", align="C", new_x="LMARGIN", new_y="NEXT")
-
-    pdf.ln(15)
-    pdf.set_draw_color(185, 78, 72)
-    pdf.line(70, pdf.get_y(), 140, pdf.get_y())
-    pdf.ln(15)
-
-    pdf.set_text_color(255, 255, 255)
-    pdf.set_font("Helvetica", "B", 18)
-    safe_type = report_type.encode("latin-1", "replace").decode("latin-1")
-    pdf.cell(0, 10, f"Rapport {safe_type}", align="C", new_x="LMARGIN", new_y="NEXT")
-
-    pdf.ln(20)
-    box_x, box_y, box_w = 40, pdf.get_y(), 130
-    pdf.set_fill_color(40, 40, 60)
-    pdf.rect(box_x, box_y, box_w, 48, "F")
-    pdf.set_font("Helvetica", "", 10)
-    pdf.set_text_color(200, 200, 210)
-    y_info = box_y + 8
-    for label, val in [
-        ("Numero du rapport", report_number),
-        ("Date de generation", gen_date),
-        ("Client / Dossier", (name or email or "N/A").encode("latin-1", "replace").decode("latin-1")),
-        ("Type de dossier", (type_dossier or "Non precise").encode("latin-1", "replace").decode("latin-1")),
-    ]:
-        pdf.set_xy(box_x + 6, y_info)
-        pdf.set_font("Helvetica", "B", 9)
-        pdf.cell(50, 5, label + " :")
-        pdf.set_font("Helvetica", "", 9)
-        pdf.set_text_color(255, 255, 255)
-        pdf.cell(0, 5, val)
-        pdf.set_text_color(200, 200, 210)
-        y_info += 10
-
-    pdf.set_y(265)
-    pdf.set_font("Helvetica", "I", 8)
-    pdf.set_text_color(140, 140, 150)
-    pdf.cell(0, 5, "Document confidentiel", align="C", new_x="LMARGIN", new_y="NEXT")
-    year = datetime.now().year
-    pdf.cell(0, 5, f"(c) {year} Strategie & Expertise Sante -- StrategiIA", align="C")
-
-    # ── Content pages ──
-    pdf._is_cover = False
-    pdf.add_page()
-
-    pdf.set_fill_color(245, 243, 238)
-    pdf.rect(12, 24, 186, 22, "F")
-    pdf.set_text_color(50, 50, 50)
-    pdf.set_font("Helvetica", "B", 9)
-    pdf.set_xy(16, 26)
-    safe_name = (name or "Non renseigne").encode("latin-1", "replace").decode("latin-1")
-    pdf.cell(0, 5, f"Client : {safe_name}", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Helvetica", "", 9)
-    pdf.set_x(16)
-    safe_td = (type_dossier or "Non precise").encode("latin-1", "replace").decode("latin-1")
-    safe_reg = (regime or "Non precise").encode("latin-1", "replace").decode("latin-1")
-    pdf.cell(0, 5, f"Type : {safe_td}  |  Regime : {safe_reg}  |  {gen_date}", new_x="LMARGIN", new_y="NEXT")
-
-    pdf.ln(6)
-
-    # ── Render cleaned analysis text ──
-    content_width = 186  # 210 - 12 - 12 margins
-    for line in analysis.split("\n"):
-        stripped = line.strip()
-        if not stripped:
-            pdf.ln(3)
-            continue
-        safe = stripped.encode("latin-1", "replace").decode("latin-1")
-        pdf.set_x(pdf.l_margin)
-        if stripped.startswith("# "):
-            pdf.set_font("Helvetica", "B", 16)
-            pdf.set_text_color(26, 26, 46)
-            pdf.ln(5)
-            pdf.multi_cell(content_width, 8, safe[2:])
-        elif stripped.startswith("## "):
-            pdf.set_font("Helvetica", "B", 14)
-            pdf.set_text_color(26, 26, 46)
-            pdf.ln(4)
-            pdf.multi_cell(content_width, 7, safe[3:])
-        elif stripped.startswith("### "):
-            pdf.set_font("Helvetica", "B", 12)
-            pdf.set_text_color(15, 52, 96)
-            pdf.ln(3)
-            pdf.multi_cell(content_width, 7, safe[4:])
-        elif stripped.startswith("- ") or stripped.startswith("* "):
-            pdf.set_font("Helvetica", "", 10)
-            pdf.set_text_color(50, 50, 50)
-            pdf.set_x(20)
-            pdf.multi_cell(content_width - 8, 6, f"  {safe[2:]}")
-        elif stripped.startswith("**") and stripped.endswith("**"):
-            pdf.set_font("Helvetica", "B", 10)
-            pdf.set_text_color(50, 50, 50)
-            pdf.multi_cell(content_width, 6, safe.strip("*"))
-        else:
-            pdf.set_font("Helvetica", "", 10)
-            pdf.set_text_color(50, 50, 50)
-            pdf.multi_cell(content_width, 6, safe)
-
-    # ── Contact block: guaranteed proper layout ──
-    # If less than 50mm available, start fresh page to avoid any overlap
-    if pdf._space_left() < 50:
-        pdf.add_page()
-
-    pdf.ln(12)
-
-    # Decorative separator
-    sep_y = pdf.get_y()
-    pdf.set_fill_color(185, 78, 72)
-    pdf.rect(60, sep_y, 90, 1.5, "F")
-    pdf.ln(10)
-
-    # Contact block — all with explicit cell heights and centering
-    pdf.set_font("Helvetica", "B", 13)
-    pdf.set_text_color(26, 26, 46)
-    pdf.cell(content_width, 8, "Strategie & Expertise Sante", align="C", new_x="LMARGIN", new_y="NEXT")
-
-    pdf.ln(4)
-
-    pdf.set_font("Helvetica", "", 10)
-    pdf.set_text_color(80, 80, 80)
-    pdf.cell(content_width, 6, "Prendre rendez-vous : strategie-expertise-sante.fr/contact", align="C", new_x="LMARGIN", new_y="NEXT")
+    # ── Client info bar ──
+    y = pdf.get_y()
+    pdf.set_fill_color(*_IVORY)
+    pdf.rect(LM, y, CW, 10, "F")
+    pdf.set_xy(LM + 4, y + 2)
+    pdf.set_font("Helvetica", "B", 7.5)
+    pdf.set_text_color(*_DARK_TEXT)
+    safe_name = _safe(name or email or "Client")
+    pdf.cell(50, 3, safe_name)
+    pdf.set_font("Helvetica", "", 7)
+    pdf.set_text_color(*_MUTED)
+    safe_td = _safe(type_dossier or "")
+    safe_reg = _safe(regime or "")
+    info_parts = [p for p in [safe_td, safe_reg, gen_date] if p]
+    pdf.cell(0, 3, "  |  ".join(info_parts))
+    pdf.set_xy(LM + 4, y + 6)
+    pdf.set_font("Helvetica", "", 6.5)
+    pdf.set_text_color(*_GOLD)
+    safe_rt = _safe(report_type)
+    pdf.cell(0, 3, f"Rapport {safe_rt}")
+    pdf.set_xy(LM, y + 12)
 
     pdf.ln(2)
 
-    pdf.set_font("Helvetica", "I", 9)
-    pdf.set_text_color(120, 120, 120)
-    pdf.cell(content_width, 6, "Consultation personnalisee sur rendez-vous", align="C", new_x="LMARGIN", new_y="NEXT")
+    # ── Render analysis content with premium typography ──
+    def section_title(text):
+        pdf.ln(3)
+        # Gold left accent
+        sy = pdf.get_y()
+        pdf.set_fill_color(*_GOLD)
+        pdf.rect(LM, sy, 2, 5.5, "F")
+        pdf.set_x(LM + 5)
+        pdf.set_font("Helvetica", "B", 9.5)
+        pdf.set_text_color(*_BLACK)
+        pdf.cell(CW - 5, 5.5, _safe(text))
+        pdf.ln(7)
 
-    pdf.ln(6)
+    def sub_title(text):
+        pdf.ln(1.5)
+        pdf.set_font("Helvetica", "B", 8.5)
+        pdf.set_text_color(*_DARK_TEXT)
+        pdf.set_x(LM)
+        pdf.cell(CW, 5, _safe(text))
+        pdf.ln(5.5)
 
-    # ── Legal page (always on its own page) ──
-    pdf.add_page()
-    pdf.ln(5)
-    pdf.set_fill_color(185, 78, 72)
-    pdf.rect(12, pdf.get_y(), 3, 8, "F")
-    pdf.set_x(18)
-    pdf.set_font("Helvetica", "B", 14)
-    pdf.set_text_color(26, 26, 46)
-    pdf.cell(0, 8, "Mentions legales", new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(6)
-    pdf.set_font("Helvetica", "", 9)
-    pdf.set_text_color(60, 60, 60)
+    def body_text(text):
+        pdf.set_font("Helvetica", "", 8)
+        pdf.set_text_color(*_BODY_TEXT)
+        pdf.set_x(LM)
+        pdf.multi_cell(CW, 4, _safe(text))
+        pdf.ln(0.5)
 
-    legal_text = (
-        "Ce rapport est fourni a titre d'analyse et d'accompagnement administratif. "
-        "Il ne constitue ni un avis medical ni un conseil juridique.\n\n"
-        "Ce document est la propriete exclusive de Strategie & Expertise Sante. "
-        "Toute reproduction, diffusion ou utilisation commerciale sans autorisation "
-        "ecrite prealable est interdite et constitue une contrefacon.\n\n"
-        f"(c) {datetime.now().year} Strategie & Expertise Sante -- StrategiIA(TM) outil exclusif.\n\n"
-        f"Rapport : {report_number}\n"
-        f"Date de generation : {gen_date}"
-    )
-    pdf.multi_cell(content_width, 5.5, legal_text)
+    def bullet_text(text):
+        pdf.set_font("Helvetica", "", 8)
+        pdf.set_text_color(*_BODY_TEXT)
+        pdf.set_x(LM + 4)
+        # Gold bullet
+        bx, by = pdf.get_x(), pdf.get_y() + 1.5
+        pdf.set_fill_color(*_GOLD)
+        pdf.rect(bx - 3, by, 1.2, 1.2, "F")
+        pdf.multi_cell(CW - 6, 4, _safe(text))
+        pdf.ln(0.3)
 
-    # Apply watermarks
+    def bold_text(text):
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_text_color(*_DARK_TEXT)
+        pdf.set_x(LM)
+        pdf.multi_cell(CW, 4, _safe(text))
+        pdf.ln(0.5)
+
+    for line in analysis.split("\n"):
+        stripped = line.strip()
+        if not stripped:
+            pdf.ln(1.5)
+            continue
+        if stripped.startswith("# "):
+            section_title(stripped[2:])
+        elif stripped.startswith("## "):
+            section_title(stripped[3:])
+        elif stripped.startswith("### "):
+            sub_title(stripped[4:])
+        elif stripped.startswith("- ") or stripped.startswith("* "):
+            bullet_text(stripped[2:])
+        elif stripped.startswith("**") and stripped.endswith("**"):
+            bold_text(stripped.strip("*"))
+        else:
+            body_text(stripped)
+
+    # ── Contact & CTA block ──
+    space = pdf.h - 16 - pdf.get_y()
+    if space < 22:
+        pdf.add_page()
+
+    pdf.ln(3)
+    # Gold thin separator
+    sep_y = pdf.get_y()
+    pdf.set_draw_color(*_GOLD)
+    pdf.set_line_width(0.3)
+    pdf.line(65, sep_y, 145, sep_y)
+    pdf.ln(4)
+
+    pdf.set_font("Helvetica", "B", 8.5)
+    pdf.set_text_color(*_BLACK)
+    pdf.cell(CW, 4, "Strategie & Expertise Sante", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(1.5)
+    pdf.set_font("Helvetica", "", 7)
+    pdf.set_text_color(*_MUTED)
+    pdf.cell(CW, 3.5, "Prendre rendez-vous : strategie-expertise-sante.fr/contact", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", "I", 6.5)
+    pdf.cell(CW, 3.5, "Consultation personnalisee sur rendez-vous  --  Premiere consultation gratuite", align="C")
+
+    # ── Watermark ──
     if with_watermark:
-        total_pages = pdf.pages_count
-        for p_num in range(1, total_pages + 1):
+        for p_num in range(1, pdf.pages_count + 1):
             pdf.page = p_num
-            pdf._draw_watermark()
-        pdf.page = total_pages
+            pdf._watermark()
+        pdf.page = pdf.pages_count
 
     return bytes(pdf.output())
 
 
-def generate_dossier_pdf(name: str, email: str, type_dossier: str, regime: str, analysis: str, premium_pdf: bool = False) -> bytes:
+def generate_dossier_pdf(name, email, type_dossier, regime, analysis, premium_pdf=False):
     return generate_secured_pdf(
         analysis=analysis,
         report_type="Dossier Express IA",
