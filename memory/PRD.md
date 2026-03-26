@@ -89,8 +89,11 @@ Async polling, barre de progression, option RATP/SNCF
   * POST /api/strategiia/register-email avec admin_test (quota illimite, pas de lead)
 - Frontend: bypass email gate + payment gate sur StrategiIA, DossierExpress, Simulateur
 - Toutes les donnees admin marquees admin_test=true en base
+- Toggle DEPLACE exclusivement dans l'en-tete du Dashboard Admin (/admin)
+- AUCUN element visible sur le site public, meme avec admin connecte
+- Toggle discret dans la barre d'en-tete admin: "Test Client" (gris) / "Test Admin" (ambre)
 - Securite: endpoints admin strictement proteges par JWT admin (403/401 sans token)
-- Tests: backend 92% + frontend 100% via testing agent
+- Tests: site public verifie propre (0 elements parasites), admin dashboard verifie fonctionnel
 
 ## Taches a venir
 - **P1:** Dashboard admin pour stats tracking/conversions + leads guides

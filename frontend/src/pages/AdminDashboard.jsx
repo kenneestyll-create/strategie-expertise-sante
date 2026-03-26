@@ -49,6 +49,7 @@ import {
   Settings
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useAdminTest } from '@/components/AdminTestBanner';
 import axios from 'axios';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { BarChart3, BellRing, Download, FlaskConical, PenTool } from 'lucide-react';
@@ -325,6 +326,7 @@ export const AdminDashboard = () => {
 
   const navigate = useNavigate();
   const { token, adminName, logout } = useAuth();
+  const { isAdminMode, setIsAdminMode } = useAdminTest();
 
   const axiosConfig = {
     headers: { Authorization: `Bearer ${token}` }
@@ -555,6 +557,18 @@ export const AdminDashboard = () => {
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm hidden sm:inline">Bonjour, {adminName}</span>
+              <button
+                onClick={() => setIsAdminMode(prev => !prev)}
+                data-testid="admin-test-toggle"
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium transition-all border ${
+                  isAdminMode
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
+                    : 'bg-white/10 text-primary-foreground/60 border-white/20 hover:bg-white/20'
+                }`}
+              >
+                <Shield className="w-3 h-3" />
+                {isAdminMode ? 'Test Admin' : 'Test Client'}
+              </button>
               <Link to="/">
                 <Button variant="ghost" size="sm" className="text-primary-foreground hover:bg-primary-foreground/10" data-testid="admin-home-button">
                   <Home className="w-4 h-4" />
