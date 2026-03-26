@@ -118,6 +118,13 @@ Async polling, barre de progression, option RATP/SNCF
 - **PDF marqueur** : bandeau discret "Document relu et finalise dans le cadre de l'option Relecture expert personnalisee" dans le header.
 - Tests: iteration 113 — backend 100% (10/10 pytest), frontend 100%
 
+## Correction Bug Bloquant Dossier Express IA (Mar 2026) — DONE
+- **Bug frontend** : En mode admin, `handleCheckout()` faisait `setStep('form')` sans rendre `hasPaid=true`. Le bouton "Lancer l'analyse" n'apparaissait jamais. Fix: ajout state `adminPaid` + `hasPaid` inclut `adminPaid`.
+- **Bug backend event loop** : `_process_dossier_express` utilisait `await chat.send_message()` (synchrone via litellm.completion) bloquant l'event loop 50-60s. Fix: `asyncio.to_thread(_llm_sync_call, ...)` comme pour StrategiIA.
+- **Bug timeout 60s proxy** : Le prompt Dossier Express (11 sections, 1000-1500 mots) depassait le timeout de 60s du proxy API. Fix: prompt optimise a 5 sections (800 mots max). Reponse en ~55s.
+- **UX ameliore** : Messages de chargement explicites ("Televersement en cours...", "Analyse en cours..."), bouton desactive pendant l'envoi, gestion d'erreurs detaillee (413, 400, etc.), polling resilient (5 erreurs avant abandon).
+- Tests: iteration 114 — backend 100% (9/9 pytest), frontend 100%
+
 ## Taches a venir
 - **P1:** Dashboard admin pour stats tracking/conversions + leads guides
 - **P0:** Finaliser Mode Admin Test Premium (Relecture expert, alertes email, badge dashboard)
