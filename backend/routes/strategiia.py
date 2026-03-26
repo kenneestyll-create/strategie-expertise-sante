@@ -324,7 +324,25 @@ CONTENU DES DOCUMENTS FOURNIS :
             except Exception as e:
                 logger.error(f"Dossier Express IA email error: {e}")
 
-        await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"status": "completed", "analysis": analysis[:5000], "email_sent": email_sent, "completed_at": datetime.now(timezone.utc).isoformat()}})
+        await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"status": "completed", "analysis": analysis[:5000], "email_sent": email_sent, "completed_at": datetime.now(timezone.utc).isoformat(), "progress_step": "completed"}})
+
+        # Auto-register in premium_analyses for admin review workflow
+        # Check if a premium_analyses entry already exists for this dossier (created during checkout)
+        existing_pa = await db.premium_analyses.find_one({"type": "dossier_express", "email": email, "dossier_id": {"$exists": False}})
+        if existing_pa:
+            # Link existing premium_analyses entry to this dossier
+            await db.premium_analyses.update_one({"id": existing_pa["id"]}, {"$set": {"dossier_id": dossier_id}})
+            logger.info(f"Dossier Express {dossier_id}: linked to existing premium_analyses {existing_pa['id']}")
+        else:
+            # Create new premium_analyses entry for admin review
+            pa_id = str(uuid.uuid4())
+            await db.premium_analyses.insert_one({
+                "id": pa_id, "type": "dossier_express", "email": email, "name": name,
+                "dossier_id": dossier_id, "status": "en_attente", "premium_pdf": premium_pdf,
+                "amount": 0, "admin_test": True,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            })
+            logger.info(f"Dossier Express {dossier_id}: created premium_analyses entry {pa_id}")
     except Exception as e:
         logger.error(f"Dossier Express IA processing error: {e}")
         await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"status": "error", "error": str(e)}})

@@ -288,6 +288,7 @@ export const DossierExpressPage = () => {
       const res = await axios.post(endpoint, payload, { headers });
       setDossierId(res.data.dossier_id);
       setStep('processing');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       sessionStorage.removeItem('dossier_express_form');
       sessionStorage.removeItem('dossier_express_premium_pdf');
       sessionStorage.removeItem('dossier_express_admin_bypass');

@@ -401,10 +401,15 @@ async def get_premium_analysis_full_content(analysis_id: str, admin: dict = Depe
     full_text = analysis.get("reviewed_analysis", "")
     source_data = {}
     if analysis.get("type") == "dossier_express":
-        dossier = await db.dossier_express.find_one({"email": analysis.get("email", "")}, {"_id": 0, "documents_text": 0})
+        # Match by dossier_id (reliable) or fallback to email (legacy)
+        match_filter = {"id": analysis["dossier_id"]} if analysis.get("dossier_id") else {"email": analysis.get("email", "")}
+        dossier = await db.dossier_express.find_one(match_filter, {"_id": 0, "documents_text": 0})
+        if not dossier and analysis.get("dossier_id"):
+            # Fallback to email if dossier_id match failed
+            dossier = await db.dossier_express.find_one({"email": analysis.get("email", "")}, {"_id": 0, "documents_text": 0})
         if dossier:
             full_text = full_text or dossier.get("analysis", "")
-            source_data = {"situation": dossier.get("situation", ""), "type_dossier": dossier.get("type_dossier", ""), "regime": dossier.get("regime", ""), "name": dossier.get("name", ""), "dossier_status": dossier.get("status", "")}
+            source_data = {"situation": dossier.get("situation", ""), "type_dossier": dossier.get("type_dossier", ""), "regime": dossier.get("regime", ""), "name": dossier.get("name", ""), "dossier_status": dossier.get("status", ""), "dossier_id": dossier.get("id", "")}
     else:
         if not full_text and analysis.get("context"):
             full_text = analysis["context"]
@@ -413,6 +418,29 @@ async def get_premium_analysis_full_content(analysis_id: str, admin: dict = Depe
             full_text = full_text or strat.get("analysis", "") or strat.get("context", "")
             source_data = {"type_dossier": strat.get("type_dossier", ""), "regime": strat.get("regime", ""), "name": strat.get("name", "")}
     return {"id": analysis_id, "type": analysis.get("type"), "full_text": full_text, "source_data": source_data, "email": analysis.get("email", ""), "status": analysis.get("status", ""), "admin_notes": analysis.get("admin_notes", "")}
+
+
+
+@router.get("/admin/dossier-express/{dossier_id}/analysis")
+async def get_dossier_express_analysis(dossier_id: str, admin: dict = Depends(get_current_admin)):
+    """Fetch analysis content for a specific dossier express by its ID."""
+    dossier = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0, "documents_text": 0})
+    if not dossier:
+        raise HTTPException(status_code=404, detail="Dossier non trouvé")
+    return {
+        "id": dossier_id,
+        "email": dossier.get("email", ""),
+        "name": dossier.get("name", ""),
+        "status": dossier.get("status", ""),
+        "analysis": dossier.get("analysis", ""),
+        "situation": dossier.get("situation", ""),
+        "type_dossier": dossier.get("type_dossier", ""),
+        "regime": dossier.get("regime", ""),
+        "premium_pdf": dossier.get("premium_pdf", False),
+        "created_at": dossier.get("created_at", ""),
+        "completed_at": dossier.get("completed_at", ""),
+    }
+
 
 
 @router.post("/admin/premium-analyses/{analysis_id}/send-reviewed")
@@ -432,7 +460,8 @@ async def send_reviewed_document(analysis_id: str, request: Request, admin: dict
     type_dossier = ""
     regime = ""
     if analysis_type == "dossier_express":
-        dossier = await db.dossier_express.find_one({"email": email}, {"_id": 0, "type_dossier": 1, "regime": 1, "name": 1})
+        match_filter = {"id": analysis["dossier_id"]} if analysis.get("dossier_id") else {"email": email}
+        dossier = await db.dossier_express.find_one(match_filter, {"_id": 0, "type_dossier": 1, "regime": 1, "name": 1})
         if dossier:
             type_dossier = dossier.get("type_dossier", "")
             regime = dossier.get("regime", "")

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -294,6 +295,7 @@ export const AdminDashboard = () => {
   const [premiumAnalyses, setPremiumAnalyses] = useState({ items: [], stats: { total: 0, en_attente: 0, en_cours: 0, valide: 0, envoye: 0, termine: 0 } });
   const [reviewDialog, setReviewDialog] = useState(null);
   const [dossierExpressAdmin, setDossierExpressAdmin] = useState({ items: [], stats: { total: 0, completed: 0, processing: 0, errors: 0 } });
+  const [dossierViewDialog, setDossierViewDialog] = useState(null);
   const [analyticsData, setAnalyticsData] = useState(null);
   const [analyticsPeriod, setAnalyticsPeriod] = useState('30d');
   const [newCas, setNewCas] = useState({ type_dossier: '', regime: '', duree: '', strategie: '', resultat: '', score_pertinence: 0, notes: '' });
@@ -1636,45 +1638,102 @@ export const AdminDashboard = () => {
               onRefresh={fetchData}
             />
 
-            {/* Recent Dossier Express submissions */}
+            {/* Recent Dossier Express submissions with analysis access */}
             {dossierExpressAdmin.items?.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
+                  <CardTitle className="flex items-center gap-2 text-lg" data-testid="de-history-title">
                     <FileText className="w-5 h-5 text-teal-600" />
-                    Historique des soumissions
+                    Tous les dossiers soumis
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="bg-muted/30 border-b"><tr>
-                        <th className="py-2 px-3 text-left font-medium text-muted-foreground">Client</th>
-                        <th className="py-2 px-3 text-left font-medium text-muted-foreground">Type</th>
-                        <th className="py-2 px-3 text-left font-medium text-muted-foreground">Statut</th>
-                        <th className="py-2 px-3 text-left font-medium text-muted-foreground">Date</th>
-                      </tr></thead>
-                      <tbody>
-                        {dossierExpressAdmin.items.slice(0, 20).map(d => (
-                          <tr key={d.id} className="border-b last:border-0 hover:bg-muted/20" data-testid={`de-row-${d.id}`}>
-                            <td className="py-2 px-3">
-                              <p className="font-medium text-sm">{d.name || d.email}</p>
-                              <p className="text-[10px] text-muted-foreground">{d.email}</p>
-                            </td>
-                            <td className="py-2 px-3"><Badge variant="outline" className="text-[10px]">{d.type_dossier || '—'}</Badge></td>
-                            <td className="py-2 px-3">
+                  <div className="space-y-3">
+                    {dossierExpressAdmin.items.slice(0, 30).map(d => (
+                      <div key={d.id} className={`p-4 rounded-xl border ${d.status === 'completed' ? 'border-green-500/30 bg-green-50/30' : d.status === 'processing' ? 'border-blue-500/30 bg-blue-50/30' : d.status === 'error' ? 'border-red-500/30 bg-red-50/30' : 'border-border'}`} data-testid={`de-row-${d.id}`}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap mb-1">
                               <Badge className={`text-[10px] ${d.status === 'completed' ? 'bg-green-100 text-green-700' : d.status === 'processing' ? 'bg-blue-100 text-blue-700' : d.status === 'error' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
                                 {d.status === 'completed' ? 'Terminé' : d.status === 'processing' ? 'En cours' : d.status === 'error' ? 'Erreur' : d.status}
                               </Badge>
-                            </td>
-                            <td className="py-2 px-3 text-muted-foreground text-xs">{d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                              <Badge variant="outline" className="text-[10px]">{d.type_dossier || '—'}</Badge>
+                              {d.regime && <Badge variant="outline" className="text-[10px]">{d.regime}</Badge>}
+                              {d.premium_pdf && <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">PDF Pro</Badge>}
+                              {d.admin_test && <Badge className="bg-zinc-500/10 text-zinc-500 border-zinc-500/20 text-[10px]">Test</Badge>}
+                            </div>
+                            <p className="font-medium text-sm">{d.name || d.email}</p>
+                            <p className="text-[10px] text-muted-foreground">{d.email}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}</p>
+                            {d.completed_at && <p className="text-[10px] text-green-600">Terminé le {new Date(d.completed_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>}
+                            {d.email_sent && <p className="text-[10px] text-emerald-600">Email envoyé</p>}
+                          </div>
+                          <div className="flex gap-1.5 flex-shrink-0 flex-wrap">
+                            {d.status === 'completed' && (
+                              <Button size="sm" variant="outline" className="text-xs h-7 gap-1 border-green-500/30 text-green-600 hover:bg-green-50"
+                                data-testid={`de-view-analysis-${d.id}`}
+                                onClick={async () => {
+                                  try {
+                                    const res = await axios.get(`${API}/admin/dossier-express/${d.id}/analysis`, axiosConfig);
+                                    setDossierViewDialog(res.data);
+                                  } catch { toast.error("Impossible de charger l'analyse"); }
+                                }}>
+                                <Eye className="w-3 h-3" /> Consulter l'analyse
+                              </Button>
+                            )}
+                            {d.status === 'error' && (
+                              <Badge variant="outline" className="text-[10px] border-red-500/30 text-red-500">{d.error ? d.error.substring(0, 60) + '...' : 'Erreur'}</Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
+            )}
+
+            {/* Dossier View Dialog */}
+            {dossierViewDialog && (
+              <Dialog open onOpenChange={() => setDossierViewDialog(null)}>
+                <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto" data-testid="dossier-view-dialog">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <FileSearch className="w-5 h-5 text-amber-600" />
+                      Analyse — {dossierViewDialog.name || dossierViewDialog.email}
+                    </DialogTitle>
+                    <DialogDescription>
+                      Dossier Express IA complété le {dossierViewDialog.completed_at ? new Date(dossierViewDialog.completed_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      <Badge variant="outline">{dossierViewDialog.type_dossier}</Badge>
+                      {dossierViewDialog.regime && <Badge variant="outline">{dossierViewDialog.regime}</Badge>}
+                      {dossierViewDialog.premium_pdf && <Badge className="bg-accent/10 text-accent border-accent/20">PDF Pro</Badge>}
+                    </div>
+                    {dossierViewDialog.situation && (
+                      <div className="p-3 rounded-lg bg-muted/50 border">
+                        <Label className="font-medium text-xs mb-1 block text-muted-foreground">Situation décrite par le client</Label>
+                        <p className="text-sm leading-relaxed max-h-[120px] overflow-y-auto">{dossierViewDialog.situation}</p>
+                      </div>
+                    )}
+                    <div>
+                      <Label className="font-medium text-sm mb-2 block">Analyse générée par StratégiIA</Label>
+                      {dossierViewDialog.analysis ? (
+                        <div className="p-4 rounded-lg border bg-background whitespace-pre-wrap text-sm leading-relaxed max-h-[400px] overflow-y-auto font-mono">
+                          {dossierViewDialog.analysis}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic p-4 border rounded-lg">Aucune analyse disponible.</p>
+                      )}
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setDossierViewDialog(null)}>Fermer</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             )}
           </TabsContent>
 
