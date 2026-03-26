@@ -436,9 +436,7 @@ async def _run_analysis(job_id, type_dossier, regime, situation, is_premium, ema
 
 @router.post("/strategiia/analyze")
 async def strategiia_analyze(request: Request):
-    import sys; print("[DEBUG] strategiia_analyze ENTRY", file=sys.stderr, flush=True)
     body = await request.json()
-    import sys; print("[DEBUG] body parsed", file=sys.stderr, flush=True)
     situation = body.get("situation", "")
     type_dossier = body.get("type_dossier", "")
     regime = body.get("regime", "")
@@ -479,9 +477,7 @@ async def strategiia_analyze(request: Request):
 
     job_id = str(uuid.uuid4())[:12]
     _jobs[job_id] = {"status": "pending"}
-    import sys; print(f"[DEBUG] pre-create_task job_id={job_id}", file=sys.stderr, flush=True)
     asyncio.create_task(_run_analysis(job_id, type_dossier, regime, situation, is_premium, email, similar_cases, case_context, is_admin_test=is_admin_test))
-    import sys; print(f"[DEBUG] post-create_task, returning", file=sys.stderr, flush=True)
     return {"job_id": job_id, "status": "pending", "admin_test": is_admin_test}
 
 

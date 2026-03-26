@@ -2,7 +2,6 @@ from fastapi import FastAPI, APIRouter, Request as FastAPIRequest
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import Response, RedirectResponse, JSONResponse
-from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from slowapi.errors import RateLimitExceeded
 import asyncio
@@ -12,6 +11,63 @@ from datetime import datetime, timezone, timedelta, time as dtime
 
 from config import client, db, logger, SITE_URL, limiter
 from routes import all_routers
+
+
+# ==================== PURE ASGI MIDDLEWARE (no BaseHTTPMiddleware) ====================
+
+class SecurityHeadersASGIMiddleware:
+    """Adds security headers to all HTTP responses. Pure ASGI — no body deadlock."""
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        async def send_wrapper(message):
+            if message["type"] == "http.response.start":
+                headers = list(message.get("headers", []))
+                headers.extend([
+                    (b"x-content-type-options", b"nosniff"),
+                    (b"x-frame-options", b"DENY"),
+                    (b"x-xss-protection", b"1; mode=block"),
+                    (b"referrer-policy", b"strict-origin-when-cross-origin"),
+                    (b"permissions-policy", b"camera=(), microphone=(), geolocation=()"),
+                ])
+                message = {**message, "headers": headers}
+            await send(message)
+
+        await self.app(scope, receive, send_wrapper)
+
+
+class CacheControlASGIMiddleware:
+    """Adds Cache-Control headers for specific paths. Pure ASGI — no body deadlock."""
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        path = scope.get("path", "")
+
+        async def send_wrapper(message):
+            if message["type"] == "http.response.start":
+                cache_val = None
+                if path.startswith("/api/faq") or path.startswith("/api/avis") or path.startswith("/api/visitors"):
+                    cache_val = b"public, max-age=300"
+                elif path.startswith("/api/sitemap") or path.startswith("/api/robots"):
+                    cache_val = b"public, max-age=86400"
+                if cache_val:
+                    headers = list(message.get("headers", []))
+                    headers.append((b"cache-control", cache_val))
+                    message = {**message, "headers": headers}
+            await send(message)
+
+        await self.app(scope, receive, send_wrapper)
+
 
 # Rate limiter — SECURITY FIX V2
 app = FastAPI(title="Stratégie & Expertise Santé API")
@@ -26,6 +82,9 @@ async def rate_limit_handler(request: FastAPIRequest, exc: RateLimitExceeded):
 
 # SECURITY FIX V5 — CORS strict: only authorized origins
 ALLOWED_ORIGINS = os.environ.get('ALLOWED_ORIGINS', SITE_URL).split(',')
+app.add_middleware(CacheControlASGIMiddleware)
+app.add_middleware(GZipMiddleware, minimum_size=500)
+app.add_middleware(SecurityHeadersASGIMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -33,17 +92,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# SECURITY FIX V12 — Security headers middleware
-@app.middleware("http")
-async def security_headers_middleware(request, call_next):
-    response = await call_next(request)
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["X-XSS-Protection"] = "1; mode=block"
-    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
-    return response
 
 api_router = APIRouter(prefix="/api")
 
@@ -111,18 +159,8 @@ async def track_guide_followup_click(followup_id: str):
     # Redirect to homepage where StrategiIA can be opened
     return RedirectResponse(url=f"{SITE_URL}/?open=strategiia", status_code=302)
 
-app.add_middleware(GZipMiddleware, minimum_size=500)
 
 
-@app.middleware("http")
-async def cache_control_middleware(request: Request, call_next):
-    response = await call_next(request)
-    path = request.url.path
-    if path.startswith("/api/faq") or path.startswith("/api/avis") or path.startswith("/api/visitors"):
-        response.headers["Cache-Control"] = "public, max-age=300"
-    elif path.startswith("/api/sitemap") or path.startswith("/api/robots"):
-        response.headers["Cache-Control"] = "public, max-age=86400"
-    return response
 
 
 @app.on_event("startup")
