@@ -1,6 +1,6 @@
 import "@/App.css";
 import { lazy, Suspense, useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/sonner";
 import { Header } from "@/components/Header";
@@ -18,6 +18,7 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { useSearchHighlight } from "@/hooks/useSearchHighlight";
 
 const SearchHighlighter = () => { useSearchHighlight(); return null; };
+const HideOnAdmin = ({ children }) => { const { pathname } = useLocation(); return pathname.startsWith('/admin') ? null : children; };
 
 const SITE_URL = "https://mascot-tips-admin.preview.emergentagent.com";
 
@@ -181,10 +182,12 @@ function App() {
                   <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
                 </Routes>
               </Suspense>
-              <ChatBot />
-              <StrategiIA />
-              <AlerteUrgente />
-              <MascotteStrate />
+              <HideOnAdmin>
+                <ChatBot />
+                <StrategiIA />
+                <AlerteUrgente />
+                <MascotteStrate />
+              </HideOnAdmin>
               <ExitIntentPopup />
               <Toaster position="top-right" richColors />
             </BrowserRouter>
