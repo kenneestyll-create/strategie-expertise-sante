@@ -88,25 +88,42 @@ async def send_notification_email(contact):
         return False
 
 
-async def notify_admin_premium_analysis(analysis_type: str, email: str, name: str, amount: float):
+async def notify_admin_premium_analysis(analysis_type: str, email: str, name: str, amount: float, options: dict = None):
     if not RESEND_AVAILABLE or not os.environ.get('RESEND_API_KEY') or not NOTIFICATION_EMAIL:
         logger.info("Premium analysis notification skipped - Resend not configured")
         return
     type_label = "StrategiIA" if analysis_type == "strategiia" else "Dossier Express IA"
+    opts = options or {}
+    relecture = opts.get("analyse_premium", False)
+    pdf_pro = opts.get("premium_pdf", False)
+    context = opts.get("context", "")
+    options_html = ""
+    if relecture or pdf_pro:
+        options_html = "<p><strong>Options sélectionnées :</strong></p><ul>"
+        if relecture:
+            options_html += '<li style="color: #b94e48; font-weight: bold;">Relecture expert personnalisée (+29€)</li>'
+        if pdf_pro:
+            options_html += '<li>Version PDF professionnelle sans filigrane (+19€)</li>'
+        options_html += "</ul>"
+    context_html = f'<p><strong>Contexte :</strong> {context[:300]}</p>' if context else ""
+    action_text = "Action requise : relecture et enrichissement expert du rapport." if relecture else "Rapport standard généré automatiquement."
+    subject_tag = "[RELECTURE EXPERT]" if relecture else "[PREMIUM]"
     html_content = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: #1a1a2e; color: #fff; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
-            <h2 style="margin: 0; color: #d4a44a;">Nouvelle Analyse Premium</h2>
+            <h2 style="margin: 0; color: #d4a44a;">{'Relecture Expert Requise' if relecture else 'Nouvelle Analyse Premium'}</h2>
         </div>
         <div style="background: #F9F7F2; padding: 20px; border-radius: 0 0 8px 8px; border: 1px solid #E5E0D6;">
             <p style="font-size: 16px;"><strong>Type :</strong> {type_label}</p>
-            <p><strong>Client :</strong> {name or 'Non renseigne'}</p>
+            <p><strong>Client :</strong> {name or 'Non renseigné'}</p>
             <p><strong>Email :</strong> {email}</p>
             <p><strong>Montant :</strong> {amount:.0f} EUR</p>
-            <p><strong>Date :</strong> {datetime.now().strftime('%d/%m/%Y %H:%M')}</p>
+            <p><strong>Date :</strong> {datetime.now().strftime('%d/%m/%Y à %H:%M')}</p>
+            {options_html}
+            {context_html}
             <hr style="border: 1px solid #E5E0D6;">
-            <p style="color: #b94e48; font-weight: bold;">Action requise : relecture et enrichissement expert du rapport.</p>
+            <p style="color: {'#b94e48' if relecture else '#2c6e49'}; font-weight: bold;">{action_text}</p>
         </div>
     </body>
     </html>
@@ -115,10 +132,10 @@ async def notify_admin_premium_analysis(analysis_type: str, email: str, name: st
         await asyncio.to_thread(resend.Emails.send, {
             "from": SENDER_EMAIL,
             "to": [NOTIFICATION_EMAIL],
-            "subject": f"[PREMIUM] Nouvelle analyse {type_label} - {name or email}",
+            "subject": f"{subject_tag} {type_label} - {name or email}",
             "html": html_content
         })
-        logger.info(f"Premium analysis notification sent for {email}")
+        logger.info(f"Premium analysis notification sent for {email} (relecture={relecture})")
     except Exception as e:
         logger.error(f"Failed to send premium notification: {e}")
 

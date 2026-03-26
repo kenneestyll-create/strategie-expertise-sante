@@ -1627,6 +1627,8 @@ export const AdminDashboard = () => {
                               </Badge>
                               <Badge variant="outline" className="text-[10px]">{item.type === 'strategiia' ? 'StrategiIA' : 'Dossier Express IA'}</Badge>
                               {item.premium_pdf && <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">PDF Pro</Badge>}
+                              {item.relecture_expert_required && <Badge className="bg-red-500/10 text-red-600 border-red-500/20 text-[10px] font-bold">Relecture Expert</Badge>}
+                              {item.admin_test && <Badge className="bg-zinc-500/10 text-zinc-500 border-zinc-500/20 text-[10px]">Test Admin</Badge>}
                               <span className="text-xs text-muted-foreground">{item.amount}€</span>
                             </div>
                             <p className="font-medium text-sm mt-1.5">{item.email || item.name || 'Client'}</p>

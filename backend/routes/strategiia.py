@@ -4,10 +4,11 @@ import asyncio
 import uuid
 import base64
 import os
+import jwt
 
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 
-from config import db, EMERGENT_LLM_KEY, STRIPE_API_KEY, RESEND_AVAILABLE, SENDER_EMAIL, logger
+from config import db, EMERGENT_LLM_KEY, STRIPE_API_KEY, RESEND_AVAILABLE, SENDER_EMAIL, logger, JWT_SECRET, JWT_ALGORITHM
 from utils.auth import get_current_admin, get_optional_admin
 from utils.email import notify_admin_premium_analysis
 from utils.pdf import generate_secured_pdf, generate_dossier_pdf
@@ -71,10 +72,10 @@ RÈGLES :
 - Si des cas anonymisés similaires existent dans la base, mentionne les statistiques de résultats
 - NE GÉNÈRE JAMAIS d'URL, de lien hypertexte, d'adresse web ou de nom de domaine dans ta réponse. Pas de https://, pas de .fr, pas de .com. Le bloc contact est géré automatiquement par le système."""
 
-STRATEGIIA_BASIC_PROMPT = """Tu rediges un rapport de pre-analyse PREMIUM pour un client. Ton style doit etre chaleureux, humain, professionnel et rassurant -- comme un expert bienveillant qui s'adresse personnellement a quelqu'un.
+STRATEGIIA_BASIC_PROMPT = """Tu rediges un rapport de pre-analyse PREMIUM pour un client de Strategie & Expertise Sante. Ton style doit etre chaleureux, humain, professionnel et rassurant -- comme un expert bienveillant qui s'adresse personnellement a quelqu'un.
 
 CONTRAINTES STRICTES :
-- Maximum 300 mots au total (le rapport doit tenir sur UNE page PDF)
+- Maximum 350 mots au total (le rapport doit tenir sur UNE page PDF)
 - Pas de formulations robotiques ou froides
 - Pas de listes a rallonge
 - Chaque phrase doit apporter de la valeur concrete
@@ -100,40 +101,59 @@ STRUCTURE EXACTE (respecte les marqueurs) :
 ## Prochaines etapes recommandees
 - (3 actions concretes maximum, formulees de maniere actionnable : document a reunir, demarche a anticiper, point a verifier)
 
-## Notre analyse
-(2-3 lignes de conclusion humaine et rassurante. Donne le sentiment "vous etes accompagne, il y a une suite logique". Sans etre commercial.)
+## Notre engagement
+(2-3 lignes de conclusion humaine et rassurante. Termine par :)
+**Vous n'etes plus seul(e) face a votre situation. Strategie & Expertise Sante est a vos cotes.**
 
 Ne genere aucune URL, aucun lien web ni aucun nom de domaine."""
 
-STRATEGIIA_PREMIUM_PROMPT = """Tu rediges un rapport d'analyse PREMIUM complet pour un client. Ton style doit etre expert, humain, chaleureux et strategique -- comme un conseiller de confiance qui prend le temps d'accompagner.
+STRATEGIIA_PREMIUM_PROMPT = """Tu rediges un rapport d'analyse APPROFONDI ET PREMIUM pour un client de Strategie & Expertise Sante. Tu es un expert reconnu en droit de la securite sociale. Ton style est celui d'un conseiller de confiance : expert, humain, chaleureux, strategique et rassurant.
 
 CONTRAINTES STRICTES :
-- Maximum 500 mots (le rapport doit rester elegant et dense, pas verbeux)
-- Chaque section doit apporter une vraie valeur concrete
+- Entre 700 et 900 mots (le rapport doit faire environ une page et demie : dense, riche, utile)
+- Chaque section doit apporter une vraie valeur concrete et personnalisee
 - Ton de cabinet d'accompagnement haut de gamme
-- Formulations incarnees, pas de langage robotique
+- Formulations incarnees, jamais robotiques
+- Cite des references juridiques reelles (articles de loi, jurisprudences) quand pertinent
+- Personnalise selon le type de dossier, le regime et la situation specifique
 
-STRUCTURE EXACTE :
+STRUCTURE EXACTE A RESPECTER :
 
 ## Votre situation analysee
-(4-5 lignes. Reformulation empathique et precise de la situation. Montre une comprehension fine.)
+(5-6 lignes. Reformulation empathique et precise de la situation. Montre une comprehension fine des enjeux personnels et professionnels. Commence par une phrase d'ouverture rassurante comme "A la lecture attentive de votre situation..." ou "Votre dossier revele une situation qui merite toute notre attention...")
 
 ## Ce que revele votre dossier
-(4-5 lignes. Analyse strategique : enjeux juridiques, points forts, elements a exploiter. Mentionne des references juridiques pertinentes.)
+(6-8 lignes. Analyse strategique approfondie : enjeux juridiques, points forts a exploiter, failles a anticiper. Reference aux textes applicables : Code de la securite sociale, Code du travail, nomenclature Dintilhac si applicable. Mentionne l'incidence professionnelle (IP) et la PGPF si pertinent.)
+
+## Cadre juridique applicable
+(4-5 lignes. Cite les articles de loi, decrets ou jurisprudences applicables a cette situation precise. Par exemple : Art. L.461-1 CSS pour maladie professionnelle, Art. L.434-2 pour la rente, jurisprudences Cour de cassation ou TASS pertinentes.)
 
 ## Evaluation et perspectives
-(3-4 lignes. Estimation des chances, fourchettes si applicable, elements favorables/defavorables.)
+(5-6 lignes. Estimation nuancee des chances de succes. Fourchettes d'indemnisation si applicable. Elements favorables vs defavorables. Comparaison avec des cas similaires si des donnees sont disponibles.)
 
 ## Points de vigilance
-- (3-4 points concrets : delais, risques, erreurs a eviter, elements manquants)
+- (4-5 points concrets : delais de prescription, risques specifiques, erreurs frequentes a eviter, elements manquants critiques, pieces a rassembler en priorite)
 
-## Prochaines etapes recommandees
-- (3-4 actions concretes, formulees de maniere actionnable avec priorite)
+## Strategie recommandee
+(4-5 lignes. Plan d'action clair et ordonne. Quelles demarches en premier, dans quel ordre, avec quels delais. Formule de maniere actionnable et concrete.)
 
-## Notre analyse
-(3-4 lignes. Conclusion humaine, rassurante et professionnelle. Vision d'ensemble et perspective d'accompagnement.)
+## Prochaines etapes concretes
+1. (action immediate avec delai)
+2. (action a court terme)
+3. (action a moyen terme)
+4. (action optionnelle si applicable)
 
-Sois exhaustif et precis tout en restant concis.
+## Notre engagement a vos cotes
+(4-5 lignes. Conclusion humaine, chaleureuse et rassurante. Vision d'ensemble et perspective d'accompagnement. Termine TOUJOURS par exactement ces deux lignes sur des lignes separees :)
+
+**Vous n'etes plus seul(e) face a votre situation.**
+**Desormais, Strategie & Expertise Sante devient votre bouclier.**
+
+---
+
+*Selon les elements identifies dans votre dossier, [recommande de maniere naturelle et elegante le service le plus adapte parmi : une analyse StrategiIA approfondie, un Dossier Express pour un traitement complet, un accompagnement personnalise, ou une prise de rendez-vous pour un premier echange gratuit]. Formule comme un conseil bienveillant, pas comme une publicite.*
+
+Sois exhaustif, precis et concret tout en restant fluide et elegant.
 Ne genere aucune URL, aucun lien web ni aucun nom de domaine."""
 
 DOSSIER_EXPRESS_PROMPT = """Tu es un expert en droit de la sécurité sociale, accidents du travail, maladies professionnelles et handicap (MDPH).
@@ -345,8 +365,8 @@ async def dossier_express_checkout(request: Request):
         tag = "dossier_express_analyse_premium"
     checkout_request = CheckoutSessionRequest(amount=amount, currency="eur", success_url=success_url, cancel_url=cancel_url, metadata={"package_id": tag, "package_name": f"Dossier Express IA ({amount:.0f}€)", "customer_email": email, "customer_name": name, "premium_pdf": "1" if premium_pdf else "0", "analyse_premium": "1" if analyse_premium else "0"})
     if analyse_premium:
-        await db.premium_analyses.insert_one({"id": str(uuid.uuid4()), "type": "dossier_express", "email": email, "name": name, "status": "en_attente", "premium_pdf": premium_pdf, "amount": amount, "created_at": datetime.now(timezone.utc).isoformat()})
-        asyncio.create_task(notify_admin_premium_analysis("dossier_express", email, name, amount))
+        await db.premium_analyses.insert_one({"id": str(uuid.uuid4()), "type": "dossier_express", "email": email, "name": name, "status": "en_attente", "relecture_expert_required": True, "premium_pdf": premium_pdf, "amount": amount, "created_at": datetime.now(timezone.utc).isoformat()})
+        asyncio.create_task(notify_admin_premium_analysis("dossier_express", email, name, amount, options={"analyse_premium": True, "premium_pdf": premium_pdf}))
     try:
         session = await stripe_checkout.create_checkout_session(checkout_request)
         return {"success": True, "url": session.url, "session_id": session.session_id}
@@ -415,14 +435,27 @@ async def _run_analysis(job_id, type_dossier, regime, situation, is_premium, ema
 
 
 @router.post("/strategiia/analyze")
-async def strategiia_analyze(request: Request, admin: dict = Depends(get_optional_admin)):
+async def strategiia_analyze(request: Request):
+    import sys; print("[DEBUG] strategiia_analyze ENTRY", file=sys.stderr, flush=True)
     body = await request.json()
+    import sys; print("[DEBUG] body parsed", file=sys.stderr, flush=True)
     situation = body.get("situation", "")
     type_dossier = body.get("type_dossier", "")
     regime = body.get("regime", "")
     is_premium = body.get("premium", False)
     email = body.get("email", "").strip().lower()
-    is_admin_test = body.get("admin_test", False) and admin is not None
+    is_admin_test = body.get("admin_test", False)
+    # Check admin token manually if admin_test requested
+    if is_admin_test:
+        auth_header = request.headers.get("authorization", "")
+        if auth_header.startswith("Bearer "):
+            try:
+                payload = jwt.decode(auth_header.split(" ", 1)[1], JWT_SECRET, algorithms=[JWT_ALGORITHM])
+                is_admin_test = payload.get("is_admin", False)
+            except Exception:
+                is_admin_test = False
+        else:
+            is_admin_test = False
     if not situation.strip():
         raise HTTPException(status_code=400, detail="Description de la situation requise")
     if not EMERGENT_LLM_KEY:
@@ -446,7 +479,9 @@ async def strategiia_analyze(request: Request, admin: dict = Depends(get_optiona
 
     job_id = str(uuid.uuid4())[:12]
     _jobs[job_id] = {"status": "pending"}
+    import sys; print(f"[DEBUG] pre-create_task job_id={job_id}", file=sys.stderr, flush=True)
     asyncio.create_task(_run_analysis(job_id, type_dossier, regime, situation, is_premium, email, similar_cases, case_context, is_admin_test=is_admin_test))
+    import sys; print(f"[DEBUG] post-create_task, returning", file=sys.stderr, flush=True)
     return {"job_id": job_id, "status": "pending", "admin_test": is_admin_test}
 
 
@@ -618,10 +653,21 @@ async def strategiia_quota(email: str):
     return {"remaining": remaining, "limit": 3, "used": min(usage_count, 3)}
 
 @router.post("/strategiia/register-email")
-async def strategiia_register_email(request: Request, admin: dict = Depends(get_optional_admin)):
+async def strategiia_register_email(request: Request):
     body = await request.json()
     email = body.get("email", "").strip().lower()
-    is_admin_test = body.get("admin_test", False) and admin is not None
+    is_admin_test = body.get("admin_test", False)
+    # Check admin token manually if admin_test requested
+    if is_admin_test:
+        auth_header = request.headers.get("authorization", "")
+        if auth_header.startswith("Bearer "):
+            try:
+                payload = jwt.decode(auth_header.split(" ", 1)[1], JWT_SECRET, algorithms=[JWT_ALGORITHM])
+                is_admin_test = payload.get("is_admin", False)
+            except Exception:
+                is_admin_test = False
+        else:
+            is_admin_test = False
     if not email or "@" not in email:
         raise HTTPException(status_code=400, detail="Email invalide")
     # Admin test: don't create leads, return unlimited quota
@@ -664,8 +710,8 @@ async def strategiia_checkout(request: Request):
         product_tag = "strategiia_analyse_premium"
     checkout_request = CheckoutSessionRequest(amount=amount, currency="eur", success_url=success_url, cancel_url=cancel_url, metadata={"product": product_tag, "customer_email": email, "context": analysis_context[:200], "premium_pdf": "1" if premium_pdf else "0", "analyse_premium": "1" if analyse_premium else "0"})
     if analyse_premium:
-        await db.premium_analyses.insert_one({"id": str(uuid.uuid4()), "type": "strategiia", "email": email, "context": analysis_context[:500], "status": "en_attente", "premium_pdf": premium_pdf, "amount": amount, "created_at": datetime.now(timezone.utc).isoformat()})
-        asyncio.create_task(notify_admin_premium_analysis("strategiia", email, "", amount))
+        await db.premium_analyses.insert_one({"id": str(uuid.uuid4()), "type": "strategiia", "email": email, "context": analysis_context[:500], "status": "en_attente", "premium_pdf": premium_pdf, "analyse_premium": True, "relecture_expert_required": True, "amount": amount, "created_at": datetime.now(timezone.utc).isoformat()})
+        asyncio.create_task(notify_admin_premium_analysis("strategiia", email, "", amount, options={"analyse_premium": True, "premium_pdf": premium_pdf, "context": analysis_context[:300]}))
     try:
         session = await stripe_checkout.create_checkout_session(checkout_request)
         return {"url": session.url, "session_id": session.session_id}
@@ -675,13 +721,25 @@ async def strategiia_checkout(request: Request):
 
 
 @router.post("/strategiia/admin-bypass-premium")
-async def strategiia_admin_bypass(request: Request, admin: dict = Depends(get_current_admin)):
+async def strategiia_admin_bypass(request: Request):
     """Admin bypass: skips Stripe checkout and runs premium analysis directly."""
+    auth_header = request.headers.get("authorization", "")
+    if not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Token manquant")
+    token = auth_header.split(" ", 1)[1]
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        if not payload.get("is_admin"):
+            raise HTTPException(status_code=403, detail="Non autorisé")
+    except Exception:
+        raise HTTPException(status_code=401, detail="Token invalide")
     body = await request.json()
     situation = body.get("situation", "")
     type_dossier = body.get("type_dossier", "")
     regime = body.get("regime", "")
-    email = admin.get("email", "admin@test")
+    premium_pdf = body.get("premium_pdf", False)
+    analyse_premium = body.get("analyse_premium", False)
+    email = payload.get("email", "admin@test")
     if not situation.strip() or not EMERGENT_LLM_KEY:
         raise HTTPException(status_code=400, detail="Situation requise et service IA actif")
     similar_cases = []
@@ -695,14 +753,24 @@ async def strategiia_admin_bypass(request: Request, admin: dict = Depends(get_cu
     job_id = str(uuid.uuid4())[:12]
     _jobs[job_id] = {"status": "pending"}
     asyncio.create_task(_run_analysis(job_id, type_dossier, regime, situation, True, email, similar_cases, case_context, is_admin_test=True))
-    return {"job_id": job_id, "status": "pending", "admin_test": True}
+    return {"job_id": job_id, "status": "pending", "admin_test": True, "premium_pdf": premium_pdf, "analyse_premium": analyse_premium}
 
 
 @router.post("/dossier-express/admin-bypass")
-async def dossier_express_admin_bypass(request: Request, admin: dict = Depends(get_current_admin)):
+async def dossier_express_admin_bypass(request: Request):
     """Admin bypass: process Dossier Express without Stripe payment."""
+    auth_header = request.headers.get("authorization", "")
+    if not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Token manquant")
+    token = auth_header.split(" ", 1)[1]
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        if not payload.get("is_admin"):
+            raise HTTPException(status_code=403, detail="Non autorisé")
+    except Exception:
+        raise HTTPException(status_code=401, detail="Token invalide")
     body = await request.json()
-    email = admin.get("email", "admin@test")
+    email = payload.get("email", "admin@test")
     name = body.get("name", "Admin Test")
     situation = body.get("situation", "")
     type_dossier = body.get("type_dossier", "")

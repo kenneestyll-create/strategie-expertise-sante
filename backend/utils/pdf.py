@@ -215,12 +215,28 @@ def generate_secured_pdf(
         pdf.multi_cell(CW, 4, _safe(text))
         pdf.ln(0.5)
 
+    def italic_text(text):
+        pdf.set_font("Helvetica", "I", 7.5)
+        pdf.set_text_color(*_MUTED)
+        pdf.set_x(LM)
+        pdf.multi_cell(CW, 3.8, _safe(text))
+        pdf.ln(0.5)
+
+    def gold_separator():
+        sep_y = pdf.get_y()
+        pdf.set_draw_color(*_GOLD)
+        pdf.set_line_width(0.3)
+        pdf.line(LM + 20, sep_y, LM + CW - 20, sep_y)
+        pdf.ln(3)
+
     for line in analysis.split("\n"):
         stripped = line.strip()
         if not stripped:
             pdf.ln(1.5)
             continue
-        if stripped.startswith("# "):
+        if stripped == "---" or stripped == "***":
+            gold_separator()
+        elif stripped.startswith("# "):
             section_title(stripped[2:])
         elif stripped.startswith("## "):
             section_title(stripped[3:])
@@ -230,6 +246,10 @@ def generate_secured_pdf(
             bullet_text(stripped[2:])
         elif stripped.startswith("**") and stripped.endswith("**"):
             bold_text(stripped.strip("*"))
+        elif (stripped.startswith("*") and stripped.endswith("*") and not stripped.startswith("**")):
+            italic_text(stripped.strip("*"))
+        elif re.match(r'^\d+\.\s', stripped):
+            bullet_text(stripped)
         else:
             body_text(stripped)
 

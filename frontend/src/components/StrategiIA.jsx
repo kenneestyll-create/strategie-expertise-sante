@@ -177,14 +177,19 @@ export const StrategiIA = () => {
   };
 
   const handlePayForPremium = async () => {
-    // Admin bypass: skip Stripe, run premium analysis directly
+    // Admin bypass: skip Stripe, run premium analysis directly WITH selected options
     if (isAdminMode && adminToken) {
       setStep('loading');
-      toast.info("Mode Admin : bypass paiement, analyse premium en cours...");
+      const opts = [];
+      if (analysePremium) opts.push('Relecture expert');
+      if (premiumPdf) opts.push('PDF pro');
+      toast.info(`Mode Admin : bypass paiement${opts.length ? ' (' + opts.join(' + ') + ')' : ''}, analyse en cours...`);
       try {
         const { data } = await axios.post(`${API}/strategiia/admin-bypass-premium`, {
-          situation, type_dossier: typeDossier, regime
+          situation, type_dossier: typeDossier, regime,
+          premium_pdf: premiumPdf, analyse_premium: analysePremium
         }, { headers: { 'Authorization': `Bearer ${adminToken}` } });
+        if (premiumPdf) setPremiumPdf(true);
         const jobId = data.job_id;
         const poll = setInterval(async () => {
           try {
@@ -600,9 +605,15 @@ export const StrategiIA = () => {
                         </div>
 
                         <Button onClick={handlePayForPremium} className="w-full rounded-lg gap-2 bg-accent hover:bg-accent/90 text-base py-5" data-testid="strategiia-buy-premium">
-                          <CreditCard className="w-4 h-4" /> Obtenir le rapport complet — {29 + (premiumPdf ? 19 : 0) + (analysePremium ? 29 : 0)}€
+                          {isAdminMode ? (
+                            <><Shield className="w-4 h-4" /> Tester en mode admin — {29 + (premiumPdf ? 19 : 0) + (analysePremium ? 29 : 0)}€ (bypass)</>
+                          ) : (
+                            <><CreditCard className="w-4 h-4" /> Obtenir le rapport complet — {29 + (premiumPdf ? 19 : 0) + (analysePremium ? 29 : 0)}€</>
+                          )}
                         </Button>
-                        <p className="text-[10px] text-muted-foreground text-center">Paiement sécurisé par Stripe. Satisfaction garantie.</p>
+                        <p className="text-[10px] text-muted-foreground text-center">
+                          {isAdminMode ? "Mode Admin : aucun paiement réel ne sera effectué." : "Paiement sécurisé par Stripe. Satisfaction garantie."}
+                        </p>
                       </CardContent>
                     </Card>
 

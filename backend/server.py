@@ -35,17 +35,15 @@ app.add_middleware(
 )
 
 # SECURITY FIX V12 — Security headers middleware
-class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request, call_next):
-        response = await call_next(request)
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "DENY"
-        response.headers["X-XSS-Protection"] = "1; mode=block"
-        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
-        return response
-
-app.add_middleware(SecurityHeadersMiddleware)
+@app.middleware("http")
+async def security_headers_middleware(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    return response
 
 api_router = APIRouter(prefix="/api")
 
@@ -116,18 +114,15 @@ async def track_guide_followup_click(followup_id: str):
 app.add_middleware(GZipMiddleware, minimum_size=500)
 
 
-class CacheControlMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        response = await call_next(request)
-        path = request.url.path
-        if path.startswith("/api/faq") or path.startswith("/api/avis") or path.startswith("/api/visitors"):
-            response.headers["Cache-Control"] = "public, max-age=300"
-        elif path.startswith("/api/sitemap") or path.startswith("/api/robots"):
-            response.headers["Cache-Control"] = "public, max-age=86400"
-        return response
-
-
-app.add_middleware(CacheControlMiddleware)
+@app.middleware("http")
+async def cache_control_middleware(request: Request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    if path.startswith("/api/faq") or path.startswith("/api/avis") or path.startswith("/api/visitors"):
+        response.headers["Cache-Control"] = "public, max-age=300"
+    elif path.startswith("/api/sitemap") or path.startswith("/api/robots"):
+        response.headers["Cache-Control"] = "public, max-age=86400"
+    return response
 
 
 @app.on_event("startup")
