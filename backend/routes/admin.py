@@ -5,7 +5,12 @@ import asyncio
 import uuid
 import os
 
-from config import db, logger, limiter, STRIPE_API_KEY, STRIPE_MODE, PAYPAL_CLIENT_ID, PAYPAL_MODE
+try:
+    import resend
+except ImportError:
+    pass
+
+from config import db, logger, limiter, STRIPE_API_KEY, STRIPE_MODE, PAYPAL_CLIENT_ID, PAYPAL_MODE, RESEND_AVAILABLE, SENDER_EMAIL
 from models import (
     ContactRequest, ContactRequestUpdate,
     FAQItem, FAQItemCreate,
@@ -330,18 +335,21 @@ async def update_client_case(case_id: str, request: Request, admin: dict = Depen
 @router.get("/admin/premium-analyses")
 async def get_premium_analyses(admin: dict = Depends(get_current_admin)):
     items = await db.premium_analyses.find({}, {"_id": 0}).sort("created_at", -1).to_list(200)
-    stats = {"total": len(items), "en_attente": sum(1 for i in items if i.get("status") == "en_attente"), "en_cours": sum(1 for i in items if i.get("status") == "en_cours"), "termine": sum(1 for i in items if i.get("status") == "termine")}
+    stats = {"total": len(items), "en_attente": sum(1 for i in items if i.get("status") == "en_attente"), "en_cours": sum(1 for i in items if i.get("status") == "en_cours"), "valide": sum(1 for i in items if i.get("status") == "valide"), "envoye": sum(1 for i in items if i.get("status") == "envoye"), "termine": sum(1 for i in items if i.get("status") in ("termine", "envoye"))}
     return {"items": items, "stats": stats}
 
 @router.patch("/admin/premium-analyses/{analysis_id}")
 async def update_premium_analysis(analysis_id: str, request: Request, admin: dict = Depends(get_current_admin)):
     body = await request.json()
     new_status = body.get("status", "")
-    if new_status not in ("en_attente", "en_cours", "termine"):
+    if new_status not in ("en_attente", "en_cours", "valide", "envoye", "termine"):
         raise HTTPException(status_code=400, detail="Statut invalide")
     update_fields = {"status": new_status, "updated_at": datetime.now(timezone.utc).isoformat()}
     if body.get("notes"):
         update_fields["admin_notes"] = body["notes"]
+    if body.get("reviewed_analysis"):
+        update_fields["reviewed_analysis"] = body["reviewed_analysis"]
+        update_fields["reviewed_at"] = datetime.now(timezone.utc).isoformat()
     result = await db.premium_analyses.update_one({"id": analysis_id}, {"$set": update_fields})
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Analyse non trouvée")
@@ -354,8 +362,10 @@ async def update_premium_analysis(analysis_id: str, request: Request, admin: dic
         if client_user:
             if new_status == "en_cours":
                 asyncio.create_task(create_client_notification(client_id=client_user["id"], notif_type="dossier_in_progress", title="Votre dossier est en cours de traitement", message=f"Notre expert a commencé l'analyse de votre dossier ({type_label}). Vous serez notifié dès que le rapport sera disponible."))
-            elif new_status == "termine":
-                asyncio.create_task(create_client_notification(client_id=client_user["id"], notif_type="analyse_premium_ready", title="Votre Analyse Premium est prête", message=f"Votre Analyse Premium ({type_label}) a été finalisée par notre expert. Consultez votre rapport dans votre espace client."))
+            elif new_status == "valide":
+                asyncio.create_task(create_client_notification(client_id=client_user["id"], notif_type="dossier_validated", title="Votre relecture expert est finalisée", message=f"La relecture expert de votre dossier ({type_label}) est terminée. Votre document finalisé vous sera transmis très prochainement."))
+            elif new_status in ("envoye", "termine"):
+                asyncio.create_task(create_client_notification(client_id=client_user["id"], notif_type="analyse_premium_ready", title="Votre rapport expert est prêt", message=f"Votre rapport ({type_label}) relu et finalisé par notre expert est maintenant disponible. Consultez votre espace client."))
     return {"success": True}
 
 @router.post("/admin/premium-analyses/{analysis_id}/notify")
@@ -380,6 +390,71 @@ async def notify_client_premium(analysis_id: str, request: Request, admin: dict 
         await create_client_notification(client_id=client_user["id"], notif_type=notif_type, title=notif_config["title"], message=notif_config["message"], send_email=True)
     await db.premium_analyses.update_one({"id": analysis_id}, {"$set": {"client_notified": True, "notified_at": datetime.now(timezone.utc).isoformat(), "notification_type": notif_type}})
     return {"success": True, "client_found": client_user is not None, "email": email}
+
+
+@router.post("/admin/premium-analyses/{analysis_id}/send-reviewed")
+async def send_reviewed_document(analysis_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    """Admin sends the final reviewed document to the client — triggers actual delivery."""
+    analysis = await db.premium_analyses.find_one({"id": analysis_id}, {"_id": 0})
+    if not analysis:
+        raise HTTPException(status_code=404, detail="Analyse non trouvée")
+    body = await request.json()
+    reviewed_text = body.get("reviewed_analysis", analysis.get("reviewed_analysis", ""))
+    if not reviewed_text:
+        raise HTTPException(status_code=400, detail="Aucune analyse relue à envoyer")
+    email = analysis.get("email", "")
+    type_label = "StrategiIA" if analysis.get("type") == "strategiia" else "Dossier Express IA"
+    name = analysis.get("name", email)
+    type_dossier = analysis.get("context", "").split(" - ")[0] if analysis.get("context") else ""
+    premium_pdf = analysis.get("premium_pdf", True)
+    # Generate the reviewed PDF with expert marker
+    from utils.pdf import generate_secured_pdf
+    pdf_bytes = generate_secured_pdf(
+        analysis=reviewed_text, report_type="StrategiIA", name=name,
+        type_dossier=type_dossier, regime="", with_watermark=not premium_pdf,
+        relecture_expert=True
+    )
+    # Send the PDF via email to the client
+    email_sent = False
+    if RESEND_AVAILABLE and os.environ.get('RESEND_API_KEY') and email:
+        import base64 as b64
+        pdf_b64 = b64.b64encode(pdf_bytes).decode()
+        try:
+            await asyncio.to_thread(resend.Emails.send, {
+                "from": SENDER_EMAIL,
+                "to": [email],
+                "subject": f"Votre rapport {type_label} — Version expert finalisée",
+                "html": f"""<html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+                    <div style="background:#1a1a2e;color:#fff;padding:20px;border-radius:8px 8px 0 0;text-align:center;">
+                        <h2 style="margin:0;color:#d4a44a;">Votre rapport expert est prêt</h2>
+                    </div>
+                    <div style="background:#F9F7F2;padding:20px;border-radius:0 0 8px 8px;border:1px solid #E5E0D6;">
+                        <p>Bonjour,</p>
+                        <p>Votre rapport <strong>{type_label}</strong> a été relu et finalisé par notre expert dans le cadre de votre option <strong>Relecture expert personnalisée</strong>.</p>
+                        <p>Vous trouverez votre document en pièce jointe.</p>
+                        <p style="color:#666;font-size:13px;margin-top:20px;">Ce document a fait l'objet d'une relecture humaine approfondie. Il constitue une version enrichie et validée de votre analyse initiale.</p>
+                        <hr style="border:1px solid #E5E0D6;">
+                        <p style="color:#d4a44a;font-weight:bold;font-style:italic;">Vous n'êtes plus seul(e) face à votre situation.<br/>Désormais, Stratégie & Expertise Santé devient votre bouclier.</p>
+                    </div>
+                </body></html>""",
+                "attachments": [{"filename": f"rapport-expert-{type_label.lower().replace(' ', '-')}.pdf", "content": pdf_b64}]
+            })
+            email_sent = True
+            logger.info(f"Reviewed document sent to {email} for analysis {analysis_id}")
+        except Exception as e:
+            logger.error(f"Failed to send reviewed document: {e}")
+    # Update status
+    await db.premium_analyses.update_one({"id": analysis_id}, {"$set": {
+        "status": "envoye", "reviewed_analysis": reviewed_text,
+        "sent_at": datetime.now(timezone.utc).isoformat(),
+        "email_sent": email_sent, "updated_at": datetime.now(timezone.utc).isoformat()
+    }})
+    # Client notification
+    client_user = await db.client_users.find_one({"email": email.lower()}, {"_id": 0, "id": 1}) if email else None
+    if client_user:
+        await create_client_notification(client_id=client_user["id"], notif_type="report_ready", title="Votre rapport expert est prêt", message=f"Votre rapport ({type_label}) relu et finalisé par notre expert vous a été envoyé par email.", send_email=False)
+    return {"success": True, "email_sent": email_sent, "email": email}
+
 
 @router.post("/admin/notify-document-rejected/{client_id}")
 async def notify_document_rejected(client_id: str, request: Request, admin: dict = Depends(get_current_admin)):

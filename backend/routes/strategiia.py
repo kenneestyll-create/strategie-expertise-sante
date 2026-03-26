@@ -402,6 +402,14 @@ async def dossier_express_weekly_count():
 # In-memory job store for async polling
 _jobs = {}
 
+def _llm_sync_call(api_key, session_id, system_message, user_text, provider, model):
+    """Run LLM in a separate thread to avoid blocking the asyncio event loop.
+    emergentintegrations uses litellm.completion() (synchronous) internally."""
+    import asyncio as _aio
+    chat = LlmChat(api_key=api_key, session_id=session_id, system_message=system_message).with_model(provider, model)
+    return _aio.run(chat.send_message(UserMessage(text=user_text)))
+
+
 async def _run_analysis(job_id, type_dossier, regime, situation, is_premium, email, similar_cases, case_context, is_admin_test=False):
     """Background task for LLM analysis with retry."""
     last_error = ""
@@ -410,8 +418,9 @@ async def _run_analysis(job_id, type_dossier, regime, situation, is_premium, ema
             analysis_prompt = STRATEGIIA_PREMIUM_PROMPT if is_premium else STRATEGIIA_BASIC_PROMPT
             user_msg = f"""Type de dossier : {type_dossier}\nRégime : {regime}\nDescription de la situation : {situation}\n{case_context}\n\n{analysis_prompt}"""
             session_id = f"strategiia_{str(uuid.uuid4())[:8]}"
-            chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id=session_id, system_message=STRATEGIIA_SYSTEM_PROMPT).with_model("anthropic", "claude-sonnet-4-5-20250929")
-            response = await chat.send_message(UserMessage(text=user_msg))
+            response = await asyncio.to_thread(
+                _llm_sync_call, EMERGENT_LLM_KEY, session_id, STRATEGIIA_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
+            )
             analysis_doc = {"id": str(uuid.uuid4()), "type_dossier": type_dossier, "regime": regime, "situation": situation[:500], "is_premium": is_premium, "email": email if email else "", "admin_test": is_admin_test, "created_at": datetime.now(timezone.utc).isoformat()}
             await db.strategiia_analyses.insert_one(analysis_doc)
             remaining = 3

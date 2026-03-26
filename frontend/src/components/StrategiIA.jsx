@@ -12,7 +12,7 @@ import {
   X, Brain, Loader2, FileText, Download, Lock,
   MessageSquare, Phone, Mail, Copy, Check,
   AlertTriangle, CreditCard, ArrowRight, Sparkles, UserPlus, Crown,
-  Target, Shield
+  Target, Shield, Clock, User, CheckCircle
 } from 'lucide-react';
 import axios from 'axios';
 import { DataConsentBox } from '@/components/DataConsentBox';
@@ -212,9 +212,15 @@ export const StrategiIA = () => {
             if (st.status === 'done') {
               jobCompleted2 = true;
               clearInterval(poll);
-              setPremiumResult(st.analysis);
-              setStep('premium');
-              toast.success("Mode Admin : rapport premium généré (test interne).");
+              // If relecture expert selected: show waiting step, not immediate result
+              if (analysePremium) {
+                setStep('relecture_attente');
+                toast.success("Mode Admin : dossier transmis pour relecture expert (simulation).");
+              } else {
+                setPremiumResult(st.analysis);
+                setStep('premium');
+                toast.success("Mode Admin : rapport premium généré (test interne).");
+              }
             } else if (st.status === 'error') {
               jobCompleted2 = true;
               clearInterval(poll);
@@ -600,7 +606,14 @@ export const StrategiIA = () => {
                                 <span className="text-sm font-medium">Relecture expert personnalisée</span>
                                 <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px] flex-shrink-0 whitespace-nowrap">+29€</Badge>
                               </div>
-                              <p className="text-xs text-muted-foreground mt-1">Rapport relu et enrichi par notre expert</p>
+                              <p className="text-xs text-muted-foreground mt-1">Rapport relu et enrichi par notre expert — retour sous 24h à 48h ouvrées</p>
+                              {analysePremium && (
+                                <div className="mt-2 p-2 rounded-md bg-amber-50 border border-amber-200/50">
+                                  <p className="text-[11px] text-amber-700 leading-relaxed">
+                                    <strong>Intervention humaine réelle</strong> — Votre rapport sera relu, enrichi et validé par un expert avant envoi. Vous recevrez la version finalisée par email sous 24h à 48h ouvrées.
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           </label>
                           <label className="block p-3 sm:p-4 rounded-lg border border-border hover:border-accent/40 cursor-pointer transition-colors" data-testid="strategiia-premium-pdf-option">
@@ -734,6 +747,60 @@ export const StrategiIA = () => {
                     </div>
                   </div>
                 )}
+
+                {/* ═══ EN ATTENTE DE RELECTURE EXPERT ═══ */}
+                {step === 'relecture_attente' && (
+                  <div className="space-y-5 py-4" data-testid="strategiia-relecture-attente">
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Clock className="w-8 h-8 text-amber-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">Votre dossier a bien été transmis</h3>
+                      <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs px-3 py-1">En attente de relecture expert</Badge>
+                    </div>
+
+                    <Card className="border-amber-200/50 bg-amber-50/30">
+                      <CardContent className="p-5 space-y-4">
+                        <div className="space-y-3 text-sm text-foreground/80">
+                          <div className="flex items-start gap-3">
+                            <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span>Votre demande de <strong>relecture expert personnalisée</strong> a bien été prise en compte.</span>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <User className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
+                            <span>Un expert va personnellement relire, enrichir et valider votre rapport.</span>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <Clock className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                            <span>Retour estimé : <strong>24h à 48h ouvrées</strong>.</span>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <Mail className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <span>Vous recevrez votre document finalisé directement par email.</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <div className="p-3 rounded-lg bg-accent/5 border border-accent/20 text-center">
+                      <p className="text-xs text-foreground/70 italic">
+                        "Vous n'êtes plus seul(e) face à votre situation.<br/>Désormais, Stratégie & Expertise Santé devient votre bouclier."
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <a href="/agenda" className="block">
+                        <Button className="w-full rounded-lg gap-2" size="sm" data-testid="relecture-attente-rdv">
+                          <Phone className="w-4 h-4" /> Prendre rendez-vous en attendant
+                        </Button>
+                      </a>
+                      <Button variant="ghost" onClick={handleClose} className="w-full gap-2 text-sm" data-testid="relecture-attente-close">
+                        Fermer
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
 
                 {/* QUOTA EXCEEDED */}
                 {step === 'quota_exceeded' && (

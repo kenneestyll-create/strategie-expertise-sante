@@ -71,6 +71,7 @@ def generate_secured_pdf(
     regime: str = "",
     with_watermark: bool = True,
     report_number: str = "",
+    relecture_expert: bool = False,
 ) -> bytes:
     from fpdf import FPDF
 
@@ -179,6 +180,17 @@ def generate_secured_pdf(
     safe_rt = _safe(report_type)
     pdf.cell(0, 3, f"Rapport {safe_rt}")
     pdf.set_xy(LM, y + 12)
+
+    # ── Relecture expert badge ──
+    if relecture_expert:
+        ry = pdf.get_y()
+        pdf.set_fill_color(26, 26, 46)  # dark navy
+        pdf.rect(LM, ry, CW, 8, "F")
+        pdf.set_xy(LM + 4, ry + 1.5)
+        pdf.set_font("Helvetica", "BI", 7)
+        pdf.set_text_color(*_GOLD)
+        pdf.cell(0, 5, _safe("Document relu et finalise dans le cadre de l'option Relecture expert personnalisee"))
+        pdf.set_xy(LM, ry + 8)
 
     pdf.ln(2)
 
