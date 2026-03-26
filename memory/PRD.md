@@ -75,7 +75,10 @@ Async polling, barre de progression, option RATP/SNCF
 - Watermark diagonal "Strategie & Expertise Sante"
 - Fichier renomme: rapport-diagnostic-SES-YYYY.pdf
 - Coherence visuelle totale entre PDF Simulateur et PDF Backend
-- Tests: 100% backend (8/8) + 100% frontend (flux E2E complet verifie)
+- Logo bouclier haute resolution (264x288px) integre dans le header PDF
+- Conclusion emotionnelle premium: "Vous n'etes plus seul(e)... SES est votre bouclier"
+- Module shieldLogo.js cree pour le logo base64 (importe dans SimulateurPage.jsx)
+- Tests: 100% backend + 100% frontend (flux E2E + analyse visuelle PDF confirme)
 
 ## Taches a venir
 - **P1:** Dashboard admin pour stats tracking/conversions + leads guides

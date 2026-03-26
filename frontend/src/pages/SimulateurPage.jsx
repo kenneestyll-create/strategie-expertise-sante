@@ -13,6 +13,7 @@ import {
 import axios from 'axios';
 import jsPDF from 'jspdf';
 import { SEO } from '@/components/SEO';
+import { SHIELD_B64 } from './shieldLogo';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -213,6 +214,7 @@ const getResults = (answers, autreTexte = '') => {
   return { profile, urgency, recommendations, services, droits, demarches, delais, prestation };
 };
 
+
 /* ─── Premium PDF Generation (Noir / Or / Ivoire) ─── */
 const generatePDF = (results, email) => {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
@@ -244,14 +246,22 @@ const generatePDF = (results, email) => {
     doc.rect(0, 0, w, 22, 'F');
     doc.setFillColor(...GOLD);
     doc.rect(0, 22, w, 0.6, 'F');
+    /* Shield logo */
+    const shieldW = 10;
+    const shieldH = shieldW * (48 / 44);
+    const shieldX = LM + 1;
+    const shieldY = (22 - shieldH) / 2;
+    try { doc.addImage(SHIELD_B64, 'PNG', shieldX, shieldY, shieldW, shieldH); } catch (_) { /* fallback: no image */ }
+    /* Brand text (offset right of shield) */
+    const txtX = LM + shieldW + 4;
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
-    doc.text("Strat\u00e9gie & Expertise Sant\u00e9", LM, 10);
+    doc.text("Strat\u00e9gie & Expertise Sant\u00e9", txtX, 10);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(6.5);
     doc.setTextColor(...GOLD_LT);
-    doc.text("PIONNIER EN FRANCE", LM, 16);
+    doc.text("PIONNIER EN FRANCE", txtX, 16);
     doc.setFontSize(7);
     doc.setTextColor(180, 180, 180);
     doc.text(genDate, w - RM, 10, { align: 'right' });
@@ -380,6 +390,23 @@ const generatePDF = (results, email) => {
     doc.text("Premi\u00e8re consultation gratuite \u2014 10 min, sans engagement", LM + 5, y + 16);
     y += 24;
   }
+
+  /* ── Signature émotionnelle premium ── */
+  checkBreak(32);
+  y += 4;
+  doc.setFillColor(...IVORY);
+  doc.roundedRect(LM, y, CW, 24, 2, 2, 'F');
+  doc.setFillColor(...GOLD);
+  doc.rect(LM, y, 2, 24, 'F');
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(9);
+  doc.setTextColor(...BLACK);
+  doc.text("Vous n'\u00eates plus seul(e) face \u00e0 cette \u00e9preuve.", LM + 7, y + 8);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9.5);
+  doc.setTextColor(...GOLD);
+  doc.text("D\u00e9sormais, Strat\u00e9gie & Expertise Sant\u00e9 est votre bouclier.", LM + 7, y + 16);
+  y += 30;
 
   /* Contact & CTA */
   checkBreak(24);
