@@ -41,6 +41,15 @@ Async polling, barre de progression, option RATP/SNCF
 - Admin stats: GET /api/admin/guide-leads/stats (taux ouverture/clic, par categorie)
 - Teste manuellement: email envoye via Resend OK
 
+## Refonte PDF Premium (Mar 2026) — DONE
+- Moteur PDF completement reecrit: palette noir #1A1A1A / or #C9A84C / ivoire
+- Header premium: nom + PIONNIER EN FRANCE + date + numero SES-XXXX-XXXXX
+- TOUT tient sur 1 page A4 (court/moyen/long)
+- Prompt LLM restructure: ton humain/chaleureux, 300 mots max, 6 sections premium
+- Filigrane discret (gratuit) / sans filigrane (premium)
+- Footer or fin + Document confidentiel
+- Tests: 14/14 passes
+
 ## Correction Menu Mobile + Conseil du Jour (Mar 2026) — DONE
 - Menu mobile: etend bord-a-bord (-mx-4), overflow-x hidden, scrollbar invisible
 - Conseil du jour: corrige blocage priorite sans end_date, auto-expiration, rotation fiable
