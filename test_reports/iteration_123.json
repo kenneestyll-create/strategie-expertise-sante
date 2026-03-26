@@ -1,0 +1,61 @@
+{
+  "summary": "Tested Admin Dossier Express modal refonte with 3 internal tabs. All features verified: Tab Analyse (situation + Base documentaire encart with 3 metrics + analysis text), Tab Documents (per-file details with icon, name, type, pages, size, status badge, method, preview), Tab PDF (Visualiser and Télécharger buttons + content summary). Traiter/Notifier buttons in AdminPremiumReview component verified working.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/test_reports/pytest/pytest_admin_preview_pdf.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Dialog has 3 tabs with correct data-testid: tab-analyse, tab-documents, tab-pdf - PASS",
+    "Tab Analyse shows situation, Base documentaire encart (data-testid='base-documentaire-encart') with 3 metrics (Documents analysés, Pages exploitées, Lisibilité documentaire), and analysis text - PASS",
+    "Tab Documents shows per-file details with icon, name, type extension, pages, size, status badge, method, preview text - PASS",
+    "Tab PDF has 'Visualiser le PDF final' button (data-testid='preview-pdf-btn') and 'Télécharger le PDF' button (data-testid='download-pdf-btn') - PASS",
+    "Document badges use correct colors: emerald for text_extracted, blue for ocr_extracted, orange for ocr_empty, red for others - PASS",
+    "Backend GET /api/admin/dossier-express/{id}/preview-pdf returns valid PDF (200, application/pdf, 16KB) - PASS",
+    "Traiter buttons (data-testid='premium-start-{id}') present and working - PASS (25 found)",
+    "Notifier buttons (data-testid='premium-notify-{id}') present and working - PASS (38 found)",
+    "Dialog close button works correctly - PASS"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "100% (preview-pdf endpoint returns valid PDF)",
+    "frontend": "100% (all 3 tabs verified, all UI elements present)"
+  },
+  "test_credentials": "Admin: admin@accompagn-sante.fr / Admin2024!",
+  "seed_data_creation": "Used existing test dossiers with document_details",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Admin Dossier Express modal refonte fully tested. Key findings: 1) Dialog opens with 3 tabs (Analyse, Documents uploadés, Prévisualisation PDF), 2) Tab Analyse shows situation + Base documentaire encart with 3 metrics + analysis text, 3) Tab Documents shows detailed per-file info with status badges (emerald/blue/orange/red), 4) Tab PDF has Visualiser and Télécharger buttons that work correctly, 5) Traiter/Notifier buttons in AdminPremiumReview component are unchanged and working. Test dossier ID: fed52f8f-39b1-4727-b036-90ced5861569",
+  "features_tested": {
+    "backend": [
+      "GET /api/admin/dossier-express returns list with document_details - PASS",
+      "GET /api/admin/dossier-express/{id}/analysis returns document_details array - PASS",
+      "GET /api/admin/dossier-express/{id}/preview-pdf returns valid PDF (200, application/pdf) - PASS"
+    ],
+    "frontend": [
+      "Dialog opens with data-testid='dossier-view-dialog' - PASS",
+      "Tab 'Analyse' with data-testid='tab-analyse' - PASS",
+      "Tab 'Documents uploadés' with data-testid='tab-documents' - PASS",
+      "Tab 'Prévisualisation PDF' with data-testid='tab-pdf' - PASS",
+      "Base documentaire encart with data-testid='base-documentaire-encart' - PASS",
+      "Encart shows 3 metrics: Documents analysés, Pages exploitées, Lisibilité documentaire - PASS",
+      "Documents tab content with data-testid='documents-tab-content' - PASS",
+      "Document cards with data-testid='doc-detail-{idx}' - PASS",
+      "Document shows: icon, name, type extension, pages, size, status badge, method, preview - PASS",
+      "Badge colors: emerald (text_extracted), blue (ocr_extracted), orange (ocr_empty), red (others) - PASS",
+      "Preview PDF button with data-testid='preview-pdf-btn' - PASS",
+      "Download PDF button with data-testid='download-pdf-btn' - PASS",
+      "Dialog close button works - PASS",
+      "Traiter buttons (premium-start-{id}) in AdminPremiumReview - PASS (25 found)",
+      "Notifier buttons (premium-notify-{id}) in AdminPremiumReview - PASS (38 found)"
+    ]
+  }
+}
