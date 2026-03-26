@@ -288,10 +288,10 @@ def generate_secured_pdf(
         # Readability level
         if all(s == "text_extracted" for s in statuses):
             level = "Excellente"
-        elif all(s in ("text_extracted", "ocr_extracted") for s in statuses) and any(s == "ocr_extracted" for s in statuses):
-            level = "Tres bonne"
         elif all(s == "ocr_extracted" for s in statuses):
             level = "Bonne"
+        elif all(s in ("text_extracted", "ocr_extracted") for s in statuses) and any(s == "ocr_extracted" for s in statuses):
+            level = "Tres bonne"
         elif any(s in ("text_extracted", "ocr_extracted") for s in statuses):
             level = "Partielle"
         else:

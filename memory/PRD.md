@@ -176,6 +176,16 @@ Problèmes réels identifiés et corrigés:
 - **Dépendances système** : tesseract-ocr, tesseract-ocr-fra, poppler-utils, pytesseract, pdf2image
 - Tests: iteration 120 — backend 100% (13/13), frontend 100%
 
+## Encart Documentaire Premium dans le Rapport PDF (Mar 2026) — DONE
+- **Encart "Base documentaire prise en compte"** intégré dans le PDF final, avant la signature de marque
+- **3 métriques** : Documents analysés, Pages exploitées, Lisibilité documentaire
+- **5 niveaux** : Excellente (texte) → Très bonne (mixte) → Bonne (OCR) → Partielle → Limitée
+- **Phrase de réassurance** : "Certaines pièces peuvent nécessiter une relecture humaine complémentaire lorsqu'elles sont scannées, manuscrites ou de qualité inégale."
+- **Design** : Accent doré, boîte ivoire, typographie cohérente avec le reste du PDF premium
+- **Rétrocompatible** : Les PDF sans document_details continuent de fonctionner normalement
+- Bug logique de priorité des conditions corrigé (Bonne vs Très bonne)
+- Tests: iteration 121 — 13/13 backend + validation manuelle des 5 niveaux
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Corriger TTS mascotte Straté (parle anglais au lieu de français)
