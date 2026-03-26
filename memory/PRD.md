@@ -62,6 +62,21 @@ Async polling, barre de progression, option RATP/SNCF
 - Prompts LLM renforces: interdiction URLs
 - Teste E2E: backend 8/8 tests, frontend flux complet verifie
 
+## Refonte PDF Simulateur Premium (Mar 2026) — DONE
+- generatePDF() dans SimulateurPage.jsx completement reecrit avec design premium
+- Ancien design rouge [185,78,72] supprime — remplace par palette Noir/Or/Ivoire
+- Header noir avec "Strategie & Expertise Sante" blanc + "PIONNIER EN FRANCE" or
+- Numero rapport SES-YYYY-XXXXX + date a droite
+- Barres d'accent dorees sur titres de sections
+- Puces dorees (gold bullets) au lieu de cercles noirs
+- Bloc profil sur fond ivoire avec accent or a gauche
+- Services encadres avec bordure doree sur fond ivoire
+- Footer: ligne or + "Document confidentiel" + copyright
+- Watermark diagonal "Strategie & Expertise Sante"
+- Fichier renomme: rapport-diagnostic-SES-YYYY.pdf
+- Coherence visuelle totale entre PDF Simulateur et PDF Backend
+- Tests: 100% backend (8/8) + 100% frontend (flux E2E complet verifie)
+
 ## Taches a venir
 - **P1:** Dashboard admin pour stats tracking/conversions + leads guides
 - **P1:** Activer les paiements en production (Stripe/PayPal)
