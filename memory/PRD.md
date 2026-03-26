@@ -163,6 +163,19 @@ Problèmes réels identifiés et corrigés:
   * Ring amber sur l'étape active + fond surélevé
 - Tests: iteration 119 — backend 100% (6/6), frontend 100%
 
+## Pipeline Documentaire Robuste Dossier Express IA (Mar 2026) — DONE
+- **Problème** : Les PDF scannés et images étaient systématiquement ignorés par l'analyse IA. Seuls les PDF texte étaient partiellement extraits. Aucun OCR côté serveur.
+- **Solution** : Pipeline d'extraction à 3 niveaux :
+  * **Niveau 1** : `pdfplumber` pour les PDF texte (extraction directe, rapide)
+  * **Niveau 2** : `pypdfium2` + `tesseract-ocr` (fra+eng) pour les PDF scannés (OCR automatique jusqu'à 15 pages)
+  * **Niveau 3** : `tesseract` directement pour les images (JPG, PNG, etc.)
+- **Métadonnées détaillées** : Chaque fichier a désormais : nom, méthode, statut (text_extracted/ocr_extracted/ocr_empty/extraction_failed), pages, volume de texte, aperçu
+- **Stockage en base** : `document_details` sauvegardé dans chaque dossier express
+- **Vue admin** : Bloc "Documents analysés" avec badge de statut couleur (vert=texte, bleu=OCR, orange=partiel, rouge=échec), méthode, pages, volume, aperçu du contenu
+- **Injection confirmée** : Le texte extrait est réellement injecté dans le prompt LLM (vérifié E2E)
+- **Dépendances système** : tesseract-ocr, tesseract-ocr-fra, poppler-utils, pytesseract, pdf2image
+- Tests: iteration 120 — backend 100% (13/13), frontend 100%
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Corriger TTS mascotte Straté (parle anglais au lieu de français)
