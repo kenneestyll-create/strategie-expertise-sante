@@ -277,8 +277,9 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
     setChecks(newChecks);
     const allOk = newChecks.readable && newChecks.personal_info && newChecks.dates_signatures;
     if (allOk && files.length > 0) {
-      const updated = files.map(f => ({ ...f, _validated: true }));
-      onFilesChange(updated);
+      // Mark files as validated without destroying File objects
+      files.forEach(f => { f._validated = true; });
+      onFilesChange([...files]);
     }
   };
 

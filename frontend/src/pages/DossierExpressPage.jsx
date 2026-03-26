@@ -254,22 +254,36 @@ export const DossierExpressPage = () => {
       return;
     }
     setLoading(true);
-    toast.info("Téléversement de vos documents en cours...");
+
     let documentsText = "";
     try {
-      for (const file of files) {
-        if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
-          documentsText += `\n--- ${file.name} ---\n` + await file.text();
-        } else {
-          documentsText += `\n--- ${file.name} (${file.type}, ${(file.size / 1024).toFixed(0)} Ko) ---\n[Document joint]\n`;
+      if (files.length > 0) {
+        toast.info(`Lecture de ${files.length} document${files.length > 1 ? 's' : ''}...`);
+        const { extractTextFromFiles } = await import('@/utils/pdfExtractor');
+        const extraction = await extractTextFromFiles(files, form.documents_text || '');
+        documentsText = extraction.combinedText;
+        const extractedCount = extraction.extractedCount;
+        if (extractedCount > 0) {
+          toast.success(`${extractedCount}/${files.length} document${extractedCount > 1 ? 's' : ''} lu${extractedCount > 1 ? 's' : ''} avec succès`);
+        } else if (form.documents_text) {
+          toast.info("Contenu OCR des images inclus dans l'analyse");
         }
+      } else if (form.documents_text) {
+        // No files but OCR text was extracted earlier
+        documentsText = `--- Contenu extrait par OCR ---\n${form.documents_text}`;
       }
     } catch (fileErr) {
-      toast.error("Erreur lors de la lecture des fichiers. Vérifiez le format.");
-      setLoading(false);
-      return;
+      console.error('File extraction error:', fileErr);
+      // Fallback: include OCR text and file metadata
+      if (form.documents_text) {
+        documentsText = `--- Contenu extrait par OCR ---\n${form.documents_text}\n`;
+      }
+      for (const file of files) {
+        documentsText += `\n--- ${file.name} (${file.type || 'inconnu'}, ${(file.size / 1024).toFixed(0)} Ko) ---\n[Extraction échouée — fichier joint pour traitement manuel]\n`;
+      }
     }
-    toast.info("Analyse de votre dossier en cours...");
+
+    toast.info("Envoi de votre dossier pour analyse...");
     const isAdminBypass = isAdminMode && adminToken;
     try {
       const isPremium = sessionStorage.getItem('dossier_express_premium_pdf') === '1';
@@ -287,6 +301,7 @@ export const DossierExpressPage = () => {
       const headers = isAdminBypass ? { 'Authorization': `Bearer ${adminToken}` } : {};
       const res = await axios.post(endpoint, payload, { headers });
       setDossierId(res.data.dossier_id);
+      setPollStatus({ progress_step: 'uploading', files_count: files.length, documents_extracted: documentsText.length > 50 });
       setStep('processing');
       window.scrollTo({ top: 0, behavior: 'smooth' });
       sessionStorage.removeItem('dossier_express_form');
@@ -698,12 +713,15 @@ export const DossierExpressPage = () => {
 
   // ==================== PROCESSING VIEW ====================
   if (step === 'processing') {
+    const filesCount = pollStatus?.files_count || files.length || 0;
+    const docsExtracted = pollStatus?.documents_extracted || false;
+
     const STEPS = [
-      { key: 'uploading', label: 'Téléversement de vos documents', icon: Upload },
-      { key: 'reading', label: 'Lecture et préparation de votre dossier', icon: FileText },
-      { key: 'analyzing', label: 'Analyse par StratégiIA en cours', icon: Brain },
-      { key: 'generating', label: 'Génération de votre synthèse', icon: Sparkles },
-      { key: 'sending', label: 'Envoi par email', icon: Mail },
+      { key: 'uploading', label: `${filesCount > 0 ? filesCount + ' document' + (filesCount > 1 ? 's' : '') + ' reçu' + (filesCount > 1 ? 's' : '') : 'Réception du dossier'}`, icon: Upload },
+      { key: 'reading', label: docsExtracted ? 'Vérification et lecture des pièces' : 'Lecture des informations fournies', icon: FileText },
+      { key: 'analyzing', label: 'Analyse juridique par StratégiIA', icon: Brain },
+      { key: 'generating', label: 'Génération de votre rapport personnalisé', icon: Sparkles },
+      { key: 'sending', label: 'Envoi du rapport par email', icon: Mail },
     ];
 
     const currentProgress = pollStatus?.progress_step || 'uploading';
@@ -718,12 +736,17 @@ export const DossierExpressPage = () => {
               <Brain className="w-10 h-10 text-amber-500 animate-pulse" />
             </div>
             <h2 className="text-2xl font-bold mb-3" data-testid="processing-title">Analyse en cours...</h2>
-            <p className="text-muted-foreground mb-6 text-sm">
-              Votre dossier est en cours d'analyse. Vous recevrez votre rapport par email à <strong className="text-foreground">{form.email}</strong>.
+            <p className="text-muted-foreground mb-2 text-sm">
+              Votre dossier est en cours d'analyse. Vous recevrez votre rapport par email à <strong className="text-foreground">{form.email || pollStatus?.email}</strong>.
             </p>
+            {filesCount > 0 && (
+              <p className="text-xs text-amber-600 font-medium mb-6" data-testid="docs-info">
+                {filesCount} document{filesCount > 1 ? 's' : ''} {docsExtracted ? 'lu' + (filesCount > 1 ? 's' : '') + ' et intégré' + (filesCount > 1 ? 's' : '') : 'joint' + (filesCount > 1 ? 's' : '')} à l'analyse
+              </p>
+            )}
 
             {/* Progress bar */}
-            <div className="w-full bg-muted rounded-full h-2 mb-8 overflow-hidden" data-testid="progress-bar">
+            <div className="w-full bg-muted rounded-full h-2.5 mb-8 overflow-hidden" data-testid="progress-bar">
               <div
                 className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all duration-1000 ease-out"
                 style={{ width: `${progressPct}%` }}
@@ -736,7 +759,6 @@ export const DossierExpressPage = () => {
                 {STEPS.map((s, i) => {
                   const isDone = i < currentIdx || (pollStatus?.status === 'completed');
                   const isActive = i === currentIdx && pollStatus?.status !== 'completed';
-                  const isPending = i > currentIdx && pollStatus?.status !== 'completed';
                   const StepIcon = s.icon;
                   return (
                     <div key={s.key} className="flex items-center gap-3 py-3 border-b border-border/50 last:border-0" data-testid={`step-${s.key}`}>
@@ -755,7 +777,6 @@ export const DossierExpressPage = () => {
                         'text-muted-foreground'
                       }`}>
                         {s.label}
-                        {isDone && ' ✓'}
                       </span>
                     </div>
                   );

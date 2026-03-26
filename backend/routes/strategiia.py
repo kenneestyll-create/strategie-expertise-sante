@@ -187,6 +187,76 @@ Ne génère aucune URL, aucun lien web ni aucun nom de domaine dans ta réponse.
 
 # ==================== DOSSIER EXPRESS ====================
 
+@router.post("/extract-document-text")
+async def extract_document_text(request: Request):
+    """Extract text from uploaded documents (PDF, images) server-side."""
+    import io
+    body = await request.json()
+    files_data = body.get("files", [])
+    if not files_data:
+        return {"extracted_text": "", "files_processed": 0}
+
+    results = []
+    for file_info in files_data[:10]:  # Limit to 10 files
+        name = file_info.get("name", "unknown")
+        file_type = file_info.get("type", "")
+        data_b64 = file_info.get("data", "")
+        if not data_b64:
+            results.append({"name": name, "text": "", "method": "pas de données"})
+            continue
+
+        try:
+            file_bytes = base64.b64decode(data_b64)
+        except Exception:
+            results.append({"name": name, "text": "", "method": "erreur décodage"})
+            continue
+
+        extracted = ""
+        method = "non supporté"
+
+        if file_type == "application/pdf" or name.lower().endswith(".pdf"):
+            try:
+                import pdfplumber
+                pdf = pdfplumber.open(io.BytesIO(file_bytes))
+                pages_text = []
+                for i, page in enumerate(pdf.pages[:20]):
+                    text = page.extract_text()
+                    if text and text.strip():
+                        pages_text.append(f"[Page {i+1}] {text.strip()}")
+                pdf.close()
+                extracted = "\n\n".join(pages_text)
+                method = f"extraction PDF ({len(pdf.pages)} pages)" if pages_text else "PDF sans texte extractible"
+            except Exception as e:
+                method = f"erreur PDF: {str(e)[:50]}"
+
+        elif file_type and file_type.startswith("image/"):
+            method = "image (contenu visuel non extractible côté serveur)"
+
+        elif file_type in ("text/plain",) or name.lower().endswith(".txt"):
+            try:
+                extracted = file_bytes.decode("utf-8", errors="replace")
+                method = "lecture texte"
+            except Exception:
+                method = "erreur lecture texte"
+
+        results.append({"name": name, "text": extracted[:5000], "method": method})
+
+    combined = ""
+    for r in results:
+        combined += f"\n--- {r['name']} ({r['method']}) ---\n"
+        if r["text"]:
+            combined += r["text"] + "\n"
+        else:
+            combined += "[Contenu non extractible]\n"
+
+    return {
+        "extracted_text": combined.strip(),
+        "files_processed": len(results),
+        "details": [{"name": r["name"], "method": r["method"], "has_text": len(r["text"]) > 10} for r in results]
+    }
+
+
+
 @router.post("/dossier-express/submit")
 async def dossier_express_submit(request: Request):
     body = await request.json()

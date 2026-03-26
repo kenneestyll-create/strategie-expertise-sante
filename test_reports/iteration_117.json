@@ -1,0 +1,67 @@
+{
+  "summary": "Backend-only testing of Document Extraction Pipeline Fix (iteration 117). All 13 tests passed. The fix ensures uploaded documents are actually analyzed instead of showing '[Document joint]' placeholder.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_document_extraction_pipeline.py",
+    "/app/test_reports/pytest/pytest_document_extraction_pipeline.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "POST /api/extract-document-text endpoint correctly uses pdfplumber for PDF extraction",
+    "Endpoint returns extracted_text, files_processed, and details array with method and has_text fields",
+    "Max 10 files limit is enforced server-side",
+    "Image files are marked as 'non-extractable server-side' (OCR handled by frontend)",
+    "Text files are read correctly with UTF-8 decoding",
+    "Completed dossier analysis references actual document content (7/7 expected keywords found)"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_document_extraction_pipeline.py"
+  ],
+  "success_rate": {
+    "backend": "100% (13/13 tests passed)"
+  },
+  "test_credentials": "Admin: admin@accompagn-sante.fr / Admin2024!",
+  "seed_data_creation": "Created test dossiers via admin-bypass endpoint during E2E testing",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Document extraction pipeline fix verified working. The /api/extract-document-text endpoint extracts text from PDFs using pdfplumber. Test PDF at /tmp/certificat_medical_test.pdf contains medical certificate with keywords: fracture, poignet, lombaire, Martin, certificat, radius, contusion. Completed dossier 8c4e6d7c-2aba-4dd2-85cf-8be12389159a has analysis referencing all 7 keywords. E2E test created dossier 830217d2-a3f0-41ba-9ec4-9d626e902a35 which completed successfully with analysis NOT containing '[Document joint]' placeholder.",
+  "features_tested": {
+    "backend": [
+      "POST /api/extract-document-text - endpoint exists and accepts POST requests",
+      "POST /api/extract-document-text - empty files list returns empty result",
+      "POST /api/extract-document-text - PDF extraction with base64 encoding works (pdfplumber)",
+      "POST /api/extract-document-text - multiple files extraction works",
+      "POST /api/extract-document-text - file without data handled correctly",
+      "POST /api/extract-document-text - image files marked as non-extractable server-side",
+      "POST /api/extract-document-text - text file extraction works",
+      "POST /api/extract-document-text - max 10 files limit enforced",
+      "POST /api/dossier-express/admin-bypass - accepts documents_text parameter",
+      "GET /api/dossier-express/status/{id} - returns progress_step field",
+      "Completed dossier analysis references actual document content (7/7 keywords)",
+      "File metadata preserved correctly in extraction response",
+      "E2E pipeline: extract PDF → submit dossier → verify analysis (no placeholder)"
+    ]
+  },
+  "bug_fix_verification": {
+    "original_bug": "Documents uploaded were NOT actually analyzed. Frontend wrote '[Document joint]' as placeholder instead of extracting PDF content.",
+    "fix_applied": [
+      "Backend: /api/extract-document-text endpoint with pdfplumber for PDF extraction",
+      "Frontend: pdfExtractor.js uses server-side extraction via API",
+      "Frontend: DossierExpressPage.jsx handleSubmitDossier extracts files before submission",
+      "Frontend: DocumentUploader.jsx handleCheckChange preserves File objects"
+    ],
+    "verification_results": {
+      "pdf_extraction": "PASS - 643 chars extracted from test PDF",
+      "keywords_in_analysis": "PASS - 7/7 expected keywords found (fracture, poignet, lombaire, Martin, certificat, radius, contusion)",
+      "no_placeholder": "PASS - Analysis does NOT contain '[Document joint]' placeholder"
+    }
+  }
+}
