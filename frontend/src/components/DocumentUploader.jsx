@@ -24,6 +24,70 @@ const ACCEPTED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png', '.docx', '.xlsx', 
 const MAX_SIZE = 50 * 1024 * 1024; // 50 MB
 const MAX_TOTAL_SIZE = 100 * 1024 * 1024; // 100 MB
 const MAX_FILES = 10;
+const COMPRESS_THRESHOLD = 2 * 1024 * 1024; // 2 MB — compress images above this
+const COMPRESS_MAX_DIM = 2400; // Max pixel dimension (sufficient for OCR)
+const COMPRESS_QUALITY = 0.82; // JPEG quality (good OCR readability)
+
+/**
+ * Compress an image file using Canvas API.
+ * Returns { file, originalSize, compressed } or null if compression not needed.
+ */
+const compressImage = (file) => {
+  return new Promise((resolve) => {
+    if (!file.type?.startsWith('image/') || file.size < COMPRESS_THRESHOLD) {
+      resolve(null); // No compression needed
+      return;
+    }
+
+    const img = new window.Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+
+      // Downscale if needed
+      if (width > COMPRESS_MAX_DIM || height > COMPRESS_MAX_DIM) {
+        const ratio = Math.min(COMPRESS_MAX_DIM / width, COMPRESS_MAX_DIM / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob || blob.size >= file.size) {
+            resolve(null); // Compressed is larger, keep original
+            return;
+          }
+          const ext = file.name.split('.').pop().toLowerCase();
+          const newName = ext === 'png'
+            ? file.name.replace(/\.png$/i, '.jpg')
+            : file.name;
+          const compressed = new File([blob], newName, { type: 'image/jpeg' });
+          compressed._originalSize = file.size;
+          compressed._compressed = true;
+          compressed._validated = false;
+          resolve({ file: compressed, originalSize: file.size });
+        },
+        'image/jpeg',
+        COMPRESS_QUALITY
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(null);
+    };
+
+    img.src = url;
+  });
+};
 
 const getFileIcon = (file) => {
   if (file.type?.startsWith('image/')) return Image;
@@ -87,9 +151,14 @@ const FilePreview = ({ file, onRemove, index }) => {
         </div>
         <div className="flex items-center gap-2 mt-0.5">
           <span className="text-xs text-muted-foreground">{formatSize(file.size)}</span>
+          {file._compressed && file._originalSize && (
+            <Badge className="bg-blue-50 text-blue-600 border-blue-200 text-[9px] gap-0.5 px-1.5" data-testid={`file-compressed-${index}`}>
+              {formatSize(file._originalSize)} → {formatSize(file.size)}
+            </Badge>
+          )}
           {file._validated && (
             <Badge className="bg-green-100 text-green-700 border-green-200 text-[9px] gap-0.5 px-1.5" data-testid={`file-validated-${index}`}>
-              <Shield className="w-2.5 h-2.5" /> Qualité vérifiée
+              <Shield className="w-2.5 h-2.5" /> Qualite verifiee
             </Badge>
           )}
         </div>
@@ -214,6 +283,8 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
   const [showScanner, setShowScanner] = useState(false);
   const { extractFromMultiple, enhanceWithAI, processing: ocrProcessing, progress: ocrProgress, cancel: cancelOcr } = useOCR();
 
+  const [compressInfo, setCompressInfo] = useState(null); // { count, savedBytes }
+
   const allChecked = checks.readable && checks.personal_info && checks.dates_signatures;
   const hasFiles = files.length > 0;
 
@@ -222,24 +293,46 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
     const validFiles = [];
     const newErrors = [];
     const currentTotalSize = files.reduce((sum, f) => sum + (f.size || 0), 0);
+    let compressedCount = 0;
+    let savedBytes = 0;
 
     for (const file of fileList) {
       if (files.length + validFiles.length >= maxFiles) {
         newErrors.push(`Maximum ${maxFiles} fichiers atteint.`);
         break;
       }
-      const result = validateFile(file);
+
+      // Attempt compression for images > 2 MB
+      let processedFile = file;
+      if (file.type?.startsWith('image/') && file.size >= COMPRESS_THRESHOLD) {
+        try {
+          const result = await compressImage(file);
+          if (result) {
+            processedFile = result.file;
+            compressedCount++;
+            savedBytes += result.originalSize - processedFile.size;
+          }
+        } catch {
+          // If compression fails, use original
+        }
+      }
+
+      const result = validateFile(processedFile);
       if (!result.valid) {
         newErrors.push(`${file.name} : ${result.error}`);
         continue;
       }
-      const newTotal = currentTotalSize + validFiles.reduce((s, f) => s + f.size, 0) + file.size;
+      const newTotal = currentTotalSize + validFiles.reduce((s, f) => s + f.size, 0) + processedFile.size;
       if (newTotal > MAX_TOTAL_SIZE) {
         newErrors.push(`Taille totale depassee (limite : ${formatSize(MAX_TOTAL_SIZE)}). Le fichier "${file.name}" (${formatSize(file.size)}) n'a pas ete ajoute.`);
         continue;
       }
-      file._validated = false;
-      validFiles.push(file);
+      processedFile._validated = false;
+      validFiles.push(processedFile);
+    }
+
+    if (compressedCount > 0) {
+      setCompressInfo({ count: compressedCount, savedBytes });
     }
 
     setErrors(newErrors);
@@ -403,6 +496,14 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
             <span>{files.length} fichier{files.length > 1 ? 's' : ''} — {formatSize(files.reduce((s, f) => s + (f.size || 0), 0))} total</span>
             <span className="text-[10px]">Limite : 50 Mo/fichier, 100 Mo total</span>
           </div>
+          {compressInfo && compressInfo.savedBytes > 0 && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-blue-50/70 rounded-lg border border-blue-100 text-xs text-blue-700" data-testid="compression-info">
+              <CheckCircle className="w-3.5 h-3.5 flex-shrink-0" />
+              <span>
+                {compressInfo.count} image{compressInfo.count > 1 ? 's' : ''} compresse{compressInfo.count > 1 ? 'es' : 'e'} automatiquement — {formatSize(compressInfo.savedBytes)} economise{compressInfo.savedBytes > 1024 * 1024 ? 's' : ''}
+              </span>
+            </div>
+          )}
         </div>
       )}
 
