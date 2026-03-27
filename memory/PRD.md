@@ -289,6 +289,15 @@ Problèmes réels identifiés et corrigés:
 - **Analytics enrichi** : `GET /api/tracking/conversion-analytics` retourne `conversions`, `revenue`, `close_rate`, `prestations`
 - Tests: iteration 132 — 11/11 backend, 14/14 frontend
 
+## Limites Upload & UX Fichiers (Mar 2026) — DONE
+- **Tests progressifs effectues** : 1 MB → 200 MB via proxy externe, tous OK. Aucune limite infra trouvee.
+- **Seuil recommande** : 50 Mo/fichier, 100 Mo total, 10 fichiers max
+- **Backend** : Validation apres decodage base64 dans `/api/extract-document-text` (status `too_large` / `total_exceeded` / HTTP 400)
+- **Frontend** : Validation pre-upload dans `DocumentUploader.jsx`, messages français clairs, indicateur taille totale
+- **Formats acceptes** : PDF, JPG, PNG, DOCX, XLSX, DOC, XLS
+- **UX** : Avertissement "Ne fermez pas la page", resume fichiers (nombre + taille totale + limites)
+- Tests: iteration 133 — 8/8 backend, 7/7 frontend
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Integration HubSpot (en attente de credentials)
