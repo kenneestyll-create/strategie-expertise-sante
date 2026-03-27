@@ -260,6 +260,15 @@ Problèmes réels identifiés et corrigés:
 - Le PDF devient un support de conversion même en version imprimée
 - Tests: iteration 129 — 18/18 backend, 7/7 frontend
 
+## Tracking Analytics de Conversion (Mar 2026) — DONE
+- **Endpoint `POST /api/tracking/contact-visit`** : Enregistre chaque visite sur /contact avec attribution (via, source, campaign)
+- **Modèle Contact enrichi** : `tracking_via`, `tracking_source`, `tracking_campaign` conservés dans la fiche lead
+- **Frontend ContactPage** : Détecte automatiquement les params URL (via, source, campaign) via `useSearchParams()`, envoie le tracking au mount, passe les données au formulaire
+- **Endpoint admin `GET /api/tracking/conversion-analytics`** : Agrège visites et contacts par canal, calcule les taux de conversion, produit une série temporelle quotidienne
+- **Composant `AdminConversionAnalytics`** : Intégré dans l'onglet Analytics admin, affiche KPIs (visites, formulaires, taux conv.), tableau par canal (QR Code PDF, Email livraison, Lien PDF), graphique Recharts
+- **URLs trackées cohérentes** : `?via=qr&source=dossier_express`, `?via=email&source=dossier_express`, `?via=pdf_link&source=...`
+- Tests: iteration 130 — 21/21 backend, 6/6 frontend
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Integration HubSpot (en attente de credentials)
