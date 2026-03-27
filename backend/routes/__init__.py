@@ -8,6 +8,7 @@ from routes.strategiia import router as strategiia_router
 from routes.misc import router as misc_router
 from routes.conseils import router as conseils_router
 from routes.tracking import router as tracking_router
+from routes.upload import router as upload_router
 
 all_routers = [
     public_router,
@@ -20,4 +21,5 @@ all_routers = [
     misc_router,
     conseils_router,
     tracking_router,
+    upload_router,
 ]

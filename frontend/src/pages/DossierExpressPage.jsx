@@ -265,14 +265,24 @@ export const DossierExpressPage = () => {
     let documentDetails = [];
     try {
       if (files.length > 0) {
-        toast.info(`Lecture de ${files.length} document${files.length > 1 ? 's' : ''}...`);
+        const hasLargeFiles = files.some(f => f.size > 20 * 1024 * 1024);
+        if (hasLargeFiles) {
+          toast.info("Fichiers volumineux detectes — upload fractionne en cours...");
+        } else {
+          toast.info(`Lecture de ${files.length} document${files.length > 1 ? 's' : ''}...`);
+        }
         const { extractTextFromFiles } = await import('@/utils/pdfExtractor');
-        const extraction = await extractTextFromFiles(files, form.documents_text || '');
+        const onChunkProgress = (filename, uploaded, total) => {
+          const pct = Math.round((uploaded / total) * 100);
+          setPollStatus(prev => ({ ...prev, chunk_progress: `${filename}: ${pct}%` }));
+        };
+        const extraction = await extractTextFromFiles(files, form.documents_text || '', onChunkProgress);
+        setPollStatus(prev => ({ ...prev, chunk_progress: null }));
         documentsText = extraction.combinedText;
         documentDetails = extraction.results || [];
         const extractedCount = extraction.extractedCount;
         if (extractedCount > 0) {
-          toast.success(`${extractedCount}/${files.length} document${extractedCount > 1 ? 's' : ''} lu${extractedCount > 1 ? 's' : ''} avec succès`);
+          toast.success(`${extractedCount}/${files.length} document${extractedCount > 1 ? 's' : ''} lu${extractedCount > 1 ? 's' : ''} avec succes`);
         } else if (form.documents_text) {
           toast.info("Contenu OCR des images inclus dans l'analyse");
         }
@@ -285,7 +295,7 @@ export const DossierExpressPage = () => {
         documentsText = `--- Contenu extrait par OCR ---\n${form.documents_text}\n`;
       }
       for (const file of files) {
-        documentsText += `\n--- ${file.name} (${file.type || 'inconnu'}, ${(file.size / 1024).toFixed(0)} Ko) ---\n[Extraction échouée — fichier joint pour traitement manuel]\n`;
+        documentsText += `\n--- ${file.name} (${file.type || 'inconnu'}, ${(file.size / 1024).toFixed(0)} Ko) ---\n[Extraction echouee]\n`;
       }
     }
 
@@ -776,6 +786,13 @@ export const DossierExpressPage = () => {
               />
             </div>
             <p className="text-[11px] text-muted-foreground text-right mb-6">{Math.round(progressPct)}%</p>
+
+            {/* Chunk upload progress */}
+            {pollStatus?.chunk_progress && (
+              <div className="text-[11px] text-amber-600 text-center mb-3 animate-pulse" data-testid="chunk-progress">
+                Upload fractionne : {pollStatus.chunk_progress}
+              </div>
+            )}
 
             {/* Steps timeline */}
             <Card className="mb-6 border-border/60">

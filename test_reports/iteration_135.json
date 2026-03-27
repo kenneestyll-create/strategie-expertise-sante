@@ -1,0 +1,76 @@
+{
+  "summary": "Tested chunked upload feature for files > 20 MB. All backend endpoints (POST /api/upload/chunk, POST /api/upload/extract) work correctly. Frontend shows correct info text about chunked uploads. Admin login works. All 14 backend tests passed.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_chunked_upload.py",
+    "/app/test_reports/pytest/pytest_chunked_upload.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "POST /api/upload/chunk correctly accepts multipart/form-data with upload_id, filename, chunk_index, total_chunks, chunk file",
+    "POST /api/upload/chunk returns {status, chunk_index, received, total, complete} - complete=true when all chunks received",
+    "POST /api/upload/chunk rejects > 100 total_chunks with 400 error",
+    "POST /api/upload/chunk rejects chunks > 2MB + 1KB with 400 error",
+    "POST /api/upload/extract reassembles chunks and calls existing OCR pipeline",
+    "POST /api/upload/extract handles mixed files (chunked + base64)",
+    "POST /api/upload/extract cleans up temp directory after extraction (verified by 404 on second call)",
+    "POST /api/extract-document-text (legacy) still works for small base64 files",
+    "pdfExtractor.js: CHUNK_THRESHOLD = 20 * 1024 * 1024 (20 MB) - CORRECT",
+    "pdfExtractor.js: CHUNK_SIZE = 2 * 1024 * 1024 (2 MB) - CORRECT",
+    "pdfExtractor.js: MAX_RETRIES = 3 - CORRECT",
+    "pdfExtractor.js: chunkedUpload function exists with retry logic (exponential backoff)",
+    "DocumentUploader.jsx shows 'Les fichiers > 20 Mo sont uploades automatiquement en mode fractionne'",
+    "DocumentUploader.jsx shows 'Max 50 Mo/fichier' limit",
+    "DossierExpressPage.jsx has onChunkProgress callback and chunk-progress display"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_chunked_upload.py"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+  "test_credentials": "Admin: admin@accompagn-sante.fr / Admin2024!",
+  "seed_data_creation": "",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Chunked upload feature fully tested. Key findings: 1) Backend /api/upload/chunk accepts 2MB chunks with retry support, 2) /api/upload/extract reassembles and processes via existing OCR pipeline, 3) Frontend pdfExtractor.js has CHUNK_THRESHOLD=20MB, CHUNK_SIZE=2MB, MAX_RETRIES=3, 4) DocumentUploader shows correct info text, 5) DossierExpressPage shows chunk progress during upload",
+  "features_tested": {
+    "backend": [
+      "POST /api/upload/chunk - single chunk upload - PASS",
+      "POST /api/upload/chunk - multiple chunks with complete flag - PASS",
+      "POST /api/upload/chunk - rejects > 100 total_chunks - PASS",
+      "POST /api/upload/chunk - rejects oversized chunks (> 2MB + 1KB) - PASS",
+      "POST /api/upload/extract - reassembles chunks - PASS",
+      "POST /api/upload/extract - handles mixed chunked + base64 files - PASS",
+      "POST /api/upload/extract - cleans up temp directory - PASS",
+      "POST /api/upload/extract - rejects missing upload_id - PASS",
+      "POST /api/upload/extract - returns 404 for non-existent upload - PASS",
+      "POST /api/extract-document-text - legacy base64 endpoint works - PASS",
+      "POST /api/extract-document-text - handles PDF files - PASS",
+      "POST /api/auth/login - admin login works - PASS",
+      "GET /api/health - API accessible - PASS"
+    ],
+    "frontend": [
+      "Homepage loads correctly - PASS",
+      "DossierExpressPage loads and shows upload form - PASS",
+      "DocumentUploader shows '> 20 Mo fractionné' text - PASS",
+      "DocumentUploader shows 'Max 50 Mo/fichier' limit - PASS",
+      "pdfExtractor.js CHUNK_THRESHOLD = 20 MB - PASS",
+      "pdfExtractor.js CHUNK_SIZE = 2 MB - PASS",
+      "pdfExtractor.js MAX_RETRIES = 3 - PASS",
+      "pdfExtractor.js chunkedUpload function exists - PASS",
+      "DossierExpressPage onChunkProgress callback exists - PASS",
+      "DossierExpressPage chunk-progress display exists - PASS",
+      "Admin login works - PASS"
+    ]
+  }
+}
