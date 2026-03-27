@@ -339,10 +339,33 @@ Problèmes réels identifiés et corrigés:
 - **Confirmation** : AUCUN ancien design PDF actif dans le projet
 - Tests: iteration 136 — 100% backend (9/9), 100% frontend (8/8)
 
+## Dispositif Confidentialite / Conservation Documents (Mar 2026) — DONE
+- **Audit technique complet** : cycle de vie de chaque document trace (upload → OCR → IA → stockage → purge)
+  * Fichiers originaux : NON conserves apres extraction OCR
+  * Texte OCR : envoye a Anthropic/Claude (max 8000 chars), stocke temporairement en base
+  * PDF genere : stocke sur Object Storage (Emergent)
+  * Email : PDF joint via Resend
+  * Scanner : 100% cote client, rien envoye au serveur
+- **Purge automatique implementee** :
+  * Scheduler quotidien (3h AM) purge `documents_text` des dossiers completes > 30 jours
+  * Table d'audit `purge_log` pour tracabilite
+  * Endpoints admin : `GET /api/admin/purge-log` (stats) + `POST /api/admin/purge-now` (purge manuelle)
+- **DataConsentBox.jsx** reecrit :
+  * Texte factuel et honnete (plus de "jamais partage avec des tiers")
+  * Accordeon "Que deviennent mes documents ?" avec 6 points (Extraction, Analyse, Stockage, Conservation, Acces, Suppression)
+  * Checkbox consentement + liens vers politique de confidentialite et demande de suppression
+  * Integre dans Dossier Express + StrategiIA
+- **PolitiqueConfidentialitePage.jsx** reecrite :
+  * 11 sections RGPD (Responsable, Donnees collectees, Finalites, Base legale, Donnees de sante, IA, Conservation, Destinataires, Droits, Securite, Contact)
+  * Mention transparente d'Anthropic/Claude, Resend, Object Storage
+  * Duree de conservation precise par type de donnee
+- **DocumentScanner** : note de confidentialite avec icone bouclier ("Vos photos restent sur votre appareil")
+- **Email Dossier Express** : phrase de confidentialite ajoutee avant le footer
+- Tests: iteration 137 — 100% backend, 100% frontend
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Integration HubSpot (en attente de credentials)
-- **P3:** Audit logging complet
 - **P3:** Finalisation du contenu legal
 - **P3:** Refactoring EmailTemplateEditor.jsx
 - **P4:** Consolidation vers un moteur PDF unique backend (eliminer la dualite FPDF/jsPDF)
