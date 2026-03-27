@@ -8,10 +8,11 @@ import jwt
 
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 
-from config import db, EMERGENT_LLM_KEY, STRIPE_API_KEY, RESEND_AVAILABLE, SENDER_EMAIL, logger, JWT_SECRET, JWT_ALGORITHM
+from config import db, EMERGENT_LLM_KEY, STRIPE_API_KEY, RESEND_AVAILABLE, SENDER_EMAIL, logger, JWT_SECRET, JWT_ALGORITHM, SITE_URL
 from utils.auth import get_current_admin, get_optional_admin
 from utils.email import notify_admin_premium_analysis
 from utils.pdf import generate_secured_pdf, generate_dossier_pdf
+from utils.storage import put_object
 
 from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionRequest
 
@@ -666,26 +667,117 @@ CONTENU DES DOCUMENTS FOURNIS :
 
         pdf_bytes = generate_dossier_pdf(name, email, type_dossier, regime, analysis, premium_pdf=premium_pdf, document_details=doc_details)
 
+        # Upload PDF to object storage for download link
+        download_token = str(uuid.uuid4())
+        pdf_storage_path = None
+        download_url = None
+        try:
+            storage_path = f"strategie-expertise-sante/dossiers/{dossier_id}/{download_token}.pdf"
+            put_object(storage_path, pdf_bytes, "application/pdf")
+            pdf_storage_path = storage_path
+            download_url = f"{SITE_URL}/api/dossier-express/{dossier_id}/download?token={download_token}"
+            await db.dossier_express.update_one({"id": dossier_id}, {"$set": {
+                "pdf_storage_path": pdf_storage_path,
+                "download_token": download_token,
+            }})
+            logger.info(f"Dossier Express {dossier_id}: PDF uploaded to storage")
+        except Exception as e:
+            logger.error(f"Dossier Express {dossier_id}: PDF storage upload failed: {e}")
+
         # Step 4: Sending email
         await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"progress_step": "sending"}})
+
+        expert_url = f"{SITE_URL}/contact"
+        safe_display_name = name or "Madame, Monsieur"
+
+        email_html = f"""<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f4f2ed;font-family:Arial,'Helvetica Neue',sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f2ed;padding:32px 16px;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+<!-- HEADER -->
+<tr><td style="background:#1a1a1a;padding:28px 32px;border-radius:8px 8px 0 0;">
+  <table width="100%"><tr>
+    <td><span style="color:#ffffff;font-size:18px;font-weight:bold;letter-spacing:0.5px;">Strategie & Expertise Sante</span><br/>
+    <span style="color:#c9a84c;font-size:11px;letter-spacing:3px;text-transform:uppercase;">PIONNIER EN FRANCE</span></td>
+    <td align="right"><span style="color:#999;font-size:12px;">Dossier Express IA</span></td>
+  </tr></table>
+</td></tr>
+
+<!-- BODY -->
+<tr><td style="background:#ffffff;padding:36px 32px 24px;">
+  <p style="font-size:15px;color:#1a1a1a;margin:0 0 20px;">Bonjour {safe_display_name},</p>
+
+  <p style="font-size:15px;color:#333;line-height:1.6;margin:0 0 8px;">
+    Votre analyse personnalisee a bien ete finalisee.
+  </p>
+  <p style="font-size:15px;color:#333;line-height:1.6;margin:0 0 28px;">
+    Vous pouvez desormais consulter et telecharger votre rapport en toute simplicite.
+  </p>
+
+  <!-- PRIMARY CTA BUTTON -->
+  <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:8px 0 32px;">
+    <a href="{download_url or '#'}" target="_blank"
+       style="display:inline-block;background:#1a1a1a;color:#ffffff;font-size:15px;font-weight:bold;
+              padding:15px 40px;border-radius:6px;text-decoration:none;letter-spacing:0.5px;
+              border:2px solid #c9a84c;">
+      Telecharger mon rapport PDF
+    </a>
+  </td></tr></table>
+
+  <!-- TRANSITION TEXT -->
+  <div style="border-left:3px solid #c9a84c;padding:16px 20px;margin:0 0 28px;background:#faf8f3;">
+    <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 12px;">
+      Ce document constitue une premiere lecture structuree de votre situation
+      a partir des elements transmis.
+    </p>
+    <p style="font-size:14px;color:#333;line-height:1.6;margin:0;font-weight:500;">
+      Si vous souhaitez aller plus loin, une prestation personnalisee avec
+      suivi humain peut ensuite vous etre proposee.
+    </p>
+  </div>
+
+  <!-- SECONDARY CTA BUTTON -->
+  <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:0 0 12px;">
+    <a href="{expert_url}" target="_blank"
+       style="display:inline-block;background:transparent;color:#1a1a1a;font-size:13px;font-weight:600;
+              padding:11px 28px;border-radius:6px;text-decoration:none;
+              border:1.5px solid #c9a84c;">
+      Etre accompagne par un expert
+    </a>
+  </td></tr></table>
+</td></tr>
+
+<!-- FOOTER -->
+<tr><td style="background:#1a1a1a;padding:20px 32px;border-radius:0 0 8px 8px;text-align:center;">
+  <p style="color:#c9a84c;font-size:13px;font-style:italic;margin:0 0 8px;font-weight:600;">
+    Strategie & Expertise Sante — Votre bouclier.
+  </p>
+  <p style="color:#888;font-size:11px;margin:0;">
+    strategie-expertise-sante.fr &nbsp;|&nbsp; Ce rapport est un outil d'aide a la decision.
+  </p>
+</td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>"""
 
         email_sent = False
         if RESEND_AVAILABLE and resend.api_key:
             try:
-                await asyncio.to_thread(resend.Emails.send, {
+                email_params = {
                     "from": SENDER_EMAIL,
                     "to": [email],
-                    "subject": "Votre Rapport Dossier Express IA - Stratégie & Expertise Santé",
-                    "html": f"""<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                        <h1 style="color: #1a1a2e;">Votre Rapport Dossier Express IA</h1>
-                        <p>Bonjour {name or 'Madame, Monsieur'},</p>
-                        <p>Merci pour votre confiance. Veuillez trouver ci-joint votre rapport d'analyse complet réalisé par Dossier Express IA.</p>
-                        <p>Ce rapport contient :</p><ul><li>L'analyse détaillée de votre situation</li><li>Le cadre juridique applicable</li><li>Vos droits identifiés</li><li>La stratégie recommandée</li><li>Les prochaines étapes à suivre</li></ul>
-                        <p>Pour un accompagnement personnalisé, n'hésitez pas à nous contacter.</p>
-                        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-                        <p style="font-size: 12px; color: #666;">Ce rapport est un outil d'aide à la décision et ne constitue pas un avis juridique.<br>Stratégie & Expertise Santé</p></div>""",
+                    "subject": "Votre Rapport Dossier Express IA est pret - Strategie & Expertise Sante",
+                    "html": email_html,
                     "attachments": [{"filename": f"Rapport_Dossier_Express_{dossier_id[:8]}.pdf", "content": list(pdf_bytes)}]
-                })
+                }
+                await asyncio.to_thread(resend.Emails.send, email_params)
                 email_sent = True
                 logger.info(f"Dossier Express IA {dossier_id}: email envoyé à {email}")
             except Exception as e:
@@ -710,6 +802,41 @@ CONTENU DES DOCUMENTS FOURNIS :
     except Exception as e:
         logger.error(f"Dossier Express IA processing error: {e}")
         await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"status": "error", "error": str(e), "progress_step": "error"}})
+
+
+@router.get("/dossier-express/{dossier_id}/download")
+async def download_dossier_pdf(dossier_id: str, token: str = ""):
+    """Public endpoint to download the Dossier Express PDF via a secure token."""
+    if not token:
+        raise HTTPException(status_code=400, detail="Token requis")
+    dossier = await db.dossier_express.find_one(
+        {"id": dossier_id, "download_token": token},
+        {"_id": 0, "pdf_storage_path": 1, "status": 1, "name": 1}
+    )
+    if not dossier:
+        raise HTTPException(status_code=404, detail="Lien de téléchargement invalide ou expiré")
+    if dossier.get("status") != "completed":
+        raise HTTPException(status_code=400, detail="Le rapport n'est pas encore prêt")
+    storage_path = dossier.get("pdf_storage_path")
+    if not storage_path:
+        raise HTTPException(status_code=404, detail="PDF non disponible")
+    try:
+        from utils.storage import download_file
+        pdf_data, content_type = download_file(storage_path)
+        from fastapi.responses import Response
+        safe_name = (dossier.get("name") or "rapport").replace(" ", "-")
+        filename = f"Rapport-Dossier-Express-{safe_name}.pdf"
+        return Response(
+            content=pdf_data,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+                "Cache-Control": "private, max-age=3600",
+            },
+        )
+    except Exception as e:
+        logger.error(f"PDF download error for {dossier_id}: {e}")
+        raise HTTPException(status_code=500, detail="Erreur lors du téléchargement")
 
 
 @router.post("/dossier-express/checkout")

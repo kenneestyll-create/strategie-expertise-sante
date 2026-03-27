@@ -476,6 +476,12 @@ def generate_secured_pdf(
     pdf.set_text_color(*_GOLD)
     pdf.cell(CW, 4.5, _safe("Strategie & Expertise Sante — Votre bouclier."), align="C")
 
+    # ── Lien discret vers l'accompagnement expert ──
+    pdf.ln(6)
+    pdf.set_font("Helvetica", "", 6)
+    pdf.set_text_color(*_MUTED)
+    pdf.cell(CW, 3, _safe("Accompagnement personnalise : strategie-expertise-sante.fr/contact"), align="C")
+
     # ── Watermark ──
     if with_watermark:
         for p_num in range(1, pdf.pages_count + 1):
