@@ -766,6 +766,15 @@ CONTENU DES DOCUMENTS FOURNIS :
       Etre accompagne par un expert
     </a>
   </td></tr></table>
+
+  <!-- CONFIDENTIALITY NOTE -->
+  <div style="border-top:1px solid #e8e3d6;padding:14px 0 0;margin:16px 0 0;">
+    <p style="font-size:11px;color:#888;line-height:1.6;margin:0;text-align:center;">
+      &#128274; Vos documents sont traites dans un cadre strictement confidentiel,
+      uniquement pour repondre a votre demande. L'acces a vos donnees est limite
+      a l'equipe en charge de votre accompagnement.
+    </p>
+  </div>
 </td></tr>
 
 <!-- FOOTER -->

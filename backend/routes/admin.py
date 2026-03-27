@@ -1430,3 +1430,49 @@ async def delete_campaign(campaign_id: str, admin: dict = Depends(get_current_ad
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Campagne non trouvée")
     return {"success": True}
+
+
+# ==================== DATA PURGE ADMIN ====================
+
+@router.get("/admin/purge-log")
+async def get_purge_log(admin: dict = Depends(get_current_admin)):
+    """View data purge history."""
+    logs = await db.purge_log.find({}, {"_id": 0}).sort("executed_at", -1).to_list(50)
+    # Stats
+    total_dossiers = await db.dossier_express.count_documents({})
+    purged = await db.dossier_express.count_documents({"documents_text_purged": True})
+    pending = await db.dossier_express.count_documents({
+        "status": "completed",
+        "documents_text": {"$exists": True, "$ne": ""},
+        "documents_text_purged": {"$ne": True},
+    })
+    return {
+        "logs": logs,
+        "stats": {
+            "total_dossiers": total_dossiers,
+            "purged": purged,
+            "pending_purge": pending,
+        }
+    }
+
+@router.post("/admin/purge-now")
+async def trigger_manual_purge(admin: dict = Depends(get_current_admin)):
+    """Manually trigger immediate purge of OCR text from completed dossiers older than 30 days."""
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+    result = await db.dossier_express.update_many(
+        {
+            "status": "completed",
+            "completed_at": {"$lte": cutoff},
+            "documents_text": {"$exists": True, "$ne": ""},
+        },
+        {"$set": {"documents_text": "", "documents_text_purged": True, "purged_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    await db.purge_log.insert_one({
+        "type": "manual_purge",
+        "count": result.modified_count,
+        "cutoff_date": cutoff,
+        "executed_at": datetime.now(timezone.utc).isoformat(),
+        "triggered_by": admin.get("email", "admin"),
+    })
+    logger.info(f"MANUAL PURGE by {admin.get('email')}: {result.modified_count} dossier(s) purged")
+    return {"success": True, "purged_count": result.modified_count}

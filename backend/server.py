@@ -214,6 +214,9 @@ async def startup_db_client():
     # Start the guide followup scheduler (checks every hour)
     asyncio.create_task(_guide_followup_scheduler())
 
+    # Start the data purge scheduler (runs daily at 3:00 AM)
+    asyncio.create_task(_data_purge_scheduler())
+
 
 # ==================== GUIDE FOLLOWUP EMAIL TEMPLATES ====================
 
@@ -306,6 +309,47 @@ def _build_guide_followup_html(lead: dict, followup_id: str) -> tuple:
     </body></html>
     """
     return subject, html
+
+
+async def _data_purge_scheduler():
+    """Background task: purges sensitive OCR text from completed dossiers after 30 days.
+    Runs daily at 3:00 AM. Logs every purge operation for audit trail."""
+    logger.info("Data purge scheduler started")
+    while True:
+        try:
+            now = datetime.now(timezone.utc)
+            # Wait until 3:00 AM
+            target = now.replace(hour=3, minute=0, second=0, microsecond=0)
+            if now >= target:
+                target += timedelta(days=1)
+            wait_secs = (target - now).total_seconds()
+            await asyncio.sleep(wait_secs)
+
+            # Purge documents_text from completed dossiers older than 30 days
+            cutoff = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+            result = await db.dossier_express.update_many(
+                {
+                    "status": "completed",
+                    "completed_at": {"$lte": cutoff},
+                    "documents_text": {"$exists": True, "$ne": ""},
+                },
+                {"$set": {"documents_text": "", "documents_text_purged": True, "purged_at": datetime.now(timezone.utc).isoformat()}}
+            )
+            if result.modified_count > 0:
+                logger.info(f"DATA PURGE: Purged documents_text from {result.modified_count} completed dossier(s) older than 30 days")
+                # Log the purge event for audit
+                await db.purge_log.insert_one({
+                    "type": "documents_text_purge",
+                    "count": result.modified_count,
+                    "cutoff_date": cutoff,
+                    "executed_at": datetime.now(timezone.utc).isoformat(),
+                })
+            else:
+                logger.info("DATA PURGE: No dossiers to purge today")
+
+        except Exception as e:
+            logger.error(f"Data purge scheduler error: {e}")
+            await asyncio.sleep(3600)
 
 
 async def _guide_followup_scheduler():

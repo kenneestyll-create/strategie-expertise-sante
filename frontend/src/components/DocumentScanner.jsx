@@ -4,7 +4,7 @@ import {
   Camera, X, RotateCcw, Check, Smartphone, Sun,
   Eye, Maximize2, ZapOff, Loader2, Plus,
   FileText, ChevronLeft, ChevronRight, Layers,
-  Contrast, ScanLine, RotateCw, ImageUp
+  Contrast, ScanLine, RotateCw, ImageUp, Shield
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { useScannerWorker } from '@/hooks/useScannerWorker';
@@ -275,6 +275,13 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
             </button>
           </div>
           {error && <p className="text-red-400 text-sm text-center max-w-xs" data-testid="scanner-error">{error}</p>}
+          {/* Privacy note */}
+          <div className="w-full max-w-xs flex items-start gap-2 p-2.5 rounded-lg bg-white/5 border border-[#C9A84C]/20" data-testid="scanner-privacy-note">
+            <Shield className="w-4 h-4 text-[#C9A84C] flex-shrink-0 mt-0.5" />
+            <p className="text-[11px] text-white/50 leading-relaxed">
+              Vos photos restent sur votre appareil. Le PDF est généré localement dans votre navigateur — aucun document n'est envoyé à nos serveurs.
+            </p>
+          </div>
         </div>
       )}
 
