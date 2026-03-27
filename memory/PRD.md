@@ -248,6 +248,18 @@ Problèmes réels identifiés et corrigés:
 - **Tunnel 3 niveaux** : Conversion depuis le site + depuis l'email + depuis le PDF
 - Tests: iteration 128 — 18/18 backend, 8/8 frontend
 
+## QR Code Premium dans le PDF Dossier Express (Mar 2026) — DONE
+- **QR code visuel** intégré dans le bloc "Et maintenant ?", après la boîte d'orientation
+- **Design harmonisé** : fill #1a1a1a (noir S.E.S), background #FAF8F3 (ivoire), 22mm centré
+- **Label** : "Prochaine étape recommandée"
+- **Description** : "Scannez pour accéder à l'accompagnement expert personnalisé S.E.S"
+- **URL trackée** : `strategie-expertise-sante.fr/contact?src=pdf&type=dossier_express&via=qr`
+- **Lien texte fallback** toujours présent sous le QR : "Première consultation offerte | strategie-expertise-sante.fr/contact"
+- **Bibliothèque** : `qrcode[pil]` ajoutée à requirements.txt
+- **Gestion fichiers** : QR généré en mémoire → temp PNG → embed FPDF → cleanup
+- Le PDF devient un support de conversion même en version imprimée
+- Tests: iteration 129 — 18/18 backend, 7/7 frontend
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Integration HubSpot (en attente de credentials)
