@@ -53,7 +53,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useAdminTest } from '@/components/AdminTestBanner';
 import axios from 'axios';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { BarChart3, BellRing, Download, FlaskConical, PenTool, FileSearch, QrCode, Globe } from 'lucide-react';
+import { BarChart3, BellRing, Download, FlaskConical, PenTool, FileSearch, QrCode, Globe, BadgeCheck } from 'lucide-react';
 import { EmailTemplateEditor } from '@/components/EmailTemplateEditor';
 import { AdminConseilsStrate } from '@/components/AdminConseilsStrate';
 import { AdminConversionAnalytics } from '@/components/AdminConversionAnalytics';
@@ -317,6 +317,9 @@ export const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('contacts');
   const [canalFilter, setCanalFilter] = useState('all');
   const [sourceFilter, setSourceFilter] = useState('all');
+  const [showConversionForm, setShowConversionForm] = useState(false);
+  const [conversionMontant, setConversionMontant] = useState('');
+  const [conversionPrestation, setConversionPrestation] = useState('');
   const [adminDocs, setAdminDocs] = useState({ documents: [], stats: {} });
   const [emailStatus, setEmailStatus] = useState(null);
   const [docStatusFilter, setDocStatusFilter] = useState('');
@@ -443,6 +446,40 @@ export const AdminDashboard = () => {
     }
   };
 
+  const handleConversion = async (contactId) => {
+    setUpdatingStatus(true);
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      await axios.patch(
+        `${API}/admin/contacts/${contactId}`,
+        {
+          status: 'converti',
+          conversion_montant: parseFloat(conversionMontant) || 0,
+          conversion_prestation: conversionPrestation || null,
+          conversion_date: today,
+          notes: notesAdmin || undefined,
+        },
+        axiosConfig
+      );
+      toast.success('Lead marque comme converti');
+      setShowConversionForm(false);
+      setConversionMontant('');
+      setConversionPrestation('');
+      fetchData();
+      setSelectedContact(prev => ({
+        ...prev,
+        status: 'converti',
+        conversion_montant: parseFloat(conversionMontant) || 0,
+        conversion_prestation: conversionPrestation,
+        conversion_date: today,
+      }));
+    } catch {
+      toast.error('Erreur lors de la conversion');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
   const handleUpdateAvisStatus = async (avisId, newStatus) => {
     setUpdatingStatus(true);
     try {
@@ -491,11 +528,12 @@ export const AdminDashboard = () => {
     const styles = {
       nouveau: { variant: "default", icon: AlertCircle, label: "Nouveau" },
       en_cours: { variant: "secondary", icon: Clock, label: "En cours" },
-      traite: { variant: "outline", icon: CheckCircle, label: "Traité" }
+      traite: { variant: "outline", icon: CheckCircle, label: "Traite" },
+      converti: { variant: "default", icon: BadgeCheck, label: "Converti", className: "bg-emerald-600 text-white" }
     };
     const config = styles[status] || styles.nouveau;
     return (
-      <Badge variant={config.variant} className="gap-1">
+      <Badge variant={config.variant} className={`gap-1 ${config.className || ''}`}>
         <config.icon className="w-3 h-3" />
         {config.label}
       </Badge>
@@ -678,7 +716,7 @@ export const AdminDashboard = () => {
           {/* Contacts Tab */}
           <TabsContent value="contacts" className="space-y-6">
             {/* Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
               <Card data-testid="stat-total">
                 <CardContent className="p-4 flex items-center gap-4">
                   <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
@@ -719,7 +757,19 @@ export const AdminDashboard = () => {
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{stats.traite}</p>
-                    <p className="text-sm text-muted-foreground">Traités</p>
+                    <p className="text-sm text-muted-foreground">Traites</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card data-testid="stat-converti">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center">
+                    <BadgeCheck className="w-6 h-6 text-emerald-600" strokeWidth={1.5} />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-emerald-600">{stats.converti || 0}</p>
+                    <p className="text-sm text-muted-foreground">Convertis</p>
+                    {stats.total_revenue > 0 && <p className="text-xs text-emerald-600 font-medium">{formatEuro(stats.total_revenue)}</p>}
                   </div>
                 </CardContent>
               </Card>
@@ -748,6 +798,7 @@ export const AdminDashboard = () => {
                       <SelectItem value="nouveau">Nouveaux</SelectItem>
                       <SelectItem value="en_cours">En cours</SelectItem>
                       <SelectItem value="traite">Traites</SelectItem>
+                      <SelectItem value="converti">Convertis</SelectItem>
                     </SelectContent>
                   </Select>
                   <Select value={canalFilter} onValueChange={setCanalFilter}>
@@ -2883,10 +2934,106 @@ export const AdminDashboard = () => {
                       onClick={() => handleUpdateStatus(selectedContact.id, 'traite')}
                       disabled={updatingStatus}
                     >
-                      Traité
+                      Traite
+                    </Button>
+                    <Button
+                      variant={selectedContact.status === 'converti' ? 'default' : 'outline'}
+                      size="sm"
+                      className={selectedContact.status === 'converti' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'border-emerald-300 text-emerald-700 hover:bg-emerald-50'}
+                      onClick={() => {
+                        if (selectedContact.status !== 'converti') {
+                          setShowConversionForm(true);
+                        }
+                      }}
+                      disabled={updatingStatus}
+                      data-testid="btn-converti"
+                    >
+                      <BadgeCheck className="w-3.5 h-3.5 mr-1" />
+                      Converti
                     </Button>
                   </div>
                 </div>
+
+                {/* Conversion form */}
+                {showConversionForm && selectedContact.status !== 'converti' && (
+                  <div className="space-y-3 p-4 bg-emerald-50/60 rounded-lg border border-emerald-200" data-testid="conversion-form">
+                    <p className="text-sm font-medium text-emerald-800 flex items-center gap-2">
+                      <BadgeCheck className="w-4 h-4" />
+                      Marquer comme converti
+                    </p>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">Montant facture</Label>
+                        <Input
+                          type="number"
+                          placeholder="0"
+                          value={conversionMontant}
+                          onChange={(e) => setConversionMontant(e.target.value)}
+                          data-testid="conversion-montant"
+                          className="h-9"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">Type de prestation</Label>
+                        <Select value={conversionPrestation} onValueChange={setConversionPrestation}>
+                          <SelectTrigger className="h-9" data-testid="conversion-prestation">
+                            <SelectValue placeholder="Choisir..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="accompagnement_mp">Accompagnement MP</SelectItem>
+                            <SelectItem value="protection_juridique">Protection juridique</SelectItem>
+                            <SelectItem value="expertise_medicale">Expertise medicale</SelectItem>
+                            <SelectItem value="dossier_complet">Dossier complet</SelectItem>
+                            <SelectItem value="consultation">Consultation</SelectItem>
+                            <SelectItem value="autre">Autre</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 pt-1">
+                      <Button
+                        size="sm"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                        onClick={() => handleConversion(selectedContact.id)}
+                        disabled={updatingStatus || !conversionMontant}
+                        data-testid="confirm-conversion"
+                      >
+                        Confirmer la conversion
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setShowConversionForm(false)}
+                      >
+                        Annuler
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Show conversion info if already converted */}
+                {selectedContact.status === 'converti' && (
+                  <div className="p-4 bg-emerald-50/60 rounded-lg border border-emerald-200" data-testid="conversion-info">
+                    <p className="text-sm font-medium text-emerald-800 flex items-center gap-2 mb-2">
+                      <BadgeCheck className="w-4 h-4" />
+                      Lead converti
+                    </p>
+                    <div className="grid sm:grid-cols-3 gap-3 text-sm">
+                      <div>
+                        <p className="text-muted-foreground text-xs">Montant</p>
+                        <p className="font-semibold text-emerald-700">{selectedContact.conversion_montant ? formatEuro(selectedContact.conversion_montant) : '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground text-xs">Prestation</p>
+                        <p className="font-medium">{selectedContact.conversion_prestation || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground text-xs">Date conversion</p>
+                        <p className="font-medium">{selectedContact.conversion_date || '-'}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <DialogFooter className="flex-col sm:flex-row gap-2">

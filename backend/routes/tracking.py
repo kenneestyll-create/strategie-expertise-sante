@@ -95,7 +95,7 @@ async def get_tracking_stats(page: str = None):
 
 @router.get("/conversion-analytics")
 async def get_conversion_analytics(period: str = "30d", admin: dict = Depends(get_current_admin)):
-    """Admin endpoint: conversion funnel analytics by source."""
+    """Admin endpoint: conversion funnel analytics by source with revenue."""
     days = 7 if period == "7d" else 30
     cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d")
 
@@ -120,28 +120,47 @@ async def get_conversion_analytics(period: str = "30d", admin: dict = Depends(ge
     ]
     contact_agg = await db.contacts.aggregate(contact_pipeline).to_list(50)
 
+    # Conversions (status=converti) with revenue by via+source
+    conversion_pipeline = [
+        {"$match": {"status": "converti", "tracking_via": {"$ne": None}, "conversion_date": {"$gte": cutoff}}},
+        {"$group": {
+            "_id": {"via": "$tracking_via", "source": "$tracking_source"},
+            "conversions": {"$sum": 1},
+            "revenue": {"$sum": {"$ifNull": ["$conversion_montant", 0]}},
+        }},
+    ]
+    conversion_agg = await db.contacts.aggregate(conversion_pipeline).to_list(50)
+
     # Build channel map
     channels = {}
     for v in visit_agg:
         key = f"{v['_id'].get('via', 'direct')}|{v['_id'].get('source', '')}"
-        channels[key] = {"via": v["_id"].get("via", "direct"), "source": v["_id"].get("source", ""), "visits": v["visits"], "contacts": 0}
+        channels[key] = {"via": v["_id"].get("via", "direct"), "source": v["_id"].get("source", ""), "visits": v["visits"], "contacts": 0, "conversions": 0, "revenue": 0}
 
     for c in contact_agg:
         key = f"{c['_id'].get('via', 'direct')}|{c['_id'].get('source', '')}"
         if key in channels:
             channels[key]["contacts"] = c["contacts"]
         else:
-            channels[key] = {"via": c["_id"].get("via", "direct"), "source": c["_id"].get("source", ""), "visits": 0, "contacts": c["contacts"]}
+            channels[key] = {"via": c["_id"].get("via", "direct"), "source": c["_id"].get("source", ""), "visits": 0, "contacts": c["contacts"], "conversions": 0, "revenue": 0}
 
-    # Calculate conversion rates
+    for cv in conversion_agg:
+        key = f"{cv['_id'].get('via', 'direct')}|{cv['_id'].get('source', '')}"
+        if key in channels:
+            channels[key]["conversions"] = cv["conversions"]
+            channels[key]["revenue"] = cv["revenue"]
+        else:
+            channels[key] = {"via": cv["_id"].get("via", "direct"), "source": cv["_id"].get("source", ""), "visits": 0, "contacts": 0, "conversions": cv["conversions"], "revenue": cv["revenue"]}
+
+    # Calculate rates
     channel_list = []
     for ch in channels.values():
-        v = ch["visits"]
-        c = ch["contacts"]
+        v, c, cv = ch["visits"], ch["contacts"], ch["conversions"]
         ch["conversion_rate"] = round((c / v) * 100, 1) if v > 0 else 0
+        ch["close_rate"] = round((cv / c) * 100, 1) if c > 0 else 0
         channel_list.append(ch)
 
-    channel_list.sort(key=lambda x: x["visits"], reverse=True)
+    channel_list.sort(key=lambda x: x["revenue"], reverse=True)
 
     # Daily timeseries
     daily_pipeline = [
@@ -174,14 +193,33 @@ async def get_conversion_analytics(period: str = "30d", admin: dict = Depends(ge
     # Totals
     total_visits = sum(ch["visits"] for ch in channel_list)
     total_contacts = sum(ch["contacts"] for ch in channel_list)
+    total_conversions = sum(ch["conversions"] for ch in channel_list)
+    total_revenue = sum(ch["revenue"] for ch in channel_list)
+
+    # Revenue by prestation type
+    prestation_pipeline = [
+        {"$match": {"status": "converti", "conversion_date": {"$gte": cutoff}, "conversion_prestation": {"$ne": None}}},
+        {"$group": {
+            "_id": "$conversion_prestation",
+            "count": {"$sum": 1},
+            "revenue": {"$sum": {"$ifNull": ["$conversion_montant", 0]}},
+        }},
+        {"$sort": {"revenue": -1}},
+    ]
+    prestation_agg = await db.contacts.aggregate(prestation_pipeline).to_list(20)
+    prestations = [{"prestation": p["_id"], "count": p["count"], "revenue": p["revenue"]} for p in prestation_agg]
 
     return {
         "channels": channel_list,
         "timeseries": timeseries,
+        "prestations": prestations,
         "totals": {
             "visits": total_visits,
             "contacts": total_contacts,
+            "conversions": total_conversions,
+            "revenue": total_revenue,
             "conversion_rate": round((total_contacts / total_visits) * 100, 1) if total_visits > 0 else 0,
+            "close_rate": round((total_conversions / total_contacts) * 100, 1) if total_contacts > 0 else 0,
         },
         "period": period,
     }

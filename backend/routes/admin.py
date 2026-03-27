@@ -94,7 +94,13 @@ async def get_stats(admin: dict = Depends(get_current_admin)):
     nouveau = await db.contacts.count_documents({"status": "nouveau"})
     en_cours = await db.contacts.count_documents({"status": "en_cours"})
     traite = await db.contacts.count_documents({"status": "traite"})
-    return {"total": total, "nouveau": nouveau, "en_cours": en_cours, "traite": traite}
+    converti = await db.contacts.count_documents({"status": "converti"})
+    revenue_agg = await db.contacts.aggregate([
+        {"$match": {"status": "converti", "conversion_montant": {"$gt": 0}}},
+        {"$group": {"_id": None, "total": {"$sum": "$conversion_montant"}}},
+    ]).to_list(1)
+    total_revenue = revenue_agg[0]["total"] if revenue_agg else 0
+    return {"total": total, "nouveau": nouveau, "en_cours": en_cours, "traite": traite, "converti": converti, "total_revenue": total_revenue}
 
 
 # ==================== ANALYTICS ====================

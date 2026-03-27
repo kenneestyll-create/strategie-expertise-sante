@@ -19,6 +19,9 @@ class ContactRequest(BaseModel):
     tracking_source: Optional[str] = None
     tracking_campaign: Optional[str] = None
     status: str = "nouveau"
+    conversion_montant: Optional[float] = None
+    conversion_prestation: Optional[str] = None
+    conversion_date: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ContactRequestCreate(BaseModel):
@@ -36,6 +39,9 @@ class ContactRequestCreate(BaseModel):
 class ContactRequestUpdate(BaseModel):
     status: Optional[str] = None
     notes: Optional[str] = None
+    conversion_montant: Optional[float] = None
+    conversion_prestation: Optional[str] = None
+    conversion_date: Optional[str] = None
 
 
 # ==================== FAQ / AVIS MODELS ====================

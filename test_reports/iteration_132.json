@@ -1,0 +1,81 @@
+{
+  "summary": "Tested Conversion & ROI features for Stratégie & Expertise Santé admin dashboard. All 11 backend tests passed. All 14 frontend tests passed. Features working: 1) PATCH /api/admin/contacts/{id} accepts status=converti with conversion_montant, conversion_prestation, conversion_date, 2) GET /api/admin/stats returns converti count and total_revenue, 3) GET /api/tracking/conversion-analytics returns channels with conversions/revenue/close_rate and prestations array, 4) Admin contacts tab shows 5 KPI cards including Convertis with revenue, 5) Contact detail modal has Converti button with emerald styling, 6) Conversion form appears with montant and prestation fields, 7) Converted contacts show conversion info block with montant/prestation/date, 8) Analytics tab shows Conversions & ROI section with revenue per channel.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Analytics tab", "issues": ["Console warnings about chart dimensions (-1 width/height) - non-blocking but should be fixed"]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_conversion_roi.py",
+    "/app/test_reports/pytest/pytest_conversion_roi.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "ContactRequestUpdate model correctly includes conversion_montant (float), conversion_prestation (str), conversion_date (str)",
+    "GET /api/admin/stats aggregates revenue from contacts with status=converti and conversion_montant > 0",
+    "GET /api/tracking/conversion-analytics returns channels with conversions, revenue, close_rate fields",
+    "GET /api/tracking/conversion-analytics returns prestations array with prestation/count/revenue",
+    "Frontend AdminDashboard.jsx has 5 KPI cards: Total, Nouveaux, En cours, Traites, Convertis",
+    "Converti KPI card shows count and total_revenue in emerald color",
+    "Contact detail modal has btn-converti with emerald styling",
+    "Conversion form has conversion-montant input and conversion-prestation select",
+    "Converted contacts show conversion-info block with montant, prestation, date",
+    "AdminConversionAnalytics component shows ROI per channel with revenue"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_conversion_roi.py"
+  ],
+  "success_rate": {
+    "backend": "100% (11/11 tests passed, 1 skipped)",
+    "frontend": "100% (14/14 tests passed)"
+  },
+  "test_credentials": "Admin: admin@accompagn-sante.fr / Admin2024!",
+  "seed_data_creation": "Test contact created and converted during backend tests (cleaned up). Existing converted contact: Isabelle Lemaire with tracking_via=qr, source=dossier_express, conversion_montant=450, prestation=accompagnement_mp",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Conversion & ROI features fully tested. Key findings: 1) PATCH /api/admin/contacts/{id} accepts conversion fields, 2) Stats endpoint returns converti count and total_revenue, 3) conversion-analytics returns channels with revenue and prestations array, 4) Frontend has 5 KPI cards in contacts tab, 5) Conversion form uses data-testid: btn-converti, conversion-montant, conversion-prestation, confirm-conversion, 6) Converted contacts show conversion-info block, 7) Analytics tab has AdminConversionAnalytics component with ROI per channel. Test file: /app/backend/tests/test_conversion_roi.py",
+  "features_tested": {
+    "backend": [
+      "POST /api/auth/login - Admin login works - PASS",
+      "GET /api/admin/stats returns converti count and total_revenue - PASS",
+      "POST /api/contact creates test contact - PASS",
+      "PATCH /api/admin/contacts/{id} accepts status=converti, conversion_montant, conversion_prestation, conversion_date - PASS",
+      "GET /api/admin/contacts/{id} returns conversion data - PASS",
+      "GET /api/admin/stats includes converted contact in count and revenue - PASS",
+      "GET /api/tracking/conversion-analytics returns channels with conversions, revenue, close_rate - PASS",
+      "GET /api/tracking/conversion-analytics channels have required fields - PASS",
+      "GET /api/tracking/conversion-analytics returns prestations array - PASS",
+      "GET /api/tracking/conversion-analytics 7d period works - PASS",
+      "Homepage loads correctly - PASS"
+    ],
+    "frontend": [
+      "Admin login and redirect to dashboard - PASS",
+      "5 KPI cards visible (Total, Nouveaux, En cours, Traites, Convertis) - PASS",
+      "Stat-converti card shows count and revenue (2 Convertis, 800€) - PASS",
+      "Status filter includes 'Convertis' option - PASS",
+      "Contact detail modal has Converti button - PASS",
+      "Converti button has emerald styling - PASS",
+      "Clicking Converti opens conversion form - PASS",
+      "Conversion form has montant input field - PASS",
+      "Conversion form has prestation select field - PASS",
+      "Conversion form has confirm button - PASS",
+      "Converted contact shows conversion info block - PASS",
+      "Conversion info shows montant, prestation, date - PASS",
+      "Analytics tab has Conversion & ROI section - PASS",
+      "Analytics shows revenue display (800€) and conversions (2) - PASS"
+    ]
+  },
+  "ui_observations": {
+    "kpi_cards": "5 cards in contacts tab: Total (40), Nouveaux (34), En cours (4), Traites (0), Convertis (2 with 800€)",
+    "converti_badge": "Green badge with checkmark icon on converted contacts",
+    "conversion_form": "Emerald-themed form with montant input, prestation dropdown, confirm/cancel buttons",
+    "conversion_info": "Emerald-themed block showing Montant, Prestation, Date conversion for converted contacts",
+    "analytics_roi": "Shows Visites, Formulaires, Convertis, Revenus générés KPIs with channel breakdown"
+  }
+}

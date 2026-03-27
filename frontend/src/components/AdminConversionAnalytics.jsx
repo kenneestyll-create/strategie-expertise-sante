@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, Eye, Send, ArrowRight, QrCode, Mail, FileText, Globe } from 'lucide-react';
+import { TrendingUp, Eye, Send, ArrowRight, QrCode, Mail, FileText, Globe, BadgeCheck } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
 
@@ -19,11 +19,22 @@ const SOURCE_LABELS = {
   '': 'Non specifie',
 };
 
+const PRESTATION_LABELS = {
+  accompagnement_mp: 'Accompagnement MP',
+  protection_juridique: 'Protection juridique',
+  expertise_medicale: 'Expertise medicale',
+  dossier_complet: 'Dossier complet',
+  consultation: 'Consultation',
+  autre: 'Autre',
+};
+
 const formatDate = (d) => {
   if (!d) return '';
   const parts = d.split('-');
   return `${parts[2]}/${parts[1]}`;
 };
+
+const formatEuro = (v) => `${Number(v || 0).toLocaleString('fr-FR')}€`;
 
 export const AdminConversionAnalytics = ({ axiosConfig }) => {
   const [data, setData] = useState(null);
@@ -43,8 +54,6 @@ export const AdminConversionAnalytics = ({ axiosConfig }) => {
   }, [axiosConfig]);
 
   useEffect(() => { fetchData(period); }, [period, fetchData]);
-
-  const handlePeriod = (p) => { setPeriod(p); };
 
   if (loading && !data) {
     return (
@@ -66,7 +75,7 @@ export const AdminConversionAnalytics = ({ axiosConfig }) => {
     );
   }
 
-  const { channels, timeseries, totals } = data;
+  const { channels, timeseries, totals, prestations } = data;
 
   return (
     <div className="space-y-4" data-testid="conversion-analytics">
@@ -74,13 +83,13 @@ export const AdminConversionAnalytics = ({ axiosConfig }) => {
       <div className="flex items-center justify-between">
         <h3 className="text-base font-semibold flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-amber-600" />
-          Conversions — Origine des leads
+          Conversions & ROI — Origine des leads
         </h3>
         <div className="flex gap-1 bg-muted rounded-lg p-0.5" data-testid="conversion-period-selector">
           {[{ v: '7d', l: '7j' }, { v: '30d', l: '30j' }].map(p => (
             <button
               key={p.v}
-              onClick={() => handlePeriod(p.v)}
+              onClick={() => setPeriod(p.v)}
               className={`px-2.5 py-1 text-[11px] rounded-md transition-colors ${period === p.v ? 'bg-background shadow text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'}`}
               data-testid={`conv-period-${p.v}`}
             >
@@ -90,13 +99,13 @@ export const AdminConversionAnalytics = ({ axiosConfig }) => {
         </div>
       </div>
 
-      {/* KPI Summary */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* KPI Summary - 5 cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         <Card>
           <CardContent className="py-3 px-4">
             <div className="flex items-center gap-2 mb-1">
               <Eye className="w-3.5 h-3.5 text-muted-foreground" />
-              <span className="text-[11px] text-muted-foreground uppercase tracking-wide">Visites trackees</span>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Visites</span>
             </div>
             <p className="text-xl font-bold" data-testid="conv-total-visits">{totals.visits}</p>
           </CardContent>
@@ -105,27 +114,38 @@ export const AdminConversionAnalytics = ({ axiosConfig }) => {
           <CardContent className="py-3 px-4">
             <div className="flex items-center gap-2 mb-1">
               <Send className="w-3.5 h-3.5 text-muted-foreground" />
-              <span className="text-[11px] text-muted-foreground uppercase tracking-wide">Formulaires</span>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Formulaires</span>
             </div>
             <p className="text-xl font-bold text-amber-600" data-testid="conv-total-contacts">{totals.contacts}</p>
+            <p className="text-[10px] text-muted-foreground">Taux: {totals.conversion_rate}%</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-3 px-4">
             <div className="flex items-center gap-2 mb-1">
-              <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
-              <span className="text-[11px] text-muted-foreground uppercase tracking-wide">Taux conv.</span>
+              <BadgeCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Convertis</span>
             </div>
-            <p className="text-xl font-bold text-emerald-600" data-testid="conv-total-rate">{totals.conversion_rate}%</p>
+            <p className="text-xl font-bold text-emerald-600" data-testid="conv-total-conversions">{totals.conversions}</p>
+            <p className="text-[10px] text-muted-foreground">Closing: {totals.close_rate}%</p>
+          </CardContent>
+        </Card>
+        <Card className="sm:col-span-2 lg:col-span-2">
+          <CardContent className="py-3 px-4">
+            <div className="flex items-center gap-2 mb-1">
+              <ArrowRight className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Revenus generes</span>
+            </div>
+            <p className="text-2xl font-bold text-emerald-600" data-testid="conv-total-revenue">{formatEuro(totals.revenue)}</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Channel breakdown */}
+      {/* Channel breakdown with revenue */}
       {channels.length > 0 && (
         <Card>
           <CardHeader className="pb-2 pt-4 px-4">
-            <CardTitle className="text-sm font-medium">Par canal d'acquisition</CardTitle>
+            <CardTitle className="text-sm font-medium">ROI par canal d'acquisition</CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">
             <div className="space-y-2">
@@ -135,7 +155,7 @@ export const AdminConversionAnalytics = ({ axiosConfig }) => {
                 const Icon = meta.icon;
                 const sourceLabel = SOURCE_LABELS[ch.source] || ch.source || 'Autre';
                 return (
-                  <div key={i} className="flex items-center gap-3 py-2 border-b border-border last:border-0" data-testid={`conv-channel-${viaKey}-${ch.source || 'none'}`}>
+                  <div key={i} className="flex items-center gap-3 py-2.5 border-b border-border last:border-0" data-testid={`conv-channel-${viaKey}-${ch.source || 'none'}`}>
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${meta.bg}`}>
                       <Icon className={`w-4 h-4 ${meta.color}`} />
                     </div>
@@ -143,7 +163,7 @@ export const AdminConversionAnalytics = ({ axiosConfig }) => {
                       <p className="text-sm font-medium truncate">{meta.label}</p>
                       <p className="text-[11px] text-muted-foreground">{sourceLabel}</p>
                     </div>
-                    <div className="text-right flex-shrink-0 grid grid-cols-3 gap-4 text-xs">
+                    <div className="text-right flex-shrink-0 grid grid-cols-5 gap-3 text-xs">
                       <div>
                         <p className="font-semibold">{ch.visits}</p>
                         <p className="text-muted-foreground text-[10px]">visites</p>
@@ -153,13 +173,46 @@ export const AdminConversionAnalytics = ({ axiosConfig }) => {
                         <p className="text-muted-foreground text-[10px]">contacts</p>
                       </div>
                       <div>
-                        <p className="font-semibold text-emerald-600">{ch.conversion_rate}%</p>
-                        <p className="text-muted-foreground text-[10px]">conv.</p>
+                        <p className="font-semibold text-emerald-600">{ch.conversions}</p>
+                        <p className="text-muted-foreground text-[10px]">convertis</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold">{ch.close_rate}%</p>
+                        <p className="text-muted-foreground text-[10px]">closing</p>
+                      </div>
+                      <div>
+                        <p className="font-bold text-emerald-700">{formatEuro(ch.revenue)}</p>
+                        <p className="text-muted-foreground text-[10px]">revenus</p>
                       </div>
                     </div>
                   </div>
                 );
               })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Revenue by prestation type */}
+      {prestations && prestations.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2 pt-4 px-4">
+            <CardTitle className="text-sm font-medium">Revenus par type de prestation</CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-4">
+            <div className="space-y-2">
+              {prestations.map((p, i) => (
+                <div key={i} className="flex items-center justify-between py-2 border-b border-border last:border-0" data-testid={`prestation-${p.prestation}`}>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                    <span className="text-sm">{PRESTATION_LABELS[p.prestation] || p.prestation}</span>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm">
+                    <span className="text-muted-foreground">{p.count} conversion{p.count > 1 ? 's' : ''}</span>
+                    <span className="font-bold text-emerald-700">{formatEuro(p.revenue)}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
