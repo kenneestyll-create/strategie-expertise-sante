@@ -8,17 +8,82 @@ import {
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { useScannerWorker } from '@/hooks/useScannerWorker';
+import { SHIELD_B64 } from '@/pages/shieldLogo';
+
+/* ── Premium palette (S.E.S standard) ── */
+const _BLACK   = [26, 26, 26];
+const _GOLD    = [201, 168, 76];
+const _GOLD_LT = [218, 195, 130];
+const _MUTED   = [130, 125, 118];
+const _LM = 8;
+const _RM = 8;
 
 async function buildPdf(pages) {
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const w = pdf.internal.pageSize.getWidth();   // 210
+  const h = pdf.internal.pageSize.getHeight();  // 297
+  const CW = w - _LM - _RM;
+  const year = new Date().getFullYear();
+  const genDate = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  const reportNum = `SES-SCAN-${year}-${String(Math.floor(10000 + Math.random() * 90000))}`;
+
+  const HEADER_H = 14;
+  const FOOTER_Y = h - 10;
+
+  const drawHeader = () => {
+    pdf.setFillColor(..._BLACK);
+    pdf.rect(0, 0, w, HEADER_H, 'F');
+    pdf.setFillColor(..._GOLD);
+    pdf.rect(0, HEADER_H, w, 0.4, 'F');
+    try { pdf.addImage(SHIELD_B64, 'PNG', _LM, 2, 6, 6); } catch (_e) { /* no logo */ }
+    const txtX = _LM + 8;
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(8);
+    pdf.text("Strat\u00e9gie & Expertise Sant\u00e9", txtX, 6);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(5);
+    pdf.setTextColor(..._GOLD_LT);
+    pdf.text("PIONNIER EN FRANCE", txtX, 10.5);
+    pdf.setFontSize(5.5);
+    pdf.setTextColor(180, 180, 180);
+    pdf.text(genDate, w - _RM, 6, { align: 'right' });
+    pdf.setTextColor(..._GOLD_LT);
+    pdf.text(reportNum, w - _RM, 10.5, { align: 'right' });
+  };
+
+  const drawFooter = () => {
+    pdf.setDrawColor(..._GOLD);
+    pdf.setLineWidth(0.2);
+    pdf.line(_LM, FOOTER_Y, w - _RM, FOOTER_Y);
+    pdf.setTextColor(..._MUTED);
+    pdf.setFontSize(5);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(
+      `\u00a9 ${year} Strat\u00e9gie & Expertise Sant\u00e9  \u2014  strategie-expertise-sante.fr  \u2014  Document confidentiel`,
+      w / 2, FOOTER_Y + 4, { align: 'center' }
+    );
+  };
+
+  const imgAreaTop = HEADER_H + 2;
+  const imgAreaBottom = FOOTER_Y - 2;
+  const imgAreaH = imgAreaBottom - imgAreaTop;
+  const imgAreaW = CW;
+
   for (let i = 0; i < pages.length; i++) {
     if (i > 0) pdf.addPage();
+    drawHeader();
+    drawFooter();
     const img = new Image();
     img.src = pages[i];
     await new Promise(r => { img.onload = r; img.onerror = r; });
     if (!img.width) continue;
-    const ratio = Math.min(210 / img.width, 297 / img.height);
-    pdf.addImage(pages[i], 'JPEG', (210 - img.width * ratio) / 2, (297 - img.height * ratio) / 2, img.width * ratio, img.height * ratio);
+    const ratio = Math.min(imgAreaW / img.width, imgAreaH / img.height);
+    const imgW = img.width * ratio;
+    const imgH = img.height * ratio;
+    const imgX = _LM + (imgAreaW - imgW) / 2;
+    const imgY = imgAreaTop + (imgAreaH - imgH) / 2;
+    pdf.addImage(pages[i], 'JPEG', imgX, imgY, imgW, imgH);
   }
   return pdf;
 }

@@ -1,9 +1,36 @@
-"""PDF guide generator using fpdf2 with DejaVu Sans Unicode font."""
+"""PDF guide generator — Premium S.E.S identity (Noir #1A1A1A / Or #C9A84C / Ivoire).
+
+Uses fpdf2 with DejaVu Sans for full Unicode support (French accents).
+"""
 from fpdf import FPDF
 import io
 import os
+from datetime import datetime
+import random
 
 FONT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "fonts")
+_LOGO_PATH = os.path.join(os.path.dirname(__file__), "shield_logo.png")
+
+# ── Premium palette (identical to pdf.py) ──
+_BLACK = (26, 26, 26)
+_GOLD = (201, 168, 76)
+_GOLD_LIGHT = (218, 195, 130)
+_IVORY = (250, 248, 243)
+_DARK_TEXT = (35, 35, 35)
+_BODY_TEXT = (55, 55, 55)
+_MUTED = (130, 125, 118)
+_LIGHT_LINE = (220, 215, 205)
+
+LM = 16
+RM = 16
+CW = 210 - LM - RM
+
+
+def _report_number():
+    year = datetime.now().year
+    seq = random.randint(10000, 99999)
+    return f"SES-GUIDE-{year}-{seq}"
+
 
 GUIDES = {
     "guide_mp": {
@@ -309,78 +336,231 @@ GUIDES = {
 }
 
 
+class PremiumGuidePDF(FPDF):
+    """Premium-styled PDF matching the S.E.S identity standard."""
+
+    def __init__(self, guide_data, report_num, gen_date, year):
+        super().__init__()
+        self._guide = guide_data
+        self._report_num = report_num
+        self._gen_date = gen_date
+        self._year = year
+
+        self.set_auto_page_break(auto=True, margin=18)
+        self.set_left_margin(LM)
+        self.set_right_margin(RM)
+
+        # Register Unicode-capable font
+        self.add_font("DejaVu", "", f"{FONT_DIR}/DejaVuSans.ttf")
+        self.add_font("DejaVu", "B", f"{FONT_DIR}/DejaVuSans-Bold.ttf")
+
+    def header(self):
+        # Dark header band
+        self.set_fill_color(*_BLACK)
+        self.rect(0, 0, 210, 22, "F")
+
+        # Gold accent line
+        self.set_fill_color(*_GOLD)
+        self.rect(0, 22, 210, 0.6, "F")
+
+        # Shield logo
+        if os.path.isfile(_LOGO_PATH):
+            self.image(_LOGO_PATH, LM, 3, 9, 9)
+            text_x = LM + 11
+        else:
+            text_x = LM
+
+        # Brand name
+        self.set_text_color(255, 255, 255)
+        self.set_font("DejaVu", "B", 10)
+        self.set_xy(text_x, 4)
+        self.cell(80, 5, "Stratégie & Expertise Santé")
+
+        # Subtitle
+        self.set_font("DejaVu", "", 6)
+        self.set_text_color(*_GOLD_LIGHT)
+        self.set_xy(text_x, 10)
+        self.cell(80, 4, "PIONNIER EN FRANCE")
+
+        # Right side: date & report number
+        self.set_font("DejaVu", "", 6.5)
+        self.set_text_color(180, 180, 180)
+        self.set_xy(-RM - 60, 5)
+        self.cell(60, 4, self._gen_date, align="R")
+        self.set_xy(-RM - 60, 10)
+        self.set_text_color(*_GOLD_LIGHT)
+        self.cell(60, 4, self._report_num, align="R")
+
+        self.set_xy(LM, 26)
+
+    def footer(self):
+        self.set_y(-14)
+        # Gold line
+        self.set_draw_color(*_GOLD)
+        self.set_line_width(0.3)
+        self.line(LM, self.get_y(), 210 - RM, self.get_y())
+        self.ln(2)
+        self.set_font("DejaVu", "", 5.5)
+        self.set_text_color(*_MUTED)
+        self.cell(
+            CW, 4,
+            f"\u00a9 {self._year} Stratégie & Expertise Santé  \u2014  strategie-expertise-sante.fr  \u2014  Document confidentiel",
+            align="C",
+        )
+
+
 def generate_guide_pdf(guide_id: str) -> bytes | None:
-    """Generate a PDF for a given guide ID with DejaVu Sans Unicode font."""
+    """Generate a premium-styled PDF for a given guide ID."""
     guide = GUIDES.get(guide_id)
     if not guide:
         return None
 
-    pdf = FPDF()
-    pdf.set_auto_page_break(auto=True, margin=25)
+    gen_date = datetime.now().strftime("%d/%m/%Y")
+    year = datetime.now().year
+    report_num = _report_number()
 
-    # Register DejaVu Sans Unicode font
-    pdf.add_font("DejaVu", "", f"{FONT_DIR}/DejaVuSans.ttf")
-    pdf.add_font("DejaVu", "B", f"{FONT_DIR}/DejaVuSans-Bold.ttf")
-
+    pdf = PremiumGuidePDF(guide, report_num, gen_date, year)
     pdf.add_page()
 
-    # Header bar
-    pdf.set_fill_color(26, 26, 46)
-    pdf.rect(0, 0, 210, 40, "F")
-    pdf.set_text_color(212, 164, 74)
-    pdf.set_font("DejaVu", "B", 18)
-    pdf.set_y(10)
-    pdf.cell(0, 10, "Stratégie & Expertise Santé", align="C", new_x="LMARGIN", new_y="NEXT")
+    # ── Category badge ──
+    y = pdf.get_y() + 2
+    pdf.set_fill_color(*_IVORY)
+    pdf.rect(LM, y, CW, 8, "F")
+    pdf.set_fill_color(*_GOLD)
+    pdf.rect(LM, y, 2, 8, "F")
+    pdf.set_xy(LM + 5, y + 1.5)
+    pdf.set_font("DejaVu", "B", 7)
+    pdf.set_text_color(*_GOLD)
+    pdf.cell(CW - 5, 5, guide["category"].upper())
+    y += 12
+
+    # ── Title ──
+    pdf.set_xy(LM, y)
+    pdf.set_text_color(*_BLACK)
+    pdf.set_font("DejaVu", "B", 16)
+    pdf.multi_cell(CW, 8, guide["title"])
+    y = pdf.get_y() + 2
+
+    # ── Subtitle ──
+    pdf.set_xy(LM, y)
+    pdf.set_text_color(*_BODY_TEXT)
     pdf.set_font("DejaVu", "", 9)
-    pdf.set_text_color(200, 200, 200)
-    pdf.cell(0, 6, "www.strategie-expertise-sante.fr", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.multi_cell(CW, 5.5, guide["subtitle"])
+    y = pdf.get_y() + 3
 
-    # Category badge
-    pdf.set_y(50)
-    pdf.set_text_color(212, 164, 74)
-    pdf.set_font("DejaVu", "B", 10)
-    pdf.cell(0, 6, guide["category"].upper(), new_x="LMARGIN", new_y="NEXT")
+    # ── Gold separator ──
+    pdf.set_draw_color(*_GOLD)
+    pdf.set_line_width(0.4)
+    pdf.line(LM, y, LM + 50, y)
+    y += 8
+    pdf.set_xy(LM, y)
 
-    # Title
-    pdf.set_text_color(30, 30, 30)
-    pdf.set_font("DejaVu", "B", 22)
-    pdf.multi_cell(0, 10, guide["title"])
-    pdf.ln(2)
+    # ── Sections ──
+    for section in guide["sections"]:
+        # Check space for heading
+        if pdf.get_y() > 250:
+            pdf.add_page()
 
-    # Subtitle
-    pdf.set_text_color(100, 100, 100)
-    pdf.set_font("DejaVu", "", 11)
-    pdf.multi_cell(0, 7, guide["subtitle"])
+        sy = pdf.get_y()
+
+        # Gold left accent bar
+        pdf.set_fill_color(*_GOLD)
+        pdf.rect(LM, sy, 2.5, 6, "F")
+
+        pdf.set_x(LM + 6)
+        pdf.set_text_color(*_BLACK)
+        pdf.set_font("DejaVu", "B", 10.5)
+        pdf.multi_cell(CW - 6, 6, section["heading"])
+        pdf.ln(3)
+
+        # Paragraphs
+        pdf.set_text_color(*_BODY_TEXT)
+        pdf.set_font("DejaVu", "", 8.5)
+        for para in section["paragraphs"]:
+            # Handle bullet lists (lines starting with •)
+            lines = para.split("\n")
+            for line in lines:
+                stripped = line.strip()
+                if stripped.startswith("•"):
+                    # Bullet point with gold dot
+                    bx = LM + 5
+                    by_pos = pdf.get_y() + 1.5
+                    pdf.set_fill_color(*_GOLD)
+                    pdf.rect(bx, by_pos, 1.2, 1.2, "F")
+                    pdf.set_x(LM + 8)
+                    pdf.set_font("DejaVu", "", 8.5)
+                    pdf.set_text_color(*_BODY_TEXT)
+                    pdf.multi_cell(CW - 10, 4.2, stripped[1:].strip())
+                    pdf.ln(0.5)
+                elif stripped and stripped[0].isdigit() and ". " in stripped[:4]:
+                    # Numbered item
+                    bx = LM + 5
+                    by_pos = pdf.get_y() + 1.5
+                    pdf.set_fill_color(*_GOLD)
+                    pdf.rect(bx, by_pos, 1.2, 1.2, "F")
+                    pdf.set_x(LM + 8)
+                    pdf.set_font("DejaVu", "", 8.5)
+                    pdf.set_text_color(*_BODY_TEXT)
+                    pdf.multi_cell(CW - 10, 4.2, stripped)
+                    pdf.ln(0.5)
+                else:
+                    pdf.set_x(LM)
+                    pdf.set_font("DejaVu", "", 8.5)
+                    pdf.set_text_color(*_BODY_TEXT)
+                    pdf.multi_cell(CW, 4.5, stripped)
+                    pdf.ln(1)
+            pdf.ln(2)
+
+        # Subtle separator between sections
+        sep_y = pdf.get_y()
+        pdf.set_draw_color(*_LIGHT_LINE)
+        pdf.set_line_width(0.2)
+        pdf.line(LM + 15, sep_y, LM + CW - 15, sep_y)
+        pdf.ln(5)
+
+    # ── Closing signature ──
+    space = pdf.h - 18 - pdf.get_y()
+    if space < 50:
+        pdf.add_page()
+
     pdf.ln(4)
 
-    # Separator line
-    pdf.set_draw_color(212, 164, 74)
-    pdf.set_line_width(0.5)
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    pdf.ln(8)
+    # Signature box
+    box_y = pdf.get_y()
+    pdf.set_fill_color(*_IVORY)
+    pdf.rect(LM, box_y, CW, 28, "F")
+    pdf.set_fill_color(*_GOLD)
+    pdf.rect(LM, box_y, 2.5, 28, "F")
 
-    # Sections
-    for section in guide["sections"]:
-        pdf.set_text_color(26, 26, 46)
-        pdf.set_font("DejaVu", "B", 13)
-        pdf.multi_cell(0, 8, section["heading"])
-        pdf.ln(3)
+    pdf.set_xy(LM + 7, box_y + 5)
+    pdf.set_font("DejaVu", "", 8.5)
+    pdf.set_text_color(*_BODY_TEXT)
+    pdf.multi_cell(CW - 14, 4.5,
+        "Ce guide est fourni par Stratégie & Expertise Santé à titre informatif. "
+        "Il ne constitue pas un avis juridique ou médical personnalisé. "
+        "Pour un accompagnement adapté à votre situation, contactez-nous."
+    )
 
-        pdf.set_text_color(60, 60, 60)
-        pdf.set_font("DejaVu", "", 10)
-        for para in section["paragraphs"]:
-            pdf.multi_cell(0, 6, para)
-            pdf.ln(3)
-        pdf.ln(3)
+    pdf.set_xy(LM + 7, box_y + 20)
+    pdf.set_font("DejaVu", "B", 8.5)
+    pdf.set_text_color(*_GOLD)
+    pdf.cell(CW - 14, 5, "Stratégie & Expertise Santé \u2014 Votre bouclier.")
 
-    # Footer
+    pdf.ln(10)
+
+    # Final gold separator
+    sep_final = pdf.get_y()
+    pdf.set_draw_color(*_GOLD)
+    pdf.set_line_width(0.3)
+    pdf.line(65, sep_final, 145, sep_final)
     pdf.ln(5)
-    pdf.set_draw_color(212, 164, 74)
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    pdf.ln(5)
-    pdf.set_text_color(130, 130, 130)
-    pdf.set_font("DejaVu", "", 8)
-    pdf.multi_cell(0, 5, "Ce guide est fourni à titre informatif par Stratégie & Expertise Santé. Il ne constitue pas un avis juridique ou médical. Les montants et barèmes mentionnés sont ceux en vigueur au 1er avril 2025 et sont susceptibles de revalorisation annuelle. Pour un accompagnement personnalisé, contactez-nous sur notre site web.")
+
+    # Brand closing
+    pdf.set_font("DejaVu", "B", 9)
+    pdf.set_text_color(*_GOLD)
+    pdf.cell(CW, 5, "Vous n'êtes plus seul face à votre combat.", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("DejaVu", "B", 9)
+    pdf.cell(CW, 5, "Désormais, S.E.S est votre bouclier.", align="C")
 
     buf = io.BytesIO()
     pdf.output(buf)
