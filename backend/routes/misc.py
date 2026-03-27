@@ -443,3 +443,27 @@ async def sitemap_xml():
 async def robots_txt():
     content = f"""User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /admin/login\nDisallow: /espace-client\n\nSitemap: {SITE_URL}/api/sitemap.xml\n"""
     return PlainTextResponse(content=content)
+
+
+
+# ── Temporary PDF validation endpoint (for visual audit) ──
+@router.get("/pdf-validation/{filename}")
+async def serve_validation_pdf(filename: str):
+    import pathlib
+    safe = pathlib.Path(filename).name
+    fpath = f"/tmp/pdf_validation/{safe}"
+    if not os.path.isfile(fpath):
+        raise HTTPException(404, "PDF not found")
+    mime = "application/pdf" if safe.endswith(".pdf") else "image/png"
+    with open(fpath, "rb") as f:
+        data = f.read()
+    return Response(content=data, media_type=mime,
+                    headers={"Content-Disposition": f"inline; filename={safe}"})
+
+@router.get("/pdf-validation")
+async def list_validation_pdfs():
+    folder = "/tmp/pdf_validation"
+    if not os.path.isdir(folder):
+        return {"files": []}
+    files = sorted(f for f in os.listdir(folder) if f.endswith(".pdf") or f.endswith(".png"))
+    return {"files": [{"name": f, "url": f"/api/pdf-validation/{f}", "size": os.path.getsize(os.path.join(folder, f))} for f in files]}
