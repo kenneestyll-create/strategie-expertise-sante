@@ -15,6 +15,9 @@ class ContactRequest(BaseModel):
     sujet: str
     message: str
     type_accompagnement: Optional[str] = None
+    tracking_via: Optional[str] = None
+    tracking_source: Optional[str] = None
+    tracking_campaign: Optional[str] = None
     status: str = "nouveau"
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -26,6 +29,9 @@ class ContactRequestCreate(BaseModel):
     sujet: str
     message: str
     type_accompagnement: Optional[str] = None
+    tracking_via: Optional[str] = None
+    tracking_source: Optional[str] = None
+    tracking_campaign: Optional[str] = None
 
 class ContactRequestUpdate(BaseModel):
     status: Optional[str] = None

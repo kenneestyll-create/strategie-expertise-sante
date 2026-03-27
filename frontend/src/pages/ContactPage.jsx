@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,6 +18,26 @@ export const ContactPage = () => {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [consent, setConsent] = useState(false);
+  const [searchParams] = useSearchParams();
+  const trackedRef = useRef(false);
+
+  // Extract tracking params from URL
+  const trackingVia = searchParams.get('via') || '';
+  const trackingSource = searchParams.get('source') || '';
+  const trackingCampaign = searchParams.get('campaign') || '';
+
+  // Track contact page visit (once)
+  useEffect(() => {
+    if (trackedRef.current) return;
+    if (!trackingVia && !trackingSource) return;
+    trackedRef.current = true;
+    axios.post(`${API}/tracking/contact-visit`, {
+      via: trackingVia,
+      source: trackingSource,
+      campaign: trackingCampaign,
+    }).catch(() => {});
+  }, [trackingVia, trackingSource, trackingCampaign]);
+
   const [formData, setFormData] = useState({
     nom: '',
     prenom: '',
@@ -55,7 +75,13 @@ export const ContactPage = () => {
 
     setLoading(true);
     try {
-      await axios.post(`${API}/contact`, formData);
+      const payload = {
+        ...formData,
+        ...(trackingVia && { tracking_via: trackingVia }),
+        ...(trackingSource && { tracking_source: trackingSource }),
+        ...(trackingCampaign && { tracking_campaign: trackingCampaign }),
+      };
+      await axios.post(`${API}/contact`, payload);
       setSubmitted(true);
       toast.success("Votre message a été envoyé avec succès !");
     } catch (error) {

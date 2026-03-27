@@ -460,7 +460,7 @@ def generate_secured_pdf(
     pdf.set_y(box_y + box_h + 4)
 
     # ── QR Code + Lien discret — Conversion depuis le PDF ──
-    qr_url = "https://strategie-expertise-sante.fr/contact?src=pdf&type=dossier_express&via=qr"
+    qr_url = "https://strategie-expertise-sante.fr/contact?via=qr&source=dossier_express"
     qr_tmp_path = None
     try:
         import qrcode

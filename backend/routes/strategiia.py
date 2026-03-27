@@ -687,7 +687,7 @@ CONTENU DES DOCUMENTS FOURNIS :
         # Step 4: Sending email
         await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"progress_step": "sending"}})
 
-        expert_url = f"{SITE_URL}/contact"
+        expert_url = f"{SITE_URL}/contact?via=email&source=dossier_express"
         safe_display_name = name or "Madame, Monsieur"
 
         email_html = f"""<!DOCTYPE html>

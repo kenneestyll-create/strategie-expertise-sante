@@ -56,6 +56,7 @@ import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Cart
 import { BarChart3, BellRing, Download, FlaskConical, PenTool, FileSearch } from 'lucide-react';
 import { EmailTemplateEditor } from '@/components/EmailTemplateEditor';
 import { AdminConseilsStrate } from '@/components/AdminConseilsStrate';
+import { AdminConversionAnalytics } from '@/components/AdminConversionAnalytics';
 import { AdminPremiumReview } from '@/components/AdminPremiumReview';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -1917,6 +1918,9 @@ export const AdminDashboard = () => {
             ) : (
               <Card><CardContent className="py-12 text-center text-muted-foreground">Chargement des analytiques...</CardContent></Card>
             )}
+
+            {/* Conversion Analytics — Origine des leads */}
+            <AdminConversionAnalytics axiosConfig={axiosConfig} />
           </TabsContent>
 
           {/* Admin Documents Tab */}
