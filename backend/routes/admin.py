@@ -45,10 +45,14 @@ async def get_current_user(admin: dict = Depends(get_current_admin)):
 # ==================== CONTACTS ====================
 
 @router.get("/admin/contacts", response_model=List[ContactRequest])
-async def get_all_contacts(status: Optional[str] = None, admin: dict = Depends(get_current_admin)):
+async def get_all_contacts(status: Optional[str] = None, via: Optional[str] = None, source: Optional[str] = None, admin: dict = Depends(get_current_admin)):
     query = {}
     if status:
         query["status"] = status
+    if via:
+        query["tracking_via"] = via
+    if source:
+        query["tracking_source"] = source
     contacts = await db.contacts.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
     for contact in contacts:
         if isinstance(contact.get('created_at'), str):

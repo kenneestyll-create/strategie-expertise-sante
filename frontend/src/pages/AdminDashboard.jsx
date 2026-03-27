@@ -53,7 +53,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useAdminTest } from '@/components/AdminTestBanner';
 import axios from 'axios';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { BarChart3, BellRing, Download, FlaskConical, PenTool, FileSearch } from 'lucide-react';
+import { BarChart3, BellRing, Download, FlaskConical, PenTool, FileSearch, QrCode, Globe } from 'lucide-react';
 import { EmailTemplateEditor } from '@/components/EmailTemplateEditor';
 import { AdminConseilsStrate } from '@/components/AdminConseilsStrate';
 import { AdminConversionAnalytics } from '@/components/AdminConversionAnalytics';
@@ -315,6 +315,8 @@ export const AdminDashboard = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [notesAdmin, setNotesAdmin] = useState('');
   const [activeTab, setActiveTab] = useState('contacts');
+  const [canalFilter, setCanalFilter] = useState('all');
+  const [sourceFilter, setSourceFilter] = useState('all');
   const [adminDocs, setAdminDocs] = useState({ documents: [], stats: {} });
   const [emailStatus, setEmailStatus] = useState(null);
   const [docStatusFilter, setDocStatusFilter] = useState('');
@@ -523,8 +525,10 @@ export const AdminDashboard = () => {
       contact.sujet.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || contact.status === statusFilter;
+    const matchesCanal = canalFilter === 'all' || (contact.tracking_via || 'direct') === canalFilter;
+    const matchesSource = sourceFilter === 'all' || (sourceFilter === 'direct' ? !contact.tracking_source : contact.tracking_source === sourceFilter);
     
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesStatus && matchesCanal && matchesSource;
   });
 
   const formatDate = (dateString) => {
@@ -724,7 +728,7 @@ export const AdminDashboard = () => {
             {/* Filters */}
             <Card>
               <CardContent className="p-4">
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
@@ -736,19 +740,41 @@ export const AdminDashboard = () => {
                     />
                   </div>
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full sm:w-48" data-testid="status-filter">
-                      <SelectValue placeholder="Filtrer par statut" />
+                    <SelectTrigger className="w-full sm:w-36" data-testid="status-filter">
+                      <SelectValue placeholder="Statut" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Tous les statuts</SelectItem>
+                      <SelectItem value="all">Tous statuts</SelectItem>
                       <SelectItem value="nouveau">Nouveaux</SelectItem>
                       <SelectItem value="en_cours">En cours</SelectItem>
-                      <SelectItem value="traite">Traités</SelectItem>
+                      <SelectItem value="traite">Traites</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={canalFilter} onValueChange={setCanalFilter}>
+                    <SelectTrigger className="w-full sm:w-36" data-testid="canal-filter">
+                      <SelectValue placeholder="Canal" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous canaux</SelectItem>
+                      <SelectItem value="qr">QR Code</SelectItem>
+                      <SelectItem value="email">Email</SelectItem>
+                      <SelectItem value="pdf_link">Lien PDF</SelectItem>
+                      <SelectItem value="direct">Contact direct</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                    <SelectTrigger className="w-full sm:w-44" data-testid="source-filter">
+                      <SelectValue placeholder="Source" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Toutes sources</SelectItem>
+                      <SelectItem value="dossier_express">Dossier Express IA</SelectItem>
+                      <SelectItem value="strategiia">StrategiIA</SelectItem>
+                      <SelectItem value="direct">Contact direct</SelectItem>
                     </SelectContent>
                   </Select>
                   <Button variant="outline" onClick={fetchData} className="gap-2" data-testid="refresh-button">
                     <RefreshCw className="w-4 h-4" />
-                    Actualiser
                   </Button>
                 </div>
               </CardContent>
@@ -785,11 +811,24 @@ export const AdminDashboard = () => {
                       >
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
                               <h3 className="font-semibold truncate">
                                 {contact.prenom} {contact.nom}
                               </h3>
                               {getStatusBadge(contact.status)}
+                              {contact.tracking_via && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200" data-testid={`origin-tag-${contact.id}`}>
+                                  {contact.tracking_via === 'qr' && <QrCode className="w-2.5 h-2.5" />}
+                                  {contact.tracking_via === 'email' && <Mail className="w-2.5 h-2.5" />}
+                                  {contact.tracking_via === 'pdf_link' && <FileText className="w-2.5 h-2.5" />}
+                                  {contact.tracking_via === 'qr' ? 'QR PDF' : contact.tracking_via === 'email' ? 'Email' : contact.tracking_via === 'pdf_link' ? 'Lien PDF' : contact.tracking_via}
+                                </span>
+                              )}
+                              {contact.tracking_source && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200" data-testid={`source-tag-${contact.id}`}>
+                                  {contact.tracking_source === 'dossier_express' ? 'Dossier Express' : contact.tracking_source === 'strategiia' ? 'StrategiIA' : contact.tracking_source}
+                                </span>
+                              )}
                             </div>
                             <p className="text-sm text-muted-foreground truncate mb-2">
                               {contact.sujet}
@@ -2772,6 +2811,29 @@ export const AdminDashboard = () => {
                     <p>{selectedContact.type_accompagnement || "Non spécifié"}</p>
                   </div>
                 </div>
+
+                {/* Origin tags */}
+                {(selectedContact.tracking_via || selectedContact.tracking_source) && (
+                  <div className="flex items-center gap-3 p-3 bg-amber-50/60 rounded-lg border border-amber-100" data-testid="contact-origin-block">
+                    <Globe className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs text-muted-foreground font-medium">Origine :</span>
+                      {selectedContact.tracking_via && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800" data-testid="detail-canal-tag">
+                          {selectedContact.tracking_via === 'qr' && <QrCode className="w-3 h-3" />}
+                          {selectedContact.tracking_via === 'email' && <Mail className="w-3 h-3" />}
+                          {selectedContact.tracking_via === 'pdf_link' && <FileText className="w-3 h-3" />}
+                          Canal : {selectedContact.tracking_via === 'qr' ? 'QR PDF' : selectedContact.tracking_via === 'email' ? 'Email' : selectedContact.tracking_via === 'pdf_link' ? 'Lien PDF' : selectedContact.tracking_via}
+                        </span>
+                      )}
+                      {selectedContact.tracking_source && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-800" data-testid="detail-source-tag">
+                          Source : {selectedContact.tracking_source === 'dossier_express' ? 'Dossier Express IA' : selectedContact.tracking_source === 'strategiia' ? 'StrategiIA' : selectedContact.tracking_source}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">Sujet</p>
