@@ -1,0 +1,82 @@
+{
+  "summary": "Tested OCR extraction pipeline with 4-level cascade (pdfplumber → pypdfium2+tesseract → enhanced OCR → pdf2image fallback). All 16 tests passed: Tesseract 5.3.0 installed with French language pack (fra), PDF text extraction returns status=text_extracted, scanned PDFs return status=ocr_extracted via OCR, images return status=ocr_extracted, method field contains page-by-page quality info (e.g., '2/2 pages lisibles'), E2E flow preserves document_details through extract→submit→status.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_ocr_extraction_pipeline_v2.py",
+    "/app/test_reports/pytest/pytest_ocr_extraction_v2.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Tesseract 5.3.0 installed and working - PASS",
+    "French language pack (fra) available via tesseract --list-langs - PASS",
+    "start.sh contains auto-install logic for tesseract-ocr and tesseract-ocr-fra - PASS",
+    "POST /api/extract-document-text extracts text from PDF text documents (status=text_extracted) - PASS",
+    "POST /api/extract-document-text extracts text from scanned PDFs via OCR (status=ocr_extracted) - PASS",
+    "POST /api/extract-document-text extracts text from images via OCR (status=ocr_extracted) - PASS",
+    "Method field contains page-by-page quality info (e.g., 'PDF texte — 2 pages, extraction directe (2/2 pages lisibles)') - PASS",
+    "Pre-processing pipeline implemented in _preprocess_image (contrast, sharpen, denoise, resize) - PASS (code review)",
+    "4-level cascade: pdfplumber → pypdfium2+tesseract → enhanced OCR → pdf2image fallback - PASS (code review)",
+    "E2E flow: extract → submit → status preserves document_details array - PASS",
+    "Multiple documents extraction and preservation - PASS",
+    "Edge cases handled: empty data (no_data), invalid base64 (decode_error), unsupported type (unsupported) - PASS"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_ocr_extraction_pipeline_v2.py"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "N/A (backend only testing)"
+  },
+  "test_credentials": "Admin: admin@accompagn-sante.fr / Admin2024!",
+  "seed_data_creation": "Created test dossiers via admin-bypass for E2E testing",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "OCR extraction pipeline fully tested. Key findings: 1) Tesseract 5.3.0 with French language pack working, 2) 4-level cascade extraction implemented (pdfplumber → pypdfium2+tesseract → enhanced OCR → pdf2image fallback), 3) Method field contains page-by-page quality info like '2/2 pages lisibles', 4) Pre-processing uses contrast/sharpen/denoise/resize, 5) E2E flow preserves document_details through entire workflow. Test file: /app/backend/tests/test_ocr_extraction_pipeline_v2.py",
+  "features_tested": {
+    "backend": [
+      "tesseract --version returns 5.3.0 - PASS",
+      "tesseract --list-langs includes fra - PASS",
+      "start.sh contains tesseract auto-install logic - PASS",
+      "POST /api/extract-document-text with text PDF returns status=text_extracted - PASS",
+      "POST /api/extract-document-text with scanned PDF returns status=ocr_extracted - PASS",
+      "POST /api/extract-document-text with image returns status=ocr_extracted - PASS",
+      "Method field contains '2/2 pages lisibles' format - PASS",
+      "Method field contains page count (e.g., '3 pages') - PASS",
+      "Details include preview and text_length fields - PASS",
+      "E2E: extract → admin-bypass submit → status returns document_details - PASS",
+      "Multiple documents extraction preserves all details - PASS",
+      "Text file extraction returns status=text_extracted - PASS",
+      "Empty file data returns status=no_data - PASS",
+      "Invalid base64 returns status=decode_error - PASS",
+      "Unsupported file type returns status=unsupported - PASS"
+    ]
+  },
+  "ocr_pipeline_details": {
+    "tesseract_version": "5.3.0",
+    "languages_available": ["eng", "fra", "osd"],
+    "extraction_methods": {
+      "text_pdf": "pdfplumber direct extraction",
+      "scanned_pdf": "pypdfium2 + tesseract OCR with optional pre-processing",
+      "image": "PIL + tesseract OCR with optional pre-processing",
+      "text_file": "direct UTF-8 decode"
+    },
+    "pre_processing_steps": ["autocontrast", "contrast enhancement (1.5x)", "sharpness enhancement (2.0x)", "median filter denoise", "upscale if width < 1500px"],
+    "status_codes": {
+      "text_extracted": "Native text extraction successful",
+      "ocr_extracted": "OCR extraction successful",
+      "partially_readable": "Some pages readable via OCR",
+      "ocr_empty": "OCR returned no text",
+      "no_data": "Empty file data",
+      "decode_error": "Invalid base64 encoding",
+      "unsupported": "Unsupported file type"
+    }
+  }
+}
