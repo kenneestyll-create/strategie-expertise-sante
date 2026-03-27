@@ -278,6 +278,17 @@ Problèmes réels identifiés et corrigés:
 - **Données conservées** : tracking_via + tracking_source suivent le lead du formulaire jusqu'à l'admin
 - Tests: iteration 131 — 12/12 backend, 10/10 frontend
 
+## Statut Converti & ROI par Canal (Mar 2026) — DONE
+- **Statut "Converti"** ajoute au pipeline leads avec badge vert (BadgeCheck)
+- **Formulaire de conversion** dans la modale contact : montant facture + type de prestation (6 types)
+- **Champs DB** : `conversion_montant` (float), `conversion_prestation` (str), `conversion_date` (str)
+- **KPI "Convertis"** dans le tab contacts avec compteur + revenu total
+- **ROI par canal** dans l'onglet Analytics : revenus generes, closing rate, par canal (QR/Email/PDF/Direct)
+- **Revenus par prestation** : breakdown Accompagnement MP, Protection juridique, Expertise medicale, etc.
+- **Stats admin enrichies** : `GET /api/admin/stats` retourne `converti` + `total_revenue`
+- **Analytics enrichi** : `GET /api/tracking/conversion-analytics` retourne `conversions`, `revenue`, `close_rate`, `prestations`
+- Tests: iteration 132 — 11/11 backend, 14/14 frontend
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Integration HubSpot (en attente de credentials)
