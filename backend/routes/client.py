@@ -361,9 +361,11 @@ async def get_dossier_analysis(client: dict = Depends(get_current_client)):
     # Check if client has a completed AND payment-verified Dossier Express IA (paid service)
     dossier_express_entry = await db.dossier_express.find_one(
         {"email": email, "status": "completed", "payment_verified": {"$ne": False}},
-        {"_id": 0, "id": 1}
+        {"_id": 0, "id": 1, "human_reviewed": 1, "reviewed_at": 1}
     )
     has_dossier_express = dossier_express_entry is not None
+    human_reviewed = dossier_express_entry.get("human_reviewed", False) if dossier_express_entry else False
+    reviewed_at = dossier_express_entry.get("reviewed_at", "") if dossier_express_entry else ""
 
     # 1. Fetch all client data
     docs = await db.client_documents.find(
@@ -682,6 +684,7 @@ async def get_dossier_analysis(client: dict = Depends(get_current_client)):
     if not has_dossier_express:
         return {
             "has_dossier_express": False,
+            "human_reviewed": False,
             "score": composite,
             "dynamic_message": dynamic_message,
             "actionable_count": actionable_count,
@@ -700,6 +703,8 @@ async def get_dossier_analysis(client: dict = Depends(get_current_client)):
     # Full data for Dossier Express IA clients
     return {
         "has_dossier_express": True,
+        "human_reviewed": human_reviewed,
+        "reviewed_at": reviewed_at,
         "score": composite,
         "key_metrics": key_metrics,
         "dynamic_message": dynamic_message,

@@ -221,11 +221,34 @@ export const DossierAnalysis = ({ token }) => {
 
   // ── DOSSIER EXPRESS client: full premium analysis ──
   const { score, key_metrics, dynamic_message, score_breakdown, weak_points, risk_alerts, missing_documents, actionable_count, recommended_actions, predictions, premium_cta } = data;
+  const humanReviewed = data.human_reviewed;
+  const reviewedAt = data.reviewed_at;
   const msgColor = SCORE_COLORS[dynamic_message.color] || SCORE_COLORS.blue;
   const displayedRisks = showAllRisks ? risk_alerts : risk_alerts.slice(0, 3);
 
   return (
     <div className="space-y-4 mb-6" data-testid="dossier-analysis">
+
+      {/* ── Expert Review Banner ── */}
+      {humanReviewed && (
+        <div className="relative overflow-hidden rounded-xl border border-amber-300/50 bg-gradient-to-r from-amber-50/80 via-white to-amber-50/40" data-testid="expert-review-banner">
+          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-amber-400 to-amber-600 rounded-l-xl" />
+          <div className="flex items-center gap-3 px-4 py-3">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center flex-shrink-0 shadow-md shadow-amber-200/40">
+              <Shield className="w-4.5 h-4.5 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm font-bold text-amber-900">Rapport vérifié par un expert</span>
+                <Badge className="text-[8px] bg-amber-100 text-amber-800 border-amber-300/60">Analyse premium</Badge>
+              </div>
+              <p className="text-[11px] text-amber-700/70 mt-0.5">
+                Ce dossier a été vérifié et complété par notre équipe d'experts pour garantir l'exhaustivité et la fiabilité des informations.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Real-time Feedback ── */}
       {feedback && (
@@ -254,6 +277,19 @@ export const DossierAnalysis = ({ token }) => {
             <div className={`flex flex-col items-center justify-center p-6 md:border-r border-border ${msgColor.bg}`}>
               <ScoreRing score={score} color={dynamic_message.color} />
               <p className="text-xs font-semibold mt-2 text-center" data-testid="dossier-score-label">Solidité du dossier</p>
+              {humanReviewed && (
+                <div className="mt-2 group relative" data-testid="expert-reviewed-badge">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-300/60 shadow-sm">
+                    <CheckCircle className="w-3.5 h-3.5 text-amber-600" />
+                    <span className="text-[10px] font-semibold text-amber-800 tracking-wide uppercase">Relu par expert</span>
+                  </div>
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 px-3 py-2 bg-foreground text-primary-foreground text-[11px] rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none z-50">
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-2 h-2 bg-foreground rotate-45" />
+                    Ce dossier a été vérifié et complété par notre équipe d'experts pour garantir l'exhaustivité et la fiabilité des informations.
+                    {reviewedAt && <span className="block mt-1 text-primary-foreground/60">Relu le {new Date(reviewedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>}
+                  </div>
+                </div>
+              )}
             </div>
             <div className="flex-1 p-5 md:p-6 flex flex-col justify-between">
               <div>

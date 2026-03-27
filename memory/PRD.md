@@ -32,17 +32,19 @@ Plateforme premium de conseil en maladies professionnelles, avec scanner de docu
 - Politique de confidentialité + DataConsentBox
 
 ### Admin Human Review Workflow (DONE - 27 mars 2026)
-- **Stockage des fichiers originaux** : Les documents clients (PDF/JPG/PNG) sont sauvegardés dans Emergent Object Storage pendant l'extraction
-- **Endpoint téléchargement sécurisé** : `GET /api/admin/dossier-express/{id}/documents/{file_id}/download`
-- **Modification de l'analyse** : `PUT /api/admin/dossier-express/{id}/analysis` — Marquage `human_reviewed=True`
-- **Regénération PDF** : `POST /api/admin/dossier-express/{id}/regenerate-pdf` — PDF avec badge "Relu par expert", envoi email optionnel
-- **UI "Revue expert"** : 4ème onglet dans le modal dossier admin avec :
-  - Documents originaux téléchargeables
-  - Indicateur de complétude (stockés, analysés, pages, % extraction)
-  - Éditeur d'analyse IA avec sauvegarde
-  - Notes internes admin
-  - Boutons regénération PDF + envoi au client
-- **Auto-purge étendue** : Les références aux fichiers originaux sont purgées avec le texte OCR après 30 jours
+- Stockage des fichiers originaux dans Emergent Object Storage
+- Endpoint téléchargement sécurisé : `GET /api/admin/dossier-express/{id}/documents/{file_id}/download`
+- Modification de l'analyse : `PUT /api/admin/dossier-express/{id}/analysis`
+- Regénération PDF : `POST /api/admin/dossier-express/{id}/regenerate-pdf`
+- UI "Revue expert" dans le modal admin dossier
+- Auto-purge étendue aux fichiers originaux
+
+### Badge "Relu par expert" côté client (DONE - 27 mars 2026)
+- Badge doré "Expert" dans la navbar de l'espace client (discret, à côté du score)
+- Bannière premium "Rapport vérifié par un expert" avec badge "Analyse premium" au-dessus de l'analyse
+- Badge "Relu par expert" avec tooltip explicatif sous le score dans la carte principale
+- Endpoint `/api/client/dossier-analysis` renvoie `human_reviewed` et `reviewed_at`
+- Conditionnel : visible uniquement après validation par un expert admin
 
 ## Backlog
 

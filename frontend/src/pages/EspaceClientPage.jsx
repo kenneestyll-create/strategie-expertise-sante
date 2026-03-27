@@ -307,6 +307,11 @@ const ClientDashboard = ({ token, clientName, logout }) => {
                     {navScore.score < 50 ? 'Fragile' : navScore.score < 80 ? 'En progression' : 'Solide'}
                   </span>
                 </div>
+                {navScore.human_reviewed && (
+                  <span className="flex items-center gap-0.5 text-[9px] font-bold text-amber-400" title="Relu par un expert" data-testid="navbar-expert-badge">
+                    <CheckCircle className="w-3 h-3" />Expert
+                  </span>
+                )}
                 {/* Delta indicator */}
                 {scoreDelta && scoreDelta > 0 && (
                   <span className="flex items-center gap-0.5 text-[10px] font-bold text-green-400 animate-bounce" data-testid="navbar-score-delta">
