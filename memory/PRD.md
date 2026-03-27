@@ -298,6 +298,15 @@ Problèmes réels identifiés et corrigés:
 - **UX** : Avertissement "Ne fermez pas la page", resume fichiers (nombre + taille totale + limites)
 - Tests: iteration 133 — 8/8 backend, 7/7 frontend
 
+## Compression Automatique Images Client-Side (Mar 2026) — DONE
+- **Compression Canvas API** pour images JPG/PNG > 2 Mo avant upload
+- **Parametres OCR-safe** : max 2400px dimension, JPEG quality 0.82 (preservation lisibilite OCR)
+- **Conversion PNG → JPEG** automatique pendant compression
+- **Badge compression** sur chaque fichier : "taille originale → taille compressee"
+- **Banniere resume** : "X images compressees automatiquement — Y Mo economises"
+- **Protection** : si la compression est plus lourde que l'original, l'original est conserve
+- Tests: iteration 134 — 100% backend, 100% frontend
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Integration HubSpot (en attente de credentials)
