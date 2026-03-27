@@ -6,7 +6,7 @@
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
-const CHUNK_THRESHOLD = 20 * 1024 * 1024; // 20 MB
+const CHUNK_THRESHOLD = 5 * 1024 * 1024; // 5 MB — lowered from 20 MB to ensure reliable uploads on slow connections
 const CHUNK_SIZE = 2 * 1024 * 1024; // 2 MB
 const MAX_RETRIES = 3;
 
@@ -36,12 +36,13 @@ async function uploadChunk(uploadId, filename, chunkIndex, totalChunks, chunkBlo
   try {
     const res = await axios.post(`${API}/upload/chunk`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 30000,
+      timeout: 60000,
     });
     return res.data;
   } catch (err) {
     if (retries < MAX_RETRIES) {
-      await new Promise(r => setTimeout(r, 1000 * (retries + 1)));
+      const delay = 1000 * Math.pow(2, retries);
+      await new Promise(r => setTimeout(r, delay));
       return uploadChunk(uploadId, filename, chunkIndex, totalChunks, chunkBlob, retries + 1);
     }
     throw err;
@@ -146,15 +147,65 @@ export async function extractTextFromFiles(files, existingOcrText = '', onProgre
     const res = await axios.post(`${API}/upload/extract`, {
       upload_id: uploadId,
       files: allFiles,
-    }, { timeout: 120000 });
+    }, { timeout: 300000 });
 
-    combinedText = res.data.extracted_text || '';
-    details = res.data.details || [];
-    extractedCount = details.filter(d => d.has_text).length;
+    // Check if server returned async mode for large files
+    if (res.data.async && res.data.extraction_id) {
+      const extractionId = res.data.extraction_id;
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('upload-progress', { detail: { percent: 95, phase: 'extracting-large', message: 'Extraction en cours — fichier volumineux, veuillez patienter...' } }));
+      }
+      // Poll for result
+      let pollResult = null;
+      for (let attempt = 0; attempt < 120; attempt++) {
+        await new Promise(r => setTimeout(r, 2000));
+        try {
+          const pollRes = await axios.get(`${API}/upload/extract-status/${extractionId}`, { timeout: 15000 });
+          if (pollRes.data.status === 'done') {
+            pollResult = pollRes.data;
+            break;
+          } else if (pollRes.data.status === 'error') {
+            console.warn('Async extraction error:', pollRes.data.error);
+            break;
+          }
+        } catch { /* poll retry */ }
+      }
+      if (pollResult) {
+        combinedText = pollResult.extracted_text || '';
+        details = pollResult.details || [];
+        extractedCount = details.filter(d => d.has_text).length;
+      } else {
+        for (const f of allFiles) {
+          combinedText += `\n--- ${f.name} ---\n[Extraction en cours — délai dépassé]\n`;
+        }
+      }
+    } else {
+      combinedText = res.data.extracted_text || '';
+      details = res.data.details || [];
+      extractedCount = details.filter(d => d.has_text).length;
+    }
   } catch (err) {
-    console.warn('Chunked extraction failed:', err.message);
-    for (const f of allFiles) {
-      combinedText += `\n--- ${f.name} ---\n[Extraction serveur indisponible]\n`;
+    // Retry once on timeout/network errors
+    if (err.code === 'ECONNABORTED' || err.message?.includes('timeout') || !err.response) {
+      try {
+        const res2 = await axios.post(`${API}/upload/extract`, {
+          upload_id: uploadId,
+          files: allFiles,
+        }, { timeout: 300000 });
+        combinedText = res2.data.extracted_text || '';
+        details = res2.data.details || [];
+        extractedCount = details.filter(d => d.has_text).length;
+      } catch (retryErr) {
+        console.warn('Chunked extraction retry failed:', retryErr.message);
+        for (const f of allFiles) {
+          combinedText += `\n--- ${f.name} ---\n[Extraction serveur indisponible]\n`;
+        }
+      }
+    } else {
+      console.warn('Chunked extraction failed:', err.message);
+      for (const f of allFiles) {
+        combinedText += `\n--- ${f.name} ---\n[Extraction serveur indisponible]\n`;
+      }
     }
   }
 
@@ -205,14 +256,39 @@ async function extractBase64(files, existingOcrText = '') {
 
   if (filesToExtract.some(f => f.data)) {
     try {
-      const res = await axios.post(`${API}/extract-document-text`, { files: filesToExtract });
+      const res = await axios.post(`${API}/extract-document-text`, { files: filesToExtract }, {
+        timeout: 300000,
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const pct = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('upload-progress', { detail: { percent: pct, phase: 'upload' } }));
+            }
+          }
+        },
+      });
       combinedText = res.data.extracted_text || '';
       details = res.data.details || [];
       extractedCount = details.filter(d => d.has_text).length;
     } catch (err) {
-      console.warn('Server-side extraction failed:', err.message);
-      for (const f of filesToExtract) {
-        combinedText += `\n--- ${f.name} ---\n[Extraction serveur indisponible]\n`;
+      // Retry once on timeout/network error
+      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout') || !err.response) {
+        try {
+          const res2 = await axios.post(`${API}/extract-document-text`, { files: filesToExtract }, { timeout: 300000 });
+          combinedText = res2.data.extracted_text || '';
+          details = res2.data.details || [];
+          extractedCount = details.filter(d => d.has_text).length;
+        } catch (retryErr) {
+          console.warn('Base64 extraction retry failed:', retryErr.message);
+          for (const f of filesToExtract) {
+            combinedText += `\n--- ${f.name} ---\n[Extraction serveur indisponible — veuillez réessayer]\n`;
+          }
+        }
+      } else {
+        console.warn('Server-side extraction failed:', err.message);
+        for (const f of filesToExtract) {
+          combinedText += `\n--- ${f.name} ---\n[Extraction serveur indisponible]\n`;
+        }
       }
     }
   } else {

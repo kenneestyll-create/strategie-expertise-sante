@@ -265,9 +265,12 @@ export const DossierExpressPage = () => {
     let documentDetails = [];
     try {
       if (files.length > 0) {
-        const hasLargeFiles = files.some(f => f.size > 20 * 1024 * 1024);
+        const hasLargeFiles = files.some(f => f.size > 5 * 1024 * 1024);
+        const totalSize = files.reduce((s, f) => s + (f.size || 0), 0);
         if (hasLargeFiles) {
-          toast.info("Fichiers volumineux detectes — upload fractionne en cours...");
+          toast.info("Fichiers volumineux detectes — upload fractionne securise en cours...");
+        } else if (totalSize > 2 * 1024 * 1024) {
+          toast.info(`Envoi de ${files.length} document${files.length > 1 ? 's' : ''} — cela peut prendre quelques instants...`);
         } else {
           toast.info(`Lecture de ${files.length} document${files.length > 1 ? 's' : ''}...`);
         }
@@ -291,6 +294,11 @@ export const DossierExpressPage = () => {
       }
     } catch (fileErr) {
       console.error('File extraction error:', fileErr);
+      const isTimeout = fileErr?.code === 'ECONNABORTED' || fileErr?.message?.includes('timeout');
+      const isNetwork = !fileErr?.response && fileErr?.message?.includes('Network');
+      if (isTimeout || isNetwork) {
+        toast.error("L'envoi a pris trop de temps. Verifiez votre connexion et reessayez.", { duration: 8000 });
+      }
       if (form.documents_text) {
         documentsText = `--- Contenu extrait par OCR ---\n${form.documents_text}\n`;
       }
