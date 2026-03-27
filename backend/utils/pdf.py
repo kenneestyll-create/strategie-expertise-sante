@@ -23,6 +23,10 @@ _STRIP_PATTERNS = [
     # Strip LLM-generated closing phrase (it's hardcoded in the PDF template)
     re.compile(r'(?i)^\W*vous\s+n.{0,3}tes\s+plus\s+seul'),
     re.compile(r'(?i)^\W*d.sormais.*devient\s+votre\s+bouclier'),
+    re.compile(r'(?i)^\W*et\s+maintenant\s*\??'),
+    re.compile(r'(?i)^\W*vous\s+souhaitez\s+aller\s+plus\s+loin'),
+    re.compile(r'(?i)^\W*premi.re\s+consultation\s+offerte'),
+    re.compile(r'(?i)^\W*votre\s+bouclier\.?\s*$'),
 ]
 
 
@@ -363,43 +367,114 @@ def generate_secured_pdf(
         ))
         pdf.ln(2)
 
-    # ── Signature emotionnelle de marque ──
+    # ── Et maintenant ? — Bloc de conversion stratégique en 3 parties ──
     space = pdf.h - 16 - pdf.get_y()
-    if space < 35:
+    if space < 80:
         pdf.add_page()
 
-    pdf.ln(4)
-    # Gold thin separator
-    sep_y = pdf.get_y()
-    pdf.set_draw_color(*_GOLD)
-    pdf.set_line_width(0.3)
-    pdf.line(55, sep_y, 155, sep_y)
-    pdf.ln(5)
+    pdf.ln(6)
 
-    pdf.set_font("Helvetica", "I", 9)
+    # ── Titre de section "Et maintenant ?" ──
+    ty = pdf.get_y()
+    pdf.set_fill_color(*_GOLD)
+    pdf.rect(LM, ty, 2.5, 7, "F")
+    pdf.set_x(LM + 6)
+    pdf.set_font("Helvetica", "B", 11)
     pdf.set_text_color(*_BLACK)
-    pdf.cell(CW, 5, _safe("Vous n'etes plus seul(e) face a votre situation."), align="C", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Helvetica", "BI", 9)
-    pdf.set_text_color(*_GOLD)
-    pdf.cell(CW, 5, _safe("Desormais, Strategie & Expertise Sante devient votre bouclier."), align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(CW - 6, 7, _safe("Et maintenant ?"))
+    pdf.ln(10)
 
+    # ── Partie 1 : Cloture emotionnelle ──
+    pdf.set_font("Helvetica", "I", 8.5)
+    pdf.set_text_color(*_BODY_TEXT)
+    pdf.set_x(LM)
+    pdf.multi_cell(CW, 4.2, _safe(
+        "Si vous lisez ces lignes, c'est que vous traversez une epreuve "
+        "que personne ne devrait affronter seul(e). Ce rapport a ete concu "
+        "pour poser un premier eclairage clair et structure sur votre situation. "
+        "C'est deja un pas important."
+    ))
+    pdf.ln(3)
+
+    # ── Partie 2 : Transition strategique ──
+    # Subtle separator
+    sep_y = pdf.get_y()
+    pdf.set_draw_color(*_LIGHT_LINE)
+    pdf.set_line_width(0.2)
+    pdf.line(LM + 15, sep_y, LM + CW - 15, sep_y)
     pdf.ln(4)
-    # Second gold separator
+
+    pdf.set_font("Helvetica", "", 8)
+    pdf.set_text_color(*_BODY_TEXT)
+    pdf.set_x(LM)
+    pdf.multi_cell(CW, 4.2, _safe(
+        "Mais un rapport, aussi precis soit-il, reste un point de depart. "
+        "Chaque dossier comporte des subtilites que seule une analyse humaine "
+        "approfondie peut reveler : des leviers juridiques inexploites, "
+        "des erreurs de consolidation, des prejudices sous-evalues."
+    ))
+    pdf.ln(3)
+
+    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_text_color(*_BLACK)
+    pdf.set_x(LM)
+    pdf.multi_cell(CW, 4.2, _safe(
+        "Ce que ce rapport vous montre, c'est le potentiel de votre dossier. "
+        "Ce qu'un accompagnement personnalise vous apporte, c'est la capacite "
+        "de le transformer en resultat concret."
+    ))
+    pdf.ln(3)
+
+    # ── Partie 3 : Orientation vers l'offre finale ──
+    # Elegant box
     sep_y2 = pdf.get_y()
-    pdf.set_draw_color(*_GOLD)
-    pdf.line(55, sep_y2, 155, sep_y2)
+    pdf.set_draw_color(*_LIGHT_LINE)
+    pdf.set_line_width(0.2)
+    pdf.line(LM + 15, sep_y2, LM + CW - 15, sep_y2)
     pdf.ln(4)
 
-    # ── Contact & CTA block ──
+    box_y = pdf.get_y()
+    pdf.set_fill_color(*_IVORY)
+    box_h = 26
+    pdf.rect(LM, box_y, CW, box_h, "F")
+    # Gold left accent on the box
+    pdf.set_fill_color(*_GOLD)
+    pdf.rect(LM, box_y, 2, box_h, "F")
+
+    pdf.set_xy(LM + 6, box_y + 3)
     pdf.set_font("Helvetica", "B", 8.5)
     pdf.set_text_color(*_BLACK)
-    pdf.cell(CW, 4, "Strategie & Expertise Sante", align="C", new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(1.5)
+    pdf.cell(CW - 10, 4.5, _safe("Vous souhaitez aller plus loin ?"))
+
+    pdf.set_xy(LM + 6, box_y + 9)
+    pdf.set_font("Helvetica", "", 7.5)
+    pdf.set_text_color(*_BODY_TEXT)
+    pdf.multi_cell(CW - 10, 3.8, _safe(
+        "Nos experts vous proposent un accompagnement sur mesure : "
+        "relecture approfondie de votre dossier, strategie de recours, "
+        "preparation d'expertise medicale, et defense de vos interets "
+        "a chaque etape."
+    ))
+
+    pdf.set_y(box_y + box_h + 4)
+
+    # Contact line — subtle, not salesy
     pdf.set_font("Helvetica", "", 7)
     pdf.set_text_color(*_MUTED)
-    pdf.cell(CW, 3.5, "Prendre rendez-vous : strategie-expertise-sante.fr/contact", align="C", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Helvetica", "I", 6.5)
-    pdf.cell(CW, 3.5, "Consultation personnalisee sur rendez-vous  --  Premiere consultation gratuite", align="C")
+    pdf.cell(CW, 3.5, _safe("Premiere consultation offerte  |  strategie-expertise-sante.fr/contact"), align="C", new_x="LMARGIN", new_y="NEXT")
+
+    pdf.ln(3)
+
+    # ── Signature de marque finale ──
+    sep_y3 = pdf.get_y()
+    pdf.set_draw_color(*_GOLD)
+    pdf.set_line_width(0.3)
+    pdf.line(65, sep_y3, 145, sep_y3)
+    pdf.ln(4)
+
+    pdf.set_font("Helvetica", "BI", 8.5)
+    pdf.set_text_color(*_GOLD)
+    pdf.cell(CW, 4.5, _safe("Strategie & Expertise Sante — Votre bouclier."), align="C")
 
     # ── Watermark ──
     if with_watermark:
