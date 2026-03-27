@@ -236,6 +236,18 @@ Problèmes réels identifiés et corrigés:
 - **Strip patterns ajoutés** : 4 regex pour empêcher le LLM de dupliquer les phrases hardcodées
 - Tests: iteration 127 — 14/14 backend, 7/7 frontend
 
+## Tunnel de Conversion Email Premium Dossier Express (Mar 2026) — DONE
+- **Email de livraison refondé** : Template HTML premium noir/or/ivoire cohérent avec la marque S.E.S
+- **Bouton principal** : "Télécharger mon rapport PDF" — lien stable via object storage + token unique
+- **Texte d'accompagnement** : "Votre analyse personnalisée a bien été finalisée. Vous pouvez désormais consulter et télécharger votre rapport en toute simplicité."
+- **Transition stratégique** : Bloc ivoire avec accent doré préparant la conversion
+- **Bouton secondaire** : "Être accompagné par un expert" — redirige vers /contact
+- **Endpoint de téléchargement** : `GET /api/dossier-express/{id}/download?token=xxx` — sécurisé, stable, sans friction
+- **Stockage PDF** : PDF uploadé vers object storage avec chemin `strategie-expertise-sante/dossiers/{id}/{token}.pdf`
+- **Lien discret dans le PDF** : "Accompagnement personnalisé : strategie-expertise-sante.fr/contact" en pied de rapport
+- **Tunnel 3 niveaux** : Conversion depuis le site + depuis l'email + depuis le PDF
+- Tests: iteration 128 — 18/18 backend, 8/8 frontend
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Integration HubSpot (en attente de credentials)
