@@ -269,6 +269,15 @@ Problèmes réels identifiés et corrigés:
 - **URLs trackées cohérentes** : `?via=qr&source=dossier_express`, `?via=email&source=dossier_express`, `?via=pdf_link&source=...`
 - Tests: iteration 130 — 21/21 backend, 6/6 frontend
 
+## Tags d'Origine et Filtres de Leads (Mar 2026) — DONE
+- **Tags automatiques sur chaque fiche lead** : Canal (QR PDF / Email / Lien PDF - ambre) + Source (Dossier Express IA / StrategiIA - bleu)
+- **Filtres dans la liste contacts admin** : 4 filtres (Recherche, Statut, Canal, Source)
+- **Filtre backend** : `GET /api/admin/contacts?via=qr&source=dossier_express` filtre au niveau DB
+- **Fiche detail (modale)** : Bloc "Origine" avec icone globe + tags Canal/Source visibles
+- **Contacts directs** : Aucun tag affiché (comportement correct)
+- **Données conservées** : tracking_via + tracking_source suivent le lead du formulaire jusqu'à l'admin
+- Tests: iteration 131 — 12/12 backend, 10/10 frontend
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Integration HubSpot (en attente de credentials)
