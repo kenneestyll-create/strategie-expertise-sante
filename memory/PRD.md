@@ -214,6 +214,18 @@ Problèmes réels identifiés et corrigés:
 - Backend: `DELETE /api/admin/premium-analyses/{id}` supprime l'entrée ET le dossier lié dans `dossier_express`
 - Tests: iteration 125 — 100% backend (4/4), frontend (33 icônes, tous boutons existants intacts)
 
+## Pipeline OCR Renforcé et Persistant (Mar 2026) — DONE
+- **Cause racine** : tesseract/poppler (binaires système) disparaissaient à chaque redémarrage d'environnement → OCR échouait silencieusement → tous les scans/images marqués "non extractible"
+- **Fix persistance** : `start.sh` auto-installe tesseract-ocr + tesseract-ocr-fra + poppler-utils au démarrage
+- **Pipeline 4 niveaux** :
+  * Tentative 1 : Extraction texte native (pdfplumber)
+  * Tentative 2 : OCR standard (pypdfium2 + tesseract fra+eng)
+  * Tentative 3 : OCR renforcé (pré-traitement : autocontrast, contraste 1.5x, netteté 2x, débruitage, redimensionnement)
+  * Tentative 4 : Fallback pdf2image 300dpi + OCR renforcé
+- **Évaluation page par page** : chaque page classée lisible/partiellement lisible/non lisible
+- **Pré-traitement image** : autocontrast, contraste, netteté, débruitage median, upscale si < 1500px
+- Tests: iteration 126 — 16/16 backend (PDF texte, PDF scanné, image, edge cases)
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Corriger TTS mascotte Straté (parle anglais au lieu de français)
