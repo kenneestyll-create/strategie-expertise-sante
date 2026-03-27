@@ -363,6 +363,19 @@ Problèmes réels identifiés et corrigés:
 - **Email Dossier Express** : phrase de confidentialite ajoutee avant le footer
 - Tests: iteration 137 — 100% backend, 100% frontend
 
+## Fiabilite Uploads Dossier Express IA (Mar 2026) — DONE
+- **Seuil chunked abaisse** de 20 MB a 5 MB — plus de fichiers beneficient du mode fractionne
+- **Extraction asynchrone** pour fichiers > 15 MB base64 :
+  * POST /api/upload/extract retourne extraction_id
+  * GET /api/upload/extract-status/{id} pour polling du resultat
+  * Frontend poll toutes les 2s jusqu'a completion
+- **Timeouts augmentes** : 300s pour extraction, 60s par chunk (etait 30s)
+- **Retry automatique** avec backoff exponentiel sur timeout/erreur reseau
+- **Messages UX** : toast selon taille (petit/moyen/volumineux), erreur claire si timeout
+- **Test de stress** : 100% succes de 500 KB a 45 MB (tableau croise taille/temps/resultat)
+  * 500 KB base64: 2.3s | 4 MB base64: 1.4s | 10 MB chunked: 3.2s | 30 MB async: 27.2s | 45 MB async: 76.8s
+- Tests: iteration 138 — 100% backend (12/12), 100% frontend (6/6)
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Integration HubSpot (en attente de credentials)
