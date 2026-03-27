@@ -16,10 +16,14 @@ const ACCEPTED_TYPES = {
   'image/jpeg': 'JPG',
   'image/png': 'PNG',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'DOCX',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'XLSX',
+  'application/msword': 'DOC',
+  'application/vnd.ms-excel': 'XLS',
 };
-const ACCEPTED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png', '.docx'];
-const MAX_SIZE = 10 * 1024 * 1024; // 10MB
-const MAX_FILES = 5;
+const ACCEPTED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png', '.docx', '.xlsx', '.doc', '.xls'];
+const MAX_SIZE = 50 * 1024 * 1024; // 50 MB
+const MAX_TOTAL_SIZE = 100 * 1024 * 1024; // 100 MB
+const MAX_FILES = 10;
 
 const getFileIcon = (file) => {
   if (file.type?.startsWith('image/')) return Image;
@@ -40,13 +44,13 @@ const formatSize = (bytes) => {
 const validateFile = (file) => {
   const ext = '.' + file.name.split('.').pop().toLowerCase();
   if (!ACCEPTED_EXTENSIONS.includes(ext)) {
-    return { valid: false, error: `Format "${ext}" non accepté. Formats autorisés : PDF, JPG, PNG, DOCX.` };
+    return { valid: false, error: `Format "${ext}" non accepte. Formats autorises : PDF, JPG, PNG, DOCX, XLSX.` };
   }
   if (file.size > MAX_SIZE) {
-    return { valid: false, error: `Fichier trop volumineux (${formatSize(file.size)}). Taille maximale : 10 Mo.` };
+    return { valid: false, error: `Fichier trop volumineux (${formatSize(file.size)}). Taille maximale : 50 Mo. Veuillez reduire la taille du fichier ou le compresser.` };
   }
   if (file.size < 100) {
-    return { valid: false, error: 'Ce document semble illisible ou corrompu. Merci de le scanner à nouveau en haute qualité.' };
+    return { valid: false, error: 'Ce document semble illisible ou corrompu. Merci de le scanner a nouveau en haute qualite.' };
   }
   return { valid: true };
 };
@@ -217,6 +221,7 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
     const fileList = Array.from(newFiles);
     const validFiles = [];
     const newErrors = [];
+    const currentTotalSize = files.reduce((sum, f) => sum + (f.size || 0), 0);
 
     for (const file of fileList) {
       if (files.length + validFiles.length >= maxFiles) {
@@ -224,12 +229,17 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
         break;
       }
       const result = validateFile(file);
-      if (result.valid) {
-        file._validated = false;
-        validFiles.push(file);
-      } else {
+      if (!result.valid) {
         newErrors.push(`${file.name} : ${result.error}`);
+        continue;
       }
+      const newTotal = currentTotalSize + validFiles.reduce((s, f) => s + f.size, 0) + file.size;
+      if (newTotal > MAX_TOTAL_SIZE) {
+        newErrors.push(`Taille totale depassee (limite : ${formatSize(MAX_TOTAL_SIZE)}). Le fichier "${file.name}" (${formatSize(file.size)}) n'a pas ete ajoute.`);
+        continue;
+      }
+      file._validated = false;
+      validFiles.push(file);
     }
 
     setErrors(newErrors);
@@ -342,14 +352,20 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
             ref={inputRef}
             type="file"
             multiple
-            accept=".pdf,.jpg,.jpeg,.png,.docx"
+            accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.doc,.xls"
             onChange={e => { handleFiles(e.target.files); e.target.value = ''; }}
             className="hidden"
             data-testid="file-input"
           />
           <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">Glissez vos fichiers ou cliquez pour sélectionner</p>
-          <p className="text-xs text-muted-foreground mt-1">PDF, JPG, PNG, DOCX — Max 10 Mo — Max {maxFiles} fichiers</p>
+          <p className="text-sm text-muted-foreground">Glissez vos fichiers ou cliquez pour selectionner</p>
+          <p className="text-xs text-muted-foreground mt-1">PDF, JPG, PNG, DOCX, XLSX — Max 50 Mo/fichier — Max {maxFiles} fichiers</p>
+          {hasFiles && (
+            <p className="text-[10px] text-amber-600 mt-2 flex items-center justify-center gap-1">
+              <AlertTriangle className="w-3 h-3" />
+              Ne fermez pas la page pendant le telechargement
+            </p>
+          )}
         </div>
         {enableOCR && (
           <button
@@ -383,6 +399,10 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
           {files.map((f, i) => (
             <FilePreview key={`${f.name}-${i}`} file={f} onRemove={removeFile} index={i} />
           ))}
+          <div className="flex items-center justify-between text-xs text-muted-foreground px-1" data-testid="upload-summary">
+            <span>{files.length} fichier{files.length > 1 ? 's' : ''} — {formatSize(files.reduce((s, f) => s + (f.size || 0), 0))} total</span>
+            <span className="text-[10px]">Limite : 50 Mo/fichier, 100 Mo total</span>
+          </div>
         </div>
       )}
 

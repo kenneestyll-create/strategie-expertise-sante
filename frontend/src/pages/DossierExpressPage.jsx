@@ -606,11 +606,11 @@ export const DossierExpressPage = () => {
 
                   {/* Document upload */}
                   <div className="space-y-2">
-                    <Label>Documents (optionnel, max 5 fichiers)</Label>
+                    <Label>Documents (optionnel, max 10 fichiers)</Label>
                     <DocumentUploader
                       files={files}
                       onFilesChange={setFiles}
-                      maxFiles={5}
+                      maxFiles={10}
                       showChecklist={files.length > 0}
                       showGuide={true}
                       enableOCR={true}

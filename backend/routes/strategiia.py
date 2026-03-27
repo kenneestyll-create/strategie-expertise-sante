@@ -232,8 +232,16 @@ async def extract_document_text(request: Request):
     if not files_data:
         return {"extracted_text": "", "files_processed": 0, "details": []}
 
+    MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
+    MAX_TOTAL_SIZE = 100 * 1024 * 1024  # 100 MB
+    MAX_FILES = 10
+
+    if len(files_data) > MAX_FILES:
+        raise HTTPException(status_code=400, detail=f"Maximum {MAX_FILES} fichiers autorises")
+
     results = []
-    for file_info in files_data[:10]:
+    total_size = 0
+    for file_info in files_data[:MAX_FILES]:
         name = file_info.get("name", "unknown")
         file_type = file_info.get("type", "")
         data_b64 = file_info.get("data", "")
@@ -244,7 +252,16 @@ async def extract_document_text(request: Request):
         try:
             file_bytes = base64.b64decode(data_b64)
         except Exception:
-            results.append({"name": name, "text": "", "method": "erreur décodage", "pages": 0, "size_kb": 0, "status": "decode_error"})
+            results.append({"name": name, "text": "", "method": "erreur decodage", "pages": 0, "size_kb": 0, "status": "decode_error"})
+            continue
+
+        if len(file_bytes) > MAX_FILE_SIZE:
+            results.append({"name": name, "text": "", "method": "fichier trop volumineux", "pages": 0, "size_kb": round(len(file_bytes) / 1024, 1), "status": "too_large"})
+            continue
+
+        total_size += len(file_bytes)
+        if total_size > MAX_TOTAL_SIZE:
+            results.append({"name": name, "text": "", "method": "taille totale depassee", "pages": 0, "size_kb": round(len(file_bytes) / 1024, 1), "status": "total_exceeded"})
             continue
 
         size_kb = round(len(file_bytes) / 1024, 1)
