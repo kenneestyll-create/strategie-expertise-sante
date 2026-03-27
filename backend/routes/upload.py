@@ -9,6 +9,31 @@ from config import logger, db
 
 router = APIRouter(prefix="/upload", tags=["upload"])
 
+
+def _store_files_to_object_storage(assembled_files):
+    """Upload assembled files to Object Storage and return metadata."""
+    stored = []
+    try:
+        from utils.storage import upload_file
+    except Exception as e:
+        logger.warning(f"Object storage not available for file persistence: {e}")
+        return stored
+
+    for file_info in assembled_files:
+        name = file_info.get("name", "unknown")
+        data_b64 = file_info.get("data", "")
+        file_type = file_info.get("type", "application/octet-stream")
+        if not data_b64:
+            continue
+        try:
+            raw_bytes = base64.b64decode(data_b64)
+            result = upload_file("dossier-originals", name, raw_bytes, file_type)
+            result["file_id"] = str(uuid.uuid4())
+            stored.append(result)
+        except Exception as e:
+            logger.warning(f"Failed to store original file {name}: {e}")
+    return stored
+
 UPLOAD_DIR = "/tmp/chunked_uploads"
 CHUNK_SIZE = 2 * 1024 * 1024  # 2 MB
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
@@ -112,7 +137,8 @@ def _reassemble_files(upload_id, files_meta):
 async def _run_extraction(extraction_id, assembled_files):
     """Background task: run OCR extraction and store result."""
     try:
-        _extraction_results[extraction_id] = {"status": "processing", "progress": "Extraction OCR en cours..."}
+        stored = _extraction_results.get(extraction_id, {}).get("stored_files", [])
+        _extraction_results[extraction_id] = {"status": "processing", "progress": "Extraction OCR en cours...", "stored_files": stored}
 
         import routes.strategiia as strat_module
 
@@ -121,7 +147,7 @@ async def _run_extraction(extraction_id, assembled_files):
                 return {"files": assembled_files}
 
         result = await strat_module.extract_document_text(MockRequest())
-        _extraction_results[extraction_id] = {"status": "done", "result": result}
+        _extraction_results[extraction_id] = {"status": "done", "result": result, "stored_files": stored}
     except Exception as e:
         logger.error(f"Async extraction {extraction_id} failed: {e}")
         _extraction_results[extraction_id] = {"status": "error", "error": str(e)}
@@ -142,15 +168,18 @@ async def extract_chunked_files(request_body: dict):
 
     assembled_files = _reassemble_files(upload_id, files_meta)
 
+    # Store original files to Object Storage (non-blocking best-effort)
+    stored_files = await asyncio.to_thread(_store_files_to_object_storage, assembled_files)
+
     # Calculate total data size
     total_data = sum(len(f.get("data", "")) for f in assembled_files)
 
     # For large payloads (> 15MB base64 ~ 10MB raw), process asynchronously
     if total_data > 15 * 1024 * 1024:
         extraction_id = str(uuid.uuid4())
-        _extraction_results[extraction_id] = {"status": "queued"}
+        _extraction_results[extraction_id] = {"status": "queued", "stored_files": stored_files}
         asyncio.create_task(_run_extraction(extraction_id, assembled_files))
-        return {"async": True, "extraction_id": extraction_id, "message": "Extraction en cours — fichier volumineux"}
+        return {"async": True, "extraction_id": extraction_id, "stored_files": stored_files, "message": "Extraction en cours — fichier volumineux"}
 
     # For smaller payloads, process synchronously (faster)
     import routes.strategiia as strat_module
@@ -160,6 +189,7 @@ async def extract_chunked_files(request_body: dict):
             return {"files": assembled_files}
 
     result = await strat_module.extract_document_text(MockRequest())
+    result["stored_files"] = stored_files
     return result
 
 
@@ -172,8 +202,9 @@ async def get_extraction_status(extraction_id: str):
 
     if data["status"] == "done":
         result = data["result"]
+        stored = data.get("stored_files", [])
         del _extraction_results[extraction_id]
-        return {"status": "done", **result}
+        return {"status": "done", "stored_files": stored, **result}
     elif data["status"] == "error":
         error = data.get("error", "Erreur inconnue")
         del _extraction_results[extraction_id]

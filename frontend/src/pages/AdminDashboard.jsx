@@ -1829,6 +1829,12 @@ export const AdminDashboard = () => {
                       <TabsTrigger value="pdf" className="gap-1.5 text-xs" data-testid="tab-pdf">
                         <Eye className="w-3.5 h-3.5" /> Prévisualisation PDF
                       </TabsTrigger>
+                      <TabsTrigger value="revue-expert" className="gap-1.5 text-xs" data-testid="tab-revue-expert">
+                        <PenTool className="w-3.5 h-3.5" /> Revue expert
+                        {dossierViewDialog.human_reviewed && (
+                          <span className="ml-1 text-[10px] bg-emerald-100 text-emerald-700 rounded-full px-1.5">relu</span>
+                        )}
+                      </TabsTrigger>
                     </TabsList>
 
                     {/* ——— TAB: Analyse ——— */}
@@ -1980,6 +1986,169 @@ export const AdminDashboard = () => {
                           <p className="text-sm">Aucune analyse disponible — le PDF ne peut pas être généré.</p>
                         </div>
                       )}
+                    </TabsContent>
+
+                    {/* ——— TAB: Revue Expert (Human Review) ——— */}
+                    <TabsContent value="revue-expert" className="mt-0 space-y-5" data-testid="revue-expert-tab-content">
+                      {/* Section 1: Documents originaux téléchargeables */}
+                      <div className="rounded-xl border p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-1 h-5 rounded-full bg-amber-500" />
+                          <h4 className="text-sm font-semibold">Documents clients originaux</h4>
+                          {dossierViewDialog.original_documents?.length > 0 && (
+                            <Badge variant="outline" className="text-[10px]">{dossierViewDialog.original_documents.length} fichier{dossierViewDialog.original_documents.length > 1 ? 's' : ''}</Badge>
+                          )}
+                        </div>
+                        {dossierViewDialog.original_documents?.length > 0 ? (
+                          <div className="space-y-2">
+                            {dossierViewDialog.original_documents.map((doc, idx) => (
+                              <div key={idx} className="flex items-center justify-between gap-3 p-3 rounded-lg bg-muted/40 border" data-testid={`original-doc-${idx}`}>
+                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                  <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                                    <FileText className="w-4 h-4 text-amber-600" />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-medium truncate">{doc.original_filename || 'Document'}</p>
+                                    <p className="text-[11px] text-muted-foreground">{doc.content_type || 'Fichier'}{doc.size ? ` — ${(doc.size / 1024).toFixed(0)} Ko` : ''}</p>
+                                  </div>
+                                </div>
+                                <Button size="sm" variant="outline" className="text-xs h-7 gap-1 flex-shrink-0" data-testid={`download-original-${idx}`}
+                                  onClick={async () => {
+                                    try {
+                                      toast.info('Téléchargement en cours...');
+                                      const res = await axios.get(`${API}/admin/dossier-express/${dossierViewDialog.id}/documents/${doc.file_id}/download`, { ...axiosConfig, responseType: 'blob' });
+                                      const a = document.createElement('a');
+                                      a.href = URL.createObjectURL(new Blob([res.data]));
+                                      a.download = doc.original_filename || 'document';
+                                      a.click();
+                                      toast.success('Document téléchargé');
+                                    } catch { toast.error('Impossible de télécharger ce document'); }
+                                  }}>
+                                  <Download className="w-3 h-3" /> Télécharger
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-muted-foreground italic pl-3">Aucun document original stocké pour ce dossier. Les fichiers soumis avant l'activation du stockage ne sont pas disponibles.</p>
+                        )}
+                      </div>
+
+                      {/* Section 2: Indicateur de complétude */}
+                      {dossierViewDialog.document_details?.length > 0 && (() => {
+                        const docs = dossierViewDialog.document_details;
+                        const originals = dossierViewDialog.original_documents || [];
+                        const totalPages = docs.reduce((s, d) => s + (d.pages || 0), 0);
+                        const extracted = docs.filter(d => ['text_extracted', 'ocr_extracted'].includes(d.status)).length;
+                        const pct = Math.round((extracted / docs.length) * 100);
+                        return (
+                          <div className="rounded-xl border p-4 space-y-2">
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="w-1 h-5 rounded-full bg-blue-500" />
+                              <h4 className="text-sm font-semibold">Indicateur de complétude</h4>
+                            </div>
+                            <div className="grid grid-cols-4 gap-3">
+                              <div className="text-center p-2.5 rounded-lg bg-background border">
+                                <span className="block text-lg font-bold">{originals.length}</span>
+                                <span className="text-[10px] text-muted-foreground">Originaux stockés</span>
+                              </div>
+                              <div className="text-center p-2.5 rounded-lg bg-background border">
+                                <span className="block text-lg font-bold">{docs.length}</span>
+                                <span className="text-[10px] text-muted-foreground">Documents analysés</span>
+                              </div>
+                              <div className="text-center p-2.5 rounded-lg bg-background border">
+                                <span className="block text-lg font-bold">{totalPages}</span>
+                                <span className="text-[10px] text-muted-foreground">Pages exploitées</span>
+                              </div>
+                              <div className="text-center p-2.5 rounded-lg bg-background border">
+                                <span className={`block text-lg font-bold ${pct === 100 ? 'text-emerald-600' : pct >= 50 ? 'text-blue-600' : 'text-amber-600'}`}>{pct}%</span>
+                                <span className="text-[10px] text-muted-foreground">Extraction réussie</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Section 3: Éditeur d'analyse */}
+                      <div className="rounded-xl border p-4 space-y-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-1 h-5 rounded-full bg-green-500" />
+                          <h4 className="text-sm font-semibold">Modifier l'analyse IA</h4>
+                          {dossierViewDialog.human_reviewed && (
+                            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px]">Relu par {dossierViewDialog.reviewed_by || 'expert'}</Badge>
+                          )}
+                        </div>
+                        {dossierViewDialog.reviewed_at && (
+                          <p className="text-[11px] text-muted-foreground pl-3">Dernière modification : {new Date(dossierViewDialog.reviewed_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                        )}
+                        <textarea
+                          className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[300px] resize-y font-mono leading-relaxed"
+                          defaultValue={dossierViewDialog.analysis || ''}
+                          data-testid="expert-analysis-textarea"
+                          onChange={(e) => setDossierViewDialog(prev => ({ ...prev, _editedAnalysis: e.target.value }))}
+                        />
+                        <div>
+                          <Label className="text-xs text-muted-foreground mb-1.5 block">Notes internes (optionnel)</Label>
+                          <textarea
+                            className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm min-h-[60px] resize-y"
+                            defaultValue={dossierViewDialog.admin_notes || ''}
+                            placeholder="Notes privées sur cette relecture..."
+                            data-testid="expert-notes-textarea"
+                            onChange={(e) => setDossierViewDialog(prev => ({ ...prev, _editedNotes: e.target.value }))}
+                          />
+                        </div>
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          <Button size="sm" className="gap-1.5 bg-green-600 hover:bg-green-500 text-white" data-testid="save-analysis-btn"
+                            onClick={async () => {
+                              const newAnalysis = dossierViewDialog._editedAnalysis ?? dossierViewDialog.analysis;
+                              const newNotes = dossierViewDialog._editedNotes ?? dossierViewDialog.admin_notes;
+                              if (!newAnalysis?.trim()) { toast.error("L'analyse ne peut pas être vide"); return; }
+                              try {
+                                await axios.put(`${API}/admin/dossier-express/${dossierViewDialog.id}/analysis`, { analysis: newAnalysis, admin_notes: newNotes }, axiosConfig);
+                                toast.success("Analyse mise à jour avec succès");
+                                setDossierViewDialog(prev => ({ ...prev, analysis: newAnalysis, admin_notes: newNotes, human_reviewed: true }));
+                              } catch { toast.error("Erreur lors de la sauvegarde"); }
+                            }}>
+                            <CheckCircle className="w-3.5 h-3.5" /> Sauvegarder les modifications
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Section 4: Regénération PDF + envoi */}
+                      <div className="rounded-xl border border-accent/30 bg-accent/5 p-4 space-y-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-1 h-5 rounded-full bg-accent" />
+                          <h4 className="text-sm font-semibold">Regénérer le PDF expert</h4>
+                        </div>
+                        <p className="text-xs text-muted-foreground pl-3">Générez un nouveau PDF intégrant vos modifications et la mention "Relu par un expert". Vous pouvez aussi l'envoyer directement au client.</p>
+                        <div className="flex flex-wrap gap-2 pl-3">
+                          <Button size="sm" variant="outline" className="gap-1.5 text-xs" data-testid="regenerate-pdf-btn"
+                            onClick={async () => {
+                              try {
+                                toast.info('Regénération du PDF...');
+                                await axios.post(`${API}/admin/dossier-express/${dossierViewDialog.id}/regenerate-pdf`, { send_email: false }, axiosConfig);
+                                toast.success("PDF regénéré avec succès");
+                              } catch { toast.error("Erreur lors de la regénération"); }
+                            }}>
+                            <RefreshCw className="w-3 h-3" /> Regénérer le PDF
+                          </Button>
+                          <Button size="sm" className="gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white" data-testid="regenerate-and-send-btn"
+                            onClick={async () => {
+                              if (!window.confirm(`Envoyer le rapport expert finalisé à ${dossierViewDialog.email} ?`)) return;
+                              try {
+                                toast.info('Regénération et envoi du PDF...');
+                                const res = await axios.post(`${API}/admin/dossier-express/${dossierViewDialog.id}/regenerate-pdf`, { send_email: true }, axiosConfig);
+                                if (res.data.email_sent) {
+                                  toast.success(`Rapport expert envoyé à ${dossierViewDialog.email}`);
+                                } else {
+                                  toast.success("PDF regénéré (email non envoyé — vérifiez la configuration)");
+                                }
+                              } catch { toast.error("Erreur lors de l'envoi"); }
+                            }}>
+                            <Send className="w-3 h-3" /> Regénérer et envoyer au client
+                          </Button>
+                        </div>
+                      </div>
                     </TabsContent>
                   </Tabs>
 

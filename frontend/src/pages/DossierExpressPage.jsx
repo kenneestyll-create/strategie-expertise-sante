@@ -263,6 +263,7 @@ export const DossierExpressPage = () => {
 
     let documentsText = "";
     let documentDetails = [];
+    let storedFiles = [];
     try {
       if (files.length > 0) {
         const hasLargeFiles = files.some(f => f.size > 5 * 1024 * 1024);
@@ -283,6 +284,7 @@ export const DossierExpressPage = () => {
         setPollStatus(prev => ({ ...prev, chunk_progress: null }));
         documentsText = extraction.combinedText;
         documentDetails = extraction.results || [];
+        storedFiles = extraction.storedFiles || [];
         const extractedCount = extraction.extractedCount;
         if (extractedCount > 0) {
           toast.success(`${extractedCount}/${files.length} document${extractedCount > 1 ? 's' : ''} lu${extractedCount > 1 ? 's' : ''} avec succes`);
@@ -315,12 +317,14 @@ export const DossierExpressPage = () => {
       const payload = isAdminBypass ? {
         name: form.name, email: form.email, situation: form.situation,
         type_dossier: form.type_dossier, regime: form.regime,
-        documents_text: documentsText, document_details: documentDetails, premium_pdf: isPremium
+        documents_text: documentsText, document_details: documentDetails,
+        original_documents: storedFiles, premium_pdf: isPremium
       } : {
         session_id: searchParams.get('session_id') || '',
         email: form.email, name: form.name,
         situation: form.situation, type_dossier: form.type_dossier,
-        regime: form.regime, documents_text: documentsText, document_details: documentDetails, premium_pdf: isPremium
+        regime: form.regime, documents_text: documentsText, document_details: documentDetails,
+        original_documents: storedFiles, premium_pdf: isPremium
       };
       const headers = isAdminBypass ? { 'Authorization': `Bearer ${adminToken}` } : {};
       const res = await axios.post(endpoint, payload, { headers });

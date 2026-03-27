@@ -347,6 +347,40 @@ async def _data_purge_scheduler():
             else:
                 logger.info("DATA PURGE: No dossiers to purge today")
 
+            # Purge original files from Object Storage for old completed dossiers
+            try:
+                from utils.storage import get_object
+                dossiers_with_files = await db.dossier_express.find(
+                    {
+                        "status": "completed",
+                        "completed_at": {"$lte": cutoff},
+                        "original_documents": {"$exists": True, "$ne": []},
+                        "original_documents_purged": {"$ne": True},
+                    },
+                    {"_id": 0, "id": 1, "original_documents": 1}
+                ).to_list(100)
+
+                files_purged = 0
+                for dossier in dossiers_with_files:
+                    # Mark as purged (we can't delete from Object Storage, but we clear the references)
+                    await db.dossier_express.update_one(
+                        {"id": dossier["id"]},
+                        {"$set": {"original_documents": [], "original_documents_purged": True, "files_purged_at": datetime.now(timezone.utc).isoformat()}}
+                    )
+                    files_purged += len(dossier.get("original_documents", []))
+
+                if files_purged > 0:
+                    logger.info(f"DATA PURGE: Cleared {files_purged} original file reference(s) from {len(dossiers_with_files)} dossier(s)")
+                    await db.purge_log.insert_one({
+                        "type": "original_files_purge",
+                        "files_count": files_purged,
+                        "dossiers_count": len(dossiers_with_files),
+                        "cutoff_date": cutoff,
+                        "executed_at": datetime.now(timezone.utc).isoformat(),
+                    })
+            except Exception as e:
+                logger.warning(f"Original files purge step failed: {e}")
+
         except Exception as e:
             logger.error(f"Data purge scheduler error: {e}")
             await asyncio.sleep(3600)

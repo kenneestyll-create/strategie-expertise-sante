@@ -449,6 +449,10 @@ async def get_dossier_express_analysis(dossier_id: str, admin: dict = Depends(ge
         "regime": dossier.get("regime", ""),
         "premium_pdf": dossier.get("premium_pdf", False),
         "document_details": dossier.get("document_details", []),
+        "original_documents": dossier.get("original_documents", []),
+        "human_reviewed": dossier.get("human_reviewed", False),
+        "reviewed_at": dossier.get("reviewed_at", ""),
+        "admin_notes": dossier.get("admin_notes", ""),
         "created_at": dossier.get("created_at", ""),
         "completed_at": dossier.get("completed_at", ""),
     }
@@ -481,8 +485,170 @@ async def preview_dossier_express_pdf(dossier_id: str, admin: dict = Depends(get
     )
 
 
+# ==================== ADMIN: HUMAN REVIEW WORKFLOW ====================
 
-@router.post("/admin/premium-analyses/{analysis_id}/send-reviewed")
+@router.get("/admin/dossier-express/{dossier_id}/original-documents")
+async def get_dossier_original_documents(dossier_id: str, admin: dict = Depends(get_current_admin)):
+    """List original documents stored for a dossier (for admin download)."""
+    dossier = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0, "original_documents": 1, "document_details": 1})
+    if not dossier:
+        raise HTTPException(status_code=404, detail="Dossier non trouvé")
+    return {
+        "original_documents": dossier.get("original_documents", []),
+        "document_details": dossier.get("document_details", []),
+    }
+
+
+@router.get("/admin/dossier-express/{dossier_id}/documents/{file_id}/download")
+async def download_dossier_document(dossier_id: str, file_id: str, admin: dict = Depends(get_current_admin)):
+    """Download an original client document from Object Storage."""
+    dossier = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0, "original_documents": 1})
+    if not dossier:
+        raise HTTPException(status_code=404, detail="Dossier non trouvé")
+    original_docs = dossier.get("original_documents", [])
+    target_doc = None
+    for doc in original_docs:
+        if doc.get("file_id") == file_id:
+            target_doc = doc
+            break
+    if not target_doc:
+        raise HTTPException(status_code=404, detail="Document non trouvé")
+    storage_path = target_doc.get("storage_path", "")
+    if not storage_path:
+        raise HTTPException(status_code=404, detail="Chemin de stockage manquant")
+    try:
+        from utils.storage import download_file
+        content, content_type = download_file(storage_path)
+        filename = target_doc.get("original_filename", "document")
+        return Response(
+            content=content,
+            media_type=content_type,
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+        )
+    except Exception as e:
+        logger.error(f"Failed to download file {file_id} for dossier {dossier_id}: {e}")
+        raise HTTPException(status_code=500, detail="Impossible de télécharger le fichier")
+
+
+@router.put("/admin/dossier-express/{dossier_id}/analysis")
+async def update_dossier_analysis(dossier_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    """Admin edits the AI analysis text (human review)."""
+    body = await request.json()
+    new_analysis = body.get("analysis", "")
+    admin_notes = body.get("admin_notes", "")
+    if not new_analysis.strip():
+        raise HTTPException(status_code=400, detail="L'analyse ne peut pas être vide")
+    update_fields = {
+        "analysis": new_analysis,
+        "human_reviewed": True,
+        "reviewed_at": datetime.now(timezone.utc).isoformat(),
+        "reviewed_by": admin.get("email", "admin"),
+    }
+    if admin_notes:
+        update_fields["admin_notes"] = admin_notes
+    result = await db.dossier_express.update_one({"id": dossier_id}, {"$set": update_fields})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Dossier non trouvé")
+    logger.info(f"Admin {admin.get('email')} updated analysis for dossier {dossier_id}")
+    return {"success": True, "message": "Analyse mise à jour"}
+
+
+@router.post("/admin/dossier-express/{dossier_id}/regenerate-pdf")
+async def regenerate_dossier_pdf(dossier_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    """Regenerate the PDF with the edited analysis and optionally send it to the client."""
+    from utils.pdf import generate_dossier_pdf, generate_secured_pdf
+    body = await request.json()
+    send_email = body.get("send_email", False)
+
+    dossier = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0})
+    if not dossier:
+        raise HTTPException(status_code=404, detail="Dossier non trouvé")
+
+    analysis = dossier.get("analysis", "")
+    if not analysis:
+        raise HTTPException(status_code=400, detail="Aucune analyse disponible")
+
+    # Generate the premium PDF with the expert review marker
+    pdf_bytes = generate_secured_pdf(
+        analysis=analysis,
+        report_type="Dossier Express IA",
+        name=dossier.get("name", ""),
+        type_dossier=dossier.get("type_dossier", ""),
+        regime=dossier.get("regime", ""),
+        with_watermark=not dossier.get("premium_pdf", False),
+        relecture_expert=dossier.get("human_reviewed", False),
+    )
+
+    # Upload the regenerated PDF to Object Storage
+    pdf_stored = False
+    try:
+        from utils.storage import upload_file
+        safe_name = dossier.get("name", "dossier").replace(" ", "_")[:30]
+        pdf_result = upload_file(
+            "dossier-pdfs",
+            f"Rapport_Expert_{safe_name}_{dossier_id[:8]}.pdf",
+            pdf_bytes,
+            "application/pdf"
+        )
+        await db.dossier_express.update_one({"id": dossier_id}, {"$set": {
+            "regenerated_pdf_path": pdf_result.get("storage_path", ""),
+            "regenerated_at": datetime.now(timezone.utc).isoformat(),
+        }})
+        pdf_stored = True
+    except Exception as e:
+        logger.warning(f"Failed to store regenerated PDF: {e}")
+
+    # Send email if requested
+    email_sent = False
+    if send_email:
+        email = dossier.get("email", "")
+        name = dossier.get("name", email)
+        if RESEND_AVAILABLE and os.environ.get('RESEND_API_KEY') and email:
+            import base64 as b64
+            pdf_b64 = b64.b64encode(pdf_bytes).decode()
+            try:
+                await asyncio.to_thread(resend.Emails.send, {
+                    "from": SENDER_EMAIL,
+                    "to": [email],
+                    "subject": "Votre rapport Dossier Express IA — Version expert finalisée",
+                    "html": f"""<html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+                        <div style="background:#0a0a08;color:#fff;padding:20px;border-radius:8px 8px 0 0;text-align:center;">
+                            <h2 style="margin:0;color:#C9A84C;">Votre rapport expert est prêt</h2>
+                        </div>
+                        <div style="background:#FAF8F3;padding:20px;border-radius:0 0 8px 8px;border:1px solid #E5E0D6;">
+                            <p>Bonjour {name},</p>
+                            <p>Votre rapport <strong>Dossier Express IA</strong> a été relu et finalisé par notre expert.</p>
+                            <p>Vous trouverez votre document en pièce jointe.</p>
+                            <p style="color:#666;font-size:13px;margin-top:20px;">Ce document a fait l'objet d'une relecture humaine approfondie.</p>
+                            <hr style="border:1px solid #E5E0D6;">
+                            <p style="color:#C9A84C;font-weight:bold;font-style:italic;">Vous n'êtes plus seul(e) face à votre situation.<br/>Désormais, Stratégie & Expertise Santé devient votre bouclier.</p>
+                        </div>
+                    </body></html>""",
+                    "attachments": [{"filename": "rapport-expert-dossier-express.pdf", "content": pdf_b64}]
+                })
+                email_sent = True
+                logger.info(f"Regenerated PDF sent to {email} for dossier {dossier_id}")
+            except Exception as e:
+                logger.error(f"Failed to send regenerated PDF email: {e}")
+
+        # Update dossier status
+        await db.dossier_express.update_one({"id": dossier_id}, {"$set": {
+            "expert_email_sent": email_sent,
+            "expert_sent_at": datetime.now(timezone.utc).isoformat(),
+        }})
+
+        # Notify client via in-app notification
+        client_user = await db.client_users.find_one({"email": email.lower()}, {"_id": 0, "id": 1}) if email else None
+        if client_user:
+            await create_client_notification(
+                client_id=client_user["id"],
+                notif_type="report_ready",
+                title="Votre rapport expert est prêt",
+                message="Votre rapport Dossier Express IA relu et finalisé par notre expert vous a été envoyé par email.",
+                send_email=False
+            )
+
+    return {"success": True, "pdf_stored": pdf_stored, "email_sent": email_sent}
 async def send_reviewed_document(analysis_id: str, request: Request, admin: dict = Depends(get_current_admin)):
     """Admin sends the final reviewed document to the client — triggers actual delivery."""
     analysis = await db.premium_analyses.find_one({"id": analysis_id}, {"_id": 0})

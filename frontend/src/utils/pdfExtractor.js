@@ -142,6 +142,7 @@ export async function extractTextFromFiles(files, existingOcrText = '', onProgre
   let combinedText = '';
   let extractedCount = 0;
   let details = [];
+  let storedFiles = [];
 
   try {
     const res = await axios.post(`${API}/upload/extract`, {
@@ -149,9 +150,14 @@ export async function extractTextFromFiles(files, existingOcrText = '', onProgre
       files: allFiles,
     }, { timeout: 300000 });
 
+    // Capture stored files from response
+    storedFiles = res.data.stored_files || [];
+
     // Check if server returned async mode for large files
     if (res.data.async && res.data.extraction_id) {
       const extractionId = res.data.extraction_id;
+      // For async, stored_files may come with the initial response
+      storedFiles = res.data.stored_files || [];
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('upload-progress', { detail: { percent: 95, phase: 'extracting-large', message: 'Extraction en cours — fichier volumineux, veuillez patienter...' } }));
       }
@@ -174,6 +180,7 @@ export async function extractTextFromFiles(files, existingOcrText = '', onProgre
         combinedText = pollResult.extracted_text || '';
         details = pollResult.details || [];
         extractedCount = details.filter(d => d.has_text).length;
+        if (pollResult.stored_files) storedFiles = pollResult.stored_files;
       } else {
         for (const f of allFiles) {
           combinedText += `\n--- ${f.name} ---\n[Extraction en cours — délai dépassé]\n`;
@@ -220,6 +227,7 @@ export async function extractTextFromFiles(files, existingOcrText = '', onProgre
   return {
     combinedText: combinedText.trim(),
     results: details,
+    storedFiles,
     fileCount: files.length,
     extractedCount,
   };
@@ -253,6 +261,7 @@ async function extractBase64(files, existingOcrText = '') {
   let combinedText = '';
   let extractedCount = 0;
   let details = [];
+  let storedFiles = [];
 
   if (filesToExtract.some(f => f.data)) {
     try {
@@ -269,6 +278,7 @@ async function extractBase64(files, existingOcrText = '') {
       });
       combinedText = res.data.extracted_text || '';
       details = res.data.details || [];
+      storedFiles = res.data.stored_files || [];
       extractedCount = details.filter(d => d.has_text).length;
     } catch (err) {
       // Retry once on timeout/network error
@@ -277,6 +287,7 @@ async function extractBase64(files, existingOcrText = '') {
           const res2 = await axios.post(`${API}/extract-document-text`, { files: filesToExtract }, { timeout: 300000 });
           combinedText = res2.data.extracted_text || '';
           details = res2.data.details || [];
+          storedFiles = res2.data.stored_files || [];
           extractedCount = details.filter(d => d.has_text).length;
         } catch (retryErr) {
           console.warn('Base64 extraction retry failed:', retryErr.message);
@@ -308,6 +319,7 @@ async function extractBase64(files, existingOcrText = '') {
   return {
     combinedText: combinedText.trim(),
     results: details,
+    storedFiles,
     fileCount: files.length,
     extractedCount,
   };

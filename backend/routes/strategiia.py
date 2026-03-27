@@ -310,6 +310,26 @@ async def extract_document_text(request: Request):
         else:
             combined += "[Contenu non extractible]\n"
 
+    # Store original files to Object Storage (best-effort)
+    stored_files = []
+    try:
+        from utils.storage import upload_file as storage_upload
+        for file_info in files_data[:MAX_FILES]:
+            data_b64 = file_info.get("data", "")
+            if not data_b64:
+                continue
+            try:
+                raw_bytes = base64.b64decode(data_b64)
+                fname = file_info.get("name", "unknown")
+                ftype = file_info.get("type", "application/octet-stream")
+                result = storage_upload("dossier-originals", fname, raw_bytes, ftype)
+                result["file_id"] = str(uuid.uuid4())
+                stored_files.append(result)
+            except Exception:
+                pass
+    except Exception as e:
+        logger.warning(f"Object storage not available for base64 file persistence: {e}")
+
     return {
         "extracted_text": combined.strip(),
         "files_processed": len(results),
@@ -322,7 +342,8 @@ async def extract_document_text(request: Request):
             "status": r["status"],
             "preview": r.get("preview", ""),
             "text_length": r.get("text_length", 0)
-        } for r in results]
+        } for r in results],
+        "stored_files": stored_files
     }
 
 
@@ -559,6 +580,7 @@ async def dossier_express_submit(request: Request):
     documents_text = body.get("documents_text", "")
     premium_pdf = body.get("premium_pdf", False)
     document_details = body.get("document_details", [])
+    original_documents = body.get("original_documents", [])
 
     if not email or not situation:
         raise HTTPException(status_code=400, detail="Email et description requis")
@@ -603,6 +625,7 @@ async def dossier_express_submit(request: Request):
         "id": dossier_id, "session_id": session_id, "email": email, "name": name,
         "situation": situation, "type_dossier": type_dossier, "regime": regime,
         "documents_text": documents_text[:10000], "document_details": document_details,
+        "original_documents": original_documents,
         "premium_pdf": premium_pdf,
         "status": "processing", "payment_verified": payment_verified,
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -1317,6 +1340,7 @@ async def dossier_express_admin_bypass(request: Request):
     documents_text = body.get("documents_text", "")
     premium_pdf = body.get("premium_pdf", False)
     document_details = body.get("document_details", [])
+    original_documents = body.get("original_documents", [])
     if not situation.strip():
         raise HTTPException(status_code=400, detail="Description requise")
     dossier_id = str(uuid.uuid4())
@@ -1324,6 +1348,7 @@ async def dossier_express_admin_bypass(request: Request):
         "id": dossier_id, "email": email, "name": name, "situation": situation[:5000],
         "type_dossier": type_dossier, "regime": regime,
         "documents_text": documents_text[:10000], "document_details": document_details,
+        "original_documents": original_documents,
         "premium_pdf": premium_pdf,
         "status": "processing", "payment_verified": True, "admin_test": True,
         "created_at": datetime.now(timezone.utc).isoformat()
