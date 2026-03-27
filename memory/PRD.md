@@ -307,6 +307,16 @@ Problèmes réels identifiés et corrigés:
 - **Protection** : si la compression est plus lourde que l'original, l'original est conserve
 - Tests: iteration 134 — 100% backend, 100% frontend
 
+## Upload Fractionne (Chunked Upload) pour Gros Fichiers (Mar 2026) — DONE
+- **Seuil** : fichiers > 20 Mo decoupes en chunks de 2 Mo
+- **Backend** : `POST /api/upload/chunk` (multipart) + `POST /api/upload/extract` (reassemblage + OCR)
+- **Frontend** : `pdfExtractor.js` rewrite avec `chunkedUpload()`, retry automatique (3 tentatives, backoff exponentiel)
+- **Mode mixte** : fichiers > 20 Mo en chunks, fichiers <= 20 Mo en base64 (approche existante)
+- **Progress bar reelle** : callback `onChunkProgress` affiche `filename: XX%` pendant l'upload
+- **Cleanup** : repertoire temporaire supprime automatiquement apres extraction
+- **Securite** : validation taille chunk, max 100 chunks, max 50 Mo/fichier, max 100 Mo total
+- Tests: iteration 135 — 100% backend, 100% frontend
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Integration HubSpot (en attente de credentials)
