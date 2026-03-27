@@ -226,10 +226,18 @@ Problèmes réels identifiés et corrigés:
 - **Pré-traitement image** : autocontrast, contraste, netteté, débruitage median, upscale si < 1500px
 - Tests: iteration 126 — 16/16 backend (PDF texte, PDF scanné, image, edge cases)
 
+## Conclusion PDF "Et maintenant ?" — Bloc Conversion Stratégique (Mar 2026) — DONE
+- **Ancien bloc supprimé** : "Signature émotionnelle de marque" + "Contact & CTA block" (textes génériques)
+- **Nouveau bloc 3 parties** sous le titre "Et maintenant ?" :
+  * **Clôture émotionnelle** : Empathie, reconnaissance de l'épreuve, premier éclairage
+  * **Transition stratégique** : Limites du rapport, nécessité d'analyse humaine approfondie, potentiel du dossier
+  * **Orientation vers l'offre finale** : Boîte ivoire avec accent doré, CTA subtil "accompagnement sur mesure"
+- **Signature finale** : "Stratégie & Expertise Santé — Votre bouclier."
+- **Strip patterns ajoutés** : 4 regex pour empêcher le LLM de dupliquer les phrases hardcodées
+- Tests: iteration 127 — 14/14 backend, 7/7 frontend
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
-- **P2:** Corriger TTS mascotte Straté (parle anglais au lieu de français)
-- **P2:** Construire système Admin CRUD pour les conseils Straté
 - **P2:** Integration HubSpot (en attente de credentials)
 - **P3:** Audit logging complet
 - **P3:** Finalisation du contenu legal
