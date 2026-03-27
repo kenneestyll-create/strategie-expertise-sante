@@ -317,12 +317,35 @@ Problèmes réels identifiés et corrigés:
 - **Securite** : validation taille chunk, max 100 chunks, max 50 Mo/fichier, max 100 Mo total
 - Tests: iteration 135 — 100% backend, 100% frontend
 
+## Refonte Globale PDFs — Standard Officiel S.E.S (Mar 2026) — DONE
+- **Audit exhaustif** : 5 points de generation PDF identifies dans tout le projet (0 moteur oublie)
+  * `pdf.py` (FPDF Helvetica) — Dossier Express IA + StrategiIA — deja premium
+  * `strategiia.py` — appelle pdf.py — deja premium
+  * `SimulateurPage.jsx` (jsPDF) — Simulateur auto-diagnostic — deja premium
+  * `pdf_guides.py` (FPDF DejaVu Sans) — 6 guides pratiques — **REFAIT**
+  * `DocumentScanner.jsx` (jsPDF) — Scanner documents — **REFAIT**
+- **pdf_guides.py** reecriture complete :
+  * Classe `PremiumGuidePDF` avec DejaVu Sans (support Unicode complet)
+  * Palette exacte : Noir #1A1A1A, Or #C9A84C, Ivoire #FAF8F3
+  * Header premium : bande noire + ligne or + logo bouclier + "Strategie & Expertise Sante" + "PIONNIER EN FRANCE" + date + numero SES-GUIDE-YYYY-XXXXX
+  * Sections avec barres d'accent dorees a gauche, puces dorees, hierarchie typographique soignee
+  * Footer standardise : "© {annee} Strategie & Expertise Sante — strategie-expertise-sante.fr — Document confidentiel"
+  * Signature de cloture : "Vous n'etes plus seul face a votre combat. Desormais, S.E.S est votre bouclier."
+- **DocumentScanner.jsx** buildPdf() refait :
+  * Header premium sur chaque page (bande noire 14mm + ligne or + logo + marque + date + numero SES-SCAN)
+  * Footer standardise sur chaque page
+  * Images cadrees dans l'espace utile (entre header et footer), centrees proportionnellement
+  * Import SHIELD_B64 depuis shieldLogo.js
+- **Confirmation** : AUCUN ancien design PDF actif dans le projet
+- Tests: iteration 136 — 100% backend (9/9), 100% frontend (8/8)
+
 ## Taches a venir
 - **P1:** Activer les paiements en production (Stripe/PayPal)
 - **P2:** Integration HubSpot (en attente de credentials)
 - **P3:** Audit logging complet
 - **P3:** Finalisation du contenu legal
 - **P3:** Refactoring EmailTemplateEditor.jsx
+- **P4:** Consolidation vers un moteur PDF unique backend (eliminer la dualite FPDF/jsPDF)
 
 ## Integrations 3rd party
 - Stripe (test), PayPal (test), Claude Sonnet 4.5 (Emergent LLM Key), Resend (sandbox), Algolia Search, HubSpot (attente)
