@@ -1,5 +1,6 @@
 import re
 import os
+import tempfile
 from datetime import datetime
 
 _LOGO_PATH = os.path.join(os.path.dirname(__file__), "shield_logo.png")
@@ -458,10 +459,70 @@ def generate_secured_pdf(
 
     pdf.set_y(box_y + box_h + 4)
 
-    # Contact line — subtle, not salesy
-    pdf.set_font("Helvetica", "", 7)
+    # ── QR Code + Lien discret — Conversion depuis le PDF ──
+    qr_url = "https://strategie-expertise-sante.fr/contact?src=pdf&type=dossier_express&via=qr"
+    qr_tmp_path = None
+    try:
+        import qrcode
+        from io import BytesIO
+        qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=8, border=2)
+        qr.add_data(qr_url)
+        qr.make(fit=True)
+        qr_img = qr.make_image(fill_color="#1a1a1a", back_color="#FAF8F3")
+        qr_buf = BytesIO()
+        qr_img.save(qr_buf, format="PNG")
+        qr_buf.seek(0)
+        fd, qr_tmp_path = tempfile.mkstemp(suffix=".png")
+        os.close(fd)
+        with open(qr_tmp_path, "wb") as f:
+            f.write(qr_buf.getvalue())
+    except Exception:
+        qr_tmp_path = None
+
+    # Check space for QR block (~45mm)
+    space_qr = pdf.h - 16 - pdf.get_y()
+    if space_qr < 48:
+        pdf.add_page()
+        pdf.ln(4)
+
+    # Subtle separator
+    sep_qr = pdf.get_y()
+    pdf.set_draw_color(*_LIGHT_LINE)
+    pdf.set_line_width(0.2)
+    pdf.line(LM + 20, sep_qr, LM + CW - 20, sep_qr)
+    pdf.ln(5)
+
+    if qr_tmp_path and os.path.isfile(qr_tmp_path):
+        # QR label
+        pdf.set_font("Helvetica", "B", 7)
+        pdf.set_text_color(*_MUTED)
+        pdf.cell(CW, 3.5, _safe("Prochaine etape recommandee"), align="C", new_x="LMARGIN", new_y="NEXT")
+        pdf.ln(3)
+
+        # QR code — centered, 22mm
+        qr_size = 22
+        qr_x = LM + (CW - qr_size) / 2
+        pdf.image(qr_tmp_path, x=qr_x, y=pdf.get_y(), w=qr_size, h=qr_size)
+        pdf.set_y(pdf.get_y() + qr_size + 2)
+
+        # QR description
+        pdf.set_font("Helvetica", "I", 6.5)
+        pdf.set_text_color(*_MUTED)
+        pdf.cell(CW, 3, _safe("Scannez pour acceder a l'accompagnement expert personnalise S.E.S"), align="C", new_x="LMARGIN", new_y="NEXT")
+        pdf.ln(1.5)
+
+        # Cleanup temp file
+        try:
+            os.unlink(qr_tmp_path)
+        except Exception:
+            pass
+    else:
+        pdf.ln(2)
+
+    # Text link fallback (always present)
+    pdf.set_font("Helvetica", "", 6)
     pdf.set_text_color(*_MUTED)
-    pdf.cell(CW, 3.5, _safe("Premiere consultation offerte  |  strategie-expertise-sante.fr/contact"), align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(CW, 3, _safe("Premiere consultation offerte  |  strategie-expertise-sante.fr/contact"), align="C", new_x="LMARGIN", new_y="NEXT")
 
     pdf.ln(3)
 
@@ -475,12 +536,6 @@ def generate_secured_pdf(
     pdf.set_font("Helvetica", "BI", 8.5)
     pdf.set_text_color(*_GOLD)
     pdf.cell(CW, 4.5, _safe("Strategie & Expertise Sante — Votre bouclier."), align="C")
-
-    # ── Lien discret vers l'accompagnement expert ──
-    pdf.ln(6)
-    pdf.set_font("Helvetica", "", 6)
-    pdf.set_text_color(*_MUTED)
-    pdf.cell(CW, 3, _safe("Accompagnement personnalise : strategie-expertise-sante.fr/contact"), align="C")
 
     # ── Watermark ──
     if with_watermark:
