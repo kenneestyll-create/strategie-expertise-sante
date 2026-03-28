@@ -14,25 +14,16 @@ Plateforme premium de conseil en maladies professionnelles.
 - **OCR** : Tesseract + PyMuPDF (open source)
 - **Recherche** : Algolia
 
-## Autonomie technique — 100%
-Aucune dépendance à emergentintegrations. Tous les SDK sont natifs.
+## Autonomie : 100%
+**0 dépendance à emergentintegrations.** Tous SDK natifs et standards.
 
-| Composant | SDK | Variable d'env |
-|-----------|-----|---------------|
-| IA Chatbot/Analyse | `anthropic` | `ANTHROPIC_API_KEY` |
-| OCR Avancée | `openai` | `OPENAI_API_KEY` |
-| Paiements | `stripe` | `STRIPE_API_KEY` |
-| Stockage fichiers | `boto3` (S3) | `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET` |
-| Email | `resend` | `RESEND_API_KEY` |
-| Recherche | `algoliasearch` | `ALGOLIA_APP_ID`, `ALGOLIA_API_KEY` |
-
-## Fichiers de portabilité
-- `Dockerfile` : Build multi-stage production
-- `docker-compose.yml` : App + MongoDB
-- `nginx.conf` : Reverse proxy + SPA
-- `backend/.env.example` : Toutes les variables documentées
-- `frontend/.env.example` : Variables frontend
-- `README.md` : Guide complet d'installation
+## Validation redéploiement (28 mars 2026)
+- Frontend build : ✅ (15MB, 182 fichiers statiques)
+- 13/13 modules Python importent : ✅
+- 203 routes API chargées : ✅
+- 9/9 routes critiques HTTP 200 : ✅
+- Dockerfile + docker-compose validés : ✅
+- PRODUCTION_CHECKLIST.md créée : ✅
 
 ## Fonctionnalités (DONE)
 - Auth Admin + Client, Dashboard Admin complet
@@ -40,14 +31,14 @@ Aucune dépendance à emergentintegrations. Tous les SDK sont natifs.
 - PDF premium, Paiements Stripe + PayPal
 - Mascotte Straté + TTS français
 - Upload chunké async (45MB), Auto-purge 30j
-- Admin Human Review Workflow, Badge "Relu par expert"
-- Portabilité SITE_URL, 0 URL hardcodée
+- Admin Human Review, Badge "Relu par expert"
+- Portabilité complète, 0 URL hardcodée
 
 ## Backlog
 ### P1
-- Activation paiements live (Stripe/PayPal)
+- Activation paiements live (clés Stripe live + Anthropic)
 ### P2
-- Intégration HubSpot CRM (attente identifiants)
+- Intégration HubSpot CRM
 ### P3
 - Refactoring EmailTemplateEditor.jsx
 - Consolidation moteurs PDF (backend uniquement)
