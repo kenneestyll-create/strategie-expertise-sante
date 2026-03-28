@@ -72,19 +72,17 @@ Voir les fichiers `.env.example` dans `backend/` et `frontend/` pour la liste co
 
 ### Intelligence Artificielle
 
-L'IA utilise Claude (Anthropic). Deux options :
-- **Sur Emergent** : variable `EMERGENT_LLM_KEY` (via `emergentintegrations`)
-- **Autonome** : remplacer par le SDK `anthropic` natif avec `ANTHROPIC_API_KEY`
-
-Le fichier à modifier : `backend/utils/chatbot.py`
+Le projet utilise deux SDK natifs :
+- **Anthropic** (`anthropic`) : chatbot, analyses StratégiIA et Dossier Express → `ANTHROPIC_API_KEY`
+- **OpenAI** (`openai`) : extraction OCR avancée (optionnel) → `OPENAI_API_KEY`
 
 ### Stockage fichiers
 
-Les documents clients uploadés sont stockés via Object Storage. Deux options :
-- **Sur Emergent** : `STORAGE_URL` (via `emergentintegrations`)
-- **Autonome** : remplacer par AWS S3 / Google Cloud Storage
+Les documents clients sont stockés via un stockage S3 compatible :
+- AWS S3, MinIO, Scaleway Object Storage, OVH Cloud...
+- Variables : `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET`, `S3_REGION`
 
-Le fichier à modifier : `backend/utils/storage.py`
+Fichier de configuration : `backend/utils/storage.py`
 
 ## Comptes de test
 

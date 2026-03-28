@@ -2,9 +2,11 @@ import os
 import json
 import logging
 
+import openai
+
 logger = logging.getLogger(__name__)
 
-EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY", "")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 
 SYSTEM_PROMPT = """Tu es un expert en extraction de données à partir de documents administratifs français liés aux accidents du travail, maladies professionnelles, expertises médicales, MDPH et assurances.
 
@@ -33,29 +35,26 @@ Règles :
 
 
 async def extract_fields_gpt4o(raw_text: str) -> dict:
-    if not EMERGENT_LLM_KEY:
-        return {"error": "Clé LLM non configurée", "fields": {}, "enhanced": False}
+    if not OPENAI_API_KEY:
+        return {"error": "Clé OpenAI non configurée", "fields": {}, "enhanced": False}
 
     if not raw_text or len(raw_text.strip()) < 10:
         return {"fields": {}, "enhanced": False, "message": "Texte trop court pour l'analyse"}
 
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        client = openai.AsyncOpenAI(api_key=OPENAI_API_KEY)
 
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=f"ocr-extract-{id(raw_text)}",
-            system_message=SYSTEM_PROMPT,
-        ).with_model("openai", "gpt-4o")
-
-        user_message = UserMessage(
-            text=f"Extrais les champs du texte OCR suivant :\n\n{raw_text[:8000]}"
+        response = await client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": f"Extrais les champs du texte OCR suivant :\n\n{raw_text[:8000]}"},
+            ],
+            max_tokens=2000,
+            temperature=0.1,
         )
 
-        response = await chat.send_message(user_message)
-
-        # Parse JSON from response
-        response_text = response.strip()
+        response_text = response.choices[0].message.content.strip()
         if response_text.startswith("```"):
             response_text = response_text.split("\n", 1)[1] if "\n" in response_text else response_text
             response_text = response_text.rsplit("```", 1)[0]
@@ -68,7 +67,5 @@ async def extract_fields_gpt4o(raw_text: str) -> dict:
         return {"fields": {}, "enhanced": False, "error": "Réponse IA non structurée"}
     except Exception as e:
         error_msg = str(e)
-        if "budget" in error_msg.lower() or "credit" in error_msg.lower() or "insufficient" in error_msg.lower():
-            return {"fields": {}, "enhanced": False, "error": "Budget LLM épuisé. Veuillez recharger votre clé Universal Key."}
         logger.error(f"GPT-4o OCR extraction failed: {e}")
         return {"fields": {}, "enhanced": False, "error": f"Erreur IA: {error_msg}"}

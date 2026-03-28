@@ -6,15 +6,17 @@ import base64
 import os
 import jwt
 
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+import anthropic
+import stripe as stripe_sdk
 
-from config import db, EMERGENT_LLM_KEY, STRIPE_API_KEY, RESEND_AVAILABLE, SENDER_EMAIL, logger, JWT_SECRET, JWT_ALGORITHM, SITE_URL
+from config import db, STRIPE_API_KEY, RESEND_AVAILABLE, SENDER_EMAIL, logger, JWT_SECRET, JWT_ALGORITHM, SITE_URL
 from utils.auth import get_current_admin, get_optional_admin
 from utils.email import notify_admin_premium_analysis
 from utils.pdf import generate_secured_pdf, generate_dossier_pdf
 from utils.storage import put_object
 
-from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionRequest
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 
 try:
     import resend
@@ -599,16 +601,13 @@ async def dossier_express_submit(request: Request):
             # Step 2: Live Stripe check (handles webhook race condition)
             if STRIPE_API_KEY:
                 try:
-                    host_url = str(request.base_url).rstrip('/')
-                    webhook_url = f"{host_url}/api/webhook/stripe"
-                    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
-                    status = await stripe_checkout.get_checkout_status(session_id)
-                    if status.payment_status == "paid":
+                    stripe_sdk.api_key = STRIPE_API_KEY
+                    session_obj = await asyncio.to_thread(stripe_sdk.checkout.Session.retrieve, session_id)
+                    if session_obj.payment_status == "paid":
                         payment_verified = True
-                        # Update DB to reflect confirmed payment
                         await db.payment_transactions.update_one(
                             {"session_id": session_id},
-                            {"$set": {"payment_status": "paid", "status": status.status, "updated_at": datetime.now(timezone.utc).isoformat()}}
+                            {"$set": {"payment_status": "paid", "status": session_obj.status, "updated_at": datetime.now(timezone.utc).isoformat()}}
                         )
                         logger.info(f"Dossier Express IA: live Stripe check confirmed payment for session {session_id}")
                 except Exception as e:
@@ -637,8 +636,8 @@ async def dossier_express_submit(request: Request):
 
 async def _process_dossier_express(dossier_id: str, email: str, name: str, situation: str, type_dossier: str, regime: str, documents_text: str, premium_pdf: bool = False):
     try:
-        if not EMERGENT_LLM_KEY:
-            logger.error("Dossier Express IA: EMERGENT_LLM_KEY not available")
+        if not ANTHROPIC_API_KEY:
+            logger.error("Dossier Express IA: ANTHROPIC_API_KEY not available")
             await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"status": "error", "error": "Service IA non disponible", "progress_step": "error"}})
             return
 
@@ -680,7 +679,7 @@ CONTENU DES DOCUMENTS FOURNIS :
             try:
                 session_id_llm = f"dexpress_{dossier_id[:8]}_{attempt}"
                 analysis = await asyncio.to_thread(
-                    _llm_sync_call, EMERGENT_LLM_KEY, session_id_llm, DOSSIER_EXPRESS_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
+                    _llm_sync_call, ANTHROPIC_API_KEY, session_id_llm, DOSSIER_EXPRESS_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
                 )
                 logger.info(f"Dossier Express IA {dossier_id}: analyse réussie (tentative {attempt+1})")
                 break
@@ -906,9 +905,7 @@ async def dossier_express_checkout(request: Request):
     params = f"premium_pdf={'1' if premium_pdf else '0'}&analyse_premium={'1' if analyse_premium else '0'}"
     success_url = f"{origin_url}/dossier-express?payment=success&session_id={{CHECKOUT_SESSION_ID}}&{params}"
     cancel_url = f"{origin_url}/dossier-express?payment=cancelled"
-    host_url = str(request.base_url).rstrip('/')
-    webhook_url = f"{host_url}/api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    stripe_sdk.api_key = STRIPE_API_KEY
     tag = "dossier_express"
     if premium_pdf and analyse_premium:
         tag = "dossier_express_full"
@@ -916,13 +913,21 @@ async def dossier_express_checkout(request: Request):
         tag = "dossier_express_pdf_pro"
     elif analyse_premium:
         tag = "dossier_express_analyse_premium"
-    checkout_request = CheckoutSessionRequest(amount=amount, currency="eur", success_url=success_url, cancel_url=cancel_url, metadata={"package_id": tag, "package_name": f"Dossier Express IA ({amount:.0f}€)", "customer_email": email, "customer_name": name, "premium_pdf": "1" if premium_pdf else "0", "analyse_premium": "1" if analyse_premium else "0"})
+    metadata = {"package_id": tag, "package_name": f"Dossier Express IA ({amount:.0f}€)", "customer_email": email, "customer_name": name, "premium_pdf": "1" if premium_pdf else "0", "analyse_premium": "1" if analyse_premium else "0"}
     if analyse_premium:
         await db.premium_analyses.insert_one({"id": str(uuid.uuid4()), "type": "dossier_express", "email": email, "name": name, "status": "en_attente", "relecture_expert_required": True, "premium_pdf": premium_pdf, "amount": amount, "created_at": datetime.now(timezone.utc).isoformat()})
         asyncio.create_task(notify_admin_premium_analysis("dossier_express", email, name, amount, options={"analyse_premium": True, "premium_pdf": premium_pdf}))
     try:
-        session = await stripe_checkout.create_checkout_session(checkout_request)
-        return {"success": True, "url": session.url, "session_id": session.session_id}
+        session = await asyncio.to_thread(
+            stripe_sdk.checkout.Session.create,
+            payment_method_types=["card"],
+            line_items=[{"price_data": {"currency": "eur", "product_data": {"name": metadata["package_name"]}, "unit_amount": int(amount * 100)}, "quantity": 1}],
+            mode="payment",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata=metadata,
+        )
+        return {"success": True, "url": session.url, "session_id": session.id}
     except Exception as e:
         logger.error(f"Dossier Express IA checkout error: {e}")
         raise HTTPException(status_code=500, detail="Erreur de paiement")
@@ -956,15 +961,15 @@ async def dossier_express_weekly_count():
 _jobs = {}
 
 def _llm_sync_call(api_key, session_id, system_message, user_text, provider, model):
-    """Run LLM in a separate thread to avoid blocking the asyncio event loop.
-    emergentintegrations uses litellm.completion() (synchronous) internally."""
-    import asyncio as _aio
-    import litellm as _lt
-    _lt.request_timeout = 180
-    chat = LlmChat(api_key=api_key, session_id=session_id, system_message=system_message).with_model(provider, model)
-    chat.extra_params["timeout"] = 180
-    chat.extra_params["request_timeout"] = 180
-    return _aio.run(chat.send_message(UserMessage(text=user_text)))
+    """Run Anthropic Claude LLM call synchronously (called via asyncio.to_thread)."""
+    client = anthropic.Anthropic(api_key=api_key)
+    response = client.messages.create(
+        model=model,
+        max_tokens=4096,
+        system=system_message,
+        messages=[{"role": "user", "content": user_text}],
+    )
+    return response.content[0].text
 
 
 async def _run_analysis(job_id, type_dossier, regime, situation, is_premium, email, similar_cases, case_context, is_admin_test=False):
@@ -976,7 +981,7 @@ async def _run_analysis(job_id, type_dossier, regime, situation, is_premium, ema
             user_msg = f"""Type de dossier : {type_dossier}\nRégime : {regime}\nDescription de la situation : {situation}\n{case_context}\n\n{analysis_prompt}"""
             session_id = f"strategiia_{str(uuid.uuid4())[:8]}"
             response = await asyncio.to_thread(
-                _llm_sync_call, EMERGENT_LLM_KEY, session_id, STRATEGIIA_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
+                _llm_sync_call, ANTHROPIC_API_KEY, session_id, STRATEGIIA_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
             )
             analysis_doc = {"id": str(uuid.uuid4()), "type_dossier": type_dossier, "regime": regime, "situation": situation[:500], "is_premium": is_premium, "email": email if email else "", "admin_test": is_admin_test, "created_at": datetime.now(timezone.utc).isoformat()}
             await db.strategiia_analyses.insert_one(analysis_doc)
@@ -1022,7 +1027,7 @@ async def strategiia_analyze(request: Request):
             is_admin_test = False
     if not situation.strip():
         raise HTTPException(status_code=400, detail="Description de la situation requise")
-    if not EMERGENT_LLM_KEY:
+    if not ANTHROPIC_API_KEY:
         raise HTTPException(status_code=503, detail="Service IA non disponible")
     # Admin bypass: skip quota check
     if not is_admin_test and not is_premium and email:
@@ -1260,9 +1265,7 @@ async def strategiia_checkout(request: Request):
     params = f"premium_pdf={'1' if premium_pdf else '0'}&analyse_premium={'1' if analyse_premium else '0'}"
     success_url = f"{origin_url}/simulateur?strategiia=success&session_id={{CHECKOUT_SESSION_ID}}&{params}"
     cancel_url = f"{origin_url}/simulateur?strategiia=cancelled"
-    host_url = str(request.base_url).rstrip('/')
-    webhook_url = f"{host_url}/api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    stripe_sdk.api_key = STRIPE_API_KEY
     product_tag = "strategiia_premium"
     if premium_pdf and analyse_premium:
         product_tag = "strategiia_premium_full"
@@ -1270,13 +1273,21 @@ async def strategiia_checkout(request: Request):
         product_tag = "strategiia_premium_pdf"
     elif analyse_premium:
         product_tag = "strategiia_analyse_premium"
-    checkout_request = CheckoutSessionRequest(amount=amount, currency="eur", success_url=success_url, cancel_url=cancel_url, metadata={"product": product_tag, "customer_email": email, "context": analysis_context[:200], "premium_pdf": "1" if premium_pdf else "0", "analyse_premium": "1" if analyse_premium else "0"})
+    metadata = {"product": product_tag, "customer_email": email, "context": analysis_context[:200], "premium_pdf": "1" if premium_pdf else "0", "analyse_premium": "1" if analyse_premium else "0"}
     if analyse_premium:
         await db.premium_analyses.insert_one({"id": str(uuid.uuid4()), "type": "strategiia", "email": email, "context": analysis_context[:500], "status": "en_attente", "premium_pdf": premium_pdf, "analyse_premium": True, "relecture_expert_required": True, "amount": amount, "created_at": datetime.now(timezone.utc).isoformat()})
         asyncio.create_task(notify_admin_premium_analysis("strategiia", email, "", amount, options={"analyse_premium": True, "premium_pdf": premium_pdf, "context": analysis_context[:300]}))
     try:
-        session = await stripe_checkout.create_checkout_session(checkout_request)
-        return {"url": session.url, "session_id": session.session_id}
+        session = await asyncio.to_thread(
+            stripe_sdk.checkout.Session.create,
+            payment_method_types=["card"],
+            line_items=[{"price_data": {"currency": "eur", "product_data": {"name": f"StratégiIA Premium ({amount:.0f}€)"}, "unit_amount": int(amount * 100)}, "quantity": 1}],
+            mode="payment",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata=metadata,
+        )
+        return {"url": session.url, "session_id": session.id}
     except Exception as e:
         logger.error(f"StratégiIA checkout error: {e}")
         raise HTTPException(status_code=500, detail="Erreur de paiement")
@@ -1302,7 +1313,7 @@ async def strategiia_admin_bypass(request: Request):
     premium_pdf = body.get("premium_pdf", False)
     analyse_premium = body.get("analyse_premium", False)
     email = payload.get("email", "admin@test")
-    if not situation.strip() or not EMERGENT_LLM_KEY:
+    if not situation.strip() or not ANTHROPIC_API_KEY:
         raise HTTPException(status_code=400, detail="Situation requise et service IA actif")
     similar_cases = []
     if type_dossier:

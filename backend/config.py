@@ -38,8 +38,9 @@ JWT_ALGORITHM = 'HS256'
 JWT_EXPIRATION_HOURS = 24
 FORUM_JWT_EXPIRATION_HOURS = 168
 
-# LLM
-EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
+# LLM — Native SDKs
+ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
 
 # Stripe
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', '')

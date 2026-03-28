@@ -1,9 +1,11 @@
 from typing import Optional
+import os
 
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+import anthropic
 
-from config import EMERGENT_LLM_KEY, logger
+from config import logger
 
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
 # ── FAQ limitee aux questions PUREMENT generales (tarifs, contact, RDV) ──
 FAQ_DATABASE = {
@@ -47,7 +49,6 @@ def find_faq_response(message: str) -> Optional[str]:
     Toute question medicale/juridique specifique va directement a Claude."""
     msg = message.lower()
 
-    # Si la question contient des termes medicaux specifiques, JAMAIS la FAQ
     MEDICAL_SIGNALS = [
         "tableau", "coccyg", "lombalgie", "hernie", "canal carpien", "tendinite",
         "sciatique", "amiante", "silicose", "tms", "surdite", "syndrome",
@@ -64,12 +65,10 @@ def find_faq_response(message: str) -> Optional[str]:
         if signal in msg:
             return None
 
-    # Questions avec "?" contenant plus de 8 mots → probablement specifique → Claude
     word_count = len(msg.split())
     if "?" in msg and word_count > 8:
         return None
 
-    # FAQ match stricte
     for topic, data in FAQ_DATABASE.items():
         has_keyword = any(kw in msg for kw in data["keywords"])
         has_exclusion = any(exc in msg for exc in data.get("must_not_contain", []))
@@ -115,7 +114,6 @@ INDEMNISATION :
 - Faute inexcusable : majoration de l'indemnisation si l'employeur avait conscience du danger"""
 
 
-# Mots-clés qui nécessitent la base complète des tableaux MP
 COMPLEX_SIGNALS = [
     "tableau", "amiante", "silicose", "tms", "canal carpien", "tendinite",
     "hernie", "lombalgie", "sciatique", "surdite", "crrmp", "alinea",
@@ -175,7 +173,7 @@ def _is_complex_question(message: str) -> bool:
 
 
 async def get_ai_response(message: str, session_id: str) -> str:
-    if not EMERGENT_LLM_KEY:
+    if not ANTHROPIC_API_KEY:
         return ("Je suis desole, le service IA n'est pas disponible actuellement. "
                 "Pour une analyse de votre situation, essayez notre [StrategiIA](/simulateur) "
                 "ou commandez un [Dossier Express IA](/dossier-express).")
@@ -183,15 +181,14 @@ async def get_ai_response(message: str, session_id: str) -> str:
     try:
         prompt = SYSTEM_PROMPT_FULL if _is_complex_question(message) else SYSTEM_PROMPT_LIGHT
 
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=session_id,
-            system_message=prompt,
-        ).with_model("anthropic", "claude-sonnet-4-5-20250929").with_params(max_tokens=350)
-
-        user_message = UserMessage(text=message)
-        response = await chat.send_message(user_message)
-        return response
+        client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
+        response = await client.messages.create(
+            model="claude-sonnet-4-5-20250929",
+            max_tokens=350,
+            system=prompt,
+            messages=[{"role": "user", "content": message}],
+        )
+        return response.content[0].text
 
     except Exception as e:
         logger.error(f"Error getting AI response: {str(e)}")

@@ -2,11 +2,11 @@ from fastapi import APIRouter, HTTPException, Depends, Request
 from datetime import datetime, timezone
 import uuid
 
+import stripe as stripe_sdk
+
 from config import db, PAYMENT_PACKAGES, STRIPE_API_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_MODE, PAYPAL_CLIENT_ID, PAYPAL_SECRET, PAYPAL_BASE_URL, logger
 from models import PaymentTransaction, CreateCheckoutRequest, ReferralUse
 from utils.auth import get_current_admin
-
-from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionRequest
 
 router = APIRouter()
 
@@ -50,9 +50,7 @@ async def create_checkout_session(request_data: CreateCheckoutRequest, request: 
     success_url = f"{origin_url}/tarifs?payment=success&session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{origin_url}/tarifs?payment=cancelled"
 
-    host_url = str(request.base_url).rstrip('/')
-    webhook_url = f"{host_url}/api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    stripe_sdk.api_key = STRIPE_API_KEY
 
     metadata = {
         "package_id": request_data.package_id, "package_name": package["name"],
@@ -60,10 +58,23 @@ async def create_checkout_session(request_data: CreateCheckoutRequest, request: 
         "discount_percent": str(discount_percent), "discount_type": discount_type, "original_amount": str(base_amount)
     }
 
-    checkout_request = CheckoutSessionRequest(amount=final_amount, currency=package["currency"], success_url=success_url, cancel_url=cancel_url, metadata=metadata)
-
     try:
-        session = await stripe_checkout.create_checkout_session(checkout_request)
+        session = stripe_sdk.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": package["currency"],
+                    "product_data": {"name": package["name"]},
+                    "unit_amount": int(final_amount * 100),
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata=metadata,
+        )
+
         if request_data.customer_email:
             await db.client_history.update_one(
                 {"email": request_data.customer_email.lower()},
@@ -73,7 +84,7 @@ async def create_checkout_session(request_data: CreateCheckoutRequest, request: 
             )
 
         transaction = PaymentTransaction(
-            session_id=session.session_id, package_id=request_data.package_id, package_name=package["name"],
+            session_id=session.id, package_id=request_data.package_id, package_name=package["name"],
             amount=final_amount, currency=package["currency"], email=request_data.customer_email,
             customer_name=request_data.customer_name, status="pending", payment_status="initiated", metadata=metadata
         )
@@ -82,7 +93,7 @@ async def create_checkout_session(request_data: CreateCheckoutRequest, request: 
         doc['updated_at'] = doc['updated_at'].isoformat()
         await db.payment_transactions.insert_one(doc)
 
-        return {"url": session.url, "session_id": session.session_id, "discount_applied": discount_percent, "discount_type": discount_type, "original_amount": base_amount, "final_amount": final_amount}
+        return {"url": session.url, "session_id": session.id, "discount_applied": discount_percent, "discount_type": discount_type, "original_amount": base_amount, "final_amount": final_amount}
     except Exception as e:
         logger.error(f"Stripe checkout error: {str(e)}")
         raise HTTPException(status_code=500, detail="Erreur lors de la création du paiement")
@@ -95,16 +106,16 @@ async def get_payment_status(session_id: str, request: Request):
     if transaction and transaction.get("payment_status") == "paid":
         return {"status": "complete", "payment_status": "paid", "package_name": transaction.get("package_name"), "amount": transaction.get("amount"), "currency": transaction.get("currency")}
 
-    host_url = str(request.base_url).rstrip('/')
-    webhook_url = f"{host_url}/api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    stripe_sdk.api_key = STRIPE_API_KEY
     try:
-        status = await stripe_checkout.get_checkout_status(session_id)
+        session = stripe_sdk.checkout.Session.retrieve(session_id)
+        payment_status = session.payment_status or "unknown"
         await db.payment_transactions.update_one(
             {"session_id": session_id},
-            {"$set": {"status": status.status, "payment_status": status.payment_status, "updated_at": datetime.now(timezone.utc).isoformat()}}
+            {"$set": {"status": session.status, "payment_status": payment_status, "updated_at": datetime.now(timezone.utc).isoformat()}}
         )
-        return {"status": status.status, "payment_status": status.payment_status, "amount": status.amount_total / 100, "currency": status.currency, "metadata": status.metadata}
+        amount_total = session.amount_total or 0
+        return {"status": session.status, "payment_status": payment_status, "amount": amount_total / 100, "currency": session.currency, "metadata": dict(session.metadata or {})}
     except Exception as e:
         logger.error(f"Payment status error: {str(e)}")
         raise HTTPException(status_code=500, detail="Erreur lors de la vérification du paiement")
@@ -115,29 +126,34 @@ async def stripe_webhook(request: Request):
         raise HTTPException(status_code=500, detail="Stripe non configuré")
     body = await request.body()
     sig_header = request.headers.get("Stripe-Signature")
-    host_url = str(request.base_url).rstrip('/')
-    webhook_url = f"{host_url}/api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+
+    stripe_sdk.api_key = STRIPE_API_KEY
     try:
-        webhook_response = await stripe_checkout.handle_webhook(body, sig_header)
-        if webhook_response.session_id:
-            now = datetime.now(timezone.utc).isoformat()
-            await db.payment_transactions.update_one(
-                {"session_id": webhook_response.session_id},
-                {"$set": {"status": webhook_response.event_type, "payment_status": webhook_response.payment_status, "updated_at": now}}
-            )
-            # SECURITY FIX: When payment confirmed, update related dossier_express entries
-            if webhook_response.payment_status == "paid":
-                result = await db.dossier_express.update_many(
-                    {"session_id": webhook_response.session_id, "payment_verified": False},
-                    {"$set": {"payment_verified": True, "payment_confirmed_at": now}}
-                )
-                if result.modified_count > 0:
-                    logger.info(f"Webhook: marked {result.modified_count} dossier(s) as payment_verified for session {webhook_response.session_id}")
-        return {"received": True}
+        event = stripe_sdk.Webhook.construct_event(body, sig_header, STRIPE_WEBHOOK_SECRET)
+    except stripe_sdk.error.SignatureVerificationError:
+        raise HTTPException(status_code=400, detail="Invalid signature")
     except Exception as e:
-        logger.error(f"Webhook error: {str(e)}")
+        logger.error(f"Webhook construct error: {e}")
         raise HTTPException(status_code=400, detail="Webhook error")
+
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
+        session_id = session.get("id", "")
+        payment_status = session.get("payment_status", "unknown")
+        now = datetime.now(timezone.utc).isoformat()
+        await db.payment_transactions.update_one(
+            {"session_id": session_id},
+            {"$set": {"status": "complete", "payment_status": payment_status, "updated_at": now}}
+        )
+        if payment_status == "paid":
+            result = await db.dossier_express.update_many(
+                {"session_id": session_id, "payment_verified": False},
+                {"$set": {"payment_verified": True, "payment_confirmed_at": now}}
+            )
+            if result.modified_count > 0:
+                logger.info(f"Webhook: marked {result.modified_count} dossier(s) as payment_verified for session {session_id}")
+
+    return {"received": True}
 
 
 # ==================== PAYPAL ====================
@@ -178,7 +194,6 @@ async def record_paypal_payment(request: Request):
     referral_code = body.get("referral_code")
     package = PAYMENT_PACKAGES.get(package_id, {})
 
-    # SECURITY FIX V14: Verify PayPal payment server-side
     if PAYPAL_CLIENT_ID and PAYPAL_SECRET and order_id:
         import httpx
         try:

@@ -6,43 +6,42 @@ Plateforme premium de conseil en maladies professionnelles.
 ## Architecture
 - **Frontend** : React 18 + Shadcn/UI + Tailwind CSS
 - **Backend** : FastAPI + MongoDB
-- **IA** : Anthropic Claude (via emergentintegrations, migrable vers SDK natif)
+- **IA** : Anthropic Claude (`anthropic` SDK natif) + OpenAI GPT-4o (`openai` SDK natif)
 - **PDF** : fpdf2 (backend) + jsPDF (frontend)
 - **Email** : Resend
-- **Paiements** : Stripe + PayPal (test mode)
+- **Paiements** : Stripe (`stripe` SDK natif) + PayPal
+- **Stockage** : S3 compatible (`boto3`)
 - **OCR** : Tesseract + PyMuPDF (open source)
+- **Recherche** : Algolia
 
-## Variables d'environnement centrales
-| Variable | Fichier | Usage |
-|----------|---------|-------|
-| `SITE_URL` | backend/.env | Emails, sitemap, robots.txt, SEO |
-| `REACT_APP_SITE_URL` | frontend/.env | SEO, canonical, OpenGraph |
-| `REACT_APP_BACKEND_URL` | frontend/.env | Appels API frontend |
+## Autonomie technique — 100%
+Aucune dépendance à emergentintegrations. Tous les SDK sont natifs.
 
-## Fonctionnalités implémentées (DONE)
+| Composant | SDK | Variable d'env |
+|-----------|-----|---------------|
+| IA Chatbot/Analyse | `anthropic` | `ANTHROPIC_API_KEY` |
+| OCR Avancée | `openai` | `OPENAI_API_KEY` |
+| Paiements | `stripe` | `STRIPE_API_KEY` |
+| Stockage fichiers | `boto3` (S3) | `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET` |
+| Email | `resend` | `RESEND_API_KEY` |
+| Recherche | `algoliasearch` | `ALGOLIA_APP_ID`, `ALGOLIA_API_KEY` |
+
+## Fichiers de portabilité
+- `Dockerfile` : Build multi-stage production
+- `docker-compose.yml` : App + MongoDB
+- `nginx.conf` : Reverse proxy + SPA
+- `backend/.env.example` : Toutes les variables documentées
+- `frontend/.env.example` : Variables frontend
+- `README.md` : Guide complet d'installation
+
+## Fonctionnalités (DONE)
 - Auth Admin + Client, Dashboard Admin complet
-- Scanner documents (caméra native), StratégiIA, Dossier Express IA
-- PDF premium standardisés, Paiements Stripe + PayPal (test)
-- Mascotte Straté + TTS français + Admin CRUD conseils
-- Upload chunké async (45MB), Auto-purge 30j, DataConsentBox
-- Admin Human Review Workflow (stockage originaux, édition analyse, regénération PDF)
-- Badge "Relu par expert" côté client
-- Portabilité SITE_URL (0 URL hardcodée, variables d'env centrales)
-- Fichiers de portabilité : Dockerfile, docker-compose.yml, nginx.conf, .env.example, README.md
-- .gitignore nettoyé
-
-## Portabilité
-| Composant | Portable | Si autonome, remplacer par |
-|-----------|----------|---------------------------|
-| Frontend React | ✅ 100% | — |
-| Admin Dashboard | ✅ 100% | — |
-| OCR / PDF | ✅ 100% | — |
-| Emails (Resend) | ✅ 100% | — |
-| Algolia | ✅ 100% | — |
-| IA (Claude) | ⚠️ | SDK `anthropic` natif → `backend/utils/chatbot.py` |
-| Stripe | ⚠️ | SDK `stripe` natif → `backend/routes/payments.py` |
-| Object Storage | ⚠️ | AWS S3 / GCS → `backend/utils/storage.py` |
-| MongoDB | ⚠️ | MongoDB Atlas / hébergé |
+- Scanner documents, StratégiIA, Dossier Express IA
+- PDF premium, Paiements Stripe + PayPal
+- Mascotte Straté + TTS français
+- Upload chunké async (45MB), Auto-purge 30j
+- Admin Human Review Workflow, Badge "Relu par expert"
+- Portabilité SITE_URL, 0 URL hardcodée
 
 ## Backlog
 ### P1
@@ -50,6 +49,5 @@ Plateforme premium de conseil en maladies professionnelles.
 ### P2
 - Intégration HubSpot CRM (attente identifiants)
 ### P3
-- Remplacement emergentintegrations → SDKs natifs
 - Refactoring EmailTemplateEditor.jsx
 - Consolidation moteurs PDF (backend uniquement)

@@ -1,53 +1,41 @@
 import os
 import uuid
-import requests
 import logging
+
+import boto3
+from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
 
-STORAGE_URL = "https://integrations.emergentagent.com/objstore/api/v1/storage"
-EMERGENT_KEY = os.environ.get("EMERGENT_LLM_KEY")
+# Configuration : S3 compatible (AWS, MinIO, Scaleway, OVH, etc.)
+S3_ENDPOINT = os.environ.get("S3_ENDPOINT", "")
+S3_ACCESS_KEY = os.environ.get("S3_ACCESS_KEY", "")
+S3_SECRET_KEY = os.environ.get("S3_SECRET_KEY", "")
+S3_BUCKET = os.environ.get("S3_BUCKET", "strategie-expertise-sante")
+S3_REGION = os.environ.get("S3_REGION", "eu-west-3")
+
 APP_NAME = "strategie-expertise-sante"
 
-storage_key = None
+_s3_client = None
 
 
-def init_storage():
-    global storage_key
-    if storage_key:
-        return storage_key
-    resp = requests.post(
-        f"{STORAGE_URL}/init",
-        json={"emergent_key": EMERGENT_KEY},
-        timeout=30,
-    )
-    resp.raise_for_status()
-    storage_key = resp.json()["storage_key"]
-    logger.info("Object storage initialized successfully")
-    return storage_key
-
-
-def put_object(path: str, data: bytes, content_type: str) -> dict:
-    key = init_storage()
-    resp = requests.put(
-        f"{STORAGE_URL}/objects/{path}",
-        headers={"X-Storage-Key": key, "Content-Type": content_type},
-        data=data,
-        timeout=120,
-    )
-    resp.raise_for_status()
-    return resp.json()
-
-
-def get_object(path: str) -> tuple:
-    key = init_storage()
-    resp = requests.get(
-        f"{STORAGE_URL}/objects/{path}",
-        headers={"X-Storage-Key": key},
-        timeout=60,
-    )
-    resp.raise_for_status()
-    return resp.content, resp.headers.get("Content-Type", "application/octet-stream")
+def _get_s3():
+    global _s3_client
+    if _s3_client:
+        return _s3_client
+    if not S3_ACCESS_KEY or not S3_SECRET_KEY:
+        raise RuntimeError("S3 non configuré : S3_ACCESS_KEY / S3_SECRET_KEY manquants")
+    kwargs = {
+        "service_name": "s3",
+        "aws_access_key_id": S3_ACCESS_KEY,
+        "aws_secret_access_key": S3_SECRET_KEY,
+        "region_name": S3_REGION,
+    }
+    if S3_ENDPOINT:
+        kwargs["endpoint_url"] = S3_ENDPOINT
+    _s3_client = boto3.client(**kwargs)
+    logger.info("Object storage (S3) initialized")
+    return _s3_client
 
 
 MIME_TYPES = {
@@ -61,6 +49,20 @@ MIME_TYPES = {
     "txt": "text/plain",
     "csv": "text/csv",
 }
+
+
+def put_object(path: str, data: bytes, content_type: str) -> dict:
+    s3 = _get_s3()
+    s3.put_object(Bucket=S3_BUCKET, Key=path, Body=data, ContentType=content_type)
+    return {"path": path, "size": len(data)}
+
+
+def get_object(path: str) -> tuple:
+    s3 = _get_s3()
+    resp = s3.get_object(Bucket=S3_BUCKET, Key=path)
+    content = resp["Body"].read()
+    content_type = resp.get("ContentType", "application/octet-stream")
+    return content, content_type
 
 
 def upload_file(user_id: str, filename: str, data: bytes, content_type: str) -> dict:
@@ -79,3 +81,13 @@ def upload_file(user_id: str, filename: str, data: bytes, content_type: str) -> 
 
 def download_file(storage_path: str) -> tuple:
     return get_object(storage_path)
+
+
+def delete_object(path: str) -> bool:
+    try:
+        s3 = _get_s3()
+        s3.delete_object(Bucket=S3_BUCKET, Key=path)
+        return True
+    except ClientError as e:
+        logger.warning(f"Failed to delete S3 object {path}: {e}")
+        return False
