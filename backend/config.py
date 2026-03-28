@@ -94,7 +94,7 @@ DOCUMENT_CATEGORIES = {
 DOCUMENT_STATUSES = ["en_attente", "valide", "illisible", "corrige"]
 
 # SEO
-SITE_URL = "https://mascot-tips-admin.preview.emergentagent.com"
+SITE_URL = os.environ.get("SITE_URL", os.environ.get("REACT_APP_BACKEND_URL", "https://strategie-expertise-sante.fr")).rstrip("/")
 SITEMAP_PAGES = [
     ("/", "1.0", "daily"),
     ("/a-propos", "0.8", "monthly"),

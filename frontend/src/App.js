@@ -20,7 +20,7 @@ import { useSearchHighlight } from "@/hooks/useSearchHighlight";
 const SearchHighlighter = () => { useSearchHighlight(); return null; };
 const HideOnAdmin = ({ children }) => { const { pathname } = useLocation(); return pathname.startsWith('/admin') ? null : children; };
 
-const SITE_URL = "https://mascot-tips-admin.preview.emergentagent.com";
+const SITE_URL = process.env.REACT_APP_SITE_URL || process.env.REACT_APP_BACKEND_URL || "";
 
 const professionalServiceSchema = {
   "@context": "https://schema.org",

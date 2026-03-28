@@ -1,7 +1,6 @@
+# Robots.txt dynamique servi par le backend: /api/robots.txt
+# Ce fichier est un fallback statique.
 User-agent: *
 Allow: /
 Disallow: /admin
-Disallow: /admin/login
 Disallow: /espace-client
-
-Sitemap: https://mascot-tips-admin.preview.emergentagent.com/sitemap.xml

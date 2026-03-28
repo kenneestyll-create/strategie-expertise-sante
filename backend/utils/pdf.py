@@ -19,7 +19,7 @@ _STRIP_PATTERNS = [
     re.compile(r'(?i)premi.re\s+consultation.*gratuit.*$'),
     re.compile(r'(?i)^\W*strat.gie\s*&?\s*expertise\s*sant[eé]?\s*\.?\s*$'),
     re.compile(r'(?i)strategie-expertise-sante\.fr.*$'),
-    re.compile(r'(?i)mascot-tips-admin\.preview.*$'),
+    re.compile(r'(?i)preview\.emergentagent\.com.*$'),
     re.compile(r'^---+$'),
     # Strip LLM-generated closing phrase (it's hardcoded in the PDF template)
     re.compile(r'(?i)^\W*vous\s+n.{0,3}tes\s+plus\s+seul'),

@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 
 const SITE_NAME = 'Stratégie & Expertise Santé';
-const BASE_URL = 'https://mascot-tips-admin.preview.emergentagent.com';
+const BASE_URL = process.env.REACT_APP_SITE_URL || process.env.REACT_APP_BACKEND_URL || '';
 
 export const SEO = ({ title, description, path = '', noindex = false }) => {
   const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — Conseil en maladie professionnelle et AT/MP`;
