@@ -591,25 +591,25 @@ export const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-foreground text-primary-foreground sticky top-0 z-50">
+      <header className="bg-foreground text-primary-foreground sticky top-0 z-50 border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <Link to="/" className="flex items-center gap-2">
-                <Heart className="w-6 h-6 text-accent" strokeWidth={1.5} />
-                <span className="font-semibold" style={{ fontFamily: "'Playfair Display', serif" }}>
-                  Stratégie & Expertise Santé
+          <div className="flex items-center justify-between h-14">
+            <div className="flex items-center gap-3">
+              <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <Heart className="w-5 h-5 text-accent" strokeWidth={1.5} />
+                <span className="font-semibold text-sm" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  S.E.S
                 </span>
               </Link>
-              <span className="text-primary-foreground/50 hidden sm:inline">|</span>
-              <span className="text-sm text-primary-foreground/70 hidden sm:inline">Administration</span>
+              <div className="w-px h-5 bg-white/15 hidden sm:block" />
+              <span className="text-xs text-primary-foreground/50 hidden sm:inline font-medium tracking-wide uppercase">Administration</span>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm hidden sm:inline">Bonjour, {adminName}</span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs hidden sm:inline text-primary-foreground/70">{adminName}</span>
               <button
                 onClick={() => setIsAdminMode(prev => !prev)}
                 data-testid="admin-test-toggle"
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium transition-all border ${
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all border ${
                   isAdminMode
                     ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
                     : 'bg-white/10 text-primary-foreground/60 border-white/20 hover:bg-white/20'
@@ -619,7 +619,7 @@ export const AdminDashboard = () => {
                 {isAdminMode ? 'Test Admin' : 'Test Client'}
               </button>
               <Link to="/">
-                <Button variant="ghost" size="sm" className="text-primary-foreground hover:bg-primary-foreground/10" data-testid="admin-home-button">
+                <Button variant="ghost" size="sm" className="text-primary-foreground/70 hover:bg-primary-foreground/10 h-8 w-8 p-0" data-testid="admin-home-button">
                   <Home className="w-4 h-4" />
                 </Button>
               </Link>
@@ -627,11 +627,11 @@ export const AdminDashboard = () => {
                 variant="ghost" 
                 size="sm" 
                 onClick={handleLogout}
-                className="text-primary-foreground hover:bg-primary-foreground/10 gap-2"
+                className="text-primary-foreground/70 hover:bg-primary-foreground/10 gap-1.5 h-8 text-xs"
                 data-testid="admin-logout-button"
               >
-                <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Déconnexion</span>
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Quitter</span>
               </Button>
             </div>
           </div>
@@ -640,78 +640,89 @@ export const AdminDashboard = () => {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-6xl flex-wrap" style={{gridTemplateColumns: 'repeat(15, 1fr)'}}>
-            <TabsTrigger value="contacts" className="gap-1 text-xs sm:text-sm">
-              <Users className="w-3 h-3 sm:w-4 sm:h-4" />
-              Contacts
-            </TabsTrigger>
-            <TabsTrigger value="avis" className="gap-1 text-xs sm:text-sm">
-              <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
-              Avis
-            </TabsTrigger>
-            <TabsTrigger value="referrals" className="gap-1 text-xs sm:text-sm" data-testid="tab-referrals">
-              <Gift className="w-3 h-3 sm:w-4 sm:h-4" />
-              Parrainage
-            </TabsTrigger>
-            <TabsTrigger value="bookings" className="gap-1 text-xs sm:text-sm" data-testid="tab-bookings">
-              <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-              RDV
-            </TabsTrigger>
-            <TabsTrigger value="clients" className="gap-1 text-xs sm:text-sm" data-testid="tab-clients">
-              <FolderOpen className="w-3 h-3 sm:w-4 sm:h-4" />
-              Clients
-            </TabsTrigger>
-            <TabsTrigger value="relance" className="gap-1 text-xs sm:text-sm" data-testid="tab-relance">
-              <Send className="w-3 h-3 sm:w-4 sm:h-4" />
-              Relance
-            </TabsTrigger>
-            <TabsTrigger value="alertes" className="gap-1 text-xs sm:text-sm relative" data-testid="tab-alertes">
-              <Zap className="w-3 h-3 sm:w-4 sm:h-4" />
-              Alertes
-              {urgentAlerts.non_traite > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">{urgentAlerts.non_traite}</span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="conseils-strate" className="gap-1 text-xs sm:text-sm" data-testid="tab-conseils-strate">
-              <Star className="w-3 h-3 sm:w-4 sm:h-4 text-[#C9A84C]" />
-              Strate
-            </TabsTrigger>
-            <TabsTrigger value="strategiia" className="gap-1 text-xs sm:text-sm relative" data-testid="tab-strategiia">
-              <Brain className="w-3 h-3 sm:w-4 sm:h-4" />
-              StratégiIA
-              {premiumAnalyses.items.filter(i => i.type === 'strategiia' && i.status === 'en_attente').length > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">{premiumAnalyses.items.filter(i => i.type === 'strategiia' && i.status === 'en_attente').length}</span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="dossier-express" className="gap-1 text-xs sm:text-sm relative" data-testid="tab-dossier-express">
-              <FileSearch className="w-3 h-3 sm:w-4 sm:h-4 text-amber-600" />
-              Dossier Express
-              {premiumAnalyses.items.filter(i => i.type === 'dossier_express' && i.status === 'en_attente').length > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">{premiumAnalyses.items.filter(i => i.type === 'dossier_express' && i.status === 'en_attente').length}</span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="gap-1 text-xs sm:text-sm" data-testid="tab-analytics">
-              <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-600" />
-              Analytique
-            </TabsTrigger>
-            <TabsTrigger value="documents" className="gap-1 text-xs sm:text-sm" data-testid="tab-admin-documents">
-              <FileText className="w-3 h-3 sm:w-4 sm:h-4 text-teal-600" />
-              Documents
-            </TabsTrigger>
-            <TabsTrigger value="config" className="gap-1 text-xs sm:text-sm" data-testid="tab-config">
-              <Settings className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
-              Config
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="gap-1 text-xs sm:text-sm" data-testid="tab-notifications">
-              <BellRing className="w-3 h-3 sm:w-4 sm:h-4 text-amber-500" />
-              Notifs
-            </TabsTrigger>
-            <TabsTrigger value="templates" className="gap-1 text-xs sm:text-sm" data-testid="tab-templates">
-              <PenTool className="w-3 h-3 sm:w-4 sm:h-4 text-violet-500" />
-              Templates
-            </TabsTrigger>
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+          <div className="overflow-x-auto -mx-4 px-4 pb-1 scrollbar-thin" data-testid="admin-tabs-nav">
+            <TabsList className="inline-flex w-auto min-w-full gap-0.5 bg-card/80 backdrop-blur border border-border/60 p-1.5 rounded-xl shadow-sm">
+              <TabsTrigger value="contacts" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
+                <Users className="w-3.5 h-3.5" />
+                Contacts
+              </TabsTrigger>
+              <TabsTrigger value="avis" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
+                <MessageSquare className="w-3.5 h-3.5" />
+                Avis
+              </TabsTrigger>
+              <TabsTrigger value="referrals" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-referrals">
+                <Gift className="w-3.5 h-3.5" />
+                Parrainage
+              </TabsTrigger>
+              <TabsTrigger value="bookings" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-bookings">
+                <Calendar className="w-3.5 h-3.5" />
+                RDV
+              </TabsTrigger>
+              <TabsTrigger value="clients" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-clients">
+                <FolderOpen className="w-3.5 h-3.5" />
+                Clients
+              </TabsTrigger>
+              <TabsTrigger value="relance" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-relance">
+                <Send className="w-3.5 h-3.5" />
+                Relance
+              </TabsTrigger>
+              <TabsTrigger value="alertes" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all relative" data-testid="tab-alertes">
+                <Zap className="w-3.5 h-3.5" />
+                Alertes
+                {urgentAlerts.non_traite > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-background">{urgentAlerts.non_traite}</span>
+                )}
+              </TabsTrigger>
+
+              <div className="w-px h-6 bg-border/60 mx-1 self-center flex-shrink-0" />
+
+              <TabsTrigger value="strategiia" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all relative" data-testid="tab-strategiia">
+                <Brain className="w-3.5 h-3.5" />
+                StratégiIA
+                {premiumAnalyses.items.filter(i => i.type === 'strategiia' && i.status === 'en_attente').length > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-background">{premiumAnalyses.items.filter(i => i.type === 'strategiia' && i.status === 'en_attente').length}</span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="dossier-express" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all relative" data-testid="tab-dossier-express">
+                <FileSearch className="w-3.5 h-3.5 text-amber-600" />
+                Dossier Express
+                {premiumAnalyses.items.filter(i => i.type === 'dossier_express' && i.status === 'en_attente').length > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-background">{premiumAnalyses.items.filter(i => i.type === 'dossier_express' && i.status === 'en_attente').length}</span>
+                )}
+              </TabsTrigger>
+
+              <div className="w-px h-6 bg-border/60 mx-1 self-center flex-shrink-0" />
+
+              <TabsTrigger value="analytics" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-analytics">
+                <BarChart3 className="w-3.5 h-3.5 text-emerald-600" />
+                Analytique
+              </TabsTrigger>
+              <TabsTrigger value="documents" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-admin-documents">
+                <FileText className="w-3.5 h-3.5 text-teal-600" />
+                Documents
+              </TabsTrigger>
+              <TabsTrigger value="conseils-strate" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-conseils-strate">
+                <Star className="w-3.5 h-3.5 text-[#C9A84C]" />
+                Straté
+              </TabsTrigger>
+
+              <div className="w-px h-6 bg-border/60 mx-1 self-center flex-shrink-0" />
+
+              <TabsTrigger value="config" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-config">
+                <Settings className="w-3.5 h-3.5 text-gray-500" />
+                Config
+              </TabsTrigger>
+              <TabsTrigger value="notifications" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-notifications">
+                <BellRing className="w-3.5 h-3.5 text-amber-500" />
+                Notifs
+              </TabsTrigger>
+              <TabsTrigger value="templates" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-templates">
+                <PenTool className="w-3.5 h-3.5 text-violet-500" />
+                Templates
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Contacts Tab */}
           <TabsContent value="contacts" className="space-y-6">
@@ -1707,14 +1718,90 @@ export const AdminDashboard = () => {
               onRefresh={fetchData}
             />
           </TabsContent>
-          {/* Dossier Express IA Admin Tab — NEW */}
-          <TabsContent value="dossier-express" className="space-y-6" data-testid="dossier-express-tab-content">
-            {/* Dossier Express Production Stats */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{dossierExpressAdmin.stats?.total || 0}</p><p className="text-xs text-muted-foreground">Total dossiers</p></CardContent></Card>
-              <Card className="border-green-500/30"><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-green-600">{dossierExpressAdmin.stats?.completed || 0}</p><p className="text-xs text-muted-foreground">Terminés</p></CardContent></Card>
-              <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-blue-500">{dossierExpressAdmin.stats?.processing || 0}</p><p className="text-xs text-muted-foreground">En cours</p></CardContent></Card>
-              <Card className="border-red-500/30"><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-red-500">{dossierExpressAdmin.stats?.errors || 0}</p><p className="text-xs text-muted-foreground">Erreurs</p></CardContent></Card>
+          {/* Dossier Express IA Admin Tab — PREMIUM COCKPIT */}
+          <TabsContent value="dossier-express" className="space-y-8" data-testid="dossier-express-tab-content">
+            {/* Section header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                  <FileSearch className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Dossier Express IA</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Vue d'ensemble de la production</p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" onClick={fetchData} className="gap-2 text-xs" data-testid="de-refresh-btn">
+                <RefreshCw className="w-3.5 h-3.5" /> Actualiser
+              </Button>
+            </div>
+
+            {/* Premium KPI Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" data-testid="de-kpi-grid">
+              <Card className="relative overflow-hidden border-border/60 hover:shadow-md transition-shadow" data-testid="de-kpi-total">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total dossiers</p>
+                      <p className="text-3xl font-bold mt-2 tracking-tight">{dossierExpressAdmin.stats?.total || 0}</p>
+                      <p className="text-[11px] text-muted-foreground mt-1">Tous statuts confondus</p>
+                    </div>
+                    <div className="w-11 h-11 rounded-xl bg-muted/60 flex items-center justify-center">
+                      <FolderOpen className="w-5 h-5 text-foreground/60" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="relative overflow-hidden border-green-200/60 hover:shadow-md transition-shadow" data-testid="de-kpi-completed">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Terminés</p>
+                      <p className="text-3xl font-bold mt-2 tracking-tight text-green-600">{dossierExpressAdmin.stats?.completed || 0}</p>
+                      <p className="text-[11px] text-green-600/70 mt-1">
+                        {dossierExpressAdmin.stats?.total > 0
+                          ? `${Math.round(((dossierExpressAdmin.stats?.completed || 0) / dossierExpressAdmin.stats.total) * 100)}% du total`
+                          : 'Aucun dossier'
+                        }
+                      </p>
+                    </div>
+                    <div className="w-11 h-11 rounded-xl bg-green-50 flex items-center justify-center">
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="relative overflow-hidden border-blue-200/60 hover:shadow-md transition-shadow" data-testid="de-kpi-processing">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">En cours</p>
+                      <p className="text-3xl font-bold mt-2 tracking-tight text-blue-600">{dossierExpressAdmin.stats?.processing || 0}</p>
+                      <p className="text-[11px] text-blue-600/70 mt-1">Traitement en cours</p>
+                    </div>
+                    <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
+                      <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className={`relative overflow-hidden hover:shadow-md transition-shadow ${(dossierExpressAdmin.stats?.errors || 0) > 0 ? 'border-red-300 bg-red-50/30 ring-1 ring-red-200/50' : 'border-border/60'}`} data-testid="de-kpi-errors">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Erreurs</p>
+                      <p className={`text-3xl font-bold mt-2 tracking-tight ${(dossierExpressAdmin.stats?.errors || 0) > 0 ? 'text-red-600' : 'text-foreground/40'}`}>{dossierExpressAdmin.stats?.errors || 0}</p>
+                      <p className="text-[11px] text-red-500/70 mt-1">{(dossierExpressAdmin.stats?.errors || 0) > 0 ? 'Attention requise' : 'Aucune erreur'}</p>
+                    </div>
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${(dossierExpressAdmin.stats?.errors || 0) > 0 ? 'bg-red-100' : 'bg-muted/60'}`}>
+                      <AlertTriangle className={`w-5 h-5 ${(dossierExpressAdmin.stats?.errors || 0) > 0 ? 'text-red-500' : 'text-foreground/30'}`} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Premium Review section for Dossier Express */}
@@ -1735,56 +1822,84 @@ export const AdminDashboard = () => {
               }}
             />
 
-            {/* Recent Dossier Express submissions with analysis access */}
+            {/* Recent Dossier Express submissions — enriched cards */}
             {dossierExpressAdmin.items?.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg" data-testid="de-history-title">
-                    <FileText className="w-5 h-5 text-teal-600" />
-                    Tous les dossiers soumis
-                  </CardTitle>
+              <Card className="border-border/60">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2.5 text-lg" data-testid="de-history-title">
+                      <FileText className="w-5 h-5 text-teal-600" />
+                      Tous les dossiers soumis
+                      <Badge variant="outline" className="text-[10px] ml-1 font-normal">{dossierExpressAdmin.items.length}</Badge>
+                    </CardTitle>
+                  </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-0">
                   <div className="space-y-3">
-                    {dossierExpressAdmin.items.slice(0, 30).map(d => (
-                      <div key={d.id} className={`p-4 rounded-xl border ${d.status === 'completed' ? 'border-green-500/30 bg-green-50/30' : d.status === 'processing' ? 'border-blue-500/30 bg-blue-50/30' : d.status === 'error' ? 'border-red-500/30 bg-red-50/30' : 'border-border'}`} data-testid={`de-row-${d.id}`}>
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap mb-1">
-                              <Badge className={`text-[10px] ${d.status === 'completed' ? 'bg-green-100 text-green-700' : d.status === 'processing' ? 'bg-blue-100 text-blue-700' : d.status === 'error' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
-                                {d.status === 'completed' ? 'Terminé' : d.status === 'processing' ? 'En cours' : d.status === 'error' ? 'Erreur' : d.status}
-                              </Badge>
-                              <Badge variant="outline" className="text-[10px]">{d.type_dossier || '—'}</Badge>
-                              {d.regime && <Badge variant="outline" className="text-[10px]">{d.regime}</Badge>}
-                              {d.premium_pdf && <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">PDF Pro</Badge>}
-                              {d.admin_test && <Badge className="bg-zinc-500/10 text-zinc-500 border-zinc-500/20 text-[10px]">Test</Badge>}
+                    {dossierExpressAdmin.items.slice(0, 30).map(d => {
+                      const statusConfig = {
+                        completed: { label: 'Terminé', bg: 'bg-green-50/60', border: 'border-green-200/60', badgeCls: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle, iconCls: 'text-green-500' },
+                        processing: { label: 'En cours', bg: 'bg-blue-50/40', border: 'border-blue-200/60', badgeCls: 'bg-blue-100 text-blue-700 border-blue-200', icon: Clock, iconCls: 'text-blue-500' },
+                        error: { label: 'Erreur', bg: 'bg-red-50/40', border: 'border-red-200/60', badgeCls: 'bg-red-100 text-red-700 border-red-200', icon: AlertTriangle, iconCls: 'text-red-500' },
+                      };
+                      const sc = statusConfig[d.status] || { label: d.status || 'En attente', bg: 'bg-amber-50/40', border: 'border-amber-200/60', badgeCls: 'bg-amber-100 text-amber-700 border-amber-200', icon: Clock, iconCls: 'text-amber-500' };
+                      const StatusIcon = sc.icon;
+                      return (
+                        <div key={d.id} className={`group p-4 rounded-xl border ${sc.border} ${sc.bg} hover:shadow-sm transition-all`} data-testid={`de-row-${d.id}`}>
+                          <div className="flex items-start gap-3.5">
+                            {/* Status icon */}
+                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${d.status === 'completed' ? 'bg-green-100' : d.status === 'error' ? 'bg-red-100' : 'bg-blue-100'}`}>
+                              <StatusIcon className={`w-4.5 h-4.5 ${sc.iconCls}`} />
                             </div>
-                            <p className="font-medium text-sm">{d.name || d.email}</p>
-                            <p className="text-[10px] text-muted-foreground">{d.email}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}</p>
-                            {d.completed_at && <p className="text-[10px] text-green-600">Terminé le {new Date(d.completed_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>}
-                            {d.email_sent && <p className="text-[10px] text-emerald-600">Email envoyé</p>}
-                          </div>
-                          <div className="flex gap-1.5 flex-shrink-0 flex-wrap">
-                            {d.status === 'completed' && (
-                              <Button size="sm" variant="outline" className="text-xs h-7 gap-1 border-green-500/30 text-green-600 hover:bg-green-50"
-                                data-testid={`de-view-analysis-${d.id}`}
-                                onClick={async () => {
-                                  try {
-                                    const res = await axios.get(`${API}/admin/dossier-express/${d.id}/analysis`, axiosConfig);
-                                    setDossierViewDialog(res.data);
-                                  } catch { toast.error("Impossible de charger l'analyse"); }
-                                }}>
-                                <Eye className="w-3 h-3" /> Consulter l'analyse
-                              </Button>
-                            )}
-                            {d.status === 'error' && (
-                              <Badge variant="outline" className="text-[10px] border-red-500/30 text-red-500">{d.error ? d.error.substring(0, 60) + '...' : 'Erreur'}</Badge>
-                            )}
+
+                            {/* Main content */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                                <span className="font-semibold text-sm">{d.name || d.email}</span>
+                                <Badge variant="outline" className={`text-[10px] border ${sc.badgeCls}`}>
+                                  {sc.label}
+                                </Badge>
+                                {d.type_dossier && <Badge variant="outline" className="text-[10px]">{d.type_dossier}</Badge>}
+                                {d.regime && <Badge variant="outline" className="text-[10px]">{d.regime}</Badge>}
+                                {d.premium_pdf && <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">PDF Pro</Badge>}
+                                {d.admin_test && <Badge className="bg-zinc-100 text-zinc-500 border-zinc-200 text-[10px]">Test</Badge>}
+                              </div>
+                              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                  <Mail className="w-3 h-3" />
+                                  {d.email}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" />
+                                  {d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
+                                </span>
+                              </div>
+                              {d.completed_at && <p className="text-[11px] text-green-600 mt-1 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Terminé le {new Date(d.completed_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>}
+                              {d.email_sent && <p className="text-[11px] text-emerald-600 mt-0.5 flex items-center gap-1"><Send className="w-3 h-3" /> Email envoyé</p>}
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex gap-2 flex-shrink-0 items-start">
+                              {d.status === 'completed' && (
+                                <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300"
+                                  data-testid={`de-view-analysis-${d.id}`}
+                                  onClick={async () => {
+                                    try {
+                                      const res = await axios.get(`${API}/admin/dossier-express/${d.id}/analysis`, axiosConfig);
+                                      setDossierViewDialog(res.data);
+                                    } catch { toast.error("Impossible de charger l'analyse"); }
+                                  }}>
+                                  <Eye className="w-3.5 h-3.5" /> Consulter
+                                </Button>
+                              )}
+                              {d.status === 'error' && (
+                                <Badge variant="outline" className="text-[10px] border-red-200 text-red-500 max-w-[200px] truncate">{d.error ? d.error.substring(0, 60) + '...' : 'Erreur'}</Badge>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>

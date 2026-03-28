@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import {
-  Zap, Eye, Bell, Send, CheckCircle, PenTool, Loader2, Brain, FileSearch, Clock, Trash2
+  Zap, Eye, Bell, Send, CheckCircle, PenTool, Loader2, Brain, FileSearch, Clock, Trash2, Calendar
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -68,46 +68,122 @@ export const AdminPremiumReview = ({ items, stats, productType, productLabel, ic
 
   return (
     <div className="space-y-6">
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{filteredStats.total}</p><p className="text-xs text-muted-foreground">Total</p></CardContent></Card>
-        <Card className="border-amber-500/30"><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-amber-500">{filteredStats.en_attente}</p><p className="text-xs text-muted-foreground">En attente</p></CardContent></Card>
-        <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-blue-500">{filteredStats.en_cours}</p><p className="text-xs text-muted-foreground">En cours</p></CardContent></Card>
-        <Card className="border-green-500/30"><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-green-600">{filteredStats.valide}</p><p className="text-xs text-muted-foreground">Validé</p></CardContent></Card>
-        <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-emerald-600">{filteredStats.envoye}</p><p className="text-xs text-muted-foreground">Envoyé</p></CardContent></Card>
+      {/* Premium Stats Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+        <Card className="border-border/60 hover:shadow-sm transition-shadow">
+          <CardContent className="p-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total</p>
+                <p className="text-2xl font-bold mt-1.5">{filteredStats.total}</p>
+              </div>
+              <div className="w-9 h-9 rounded-lg bg-muted/60 flex items-center justify-center">
+                <Icon className={`w-4 h-4 ${accentColor}`} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className={`border-amber-200/60 hover:shadow-sm transition-shadow ${filteredStats.en_attente > 0 ? 'ring-1 ring-amber-200/50' : ''}`}>
+          <CardContent className="p-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">En attente</p>
+                <p className="text-2xl font-bold mt-1.5 text-amber-600">{filteredStats.en_attente}</p>
+              </div>
+              <div className="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center">
+                <Clock className="w-4 h-4 text-amber-500" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-blue-200/60 hover:shadow-sm transition-shadow">
+          <CardContent className="p-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">En cours</p>
+                <p className="text-2xl font-bold mt-1.5 text-blue-600">{filteredStats.en_cours}</p>
+              </div>
+              <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
+                <Eye className="w-4 h-4 text-blue-500" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-green-200/60 hover:shadow-sm transition-shadow">
+          <CardContent className="p-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Validé</p>
+                <p className="text-2xl font-bold mt-1.5 text-green-600">{filteredStats.valide}</p>
+              </div>
+              <div className="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-emerald-200/60 hover:shadow-sm transition-shadow">
+          <CardContent className="p-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Envoyé</p>
+                <p className="text-2xl font-bold mt-1.5 text-emerald-600">{filteredStats.envoye}</p>
+              </div>
+              <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center">
+                <Send className="w-4 h-4 text-emerald-500" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Items list */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg" data-testid={`premium-${productType}-title`}>
+      {/* Items list — Decision Center */}
+      <Card className="border-border/60">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2.5 text-lg" data-testid={`premium-${productType}-title`}>
             <Icon className={`w-5 h-5 ${accentColor}`} />
             Relecture expert — {productLabel}
+            {filteredStats.en_attente > 0 && (
+              <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-[10px] ml-1">{filteredStats.en_attente} en attente</Badge>
+            )}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           <div className="space-y-3">
             {filteredItems.map(item => {
               const sc = STATUS_CONFIG[item.status] || STATUS_CONFIG.en_attente;
               return (
-                <div key={item.id} className={`p-4 rounded-xl border ${sc.border}`} data-testid={`premium-item-${item.id}`}>
-                  <div className="flex items-start justify-between gap-3">
+                <div key={item.id} className={`group p-4 rounded-xl border ${sc.border} hover:shadow-sm transition-all`} data-testid={`premium-item-${item.id}`}>
+                  <div className="flex items-start gap-3.5">
+                    {/* Status indicator */}
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${item.status === 'en_attente' ? 'bg-amber-100' : item.status === 'en_cours' ? 'bg-blue-100' : item.status === 'valide' ? 'bg-green-100' : 'bg-emerald-100'}`}>
+                      {item.status === 'en_attente' && <Clock className="w-4 h-4 text-amber-600" />}
+                      {item.status === 'en_cours' && <PenTool className="w-4 h-4 text-blue-600" />}
+                      {item.status === 'valide' && <CheckCircle className="w-4 h-4 text-green-600" />}
+                      {(item.status === 'envoye' || item.status === 'termine') && <Send className="w-4 h-4 text-emerald-600" />}
+                    </div>
+
+                    {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className="font-semibold text-sm">{item.email || item.name || 'Client'}</span>
                         <Badge className={`text-[10px] ${sc.color}`}>{sc.label}</Badge>
                         <Badge variant="outline" className="text-[10px]">{productLabel}</Badge>
                         {item.premium_pdf && <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">PDF Pro</Badge>}
                         {item.relecture_expert_required && <Badge className="bg-red-500/10 text-red-600 border-red-500/20 text-[10px] font-bold">Relecture Expert</Badge>}
-                        {item.admin_test && <Badge className="bg-zinc-500/10 text-zinc-500 border-zinc-500/20 text-[10px]">Test Admin</Badge>}
-                        <span className="text-xs text-muted-foreground">{item.amount}€</span>
+                        {item.admin_test && <Badge className="bg-zinc-100 text-zinc-500 border-zinc-200 text-[10px]">Test Admin</Badge>}
+                        <span className="text-[11px] text-muted-foreground font-medium">{item.amount}€</span>
                       </div>
-                      <p className="font-medium text-sm mt-1.5">{item.email || item.name || 'Client'}</p>
-                      {item.context && <p className="text-xs text-muted-foreground mt-0.5 truncate">{item.context}</p>}
-                      {item.name && !item.context && <p className="text-xs text-muted-foreground mt-0.5">Client : {item.name}</p>}
-                      <p className="text-xs text-muted-foreground mt-1">{new Date(item.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
-                      {item.sent_at && <p className="text-[10px] text-green-600 mt-0.5">Envoyé le {new Date(item.sent_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>}
+                      {item.name && item.email && <p className="text-xs text-muted-foreground">Client : {item.name}</p>}
+                      {item.context && <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-md">{item.context}</p>}
+                      <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(item.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                        {item.sent_at && <span className="flex items-center gap-1 text-green-600"><Send className="w-3 h-3" /> Envoyé le {new Date(item.sent_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>}
+                      </div>
                     </div>
-                    <div className="flex gap-1.5 flex-shrink-0 flex-wrap">
+
+                    {/* Actions column */}
+                    <div className="flex gap-1.5 flex-shrink-0 flex-wrap items-start">
                       {/* Step 1: En attente → En cours */}
                       {item.status === 'en_attente' && (
                         <Button size="sm" variant="outline" className="text-xs h-7 gap-1 border-blue-500/30 text-blue-600 hover:bg-blue-50"
