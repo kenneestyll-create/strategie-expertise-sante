@@ -60,6 +60,8 @@ class CacheControlASGIMiddleware:
                     cache_val = b"public, max-age=300"
                 elif path.startswith("/api/sitemap") or path.startswith("/api/robots"):
                     cache_val = b"public, max-age=86400"
+                elif path == "/api/health":
+                    cache_val = b"no-cache, no-store, must-revalidate"
                 if cache_val:
                     headers = list(message.get("headers", []))
                     headers.append((b"cache-control", cache_val))
