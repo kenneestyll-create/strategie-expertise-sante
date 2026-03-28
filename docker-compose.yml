@@ -1,0 +1,44 @@
+# ============================================================
+# Docker Compose — Stratégie & Expertise Santé
+# Lance l'application complète : App + MongoDB
+# ============================================================
+# Usage :
+#   cp backend/.env.example backend/.env   (puis remplir)
+#   cp frontend/.env.example frontend/.env (puis remplir)
+#   docker compose up --build
+# ============================================================
+
+services:
+  # --- Application (Frontend + Backend) ---
+  app:
+    build: .
+    ports:
+      - "80:80"
+    env_file:
+      - backend/.env
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # --- Base de données ---
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mongo_data:
