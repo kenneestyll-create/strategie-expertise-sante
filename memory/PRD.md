@@ -17,14 +17,6 @@ Plateforme premium de conseil en maladies professionnelles.
 ## Autonomie : 100%
 **0 dépendance à emergentintegrations.** Tous SDK natifs et standards.
 
-## Validation redéploiement (28 mars 2026)
-- Frontend build : OK (15MB, 182 fichiers statiques)
-- 13/13 modules Python importent : OK
-- 203 routes API chargées : OK
-- 9/9 routes critiques HTTP 200 : OK
-- Dockerfile + docker-compose validés : OK
-- PRODUCTION_CHECKLIST.md créée : OK
-
 ## Fonctionnalités (DONE)
 - Auth Admin + Client, Dashboard Admin complet
 - Scanner documents, StratégiIA, Dossier Express IA
@@ -39,7 +31,13 @@ Plateforme premium de conseil en maladies professionnelles.
   - KPI Dossier Express : cartes premium avec icônes, sous-labels, pourcentages
   - AdminPremiumReview : stats avec icônes, cartes enrichies
   - Liste dossiers : icônes de statut, nom client proéminent, badges, actions groupées
-  - 100% tests frontend passés (iteration_140)
+- **Dark Mode Admin "Noir & Or" (28 mars 2026)**
+  - Scope : Dashboard admin uniquement (pages publiques non affectées)
+  - Toggle : Détection automatique préférences système + bouton manuel dans le header
+  - Palette : Noir profond (#121217) + accents or (#CCA33E) + texte chaud (#E7E2DA)
+  - Portails : Dialogs, selects, popovers correctement thémés via body.admin-dark
+  - Persistance : localStorage (clé: ses-admin-theme)
+  - Tests : 14/14 passés (iteration_141)
 
 ## Backlog
 ### P1
@@ -49,3 +47,5 @@ Plateforme premium de conseil en maladies professionnelles.
 ### P3
 - Refactoring EmailTemplateEditor.jsx
 - Consolidation moteurs PDF (backend uniquement)
+### P4
+- Finaliser le contenu juridique
