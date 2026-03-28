@@ -92,6 +92,121 @@ html {
     text-size-adjust: 100%;
 }
 
+/* ═══════════════════════════════════════════════════
+   Admin Dark Mode — Noir & Or Premium
+   Scoped to .admin-dark wrapper AND body.admin-dark (for portals)
+   ═══════════════════════════════════════════════════ */
+.admin-dark,
+body.admin-dark [data-radix-popper-content-wrapper],
+body.admin-dark [role="dialog"],
+body.admin-dark [data-radix-portal] {
+    --background: 240 14% 8%;
+    --foreground: 38 22% 88%;
+    --card: 240 12% 12%;
+    --card-foreground: 38 22% 88%;
+    --popover: 240 12% 13%;
+    --popover-foreground: 38 22% 88%;
+    --primary: 43 58% 52%;
+    --primary-foreground: 240 14% 8%;
+    --secondary: 240 10% 17%;
+    --secondary-foreground: 38 18% 78%;
+    --muted: 240 10% 15%;
+    --muted-foreground: 38 8% 52%;
+    --accent: 43 58% 52%;
+    --accent-foreground: 240 14% 8%;
+    --destructive: 0 65% 48%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 10% 20%;
+    --input: 240 10% 20%;
+    --ring: 43 58% 52%;
+    --chart-1: 43 74% 60%;
+    --chart-2: 173 50% 45%;
+    --chart-3: 197 40% 50%;
+    --chart-4: 43 74% 55%;
+    --chart-5: 27 80% 60%;
+    color-scheme: dark;
+}
+
+/* Admin dark mode specific overrides */
+.admin-dark .grain-texture::before {
+    opacity: 0.015;
+}
+.admin-dark input,
+.admin-dark textarea,
+.admin-dark select,
+body.admin-dark [role="dialog"] input,
+body.admin-dark [role="dialog"] textarea {
+    color-scheme: dark;
+}
+/* Keep the header dark with light text in dark mode */
+.admin-dark > header {
+    background-color: hsl(240, 12%, 10%);
+    --primary-foreground: 38 22% 88%;
+    --foreground: 38 22% 88%;
+}
+/* Dialog overlay backdrop in dark mode */
+body.admin-dark [data-radix-portal] [data-state="open"][role="dialog"] {
+    background-color: hsl(240, 12%, 12%);
+    color: hsl(38, 22%, 88%);
+    border-color: hsl(240, 10%, 22%);
+}
+/* Tab active state in dark mode */
+.admin-dark [data-state="active"][role="tab"] {
+    background-color: hsl(43, 58%, 52%) !important;
+    color: hsl(240, 14%, 8%) !important;
+}
+/* Status card backgrounds — swap light fills for dark-friendly ones */
+.admin-dark [class*="bg-blue-50"],
+body.admin-dark [class*="bg-blue-50"] {
+    background-color: hsl(217 80% 30% / 0.15) !important;
+}
+.admin-dark [class*="bg-amber-50"],
+body.admin-dark [class*="bg-amber-50"] {
+    background-color: hsl(38 80% 30% / 0.15) !important;
+}
+.admin-dark [class*="bg-green-50"],
+body.admin-dark [class*="bg-green-50"] {
+    background-color: hsl(142 60% 25% / 0.15) !important;
+}
+.admin-dark [class*="bg-emerald-50"],
+body.admin-dark [class*="bg-emerald-50"] {
+    background-color: hsl(160 60% 25% / 0.15) !important;
+}
+.admin-dark [class*="bg-red-50"],
+body.admin-dark [class*="bg-red-50"] {
+    background-color: hsl(0 70% 30% / 0.18) !important;
+}
+/* Badges with light backgrounds in dark mode */
+.admin-dark [class*="bg-green-100"],
+body.admin-dark [class*="bg-green-100"] {
+    background-color: hsl(142 50% 22% / 0.4) !important;
+}
+.admin-dark [class*="bg-blue-100"],
+body.admin-dark [class*="bg-blue-100"] {
+    background-color: hsl(217 60% 25% / 0.4) !important;
+}
+.admin-dark [class*="bg-amber-100"],
+body.admin-dark [class*="bg-amber-100"] {
+    background-color: hsl(38 60% 25% / 0.4) !important;
+}
+.admin-dark [class*="bg-red-100"],
+body.admin-dark [class*="bg-red-100"] {
+    background-color: hsl(0 60% 25% / 0.4) !important;
+}
+.admin-dark [class*="bg-emerald-100"],
+body.admin-dark [class*="bg-emerald-100"] {
+    background-color: hsl(160 50% 22% / 0.4) !important;
+}
+.admin-dark [class*="bg-zinc-100"],
+body.admin-dark [class*="bg-zinc-100"] {
+    background-color: hsl(240 5% 25% / 0.4) !important;
+}
+/* Keep white text readable on dark badges */
+.admin-dark .bg-amber-500,
+.admin-dark .bg-green-500 {
+    opacity: 0.9;
+}
+
 /* Slim scrollbar for admin tab navigation */
 .scrollbar-thin {
     scrollbar-width: thin;

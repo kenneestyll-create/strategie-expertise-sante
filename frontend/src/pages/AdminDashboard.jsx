@@ -47,10 +47,13 @@ import {
   AlertTriangle,
   FileText,
   Shield,
-  Settings
+  Settings,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useAdminTest } from '@/components/AdminTestBanner';
+import { useAdminTheme } from '@/hooks/useAdminTheme';
 import axios from 'axios';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { BarChart3, BellRing, Download, FlaskConical, PenTool, FileSearch, QrCode, Globe, BadgeCheck } from 'lucide-react';
@@ -338,6 +341,7 @@ export const AdminDashboard = () => {
   const navigate = useNavigate();
   const { token, adminName, logout } = useAuth();
   const { isAdminMode, setIsAdminMode } = useAdminTest();
+  const { isDark, toggle: toggleTheme } = useAdminTheme();
 
   const axiosConfig = {
     headers: { Authorization: `Bearer ${token}` }
@@ -589,9 +593,9 @@ export const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`min-h-screen bg-background transition-colors duration-300 ${isDark ? 'admin-dark' : ''}`}>
       {/* Header */}
-      <header className="bg-foreground text-primary-foreground sticky top-0 z-50 border-b border-white/5">
+      <header className="bg-foreground text-primary-foreground sticky top-0 z-50 border-b border-white/5 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-3">
@@ -617,6 +621,18 @@ export const AdminDashboard = () => {
               >
                 <Shield className="w-3 h-3" />
                 {isAdminMode ? 'Test Admin' : 'Test Client'}
+              </button>
+              <button
+                onClick={toggleTheme}
+                data-testid="admin-dark-toggle"
+                className={`flex items-center justify-center w-8 h-8 rounded-md transition-all border ${
+                  isDark
+                    ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 hover:bg-amber-500/25'
+                    : 'bg-white/10 text-primary-foreground/60 border-white/20 hover:bg-white/20'
+                }`}
+                title={isDark ? 'Mode clair' : 'Mode sombre'}
+              >
+                {isDark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
               </button>
               <Link to="/">
                 <Button variant="ghost" size="sm" className="text-primary-foreground/70 hover:bg-primary-foreground/10 h-8 w-8 p-0" data-testid="admin-home-button">
