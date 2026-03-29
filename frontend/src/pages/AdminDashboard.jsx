@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { PremiumAnalysisRenderer } from '@/components/PremiumAnalysisRenderer';
 import { 
   Heart, 
   LogOut, 
@@ -2012,7 +2013,9 @@ export const AdminDashboard = () => {
                       <div>
                         <Label className="font-medium text-sm mb-2 block">Analyse générée par Dossier Express IA</Label>
                         {dossierViewDialog.analysis ? (
-                          <div className="p-4 rounded-lg border bg-background whitespace-pre-wrap text-sm leading-relaxed max-h-[400px] overflow-y-auto font-mono">{dossierViewDialog.analysis}</div>
+                          <div className="max-h-[500px] overflow-y-auto pr-1">
+                            <PremiumAnalysisRenderer markdown={dossierViewDialog.analysis} testIdPrefix="de-analysis-section" />
+                          </div>
                         ) : (
                           <p className="text-sm text-muted-foreground italic p-4 border rounded-lg">Aucune analyse disponible.</p>
                         )}

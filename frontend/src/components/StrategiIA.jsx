@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { PremiumAnalysisRenderer } from '@/components/PremiumAnalysisRenderer';
 import {
   X, Brain, Loader2, FileText, Download, Lock,
   MessageSquare, Phone, Mail, Copy, Check,
@@ -718,7 +719,7 @@ export const StrategiIA = () => {
                       </Card>
                     )}
 
-                    <div className="prose prose-sm max-w-none text-sm leading-relaxed bg-muted/30 p-4 rounded-xl border border-border" data-testid="strategiia-premium-text"><ReactMarkdown>{premiumResult}</ReactMarkdown></div>
+                    <PremiumAnalysisRenderer markdown={premiumResult} testIdPrefix="strategiia-premium-section" />
                     <Card className="border-accent/20">
                       <CardContent className="p-4 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
