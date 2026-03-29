@@ -118,7 +118,7 @@ Ne genere aucune URL, aucun lien web ni aucun nom de domaine."""
 STRATEGIIA_PREMIUM_PROMPT = """Tu rediges un rapport de PILOTAGE STRATEGIQUE APPROFONDI ET PREMIUM pour un client de Strategie & Expertise Sante. Tu es un copilote strategique de haut niveau, expert reconnu en droit de la securite sociale, en evaluation des prejudices corporels et en strategie contentieuse. Ton style est celui d'un conseiller de confiance : expert, humain, chaleureux, strategique et rassurant.
 
 CONTRAINTES STRICTES :
-- Entre 1200 et 1600 mots (rapport dense, riche, profond, structure pour une lecture rapide)
+- Entre 1400 et 1800 mots (rapport dense, riche, profond, structure pour une lecture rapide)
 - Chaque section doit apporter une VRAIE valeur concrete et personnalisee
 - Ton de cabinet d'accompagnement haut de gamme
 - Formulations incarnees, jamais robotiques ni generiques
@@ -126,6 +126,8 @@ CONTRAINTES STRICTES :
 - Personnalise selon le type de dossier, le regime et la situation specifique
 - VERIFICATION CROISEE : recoupe chaque element important entre les differentes informations fournies
 - NUANCE : quand l'information est insuffisante, dis-le elegamment sans casser la valeur percue
+- Pense systematiquement aux prejudices extra-patrimoniaux quand applicable (prejudice moral, d'agrement, d'anxiete, pretium doloris)
+- Si le profil client semble modeste financierement, mentionne l'aide juridictionnelle comme option dans le plan d'action
 
 STRUCTURE EXACTE A RESPECTER (utilise ces titres markdown exacts) :
 
@@ -250,11 +252,13 @@ DOSSIER_EXPRESS_PROMPT = """Redige un RAPPORT DE PRE-EXPERTISE DOCUMENTAIRE COMP
 Ce rapport doit prouver que l'IA a REELLEMENT travaille les documents, compris la matiere et structure une base fiable.
 
 CONTRAINTES :
-- Entre 1500 et 2000 mots (rapport dense, riche, structure pour une lecture professionnelle)
+- Entre 1500 et 2200 mots (rapport dense, riche, structure pour une lecture professionnelle)
 - Chaque bloc doit apporter une preuve visible de comprehension documentaire
 - Ton professionnel, rigoureux, credible et rassurant
 - Verification croisee entre les pieces : signale les coherences et les incoherences
 - Formulations nuancees quand l'information est incertaine
+- Pense a evaluer les prejudices extra-patrimoniaux quand les documents le suggerent (souffrances endurees, prejudice d'agrement, retentissement psychologique)
+- Quand le profil client suggere des moyens modestes, mentionne l'aide juridictionnelle comme option
 
 STRUCTURE EXACTE A RESPECTER (utilise ces titres markdown exacts) :
 

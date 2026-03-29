@@ -6,72 +6,51 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA s
 ## Architecture
 - **Frontend** : React 18 + Shadcn/UI + Tailwind CSS
 - **Backend** : FastAPI + MongoDB
-- **IA** : Anthropic Claude Sonnet 4.5 (`anthropic` SDK natif) + OpenAI GPT-4o (`openai` SDK natif)
+- **IA** : Anthropic Claude Sonnet 4 (`anthropic` SDK natif) + OpenAI GPT-4o (`openai` SDK natif)
 - **PDF** : fpdf2 (backend) + jsPDF (frontend)
-- **Email** : Resend
-- **Paiements** : Stripe (`stripe` SDK natif) + PayPal
-- **Stockage** : S3 compatible (`boto3`)
-- **Recherche** : Algolia
+- **Email** : Resend | **Paiements** : Stripe + PayPal | **Stockage** : S3 (`boto3`) | **Recherche** : Algolia
 
 ## Autonomie : 100%
-0 dépendance à emergentintegrations. Tous SDK natifs et standards.
+0 dépendance à emergentintegrations. Tous SDK natifs.
 
-## Deux Agents IA (V2 Premium — 29 mars 2026)
+## Agents IA V2 Premium (Validés le 29 mars 2026)
 
-### StratégiIA — Agent de Pilotage Stratégique
-**Mission** : Copilote d'orientation, stratégie et structuration décisionnelle
-**Sections du rapport premium** :
-1. Votre situation analysée
-2. **Lecture stratégique du dossier** (qualification: fort potentiel / à consolider / sensible)
-3. Cadre juridique applicable
-4. **Leviers prioritaires identifiés** (4-6 leviers concrets et actionnables)
-5. **Points de vigilance** (rassurants, intelligents, premium)
-6. **Angles potentiellement sous-exploités** (signature de valeur ajoutée)
-7. Évaluation et perspectives
-8. **Plan d'action recommandé** (hiérarchisé, immédiatement exploitable)
-9. Notre engagement à vos côtés
+### StratégiIA — Note globale : 8.97/10
+- 9 sections systématiques (100% conformité)
+- Cible volume ajustée : 1400-1800 mots
+- Citations juridiques réelles (articles CSS, jurisprudences Cour de cassation)
+- Chiffrage réaliste des indemnisations (IP, PGPF)
+- Micro-calibrations appliquées : volume augmenté, préjudices extra-patrimoniaux, aide juridictionnelle
 
-### Dossier Express IA — Agent de Pré-Expertise Documentaire
-**Mission** : Exploitation réelle du contenu documentaire, reconnaissance des catégories, extraction intelligente
-**Sections du rapport premium** :
-1. Synthèse du dossier
-2. **Pièces détectées** (catégories documentaires reconnues)
-3. **Chronologie synthétique du dossier** (frise reconstruite à partir des dates)
-4. **Éléments clés identifiés** (extraction intelligente des éléments significatifs)
-5. Droits et indemnisations identifiés
-6. **Points potentiellement sous-exploités** (transparence et crédibilité)
-7. **Complétude documentaire** (indicateur intelligent: Très complète → Nécessite relecture)
-8. Stratégie recommandée et prochaines étapes
-9. Conclusion
+### Dossier Express IA — Note globale : 9.15/10
+- 9 sections systématiques (100% conformité)
+- Cible volume ajustée : 1500-2200 mots
+- Pièces détectées, Chronologie reconstruite, Éléments clés, Complétude documentaire
+- Gestion exemplaire de l'incertitude documentaire
+- Micro-calibrations appliquées : volume augmenté, préjudices extra-patrimoniaux
 
-### Articulation entre les deux agents
-- Chaîne intelligente: Dossier Express IA → structure la matière → StratégiIA → produit une lecture stratégique enrichie
-- Quand un Dossier Express existe pour un client, StratégiIA reçoit automatiquement le contexte documentaire
-- Séparés dans leur logique, complémentaires dans l'écosystème
+### Articulation Dossier Express → StratégiIA
+- Chaîne intelligente : DE structure la matière → StratégiIA produit lecture stratégique enrichie
+- Injection automatique du contexte documentaire quand Dossier Express existe
 
-### Contrôle Qualité
-- Vérification croisée x3 (chronologique, médico-administrative, cohérence globale)
-- Nuance intelligente ("cet élément semble...", "ce point mérite confirmation...")
-- Jamais d'extrapolation abusive ni de certitude artificielle
+### Validation métier (29 mars 2026)
+- 9/10 tests réels exécutés sur Claude Sonnet 4
+- Grille à 8 critères × 10 points
+- Rapport complet : `/app/test_reports/VALIDATION_METIER_V2_PREMIUM.md`
+- **Verdict : COMMERCIALISABLE avec confiance**
 
-## Fonctionnalités Frontend
-- **PremiumAnalysisRenderer** : Composant React qui parse le markdown par sections ## et affiche chaque bloc avec icône dédiée, couleur contextuelle et badge "Premium"
-- Utilisé dans StrategiIA.jsx (résultats premium) et AdminDashboard.jsx (dialog analyse Dossier Express)
-
-## Autres fonctionnalités (DONE)
-- Auth Admin + Client, Dashboard Admin cockpit premium
-- Scanner documents natif (caméra mobile)
-- PDF premium, Paiements Stripe + PayPal
-- Mascotte Straté + TTS français + Admin CRUD
-- Upload chunké async (45MB), Auto-purge 30j
+## Fonctionnalités Frontend (DONE)
+- PremiumAnalysisRenderer : sections parsées avec icônes dédiées
+- Dashboard Admin cockpit premium + Dark Mode Noir & Or
+- Scanner documents natif, Upload chunké 45MB
 - Admin Human Review, Badge "Relu par expert"
-- Dark Mode Admin Noir & Or
-- Portabilité complète, 0 URL hardcodée, Dockerized
+- Mascotte Straté + TTS français + Admin CRUD
 
-## Tests
-- iteration_140: Cockpit UI (35/35 pass)
-- iteration_141: Dark Mode (14/14 pass)
-- iteration_142: V2 Premium IA (12/12 pass — backend + frontend 100%)
+## Tests passés
+- iteration_140 : Cockpit UI (35/35)
+- iteration_141 : Dark Mode (14/14)
+- iteration_142 : V2 Premium IA (12/12)
+- Validation métier : 9 analyses réelles évaluées
 
 ## Backlog
 ### P1
@@ -80,6 +59,6 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA s
 - Intégration HubSpot CRM
 ### P3
 - Refactoring EmailTemplateEditor.jsx
-- Consolidation moteurs PDF (backend uniquement)
+- Consolidation moteurs PDF
 ### P4
-- Finaliser le contenu juridique
+- Finaliser contenu juridique
