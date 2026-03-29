@@ -496,6 +496,44 @@ async def preview_dossier_express_pdf(dossier_id: str, admin: dict = Depends(get
     )
 
 
+@router.get("/admin/strategiia/{analysis_id}/preview-pdf")
+async def preview_strategiia_pdf(analysis_id: str, admin: dict = Depends(get_current_admin)):
+    """Generate and return the StrategiIA PDF for admin preview/download."""
+    from utils.pdf import generate_secured_pdf
+    pa = await db.premium_analyses.find_one({"id": analysis_id}, {"_id": 0})
+    if not pa:
+        raise HTTPException(status_code=404, detail="Analyse non trouvée")
+    analysis_text = pa.get("reviewed_analysis") or pa.get("analysis", "")
+    if not analysis_text:
+        if pa.get("job_id"):
+            strat = await db.strategiia_analyses.find_one({"job_id": pa["job_id"]}, {"_id": 0, "analysis": 1})
+            if strat:
+                analysis_text = strat.get("analysis", "")
+    if not analysis_text:
+        raise HTTPException(status_code=400, detail="Aucune analyse disponible pour ce dossier")
+    strat_data = None
+    if pa.get("job_id"):
+        strat_data = await db.strategiia_analyses.find_one({"job_id": pa["job_id"]}, {"_id": 0})
+    type_dossier = (strat_data or {}).get("type_dossier", pa.get("type_dossier", ""))
+    regime = (strat_data or {}).get("regime", pa.get("regime", ""))
+    name = pa.get("name", pa.get("email", "Client"))
+    pdf_bytes = generate_secured_pdf(
+        analysis=analysis_text,
+        report_type="StrategiIA",
+        name=name,
+        type_dossier=type_dossier,
+        regime=regime,
+        with_watermark=not pa.get("premium_pdf", False),
+        relecture_expert=pa.get("relecture_expert_required", False),
+    )
+    safe_name = name.replace(" ", "_")[:30]
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'inline; filename="Rapport_StrategiIA_{safe_name}_{analysis_id[:8]}.pdf"'}
+    )
+
+
 # ==================== ADMIN: HUMAN REVIEW WORKFLOW ====================
 
 @router.get("/admin/dossier-express/{dossier_id}/original-documents")

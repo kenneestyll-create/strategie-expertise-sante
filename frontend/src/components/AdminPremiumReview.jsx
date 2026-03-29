@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import {
-  Zap, Eye, Bell, Send, CheckCircle, PenTool, Loader2, Brain, FileSearch, Clock, Trash2, Calendar
+  Zap, Eye, Bell, Send, CheckCircle, PenTool, Loader2, Brain, FileSearch, Clock, Trash2, Calendar, Download
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -323,6 +323,29 @@ export const AdminPremiumReview = ({ items, stats, productType, productLabel, ic
             </div>
             <DialogFooter className="gap-2 mt-4">
               <Button variant="outline" onClick={() => setReviewDialog(null)}>Annuler</Button>
+              {/* PDF Preview/Download button */}
+              <Button
+                variant="outline"
+                className="gap-1.5 border-accent/30 text-accent hover:bg-accent/5"
+                data-testid="review-pdf-btn"
+                disabled={reviewDialog._loading || !reviewDialog.reviewed_analysis?.trim()}
+                onClick={async () => {
+                  try {
+                    toast.info("Génération du PDF en cours...");
+                    const pdfEndpoint = productType === 'dossier_express' && reviewDialog.dossier_id
+                      ? `${API}/admin/dossier-express/${reviewDialog.dossier_id}/preview-pdf`
+                      : `${API}/admin/strategiia/${reviewDialog.id}/preview-pdf`;
+                    const res = await axios.get(pdfEndpoint, { ...axiosConfig, responseType: 'blob' });
+                    const blob = new Blob([res.data], { type: 'application/pdf' });
+                    const url = URL.createObjectURL(blob);
+                    window.open(url, '_blank');
+                    toast.success("PDF généré avec succès");
+                  } catch (err) {
+                    toast.error("Erreur lors de la génération du PDF");
+                  }
+                }}>
+                <Download className="w-4 h-4" /> Voir le PDF final
+              </Button>
               <Button
                 className="gap-1.5 bg-green-600 hover:bg-green-500"
                 data-testid="review-validate-btn"
