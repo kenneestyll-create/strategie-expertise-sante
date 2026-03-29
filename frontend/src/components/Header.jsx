@@ -59,7 +59,7 @@ export const Header = () => {
     }`;
 
   const dropdownBtnClass = (active) =>
-    `flex items-center gap-1 px-3 py-2 text-[13px] font-medium rounded-md transition-all duration-200 ${
+    `flex items-center gap-1 px-3 py-2 text-[13px] font-medium rounded-md transition-all duration-200 outline-none focus:outline-none focus-visible:outline-none ${
       active ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/70 hover:text-[#f5f0e8]'
     }`;
 
