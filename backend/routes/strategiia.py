@@ -1036,8 +1036,25 @@ Commence directement par ## Conclusion et recommandation finale"""),
 
     sections_map = {s[0]: s[1] for s in sections_def}
 
+    progress_labels = {
+        "Batch 1/3": "analyzing_1",
+        "Batch 2/3": "analyzing_2",
+        "Batch 3/3": "analyzing_3",
+    }
+
     for batch_keys, batch_label in batch_plan:
         logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] {batch_label}: {batch_keys}")
+
+        # Update granular progress in DB for frontend polling
+        progress_key = progress_labels.get(batch_label, "analyzing")
+        try:
+            await db.dossier_express.update_one(
+                {"id": dossier_id},
+                {"$set": {"progress_step": progress_key, "analysis_batch": batch_label}}
+            )
+        except Exception:
+            pass
+
         tasks = [
             _generate_section_llmchat(key, SYSTEM, sections_map[key], dossier_id)
             for key in batch_keys

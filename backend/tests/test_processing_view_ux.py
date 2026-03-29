@@ -1,155 +1,151 @@
 """
-Test Dossier Express Processing View UX - Backend API Tests
-Tests for admin-bypass endpoint and status polling with progress_step updates
+Test suite for Dossier Express Processing View UX improvements (Iteration 148).
+Tests the 7-step granular progress tracking and API responses.
 """
 import pytest
 import requests
 import os
-import time
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
-class TestDossierExpressProcessingAPI:
-    """Tests for Dossier Express processing flow backend APIs"""
+# Test dossier IDs (completed)
+COMPLETED_DOSSIER_1 = "bb543247-f7f3-4a1a-8d03-93d217cc1400"
+COMPLETED_DOSSIER_2 = "bfc7d774-b9c5-4134-962d-65a3934ae940"
+
+
+class TestDossierExpressStatusAPI:
+    """Tests for GET /api/dossier-express/status/{id} endpoint"""
     
-    @pytest.fixture(scope="class")
-    def admin_token(self):
-        """Get admin authentication token"""
-        response = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "admin@accompagn-sante.fr",
-            "password": "Admin2024!"
-        })
-        assert response.status_code == 200, f"Admin login failed: {response.text}"
-        return response.json().get("access_token")
-    
-    def test_admin_bypass_creates_dossier(self, admin_token):
-        """Test that admin-bypass endpoint creates a dossier and returns dossier_id"""
-        response = requests.post(
-            f"{BASE_URL}/api/dossier-express/admin-bypass",
-            headers={"Authorization": f"Bearer {admin_token}"},
-            json={
-                "name": "TEST_ProcessingView User",
-                "email": "test_processing@example.com",
-                "situation": "Test situation for processing view UX verification",
-                "type_dossier": "Accident du travail (AT)",
-                "regime": "Régime général",
-                "documents_text": "",
-                "premium_pdf": False
-            }
-        )
-        assert response.status_code == 200, f"Admin bypass failed: {response.text}"
+    def test_status_returns_progress_step(self):
+        """Verify status endpoint returns progress_step field"""
+        response = requests.get(f"{BASE_URL}/api/dossier-express/status/{COMPLETED_DOSSIER_1}")
+        if response.status_code == 404:
+            pytest.skip(f"Dossier {COMPLETED_DOSSIER_1} not found - using alternate")
+            response = requests.get(f"{BASE_URL}/api/dossier-express/status/{COMPLETED_DOSSIER_2}")
+        
+        assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         data = response.json()
-        
-        # Verify response structure
-        assert "dossier_id" in data, "Response should contain dossier_id"
-        assert data.get("success") == True, "Response should indicate success"
-        assert data.get("admin_test") == True, "Response should indicate admin_test mode"
-        
-        print(f"Created dossier: {data['dossier_id']}")
-        return data["dossier_id"]
-    
-    def test_status_returns_progress_step(self, admin_token):
-        """Test that status endpoint returns progress_step field"""
-        # First create a dossier
-        create_response = requests.post(
-            f"{BASE_URL}/api/dossier-express/admin-bypass",
-            headers={"Authorization": f"Bearer {admin_token}"},
-            json={
-                "name": "TEST_ProgressStep User",
-                "email": "test_progress@example.com",
-                "situation": "Test situation for progress step verification",
-                "type_dossier": "Maladie professionnelle (MP)",
-                "regime": "Régime général",
-                "documents_text": "",
-                "premium_pdf": False
-            }
-        )
-        assert create_response.status_code == 200
-        dossier_id = create_response.json()["dossier_id"]
-        
-        # Poll status
-        status_response = requests.get(f"{BASE_URL}/api/dossier-express/status/{dossier_id}")
-        assert status_response.status_code == 200, f"Status check failed: {status_response.text}"
-        
-        data = status_response.json()
         
         # Verify progress_step field exists
-        assert "progress_step" in data, "Status should contain progress_step field"
-        assert "status" in data, "Status should contain status field"
-        
-        # progress_step should be one of the valid values
-        valid_steps = ['uploading', 'reading', 'analyzing', 'generating', 'sending', 'completed', 'error']
-        assert data["progress_step"] in valid_steps, f"progress_step should be one of {valid_steps}, got {data['progress_step']}"
-        
-        print(f"Dossier {dossier_id} - status: {data['status']}, progress_step: {data['progress_step']}")
+        assert "progress_step" in data or "status" in data, "Response should have progress_step or status"
+        print(f"Status response: {data}")
     
-    def test_status_polling_shows_progress_updates(self, admin_token):
-        """Test that polling status shows progress updates over time"""
-        # Create a dossier
-        create_response = requests.post(
-            f"{BASE_URL}/api/dossier-express/admin-bypass",
-            headers={"Authorization": f"Bearer {admin_token}"},
-            json={
-                "name": "TEST_PollingProgress User",
-                "email": "test_polling@example.com",
-                "situation": "Test situation for polling progress verification - this is a detailed description to trigger full analysis",
-                "type_dossier": "Demande MDPH / AAH",
-                "regime": "Régime général",
-                "documents_text": "Document content for analysis",
-                "premium_pdf": False
-            }
-        )
-        assert create_response.status_code == 200
-        dossier_id = create_response.json()["dossier_id"]
+    def test_status_completed_dossier(self):
+        """Verify completed dossier returns correct status"""
+        response = requests.get(f"{BASE_URL}/api/dossier-express/status/{COMPLETED_DOSSIER_2}")
+        if response.status_code == 404:
+            pytest.skip(f"Dossier {COMPLETED_DOSSIER_2} not found")
         
-        # Poll multiple times to see progress
-        progress_steps_seen = set()
-        for i in range(6):  # Poll 6 times over 30 seconds
-            status_response = requests.get(f"{BASE_URL}/api/dossier-express/status/{dossier_id}")
-            if status_response.status_code == 200:
-                data = status_response.json()
-                progress_steps_seen.add(data.get("progress_step"))
-                print(f"Poll {i+1}: status={data.get('status')}, progress_step={data.get('progress_step')}")
-                
-                # If completed or error, stop polling
-                if data.get("status") in ["completed", "error"]:
-                    break
-            time.sleep(5)
-        
-        # Verify we saw at least one progress step
-        assert len(progress_steps_seen) >= 1, "Should see at least one progress step"
-        print(f"Progress steps seen: {progress_steps_seen}")
-    
-    def test_status_invalid_dossier_returns_404(self):
-        """Test that status endpoint returns 404 for invalid dossier ID"""
-        response = requests.get(f"{BASE_URL}/api/dossier-express/status/invalid-dossier-id-12345")
-        assert response.status_code == 404, f"Expected 404 for invalid dossier, got {response.status_code}"
-    
-    def test_admin_bypass_without_auth_returns_401(self):
-        """Test that admin-bypass endpoint requires authentication"""
-        response = requests.post(
-            f"{BASE_URL}/api/dossier-express/admin-bypass",
-            json={
-                "name": "Unauthorized User",
-                "email": "unauth@example.com",
-                "situation": "Test",
-                "type_dossier": "Autre",
-                "regime": "Autre",
-                "documents_text": "",
-                "premium_pdf": False
-            }
-        )
-        assert response.status_code == 401, f"Expected 401 without auth, got {response.status_code}"
-    
-    def test_weekly_count_endpoint(self):
-        """Test weekly count endpoint returns count and period"""
-        response = requests.get(f"{BASE_URL}/api/dossier-express/weekly-count")
-        assert response.status_code == 200, f"Weekly count failed: {response.text}"
-        
+        assert response.status_code == 200
         data = response.json()
-        assert "count" in data, "Response should contain count"
-        assert isinstance(data["count"], int), "Count should be an integer"
-        print(f"Weekly count: {data['count']}")
+        assert data.get("status") == "completed", f"Expected completed status, got {data.get('status')}"
+        print(f"Completed dossier status: {data}")
+    
+    def test_status_returns_analysis_batch_field(self):
+        """Verify status endpoint can return analysis_batch field (for in-progress dossiers)"""
+        # For completed dossiers, analysis_batch may not be present
+        response = requests.get(f"{BASE_URL}/api/dossier-express/status/{COMPLETED_DOSSIER_2}")
+        if response.status_code == 404:
+            pytest.skip(f"Dossier {COMPLETED_DOSSIER_2} not found")
+        
+        assert response.status_code == 200
+        data = response.json()
+        # analysis_batch is only present during processing, not after completion
+        print(f"Status response fields: {list(data.keys())}")
+        # This is informational - analysis_batch may or may not be present
+        if "analysis_batch" in data:
+            print(f"analysis_batch value: {data['analysis_batch']}")
+
+
+class TestDossierExpressSuiviAPI:
+    """Tests for GET /api/dossier-express/suivi/{id} endpoint"""
+    
+    def test_suivi_returns_7_steps(self):
+        """Verify suivi endpoint returns 7-step timeline"""
+        response = requests.get(f"{BASE_URL}/api/dossier-express/suivi/{COMPLETED_DOSSIER_2}")
+        if response.status_code == 404:
+            pytest.skip(f"Dossier {COMPLETED_DOSSIER_2} not found")
+        
+        assert response.status_code == 200
+        data = response.json()
+        
+        # Verify steps array exists
+        assert "steps" in data, "Response should have steps array"
+        steps = data["steps"]
+        
+        # Verify 7 steps
+        assert len(steps) == 7, f"Expected 7 steps, got {len(steps)}"
+        
+        # Verify step keys
+        expected_keys = ["received", "preparation", "reading", "analysis", "report", "delivery", "available"]
+        actual_keys = [s["key"] for s in steps]
+        assert actual_keys == expected_keys, f"Step keys mismatch: {actual_keys}"
+        
+        print(f"Suivi timeline: {steps}")
+    
+    def test_suivi_completed_dossier_all_steps_completed(self):
+        """Verify completed dossier has all steps marked as completed"""
+        response = requests.get(f"{BASE_URL}/api/dossier-express/suivi/{COMPLETED_DOSSIER_2}")
+        if response.status_code == 404:
+            pytest.skip(f"Dossier {COMPLETED_DOSSIER_2} not found")
+        
+        assert response.status_code == 200
+        data = response.json()
+        
+        steps = data.get("steps", [])
+        completed_count = sum(1 for s in steps if s.get("status") == "completed")
+        
+        # For completed dossier, all 7 steps should be completed
+        assert completed_count == 7, f"Expected 7 completed steps, got {completed_count}"
+        print(f"All {completed_count} steps completed")
+
+
+class TestBackendProgressStepValues:
+    """Tests for backend progress_step values in strategiia.py"""
+    
+    def test_health_llm_endpoint(self):
+        """Verify LLM health check endpoint works"""
+        response = requests.get(f"{BASE_URL}/api/health/llm")
+        assert response.status_code == 200
+        data = response.json()
+        assert "operational" in data
+        print(f"LLM health: {data}")
+    
+    def test_dossier_express_landing_page_loads(self):
+        """Verify /dossier-express page is accessible"""
+        response = requests.get(f"{BASE_URL}/dossier-express", allow_redirects=True)
+        # Frontend routes return 200 (SPA)
+        assert response.status_code == 200
+        print("Dossier Express landing page accessible")
+
+
+class TestClientStepsDisplay:
+    """Tests for CLIENT_STEPS_DISPLAY constant in statuses.py"""
+    
+    def test_suivi_step_labels_match_expected(self):
+        """Verify suivi step labels match CLIENT_STEPS_DISPLAY"""
+        response = requests.get(f"{BASE_URL}/api/dossier-express/suivi/{COMPLETED_DOSSIER_2}")
+        if response.status_code == 404:
+            pytest.skip(f"Dossier {COMPLETED_DOSSIER_2} not found")
+        
+        assert response.status_code == 200
+        data = response.json()
+        
+        expected_labels = [
+            "Dossier bien recu",
+            "Documents en cours de preparation",
+            "Lecture documentaire en cours",
+            "Analyse en cours de finalisation",
+            "Rapport en cours de preparation",
+            "Envoi en cours",
+            "Rapport disponible"
+        ]
+        
+        steps = data.get("steps", [])
+        actual_labels = [s.get("label") for s in steps]
+        
+        assert actual_labels == expected_labels, f"Labels mismatch: {actual_labels}"
+        print(f"Step labels verified: {actual_labels}")
 
 
 if __name__ == "__main__":

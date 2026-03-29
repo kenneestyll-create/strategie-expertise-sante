@@ -151,6 +151,8 @@ export const DossierExpressPage = () => {
   const [analysePremium, setAnalysePremium] = useState(false);
   const [weeklyCount, setWeeklyCount] = useState(0);
   const [adminPaid, setAdminPaid] = useState(false);
+  const [valueIdx, setValueIdx] = useState(0);
+  const [elapsedSec, setElapsedSec] = useState(0);
 
   const featuresRef = useRevealChildren();
   const ctaBottomRef = useReveal();
@@ -162,6 +164,20 @@ export const DossierExpressPage = () => {
       .then(res => setWeeklyCount(res.data.count || 0))
       .catch(() => {});
   }, []);
+
+  // Processing view: rotating value messages (only active during processing)
+  useEffect(() => {
+    if (step !== 'processing') return;
+    const t = setInterval(() => setValueIdx(p => (p + 1) % 6), 12000);
+    return () => clearInterval(t);
+  }, [step]);
+
+  // Processing view: elapsed time counter (reset when entering processing)
+  useEffect(() => {
+    if (step !== 'processing') { setElapsedSec(0); return; }
+    const t = setInterval(() => setElapsedSec(p => p + 1), 1000);
+    return () => clearInterval(t);
+  }, [step]);
 
   useEffect(() => {
     const payment = searchParams.get('payment');
@@ -830,17 +846,33 @@ export const DossierExpressPage = () => {
     }
 
     const STEPS = [
-      { key: 'uploading', label: `${filesCount > 0 ? filesCount + ' document' + (filesCount > 1 ? 's' : '') + ' recu' + (filesCount > 1 ? 's' : '') : 'Documents recus'}`, icon: Upload, detail: 'Vos fichiers ont ete transmis avec succes.' },
-      { key: 'reading', label: docsExtracted ? 'Lecture des pieces transmises' : 'Lecture des informations fournies', icon: FileText, detail: 'Extraction et structuration du contenu de vos documents.' },
-      { key: 'analyzing', label: 'Analyse approfondie de votre dossier', icon: Brain, detail: 'Croisement avec les jurisprudences, baremes et cas similaires.' },
-      { key: 'generating', label: 'Redaction de votre rapport personnalise', icon: Sparkles, detail: 'Construction de votre rapport avec strategie et recommandations.' },
-      { key: 'sending', label: 'Verification et envoi securise', icon: Mail, detail: 'Mise en forme PDF et envoi par email.' },
+      { key: 'uploading', label: 'Documents bien reçus et sécurisés', icon: Shield, detail: 'Vos pièces sont conservées de manière confidentielle.' },
+      { key: 'reading', label: 'Lecture des pièces transmises', icon: FileText, detail: 'Identification et extraction du contenu de chaque document.' },
+      { key: 'analyzing_1', label: 'Analyse documentaire et chronologie', icon: FileSearch, detail: 'Reconstitution de votre parcours à partir des pièces fournies.' },
+      { key: 'analyzing_2', label: 'Cadre juridique et points de vigilance', icon: Brain, detail: 'Croisement avec les textes de loi, jurisprudences et barèmes applicables.' },
+      { key: 'analyzing_3', label: 'Stratégie et estimation des préjudices', icon: TrendingUp, detail: 'Construction des recommandations et chiffrage personnalisé.' },
+      { key: 'generating', label: 'Structuration de votre rapport personnalisé', icon: Sparkles, detail: 'Mise en forme de votre synthèse complète.' },
+      { key: 'sending', label: 'Préparation de votre document final', icon: Award, detail: 'Génération du PDF et envoi sécurisé.' },
+    ];
+
+    const VALUE_MESSAGES = [
+      "Votre dossier fait l'objet d'une analyse approfondie et individualisée",
+      "Nous croisons actuellement vos pièces avec les points de vigilance les plus fréquents",
+      "Chaque document transmis est pris en compte pour renforcer la pertinence de votre rapport",
+      "Nous structurons votre rapport pour en faire ressortir les leviers les plus utiles",
+      "Vos éléments sont confrontés aux jurisprudences et barèmes en vigueur",
+      "L'analyse personnalisée de votre situation est en cours de finalisation",
     ];
 
     const currentProgress = pollStatus?.progress_step || 'uploading';
-    const currentIdx = STEPS.findIndex(s => s.key === currentProgress);
-    const progressPct = Math.max(8, Math.min(95, ((currentIdx + 1) / STEPS.length) * 100));
-    const activeStep = STEPS[currentIdx] || STEPS[0];
+    const currentIdx = Math.max(0, STEPS.findIndex(s => s.key === currentProgress));
+    // Map legacy 'analyzing' to 'analyzing_1' for backward compat
+    const mappedIdx = currentProgress === 'analyzing' ? 2 : currentIdx;
+    const progressPct = Math.max(5, Math.min(95, ((mappedIdx + 1) / STEPS.length) * 100));
+    const activeStep = STEPS[mappedIdx] || STEPS[0];
+
+    const elapsedMin = Math.floor(elapsedSec / 60);
+    const elapsedSecRemainder = elapsedSec % 60;
 
     return (
       <main className="page-transition pt-20">
@@ -850,8 +882,8 @@ export const DossierExpressPage = () => {
             {/* Header premium */}
             <div className="text-center mb-8">
               <div className="relative w-20 h-20 mx-auto mb-5">
-                <div className="absolute inset-0 bg-amber-500/20 rounded-full animate-ping" style={{ animationDuration: '2.5s' }} />
-                <div className="relative w-20 h-20 bg-gradient-to-br from-amber-500/15 to-amber-600/10 rounded-full flex items-center justify-center border border-amber-500/20">
+                <div className="absolute inset-0 bg-amber-500/15 rounded-full animate-ping" style={{ animationDuration: '3s' }} />
+                <div className="relative w-20 h-20 bg-gradient-to-br from-amber-500/12 to-amber-600/8 rounded-full flex items-center justify-center border border-amber-500/20">
                   <Brain className="w-9 h-9 text-amber-500" />
                 </div>
               </div>
@@ -859,17 +891,22 @@ export const DossierExpressPage = () => {
                 Votre dossier est en cours d'analyse
               </h2>
               <p className="text-muted-foreground text-sm leading-relaxed max-w-md mx-auto">
-                Vos documents ont bien été reçus. Notre moteur d'analyse documentaire examine actuellement votre dossier afin de produire une synthèse structurée et exploitable.
+                Nos algorithmes analysent chacune de vos pièces pour produire un rapport structuré, personnalisé et directement exploitable.
               </p>
             </div>
 
-            {/* Dynamic status message */}
-            <div className="bg-amber-500/[0.06] border border-amber-500/15 rounded-xl p-4 mb-6 text-center" data-testid="dynamic-status">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <Loader2 className="w-4 h-4 text-amber-600 animate-spin" />
-                <span className="text-sm font-semibold text-amber-700">{activeStep.label}</span>
+            {/* Active step indicator + counter */}
+            <div className="bg-amber-500/[0.06] border border-amber-500/15 rounded-xl p-4 mb-5" data-testid="dynamic-status">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 text-amber-600 animate-spin" />
+                  <span className="text-sm font-semibold text-amber-700">{activeStep.label}</span>
+                </div>
+                <span className="text-xs font-mono text-amber-600/70 tabular-nums" data-testid="step-counter">
+                  {mappedIdx + 1} / {STEPS.length}
+                </span>
               </div>
-              <p className="text-xs text-amber-600/80">{activeStep.detail}</p>
+              <p className="text-xs text-amber-600/70">{activeStep.detail}</p>
             </div>
 
             {/* Progress bar */}
@@ -882,26 +919,31 @@ export const DossierExpressPage = () => {
                 }}
               />
             </div>
-            <p className="text-[11px] text-muted-foreground text-right mb-6">{Math.round(progressPct)}%</p>
+            <div className="flex items-center justify-between mb-6">
+              <span className="text-[11px] text-muted-foreground tabular-nums" data-testid="elapsed-time">
+                {elapsedMin > 0 ? `${elapsedMin} min ${String(elapsedSecRemainder).padStart(2, '0')} s` : `${elapsedSec} s`}
+              </span>
+              <span className="text-[11px] text-muted-foreground">{Math.round(progressPct)}%</span>
+            </div>
 
             {/* Chunk upload progress */}
             {pollStatus?.chunk_progress && (
               <div className="text-[11px] text-amber-600 text-center mb-3 animate-pulse" data-testid="chunk-progress">
-                Upload fractionne : {pollStatus.chunk_progress}
+                Transfert : {pollStatus.chunk_progress}
               </div>
             )}
 
             {/* Steps timeline */}
-            <Card className="mb-6 border-border/60">
+            <Card className="mb-5 border-border/60">
               <CardContent className="p-0">
                 {STEPS.map((s, i) => {
-                  const isDone = i < currentIdx || (pollStatus?.status === 'completed');
-                  const isActive = i === currentIdx && pollStatus?.status !== 'completed';
+                  const isDone = i < mappedIdx || (pollStatus?.status === 'completed');
+                  const isActive = i === mappedIdx && pollStatus?.status !== 'completed';
                   const StepIcon = s.icon;
                   return (
                     <div
                       key={s.key}
-                      className={`flex items-center gap-3.5 px-5 py-3.5 border-b border-border/40 last:border-0 transition-all duration-500 ${
+                      className={`flex items-center gap-3.5 px-5 py-3 border-b border-border/40 last:border-0 transition-all duration-500 ${
                         isActive ? 'bg-amber-50/50' : ''
                       }`}
                       data-testid={`step-${s.key}`}
@@ -919,7 +961,7 @@ export const DossierExpressPage = () => {
                         <span className={`text-sm block transition-colors ${
                           isDone ? 'text-emerald-600 font-medium' :
                           isActive ? 'text-amber-700 font-semibold' :
-                          'text-muted-foreground/60'
+                          'text-muted-foreground/50'
                         }`}>
                           {s.label}
                         </span>
@@ -927,33 +969,56 @@ export const DossierExpressPage = () => {
                           <span className="text-[11px] text-amber-600/70 block mt-0.5">{s.detail}</span>
                         )}
                       </div>
-                      {isDone && <span className="text-[10px] text-emerald-500 font-medium flex-shrink-0">Terminé</span>}
+                      {isDone && <span className="text-[10px] text-emerald-500 font-medium flex-shrink-0">OK</span>}
                     </div>
                   );
                 })}
               </CardContent>
             </Card>
 
-            {/* Reassurance block */}
-            <Card className="border-accent/15 bg-accent/[0.02]">
+            {/* Rotating value message */}
+            <div className="rounded-xl border border-accent/10 bg-accent/[0.03] p-4 mb-5" data-testid="value-message">
+              <p className="text-[13px] text-center text-foreground/70 italic leading-relaxed transition-opacity duration-500">
+                {VALUE_MESSAGES[valueIdx]}
+              </p>
+            </div>
+
+            {/* Document count if applicable */}
+            {filesCount > 0 && (
+              <div className="flex items-center justify-center gap-2 mb-5 text-xs text-amber-700/80 font-medium" data-testid="docs-info">
+                <FileText className="w-3.5 h-3.5" />
+                <span>{filesCount} pièce{filesCount > 1 ? 's' : ''} {docsExtracted ? 'analysée' + (filesCount > 1 ? 's' : '') : 'intégrée' + (filesCount > 1 ? 's' : '')} dans votre rapport</span>
+              </div>
+            )}
+
+            {/* Premium reassurance block */}
+            <Card className="border-border/50 bg-card">
               <CardContent className="p-5">
                 <div className="flex items-start gap-3">
                   <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <ShieldCheck className="w-5 h-5 text-accent" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold mb-1.5">Vous n'avez pas besoin de rester sur cette page</h4>
+                    <h4 className="text-sm font-semibold mb-2">Pourquoi cette étape prend quelques instants</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-                      L'analyse se poursuit automatiquement sur nos serveurs. Votre rapport vous sera envoyé par email à <strong className="text-foreground">{form.email || pollStatus?.email}</strong> dès qu'il sera prêt.
+                      Contrairement à un simple résumé automatique, notre système analyse réellement chacune de vos pièces. Le traitement croise vos documents avec les textes de loi, jurisprudences et barèmes applicables à votre situation, afin de produire une synthèse véritablement personnalisée et exploitable.
                     </p>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-                      <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <span className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                         <Clock className="w-3 h-3 text-accent/60" />
-                        Livraison sous 2 heures maximum
+                        Durée estimée : 2 à 4 minutes
                       </span>
-                      <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                      <span className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                         <Lock className="w-3 h-3 text-accent/60" />
-                        Données chiffrées et protégées
+                        Données chiffrées et confidentielles
+                      </span>
+                      <span className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                        <Shield className="w-3 h-3 text-accent/60" />
+                        Paiement confirmé et sécurisé
+                      </span>
+                      <span className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                        <Mail className="w-3 h-3 text-accent/60" />
+                        Rapport envoyé par email à la fin
                       </span>
                     </div>
                   </div>
@@ -961,11 +1026,6 @@ export const DossierExpressPage = () => {
               </CardContent>
             </Card>
 
-            {filesCount > 0 && (
-              <p className="text-xs text-center text-amber-600/70 font-medium mt-4" data-testid="docs-info">
-                {filesCount} document{filesCount > 1 ? 's' : ''} {docsExtracted ? 'lu' + (filesCount > 1 ? 's' : '') + ' et intégré' + (filesCount > 1 ? 's' : '') : 'joint' + (filesCount > 1 ? 's' : '')} à l'analyse
-              </p>
-            )}
           </div>
         </section>
       </main>
@@ -981,9 +1041,12 @@ export const DossierExpressPage = () => {
             <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle className="w-10 h-10 text-emerald-600" />
             </div>
-            <h2 className="text-2xl font-bold mb-3" data-testid="success-title">Rapport envoyé !</h2>
+            <h2 className="text-2xl font-bold mb-3" data-testid="success-title">Votre rapport est prêt</h2>
+            <p className="text-muted-foreground mb-2 text-sm leading-relaxed">
+              Votre dossier a été analysé et structuré avec soin à partir de l'ensemble de vos pièces.
+            </p>
             <p className="text-muted-foreground mb-6 text-sm">
-              Votre rapport Dossier Express IA a été envoyé à <strong className="text-foreground">{form.email || pollStatus?.email}</strong>.
+              Le rapport personnalisé a été envoyé à <strong className="text-foreground">{form.email || pollStatus?.email}</strong>.
               Vérifiez votre boîte de réception (et vos spams).
             </p>
             <Card className="text-left mb-8">
