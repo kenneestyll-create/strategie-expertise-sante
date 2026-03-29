@@ -109,6 +109,7 @@ const EspaceClientPage = lazy(() => import("@/pages/EspaceClientPage").then(m =>
 const CalculatriceIPPPage = lazy(() => import("@/pages/CalculatriceIPPPage").then(m => ({ default: m.CalculatriceIPPPage })));
 const CalculatriceAAHPage = lazy(() => import("@/pages/CalculatriceAAHPage").then(m => ({ default: m.CalculatriceAAHPage })));
 const DossierExpressPage = lazy(() => import("@/pages/DossierExpressPage").then(m => ({ default: m.DossierExpressPage })));
+const SuiviDossierPage = lazy(() => import("@/pages/SuiviDossierPage").then(m => ({ default: m.SuiviDossierPage })));
 const ForumPage = lazy(() => import("@/pages/ForumPage").then(m => ({ default: m.ForumPage })));
 const ForumRegisterPage = lazy(() => import("@/pages/ForumRegisterPage").then(m => ({ default: m.ForumRegisterPage })));
 const ForumLoginPage = lazy(() => import("@/pages/ForumLoginPage").then(m => ({ default: m.ForumLoginPage })));
@@ -170,6 +171,7 @@ function App() {
                   <Route path="/calculatrice-ipp" element={<><Header /><CalculatriceIPPPage /><Footer /></>} />
                   <Route path="/calculatrice-aah" element={<><Header /><CalculatriceAAHPage /><Footer /></>} />
                   <Route path="/dossier-express" element={<><Header /><DossierExpressPage /><Footer /></>} />
+                  <Route path="/dossier-express/suivi" element={<><Header /><SuiviDossierPage /><Footer /></>} />
                   <Route path="/forum" element={<><Header /><ForumPage /><Footer /></>} />
                   <Route path="/forum/inscription" element={<><Header /><ForumRegisterPage /><Footer /></>} />
                   <Route path="/forum/connexion" element={<><Header /><ForumLoginPage /><Footer /></>} />

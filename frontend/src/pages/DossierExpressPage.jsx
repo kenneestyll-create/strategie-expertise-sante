@@ -239,6 +239,15 @@ export const DossierExpressPage = () => {
     sessionStorage.setItem('dossier_express_analyse_premium', analysePremium ? '1' : '0');
     setLoading(true);
     try {
+      // === LAUNCH MODE CHECK ===
+      try {
+        const modeRes = await axios.get(`${API}/launch-mode`, { timeout: 5000 });
+        if (modeRes.data?.mode === 'indisponible') {
+          toast.error(modeRes.data.message || "Le service est temporairement suspendu pour maintenance programmee. Nous serons de retour tres prochainement.", { duration: 8000 });
+          setLoading(false);
+          return;
+        }
+      } catch { /* launch mode check non-blocking if endpoint fails */ }
       // === PRE-PAYMENT LLM HEALTH CHECK ===
       try {
         const healthRes = await axios.get(`${API}/health/llm`, { timeout: 15000 });

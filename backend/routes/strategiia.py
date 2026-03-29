@@ -1163,6 +1163,16 @@ async def dossier_express_checkout(request: Request):
     premium_pdf = body.get("premium_pdf", False)
     analyse_premium = body.get("analyse_premium", False)
 
+    # ====== LAUNCH MODE CHECK — SOFT LAUNCH GATING ======
+    launch_config = await db.system_config.find_one({"key": "launch_mode"}, {"_id": 0})
+    launch_mode = launch_config.get("value", "ouvert") if launch_config else "ouvert"
+    if launch_mode == "indisponible":
+        custom_msg = launch_config.get("message", "") if launch_config else ""
+        raise HTTPException(
+            status_code=503,
+            detail=custom_msg or "Le service est temporairement suspendu pour maintenance programmee. Nous serons de retour tres prochainement."
+        )
+
     # ====== PRE-PAYMENT LLM HEALTH CHECK — STRICTLY BLOCKING ======
     llm_ok, llm_reason = await _check_llm_health()
     if not llm_ok:
@@ -1206,6 +1216,94 @@ async def dossier_express_checkout(request: Request):
     except Exception as e:
         logger.error(f"Dossier Express IA checkout error: {e}")
         raise HTTPException(status_code=500, detail="Erreur de paiement")
+
+@router.get("/dossier-express/suivi/{dossier_id}")
+async def dossier_express_suivi(dossier_id: str, token: str = ""):
+    """Public client-facing tracker — returns only premium, human-readable status."""
+    dossier = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0})
+    if not dossier:
+        raise HTTPException(status_code=404, detail="Dossier non trouve")
+    # Security: require download_token match
+    if token and dossier.get("download_token") and token != dossier.get("download_token"):
+        raise HTTPException(status_code=403, detail="Acces non autorise")
+
+    # Map internal steps to premium client-facing labels
+    STEP_MAP = {
+        "checkout_valide":     {"order": 1, "label": "Dossier bien recu",                "done": True},
+        "relance_admin":       {"order": 1, "label": "Dossier bien recu",                "done": True},
+        "documents_recus":     {"order": 2, "label": "Documents en cours de preparation", "done": True},
+        "extraction_en_cours": {"order": 3, "label": "Lecture documentaire en cours",     "done": True},
+        "analyse_ia":          {"order": 4, "label": "Analyse en cours de finalisation",  "done": True},
+        "pdf_en_cours":        {"order": 5, "label": "Rapport en cours de preparation",   "done": True},
+        "stockage_en_cours":   {"order": 6, "label": "Rapport en cours de preparation",   "done": True},
+        "email_en_cours":      {"order": 7, "label": "Envoi en cours",                    "done": True},
+        "termine":             {"order": 8, "label": "Rapport disponible",                 "done": True},
+        "erreur_ia":           {"order": 4, "label": "Verification complementaire en cours", "done": True},
+        "erreur_pdf":          {"order": 5, "label": "Verification complementaire en cours", "done": True},
+        "erreur_stockage":     {"order": 6, "label": "Verification complementaire en cours", "done": True},
+        "erreur_email":        {"order": 7, "label": "Verification complementaire en cours", "done": True},
+    }
+
+    CLIENT_STEPS = [
+        {"key": "received",    "label": "Dossier bien recu"},
+        {"key": "preparation", "label": "Documents en cours de preparation"},
+        {"key": "reading",     "label": "Lecture documentaire en cours"},
+        {"key": "analysis",    "label": "Analyse en cours de finalisation"},
+        {"key": "report",      "label": "Rapport en cours de preparation"},
+        {"key": "delivery",    "label": "Envoi en cours"},
+        {"key": "available",   "label": "Rapport disponible"},
+    ]
+
+    current_step = dossier.get("processing_step", "checkout_valide")
+    status = dossier.get("status", "processing")
+    delivery_status = dossier.get("delivery_status", "en_attente_traitement")
+    step_info = STEP_MAP.get(current_step, {"order": 1, "label": "Dossier en cours de traitement", "done": True})
+
+    is_incident = delivery_status == "incident_technique"
+    is_completed = status == "completed"
+
+    # Build steps with progress
+    step_order = step_info["order"]
+    if is_completed:
+        step_order = 8
+
+    steps_with_status = []
+    order_map = [1, 2, 3, 4, 5, 7, 8]
+    for i, s in enumerate(CLIENT_STEPS):
+        s_order = order_map[i]
+        if is_incident and s_order > step_order:
+            steps_with_status.append({**s, "status": "waiting"})
+        elif s_order < step_order:
+            steps_with_status.append({**s, "status": "completed"})
+        elif s_order == step_order:
+            steps_with_status.append({**s, "status": "active" if not is_completed else "completed"})
+        else:
+            steps_with_status.append({**s, "status": "waiting"})
+
+    # Client-facing message
+    if is_completed:
+        client_message = "Votre rapport est disponible. Vous pouvez le telecharger ci-dessous."
+    elif is_incident:
+        client_message = "Votre dossier est bien pris en charge. Un traitement complementaire est en cours pour vous garantir la meilleure qualite d'analyse."
+    else:
+        client_message = step_info["label"]
+
+    result = {
+        "dossier_id": dossier_id,
+        "name": dossier.get("name", ""),
+        "status": "completed" if is_completed else ("incident" if is_incident else "processing"),
+        "message": client_message,
+        "current_label": step_info["label"] if not is_completed else "Rapport disponible",
+        "steps": steps_with_status,
+        "created_at": dossier.get("created_at"),
+        "completed_at": dossier.get("completed_at"),
+    }
+
+    if is_completed and dossier.get("download_token"):
+        result["download_url"] = f"{SITE_URL}/api/dossier-express/{dossier_id}/download?token={dossier.get('download_token')}"
+
+    return result
+
 
 @router.get("/dossier-express/status/{dossier_id}")
 async def dossier_express_status(dossier_id: str):

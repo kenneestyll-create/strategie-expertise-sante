@@ -302,6 +302,9 @@ export const AdminDashboard = () => {
   const [dossierExpressAdmin, setDossierExpressAdmin] = useState({ items: [], stats: { total: 0, completed: 0, processing: 0, errors: 0, incidents: 0, delivered: 0, pending: 0 } });
   const [dossierViewDialog, setDossierViewDialog] = useState(null);
   const [deFilter, setDeFilter] = useState('all');
+  const [monitoring, setMonitoring] = useState(null);
+  const [launchMode, setLaunchMode] = useState({ mode: 'ouvert', message: '' });
+  const [launchLoading, setLaunchLoading] = useState(false);
   const [analyticsData, setAnalyticsData] = useState(null);
   const [analyticsPeriod, setAnalyticsPeriod] = useState('30d');
   const [newCas, setNewCas] = useState({ type_dossier: '', regime: '', duree: '', strategie: '', resultat: '', score_pertinence: 0, notes: '' });
@@ -386,6 +389,8 @@ export const AdminDashboard = () => {
       setAnalyticsData(analyticsRes.data);
       // Fetch admin docs & email status separately (non-critical)
       axios.get(`${API}/admin/dossier-express`, axiosConfig).then(r => setDossierExpressAdmin(r.data)).catch(() => {});
+      axios.get(`${API}/admin/monitoring`, axiosConfig).then(r => setMonitoring(r.data)).catch(() => {});
+      axios.get(`${API}/admin/launch-mode`, axiosConfig).then(r => setLaunchMode(r.data)).catch(() => {});
       axios.get(`${API}/admin/documents`, axiosConfig).then(r => setAdminDocs(r.data)).catch(() => {});
       axios.get(`${API}/admin/email/status`, axiosConfig).then(r => setEmailStatus(r.data)).catch(() => {});
       axios.get(`${API}/admin/completeness-notifications`, axiosConfig).then(r => setCompletenessNotifs(r.data)).catch(() => {});
@@ -1738,6 +1743,84 @@ export const AdminDashboard = () => {
           </TabsContent>
           {/* Dossier Express IA Admin Tab — PREMIUM COCKPIT */}
           <TabsContent value="dossier-express" className="space-y-8" data-testid="dossier-express-tab-content">
+
+            {/* ====== LAUNCH MODE CONTROL ====== */}
+            <Card className={`border-2 transition-all ${launchMode.mode === 'ouvert' ? 'border-green-300 bg-green-50/20' : launchMode.mode === 'controle' ? 'border-amber-300 bg-amber-50/20' : 'border-red-300 bg-red-50/20'}`} data-testid="launch-mode-card">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-3 h-3 rounded-full ${launchMode.mode === 'ouvert' ? 'bg-green-500' : launchMode.mode === 'controle' ? 'bg-amber-500' : 'bg-red-500'} animate-pulse`} />
+                    <div>
+                      <h3 className="text-sm font-bold flex items-center gap-2">
+                        Mode de lancement
+                        <Badge variant="outline" className={`text-[10px] ${
+                          launchMode.mode === 'ouvert' ? 'bg-green-100 text-green-700 border-green-200' :
+                          launchMode.mode === 'controle' ? 'bg-amber-100 text-amber-700 border-amber-200' :
+                          'bg-red-100 text-red-700 border-red-200'
+                        }`} data-testid="launch-mode-badge">
+                          {launchMode.mode === 'ouvert' ? 'Ouvert' : launchMode.mode === 'controle' ? 'Ouverture controlee' : 'Temporairement indisponible'}
+                        </Badge>
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {launchMode.mode === 'ouvert' ? 'Les clients peuvent commander normalement' : launchMode.mode === 'controle' ? 'Prise de commande active — surveillance renforcee' : 'Prise de commande suspendue'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2" data-testid="launch-mode-buttons">
+                    {['ouvert', 'controle', 'indisponible'].map(m => (
+                      <Button key={m} size="sm" variant={launchMode.mode === m ? 'default' : 'outline'}
+                        className={`text-xs h-8 ${launchMode.mode === m ? '' : ''}`}
+                        disabled={launchLoading}
+                        data-testid={`launch-mode-${m}`}
+                        onClick={async () => {
+                          setLaunchLoading(true);
+                          try {
+                            const res = await axios.put(`${API}/admin/launch-mode`, { mode: m }, axiosConfig);
+                            setLaunchMode({ mode: res.data.mode, message: res.data.message });
+                            toast.success(`Mode de lancement : ${m === 'ouvert' ? 'Ouvert' : m === 'controle' ? 'Ouverture controlee' : 'Temporairement indisponible'}`);
+                          } catch { toast.error("Erreur lors du changement de mode"); }
+                          setLaunchLoading(false);
+                        }}>
+                        {m === 'ouvert' ? 'Ouvert' : m === 'controle' ? 'Controle' : 'Indisponible'}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* ====== MONITORING KPIs ====== */}
+            {monitoring && (
+              <div data-testid="monitoring-section">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <h3 className="text-sm font-semibold tracking-tight uppercase text-muted-foreground">Monitoring Live</h3>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3" data-testid="monitoring-kpi-grid">
+                  {[
+                    { label: "Aujourd'hui", value: monitoring.kpis.orders_today, icon: Zap, color: 'text-blue-600', bg: 'bg-blue-50' },
+                    { label: "7 jours", value: monitoring.kpis.orders_7_days, icon: BarChart3, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                    { label: "Taux reussite", value: `${monitoring.kpis.success_rate_7_days}%`, icon: TrendingUp, color: monitoring.kpis.success_rate_7_days >= 80 ? 'text-green-600' : 'text-amber-600', bg: monitoring.kpis.success_rate_7_days >= 80 ? 'bg-green-50' : 'bg-amber-50' },
+                    { label: "Incidents J", value: monitoring.kpis.incidents_today, icon: AlertTriangle, color: monitoring.kpis.incidents_today > 0 ? 'text-red-600' : 'text-foreground/40', bg: monitoring.kpis.incidents_today > 0 ? 'bg-red-50' : 'bg-muted/40' },
+                    { label: "Delai moyen", value: `${monitoring.kpis.avg_delivery_minutes}m`, icon: Clock, color: 'text-teal-600', bg: 'bg-teal-50' },
+                    { label: "En attente", value: monitoring.kpis.pending_count, icon: Loader2, color: monitoring.kpis.pending_count > 0 ? 'text-amber-600' : 'text-foreground/40', bg: monitoring.kpis.pending_count > 0 ? 'bg-amber-50' : 'bg-muted/40' },
+                    { label: "Intervention", value: monitoring.kpis.intervention_required, icon: Shield, color: monitoring.kpis.intervention_required > 0 ? 'text-red-600' : 'text-foreground/40', bg: monitoring.kpis.intervention_required > 0 ? 'bg-red-50' : 'bg-muted/40' },
+                  ].map((kpi, i) => (
+                    <Card key={i} className="border-border/40" data-testid={`monitoring-kpi-${i}`}>
+                      <CardContent className="p-3">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <div className={`w-7 h-7 rounded-lg ${kpi.bg} flex items-center justify-center`}>
+                            <kpi.icon className={`w-3.5 h-3.5 ${kpi.color}`} />
+                          </div>
+                          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">{kpi.label}</span>
+                        </div>
+                        <p className={`text-xl font-bold tracking-tight ${kpi.color}`}>{kpi.value}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
             {/* Section header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">

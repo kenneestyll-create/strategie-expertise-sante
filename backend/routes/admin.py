@@ -1642,3 +1642,125 @@ async def trigger_manual_purge(admin: dict = Depends(get_current_admin)):
     })
     logger.info(f"MANUAL PURGE by {admin.get('email')}: {result.modified_count} dossier(s) purged")
     return {"success": True, "purged_count": result.modified_count}
+
+
+
+# ==================== LAUNCH MODE CONTROL ====================
+
+LAUNCH_MODES = ["ouvert", "controle", "indisponible"]
+
+LAUNCH_MODE_MESSAGES = {
+    "ouvert": "",
+    "controle": "",
+    "indisponible": "Le service est temporairement suspendu pour maintenance programmee. Nous serons de retour tres prochainement.",
+}
+
+@router.get("/launch-mode")
+async def get_launch_mode_public():
+    """Public endpoint — returns current launch mode for frontend gating."""
+    config = await db.system_config.find_one({"key": "launch_mode"}, {"_id": 0})
+    if not config:
+        return {"mode": "ouvert", "message": ""}
+    return {"mode": config.get("value", "ouvert"), "message": config.get("message", "")}
+
+
+@router.get("/admin/launch-mode")
+async def admin_get_launch_mode(admin: dict = Depends(get_current_admin)):
+    config = await db.system_config.find_one({"key": "launch_mode"}, {"_id": 0})
+    if not config:
+        return {"mode": "ouvert", "message": "", "updated_at": None, "updated_by": None}
+    return {
+        "mode": config.get("value", "ouvert"),
+        "message": config.get("message", ""),
+        "updated_at": config.get("updated_at"),
+        "updated_by": config.get("updated_by"),
+    }
+
+
+@router.put("/admin/launch-mode")
+async def admin_set_launch_mode(request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    mode = body.get("mode", "ouvert")
+    custom_message = body.get("message", "")
+    if mode not in LAUNCH_MODES:
+        raise HTTPException(status_code=400, detail=f"Mode invalide. Options: {', '.join(LAUNCH_MODES)}")
+    message = custom_message if custom_message else LAUNCH_MODE_MESSAGES.get(mode, "")
+    await db.system_config.update_one(
+        {"key": "launch_mode"},
+        {"$set": {"value": mode, "message": message, "updated_at": datetime.now(timezone.utc).isoformat(), "updated_by": admin.get("email", "admin")}},
+        upsert=True,
+    )
+    logger.info(f"Launch mode set to '{mode}' by {admin.get('email')}")
+    return {"success": True, "mode": mode, "message": message}
+
+
+# ==================== MONITORING DASHBOARD ====================
+
+@router.get("/admin/monitoring")
+async def admin_monitoring(admin: dict = Depends(get_current_admin)):
+    """Live KPIs for launch monitoring dashboard."""
+    now = datetime.now(timezone.utc)
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+    seven_days_ago = (now - timedelta(days=7)).isoformat()
+
+    # Fetch all relevant dossiers
+    all_dossiers = await db.dossier_express.find({}, {"_id": 0, "documents_text": 0, "analysis": 0}).sort("created_at", -1).to_list(500)
+
+    today_dossiers = [d for d in all_dossiers if (d.get("created_at") or "") >= today_start]
+    week_dossiers = [d for d in all_dossiers if (d.get("created_at") or "") >= seven_days_ago]
+
+    completed_all = [d for d in all_dossiers if d.get("status") == "completed"]
+    completed_week = [d for d in week_dossiers if d.get("status") == "completed"]
+
+    # Avg delivery time (completed dossiers with both created_at and completed_at)
+    delivery_times = []
+    for d in completed_all:
+        try:
+            if d.get("created_at") and d.get("completed_at"):
+                start = datetime.fromisoformat(d["created_at"].replace("Z", "+00:00"))
+                end = datetime.fromisoformat(d["completed_at"].replace("Z", "+00:00"))
+                delta_min = (end - start).total_seconds() / 60
+                if 0 < delta_min < 1440:
+                    delivery_times.append(delta_min)
+        except Exception:
+            pass
+    avg_delay_min = round(sum(delivery_times) / len(delivery_times), 1) if delivery_times else 0
+
+    total_all = len(all_dossiers) or 1
+    total_week = len(week_dossiers) or 1
+
+    incidents_today = [d for d in today_dossiers if d.get("delivery_status") == "incident_technique" or d.get("status") == "error"]
+    incidents_week = [d for d in week_dossiers if d.get("delivery_status") == "incident_technique" or d.get("status") == "error"]
+    pending = [d for d in all_dossiers if d.get("status") == "processing"]
+    intervention = [d for d in all_dossiers if d.get("delivery_status") == "incident_technique"]
+
+    success_rate_all = round((len(completed_all) / total_all) * 100, 1)
+    success_rate_week = round((len(completed_week) / total_week) * 100, 1) if week_dossiers else 0
+
+    # Launch mode
+    config = await db.system_config.find_one({"key": "launch_mode"}, {"_id": 0})
+    launch_mode = config.get("value", "ouvert") if config else "ouvert"
+
+    return {
+        "launch_mode": launch_mode,
+        "kpis": {
+            "orders_today": len(today_dossiers),
+            "orders_7_days": len(week_dossiers),
+            "success_rate_global": success_rate_all,
+            "success_rate_7_days": success_rate_week,
+            "incidents_today": len(incidents_today),
+            "incidents_7_days": len(incidents_week),
+            "avg_delivery_minutes": avg_delay_min,
+            "pending_count": len(pending),
+            "intervention_required": len(intervention),
+            "total_delivered": len(completed_all),
+        },
+        "recent_incidents": [
+            {
+                "id": d.get("id"), "name": d.get("name"), "email": d.get("email"),
+                "delivery_status": d.get("delivery_status"), "processing_step": d.get("processing_step"),
+                "error": d.get("error"), "created_at": d.get("created_at"),
+            }
+            for d in incidents_week[:10]
+        ],
+    }
