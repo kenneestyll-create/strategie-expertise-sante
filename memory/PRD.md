@@ -10,40 +10,30 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA i
 - **PDF** : fpdf2 + jsPDF | **Email** : Resend | **Paiements** : Stripe + PayPal
 
 ## Services (ISOLES — voir ARCHITECTURE_GUARDRAILS.md)
-- **StrategiIA** : Analyse strategique MP/AT. Collection: strategiia_analyses. Analyse STOCKEE en DB avec job_id.
-- **Dossier Express IA** : Pipeline documentaire optimise. Collection: dossier_express. 8 etapes tracees.
-- **Relecture admin** : Collection partagee premium_analyses (filtre par type). Liee a strategiia_analyses via job_id.
+- **StrategiIA** : Analyse strategique MP/AT. Collection: strategiia_analyses. Analyse STOCKEE en DB avec job_id. PDF generable via /api/admin/strategiia/{id}/preview-pdf.
+- **Dossier Express IA** : Pipeline documentaire optimise. Collection: dossier_express. PDF generable via /api/admin/dossier-express/{id}/preview-pdf.
+- **Relecture admin** : Collection partagee premium_analyses. Bouton "Voir le PDF final" dans modale de relecture pour les deux services.
 
-## Bug Fix: Analyse StrategiIA non stockee (29/03/2026)
-### Cause racine
-- _run_analysis() stockait le resultat uniquement dans un dict en memoire (_jobs[job_id])
-- Le document strategiia_analyses ne contenait PAS le texte de l'analyse
-- premium_analyses n'etait jamais mis a jour avec l'analyse generee
-- Resultat: la modale admin "Relire/Valider" affichait le texte brut du client au lieu de l'analyse IA
+## Bugs corriges (29/03/2026)
 
-### Fix applique
-1. strategiia.py: Stocker l'analyse + job_id dans strategiia_analyses
-2. strategiia.py: Mettre a jour premium_analyses avec l'analyse via job_id
-3. admin.py: Ameliorer le lookup full-content pour chercher via job_id (puis fallback email)
+### Bug 1: Analyse StrategiIA non stockee en DB
+- Cause: _run_analysis() stockait le resultat uniquement en memoire (_jobs)
+- Fix: Stocker l'analyse + job_id dans strategiia_analyses ET premium_analyses
+- Fichiers: strategiia.py (lignes 148-155), admin.py (lignes 424-438)
 
-### Verification
-- iteration_152: 10/10 PASS, analyse de 14,334 chars correctement retournee par full-content
-- Frontend: modale affiche "## Votre situation analysee" au lieu du texte brut
+### Bug 2: PDF StrategiIA inaccessible depuis l'admin
+- Cause: Aucun endpoint admin et aucun bouton frontend pour generer/telecharger le PDF
+- Fix: Endpoint GET /api/admin/strategiia/{id}/preview-pdf + bouton "Voir le PDF final" dans AdminPremiumReview
+- Fichiers: admin.py (lignes 499-536), AdminPremiumReview.jsx (lignes 326-349)
 
-## Pipeline Dossier Express IA (OPTIMISE 29/03/2026)
-- 7 sections, 3 batches paralleles httpx streaming
-- PATH B (Emergent proxy): ~95-110s
-- PATH A (cle native Anthropic): estimee ~25-35s
-- Qualite validee: 3 dossiers (24-26K chars, 21-31 sections)
-- Instrumentation: timings stockes en DB par etape
-
-## Tests de non-regression
+## Tests
 - iteration_150: 16/16 PASS (post-endpoint admin-bypass)
 - iteration_151: 13/13 PASS (post-optimisation pipeline)
-- iteration_152: 10/10 PASS (post-fix analyse StrategiIA stockage)
+- iteration_152: 10/10 PASS (post-fix analyse stockage)
+- iteration_153: 8/8 PASS (post-fix PDF preview)
 
 ## Etat des services (Preview)
-- IA Anthropic : OK (Emergent fallback + pipeline multi-stage httpx)
+- IA Anthropic : OK (Emergent fallback multi-stage httpx)
 - Paiement Stripe : TEST MODE
 - Email Resend : OK (sandbox)
 - Stockage S3 : NON CONFIGURE
@@ -53,7 +43,8 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA i
 ### P0 : TERMINE
 - Consolidation architecture — DONE
 - Optimisation pipeline Dossier Express — DONE
-- Fix analyse StrategiIA non stockee en DB — DONE 29/03/2026
+- Fix analyse StrategiIA non stockee — DONE
+- Fix PDF StrategiIA inaccessible — DONE
 
 ### P1 : Cles de production
 - ANTHROPIC_API_KEY native (pipeline ~30s)
