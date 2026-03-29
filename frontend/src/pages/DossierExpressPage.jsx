@@ -227,12 +227,12 @@ export const DossierExpressPage = () => {
         }
       } catch {
         pollErrors++;
-        if (pollErrors >= 5) {
-          toast.error("Erreur de connexion persistante. L'analyse continue en arrière-plan — vérifiez votre email.");
+        if (pollErrors >= 8) {
+          toast.error("Connexion interrompue. Restez sur cette page, nous tentons de reconnecter automatiquement.");
           clearInterval(interval);
         }
       }
-    }, 5000);
+    }, 3000);
     return () => clearInterval(interval);
   }, [dossierId, step]);
 
@@ -1006,7 +1006,7 @@ export const DossierExpressPage = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <span className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                         <Clock className="w-3 h-3 text-accent/60" />
-                        Durée estimée : 2 à 4 minutes
+                        Durée estimée : 1 à 3 minutes
                       </span>
                       <span className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                         <Lock className="w-3 h-3 text-accent/60" />

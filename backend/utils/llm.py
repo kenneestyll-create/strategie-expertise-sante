@@ -25,14 +25,14 @@ async def check_llm_health() -> dict:
     return {"native_anthropic": native, "emergent_key": emergent, "mode": mode}
 
 
-def llm_sync_call(api_key, session_id, system_message, user_text, provider, model):
+def llm_sync_call(api_key, session_id, system_message, user_text, provider, model, max_tokens=6000):
     """Run LLM call synchronously. Native Anthropic SDK if key available."""
     import anthropic
     if api_key:
         client = anthropic.Anthropic(api_key=api_key)
         response = client.messages.create(
             model=model,
-            max_tokens=6000,
+            max_tokens=max_tokens,
             system=system_message,
             messages=[{"role": "user", "content": user_text}],
         )
@@ -166,11 +166,11 @@ Commence directement par ## Angles potentiellement sous-exploites."""
     return part1.strip() + "\n\n" + part2.strip()
 
 
-async def llm_call(api_key, session_id, system_message, user_text, provider, model):
+async def llm_call(api_key, session_id, system_message, user_text, provider, model, max_tokens=6000):
     """Unified LLM call — native Anthropic in thread if key, else Emergent async fallback."""
     if api_key:
         return await asyncio.to_thread(
-            llm_sync_call, api_key, session_id, system_message, user_text, provider, model
+            llm_sync_call, api_key, session_id, system_message, user_text, provider, model, max_tokens
         )
     if EMERGENT_LLM_KEY:
         return await llm_async_call(session_id, system_message, user_text, model)

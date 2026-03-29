@@ -189,7 +189,10 @@ async def _update_dossier_step(dossier_id: str, processing_step: str, delivery_s
 # _generate_dossier_report_multistage -> imported from utils/llm.py
 
 async def _process_dossier_express(dossier_id: str, email: str, name: str, situation: str, type_dossier: str, regime: str, documents_text: str, premium_pdf: bool = False):
-    """Full pipeline with granular step tracking and fail-safe notifications."""
+    """Full pipeline with granular step tracking, timing instrumentation, and fail-safe notifications."""
+    import time
+    t_start = time.monotonic()
+    timings = {}
     logger.info(f"[DOSSIER_EXPRESS][{dossier_id}][START] email={email} type={type_dossier} regime={regime} premium_pdf={premium_pdf}")
 
     # === STEP 1: Documents received ===
@@ -203,7 +206,8 @@ async def _process_dossier_express(dossier_id: str, email: str, name: str, situa
         await _notify_client_delay(email, name, "Dossier Express IA")
         return
 
-    # === STEP 3: Extraction / reading documents ===
+    # === STEP 3: Context preparation ===
+    t_ctx = time.monotonic()
     await _update_dossier_step(dossier_id, "extraction_en_cours", "en_attente_traitement", {"progress_step": "reading"})
 
     similar_cases = []
@@ -219,14 +223,19 @@ async def _process_dossier_express(dossier_id: str, email: str, name: str, situa
         for c in similar_cases:
             case_context += f"- Type: {c.get('type_dossier')}, Regime: {c.get('regime')}, Strategie: {c.get('strategie')}, Resultat: {c.get('resultat')}\n"
 
-    # === STEP 4: AI Generation (multi-stage pipeline) ===
+    timings["context_prep"] = round(time.monotonic() - t_ctx, 2)
+
+    # === STEP 4: AI Generation ===
+    t_llm = time.monotonic()
     await _update_dossier_step(dossier_id, "analyse_ia", "en_attente_traitement", {"progress_step": "analyzing"})
 
     analysis = None
     last_error = ""
+    llm_path_used = "none"
 
-    # PATH A: Native Anthropic SDK (no proxy timeout — single call)
+    # PATH A: Native Anthropic SDK — single direct call, no proxy, no batching
     if ANTHROPIC_API_KEY:
+        llm_path_used = "native_anthropic"
         user_msg = f"""DOSSIER EXPRESS IA - Analyse complete demandee
 
 Client : {name}
@@ -237,45 +246,52 @@ DESCRIPTION DE LA SITUATION :
 {situation}
 
 CONTENU DES DOCUMENTS FOURNIS :
-{documents_text[:8000] if documents_text else "(Aucun document textuel fourni)"}
+{documents_text[:12000] if documents_text else "(Aucun document textuel fourni)"}
 {case_context}
 
 {DOSSIER_EXPRESS_PROMPT}"""
+
+        # Step updates during single call for UX feedback
+        await _update_dossier_step(dossier_id, "analyse_ia", "en_attente_traitement", {"progress_step": "analyzing_1"})
 
         for attempt in range(3):
             try:
                 session_id_llm = f"dexpress_{dossier_id[:8]}_{attempt}"
                 analysis = await llm_call(
-                    ANTHROPIC_API_KEY, session_id_llm, DOSSIER_EXPRESS_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
+                    ANTHROPIC_API_KEY, session_id_llm, DOSSIER_EXPRESS_SYSTEM_PROMPT, user_msg,
+                    "anthropic", "claude-sonnet-4-5-20250929", max_tokens=8000
                 )
-                logger.info(f"Dossier Express IA {dossier_id}: analyse native reussie (tentative {attempt+1})")
+                logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] PATH A native reussie (tentative {attempt+1}, {len(analysis or '')} chars)")
                 break
             except Exception as e:
                 last_error = str(e)
-                logger.warning(f"Dossier Express IA {dossier_id}: native tentative {attempt+1}/3 echouee: {last_error[:120]}")
+                logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}] PATH A native tentative {attempt+1}/3 echouee: {last_error[:120]}")
                 if attempt < 2:
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(3)
 
     # PATH B: Emergent proxy — multi-stage pipeline (handles 60s timeout structurally)
     if not analysis and EMERGENT_LLM_KEY:
+        llm_path_used = "emergent_multistage"
         for attempt in range(2):
             try:
                 analysis = await _generate_dossier_report_multistage(
                     dossier_id, name, type_dossier, regime, situation, documents_text, case_context
                 )
-                logger.info(f"Dossier Express IA {dossier_id}: multi-stage reussie (tentative {attempt+1})")
+                logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] PATH B multi-stage reussie (tentative {attempt+1})")
                 break
             except Exception as e:
                 last_error = str(e)
-                logger.warning(f"Dossier Express IA {dossier_id}: multi-stage tentative {attempt+1}/2 echouee: {last_error[:150]}")
+                logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}] PATH B multi-stage tentative {attempt+1}/2 echouee: {last_error[:150]}")
                 if attempt < 1:
                     await asyncio.sleep(8)
+
+    timings["llm_generation"] = round(time.monotonic() - t_llm, 2)
 
     if not analysis:
         error_label = "Echec generation IA"
         if "budget" in last_error.lower() or "exceeded" in last_error.lower():
             error_label = "Budget IA epuise"
-        logger.error(f"Dossier Express IA {dossier_id}: toutes les tentatives ont echoue: {last_error[:200]}")
+        logger.error(f"[DOSSIER_EXPRESS][{dossier_id}] ECHEC TOTAL: {last_error[:200]}")
         await _update_dossier_step(dossier_id, "erreur_ia", "incident_technique", {"status": "error", "error": error_label})
         await _notify_admin_incident(dossier_id, email, name, "Dossier Express IA", "Generation IA", f"{error_label}: {last_error[:300]}")
         await _notify_client_delay(email, name, "Dossier Express IA")
@@ -283,13 +299,14 @@ CONTENU DES DOCUMENTS FOURNIS :
 
     # Validate analysis is substantial
     if len(analysis.strip()) < 500:
-        logger.error(f"Dossier Express IA {dossier_id}: analyse trop courte ({len(analysis)} chars)")
+        logger.error(f"[DOSSIER_EXPRESS][{dossier_id}] analyse trop courte ({len(analysis)} chars)")
         await _update_dossier_step(dossier_id, "erreur_ia", "incident_technique", {"status": "error", "error": "Analyse insuffisante"})
         await _notify_admin_incident(dossier_id, email, name, "Dossier Express IA", "Validation analyse", f"Analyse trop courte: {len(analysis)} caracteres")
         await _notify_client_delay(email, name, "Dossier Express IA")
         return
 
     # === STEP 5: PDF Generation ===
+    t_pdf = time.monotonic()
     await _update_dossier_step(dossier_id, "pdf_en_cours", "en_attente_traitement", {"progress_step": "generating", "analysis": analysis[:30000]})
 
     dossier_doc = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0, "document_details": 1})
@@ -300,15 +317,17 @@ CONTENU DES DOCUMENTS FOURNIS :
         pdf_bytes = generate_dossier_pdf(name, email, type_dossier, regime, analysis, premium_pdf=premium_pdf, document_details=doc_details)
         if not pdf_bytes or len(pdf_bytes) < 100:
             raise ValueError("PDF vide ou corrompu")
-        logger.info(f"Dossier Express {dossier_id}: PDF genere ({len(pdf_bytes)} bytes)")
+        logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] PDF genere ({len(pdf_bytes)} bytes)")
     except Exception as e:
-        logger.error(f"Dossier Express {dossier_id}: PDF generation failed: {e}")
+        logger.error(f"[DOSSIER_EXPRESS][{dossier_id}] PDF generation failed: {e}")
         await _update_dossier_step(dossier_id, "erreur_pdf", "incident_technique", {"status": "error", "error": "Echec generation PDF"})
         await _notify_admin_incident(dossier_id, email, name, "Dossier Express IA", "Generation PDF", str(e)[:300])
         await _notify_client_delay(email, name, "Dossier Express IA")
         return
+    timings["pdf_generation"] = round(time.monotonic() - t_pdf, 2)
 
     # === STEP 6: Storage ===
+    t_storage = time.monotonic()
     await _update_dossier_step(dossier_id, "stockage_en_cours", "en_attente_traitement", {"progress_step": "generating"})
 
     download_token = str(uuid.uuid4())
@@ -328,8 +347,10 @@ CONTENU DES DOCUMENTS FOURNIS :
         logger.error(f"[DOSSIER_EXPRESS][{dossier_id}] PDF storage upload failed (non-blocking): {e}")
         # S3 failure is NOT fatal — PDF exists in memory, continue with email + admin registration
         await _notify_admin_incident(dossier_id, email, name, "Dossier Express IA", "Stockage PDF", str(e)[:300])
+    timings["storage"] = round(time.monotonic() - t_storage, 2)
 
     # === STEP 7: Email delivery ===
+    t_email = time.monotonic()
     await _update_dossier_step(dossier_id, "email_en_cours", "en_attente_traitement", {"progress_step": "sending"})
 
     expert_url = f"{SITE_URL}/contact?via=email&source=dossier_express"
@@ -424,6 +445,10 @@ CONTENU DES DOCUMENTS FOURNIS :
             await _notify_admin_incident(dossier_id, email, name, "Dossier Express IA", "Envoi email", str(e)[:300])
 
     # === STEP 8: Final — mark as delivered ===
+    timings["email"] = round(time.monotonic() - t_email, 2)
+    t_total = round(time.monotonic() - t_start, 2)
+    timings["total"] = t_total
+
     final_delivery = "livre_client" if email_sent else "genere_sans_email"
     final_step = "termine" if email_sent else "erreur_email"
     await _update_dossier_step(dossier_id, final_step, final_delivery, {
@@ -431,7 +456,12 @@ CONTENU DES DOCUMENTS FOURNIS :
         "email_sent": email_sent,
         "completed_at": datetime.now(timezone.utc).isoformat(),
         "progress_step": "completed",
+        "timings": timings,
+        "llm_path": llm_path_used,
+        "analysis_chars": len(analysis),
     })
+
+    logger.info(f"[DOSSIER_EXPRESS][{dossier_id}][COMPLETE] path={llm_path_used} total={t_total}s | context={timings.get('context_prep',0)}s llm={timings.get('llm_generation',0)}s pdf={timings.get('pdf_generation',0)}s storage={timings.get('storage',0)}s email={timings.get('email',0)}s | chars={len(analysis)} pdf={len(pdf_bytes)}B")
 
     if not email_sent:
         # Partial success — PDF exists but email failed. Notify client via fallback
