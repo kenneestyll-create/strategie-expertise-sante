@@ -1022,11 +1022,9 @@ CONTENU DES DOCUMENTS FOURNIS :
         }})
         logger.info(f"Dossier Express {dossier_id}: PDF uploaded to storage")
     except Exception as e:
-        logger.error(f"Dossier Express {dossier_id}: PDF storage upload failed: {e}")
-        await _update_dossier_step(dossier_id, "erreur_stockage", "incident_technique", {"status": "error", "error": "Echec stockage PDF"})
+        logger.error(f"[DOSSIER_EXPRESS][{dossier_id}] PDF storage upload failed (non-blocking): {e}")
+        # S3 failure is NOT fatal — PDF exists in memory, continue with email + admin registration
         await _notify_admin_incident(dossier_id, email, name, "Dossier Express IA", "Stockage PDF", str(e)[:300])
-        await _notify_client_delay(email, name, "Dossier Express IA")
-        return
 
     # === STEP 7: Email delivery ===
     await _update_dossier_step(dossier_id, "email_en_cours", "en_attente_traitement", {"progress_step": "sending"})
@@ -1447,20 +1445,59 @@ _SYSTEM_COMPACT = """Tu es StrategiIA, copilote strategique de Strategie & Exper
 
 
 async def _llm_async_call(session_id, system_message, user_text, model):
-    """Async LLM call via Emergent Universal Key. Parallelized split for premium to stay under 60s proxy timeout."""
-    is_premium = "PILOTAGE STRATEGIQUE APPROFONDI" in user_text or len(user_text) > 4000
+    """Async LLM call via Emergent Universal Key. Service-aware split to handle 60s proxy timeout."""
+    is_strategiia_premium = "PILOTAGE STRATEGIQUE APPROFONDI" in user_text
+    is_dossier_express = "DOSSIER EXPRESS IA" in user_text or "PRE-EXPERTISE DOCUMENTAIRE" in user_text
 
-    if not is_premium:
-        # Short analysis — single streaming call with full prompts
+    if not is_strategiia_premium and not is_dossier_express:
+        # StrategiIA basic — lightweight single call
         msgs = [{"role": "system", "content": system_message}, {"role": "user", "content": user_text}]
         result = await _llm_stream_call(msgs, model, max_tokens=3000)
         if not result.strip():
             raise Exception("Réponse LLM vide")
         return result
 
-    # Premium analysis — 2 PARALLEL calls (no dependency between them)
-    # Each gets the full situation but only generates its assigned sections
-    situation_block = user_text[:2000]  # Situation + case context (truncated to stay light)
+    if is_dossier_express:
+        # DOSSIER EXPRESS — split into 2 parallel calls with Dossier Express-specific sections
+        # Extract the situation from the user_text
+        situation_block = user_text[:2500]  # Contains client info, situation, documents
+
+        de_part1 = f"""{situation_block}
+
+Redige un rapport de PRE-EXPERTISE DOCUMENTAIRE pour Dossier Express IA.
+INSTRUCTION : Genere UNIQUEMENT les sections suivantes.
+## Synthese du dossier (8-10 lignes, resume la situation, les pieces, les enjeux)
+## Analyse des pieces transmises (inventaire, pertinence, coherence documentaire)
+## Cadre juridique applicable (articles de loi, tableaux MP, jurisprudences pertinentes)
+## Points forts du dossier (elements favorables, preuve solide)
+## Points de vigilance et pieces manquantes (lacunes, risques, documents a obtenir)
+Commence directement par ## Synthese du dossier."""
+
+        de_part2 = f"""{situation_block}
+
+Suite du rapport de PRE-EXPERTISE DOCUMENTAIRE pour Dossier Express IA.
+INSTRUCTION : Genere UNIQUEMENT les sections suivantes.
+## Strategie recommandee (orientation, recours, demarches prioritaires)
+## Estimation des prejudices (si applicable : IP, PGPF, DFT, souffrances endurees)
+## Plan d action detaille (5-7 actions numerotees avec delais concrets)
+## Conclusion et recommandation finale (4-5 lignes, ton professionnel et rassurant)
+Commence directement par ## Strategie recommandee."""
+
+        de_sys = "Tu es l'expert Dossier Express IA de Strategie & Expertise Sante. Specialise en analyse documentaire de dossiers de maladies professionnelles et accidents du travail. Reponds en francais. Cite textes de loi et jurisprudences. Sois precis et exhaustif."
+
+        p1 = await _llm_stream_call([{"role": "system", "content": de_sys}, {"role": "user", "content": de_part1}], model, max_tokens=3000)
+        if not p1.strip():
+            raise Exception("Réponse LLM vide (Dossier Express partie 1)")
+        logger.info(f"[DOSSIER_EXPRESS][{session_id}] Part1 OK — {len(p1)} chars")
+        await asyncio.sleep(2)  # Brief pause to avoid proxy concurrency limit
+        p2 = await _llm_stream_call([{"role": "system", "content": de_sys}, {"role": "user", "content": de_part2}], model, max_tokens=3000)
+        if not p2.strip():
+            raise Exception("Réponse LLM vide (Dossier Express partie 2)")
+        logger.info(f"[DOSSIER_EXPRESS][{session_id}] Part2 OK — {len(p2)} chars, TOTAL={len(p1)+len(p2)} chars")
+        return p1.strip() + "\n\n" + p2.strip()
+
+    # STRATEGIIA PREMIUM — 2 PARALLEL calls
+    situation_block = user_text[:2000]
 
     part1_prompt = f"""{situation_block}
 
@@ -1488,7 +1525,6 @@ Commence directement par ## Angles potentiellement sous-exploites."""
     msgs1 = [{"role": "system", "content": _SYSTEM_COMPACT}, {"role": "user", "content": part1_prompt}]
     msgs2 = [{"role": "system", "content": _SYSTEM_COMPACT}, {"role": "user", "content": part2_prompt}]
 
-    # Run BOTH calls in parallel
     part1, part2 = await asyncio.gather(
         _llm_stream_call(msgs1, model, max_tokens=3000),
         _llm_stream_call(msgs2, model, max_tokens=2500),
@@ -1498,7 +1534,7 @@ Commence directement par ## Angles potentiellement sous-exploites."""
         raise Exception("Réponse LLM vide (partie 1)")
     if not part2.strip():
         raise Exception("Réponse LLM vide (partie 2)")
-    logger.info(f"StrategiIA {session_id}: Parallel OK — Part1={len(part1)} chars, Part2={len(part2)} chars")
+    logger.info(f"[STRATEGIIA][{session_id}] Parallel OK — Part1={len(part1)} chars, Part2={len(part2)} chars")
 
     return part1.strip() + "\n\n" + part2.strip()
 
