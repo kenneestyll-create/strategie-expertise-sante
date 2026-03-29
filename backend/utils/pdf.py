@@ -21,7 +21,6 @@ _STRIP_PATTERNS = [
     re.compile(r'(?i)strategie-expertise-sante\.fr.*$'),
     re.compile(r'(?i)preview\.emergentagent\.com.*$'),
     re.compile(r'^---+$'),
-    # Strip LLM-generated closing phrase (it's hardcoded in the PDF template)
     re.compile(r'(?i)^\W*vous\s+n.{0,3}tes\s+plus\s+seul'),
     re.compile(r'(?i)^\W*d.sormais.*devient\s+votre\s+bouclier'),
     re.compile(r'(?i)^\W*et\s+maintenant\s*\??'),
@@ -53,18 +52,47 @@ def _clean_analysis(text: str) -> str:
 
 
 # ── Premium color palette ──
-_BLACK = (26, 26, 26)        # #1A1A1A
-_GOLD = (201, 168, 76)       # #C9A84C
+_BLACK = (26, 26, 26)
+_GOLD = (201, 168, 76)
 _GOLD_LIGHT = (218, 195, 130)
-_IVORY = (250, 248, 243)     # warm cream
+_GOLD_SUBTLE = (235, 225, 200)
+_IVORY = (250, 248, 243)
+_IVORY_WARM = (247, 244, 237)
 _DARK_TEXT = (35, 35, 35)
 _BODY_TEXT = (55, 55, 55)
 _MUTED = (130, 125, 118)
 _LIGHT_LINE = (220, 215, 205)
+# StrategiIA accent — deep warm black with gold highlights
+_STRAT_ACCENT = (45, 38, 28)
+_STRAT_BG = (252, 250, 246)
+# Dossier Express accent — authoritative navy
+_DE_ACCENT = (26, 35, 58)
+_DE_ACCENT_LIGHT = (42, 55, 85)
+_DE_BG = (245, 247, 252)
 
 
 def _safe(text: str) -> str:
     return text.encode("latin-1", "replace").decode("latin-1")
+
+
+def _detect_vigilance_level(analysis: str) -> tuple:
+    """Detect the sensitivity level of a dossier from analysis content."""
+    text = analysis.lower()
+    high_kw = ["faute inexcusable", "contentieux", "tribunal", "expertise judiciaire",
+               "recours", "contestation", "urgence", "danger", "amiante", "deces",
+               "mesotheliome", "cancer", "incapacite permanente", "licenciement",
+               "inaptitude", "refus cpam", "refus cra"]
+    med_kw = ["expertise medicale", "consolidation", "rechute", "aggravation",
+              "ipp", "rente", "prejudice", "indemnisation", "sous-evalue",
+              "taux conteste", "prolongation", "mi-temps therapeutique"]
+    high_count = sum(1 for kw in high_kw if kw in text)
+    med_count = sum(1 for kw in med_kw if kw in text)
+    if high_count >= 3:
+        return ("Vigilance elevee", 3, "Ce dossier presente des enjeux significatifs qui meritent une attention prioritaire.")
+    elif high_count >= 1 or med_count >= 3:
+        return ("Attention soutenue", 2, "Plusieurs elements de ce dossier necessitent une analyse approfondie.")
+    else:
+        return ("Suivi recommande", 1, "Ce dossier contient des elements a structurer pour securiser votre situation.")
 
 
 def generate_secured_pdf(
@@ -87,62 +115,81 @@ def generate_secured_pdf(
     year = datetime.now().year
     analysis = _clean_analysis(analysis)
 
-    LM = 16   # left margin
-    RM = 16   # right margin
-    CW = 210 - LM - RM   # content width = 178mm
+    is_strategiia = "strategi" in report_type.lower()
+    is_dossier_express = not is_strategiia
+
+    # Service-specific identity
+    if is_strategiia:
+        accent = _STRAT_ACCENT
+        accent_light = _GOLD_LIGHT
+        service_label = "Analyse Strategique Premium"
+        service_tagline = "Regard expert sur votre situation"
+    else:
+        accent = _DE_ACCENT
+        accent_light = _DE_ACCENT_LIGHT
+        service_label = "Pre-analyse Documentaire"
+        service_tagline = "Etude structuree de vos pieces"
+
+    LM = 16
+    RM = 16
+    CW = 210 - LM - RM
 
     class PremiumPDF(FPDF):
         def header(self):
-            # ── Elegant dark header band ──
+            # Dark header band
             self.set_fill_color(*_BLACK)
-            self.rect(0, 0, 210, 22, "F")
+            self.rect(0, 0, 210, 23, "F")
 
-            # Gold accent line
+            # Service-specific accent line
             self.set_fill_color(*_GOLD)
-            self.rect(0, 22, 210, 0.6, "F")
+            self.rect(0, 23, 210, 0.7, "F")
 
-            # Shield logo (left)
+            # Logo
             if os.path.isfile(_LOGO_PATH):
-                self.image(_LOGO_PATH, LM, 3, 9, 9)
-                text_x = LM + 11
+                self.image(_LOGO_PATH, LM, 3.5, 9, 9)
+                text_x = LM + 12
             else:
                 text_x = LM
 
-            # Left: brand name
+            # Brand name
             self.set_text_color(255, 255, 255)
             self.set_font("Helvetica", "B", 11)
-            self.set_xy(text_x, 4)
+            self.set_xy(text_x, 4.5)
             self.cell(80, 5, "Strategie & Expertise Sante")
-            # Subtitle
+            # Pioneer line
             self.set_font("Helvetica", "", 6.5)
             self.set_text_color(*_GOLD_LIGHT)
-            self.set_xy(text_x, 10)
+            self.set_xy(text_x, 10.5)
             self.cell(80, 4, "PIONNIER EN FRANCE")
 
-            # Right: date & report number
+            # Right: date, number, service badge
             self.set_font("Helvetica", "", 7)
             self.set_text_color(180, 180, 180)
-            self.set_xy(-RM - 60, 5)
-            self.cell(60, 4, gen_date, align="R")
-            self.set_xy(-RM - 60, 10)
+            self.set_xy(-RM - 65, 4)
+            self.cell(65, 4, gen_date, align="R")
             self.set_text_color(*_GOLD_LIGHT)
-            self.cell(60, 4, report_number, align="R")
+            self.set_xy(-RM - 65, 8.5)
+            self.cell(65, 4, report_number, align="R")
+            # Service type badge
+            self.set_font("Helvetica", "B", 5.5)
+            self.set_text_color(200, 200, 200)
+            self.set_xy(-RM - 65, 14)
+            self.cell(65, 4, _safe(service_label.upper()), align="R")
 
-            # Reset position
-            self.set_xy(LM, 26)
+            self.set_xy(LM, 27)
 
         def footer(self):
-            self.set_y(-12)
+            self.set_y(-13)
             # Gold thin line
             self.set_draw_color(*_GOLD)
             self.set_line_width(0.3)
             self.line(LM, self.get_y(), 210 - RM, self.get_y())
-            self.ln(2)
+            self.ln(2.5)
             self.set_font("Helvetica", "", 6)
             self.set_text_color(*_MUTED)
             self.cell(
                 CW, 4,
-                f"(c) {year} Strategie & Expertise Sante  --  strategie-expertise-sante.fr  --  Document confidentiel",
+                f"(c) {year} Strategie & Expertise Sante  |  strategie-expertise-sante.fr  |  Document confidentiel",
                 align="C",
             )
 
@@ -160,7 +207,7 @@ def generate_secured_pdf(
             self.set_xy(sx, sy)
 
     pdf = PremiumPDF()
-    pdf.set_auto_page_break(auto=True, margin=16)
+    pdf.set_auto_page_break(auto=True, margin=18)
     pdf.set_left_margin(LM)
     pdf.set_right_margin(RM)
     pdf.add_page()
@@ -168,129 +215,108 @@ def generate_secured_pdf(
     # ── Client info bar ──
     y = pdf.get_y()
     pdf.set_fill_color(*_IVORY)
-    pdf.rect(LM, y, CW, 10, "F")
-    pdf.set_xy(LM + 4, y + 2)
-    pdf.set_font("Helvetica", "B", 7.5)
+    pdf.rect(LM, y, CW, 12, "F")
+    # Left accent bar
+    if is_strategiia:
+        pdf.set_fill_color(*_GOLD)
+    else:
+        pdf.set_fill_color(*_DE_ACCENT)
+    pdf.rect(LM, y, 2, 12, "F")
+
+    pdf.set_xy(LM + 6, y + 2)
+    pdf.set_font("Helvetica", "B", 8)
     pdf.set_text_color(*_DARK_TEXT)
     safe_name = _safe(name or email or "Client")
-    pdf.cell(50, 3, safe_name)
+    pdf.cell(60, 4, safe_name)
+
+    # Client metadata
     pdf.set_font("Helvetica", "", 7)
     pdf.set_text_color(*_MUTED)
     safe_td = _safe(type_dossier or "")
     safe_reg = _safe(regime or "")
-    info_parts = [p for p in [safe_td, safe_reg, gen_date] if p]
-    pdf.cell(0, 3, "  |  ".join(info_parts))
-    pdf.set_xy(LM + 4, y + 6)
+    info_parts = [p for p in [safe_td, safe_reg] if p]
+    if info_parts:
+        pdf.cell(0, 4, "  |  ".join(info_parts))
+
+    pdf.set_xy(LM + 6, y + 7)
     pdf.set_font("Helvetica", "", 6.5)
-    pdf.set_text_color(*_GOLD)
+    if is_strategiia:
+        pdf.set_text_color(*_GOLD)
+    else:
+        pdf.set_text_color(*_DE_ACCENT)
     safe_rt = _safe(report_type)
-    pdf.cell(0, 3, f"Rapport {safe_rt}")
-    pdf.set_xy(LM, y + 12)
+    pdf.cell(60, 3, f"Rapport {safe_rt}")
+    pdf.set_text_color(*_MUTED)
+    pdf.cell(0, 3, f"  |  {gen_date}")
+    pdf.set_xy(LM, y + 14)
 
     # ── Relecture expert badge ──
     if relecture_expert:
         ry = pdf.get_y()
-        pdf.set_fill_color(26, 26, 46)  # dark navy
-        pdf.rect(LM, ry, CW, 8, "F")
-        pdf.set_xy(LM + 4, ry + 1.5)
+        pdf.set_fill_color(26, 26, 46)
+        pdf.rect(LM, ry, CW, 9, "F")
+        pdf.set_fill_color(*_GOLD)
+        pdf.rect(LM, ry, 2, 9, "F")
+        pdf.set_xy(LM + 6, ry + 2)
         pdf.set_font("Helvetica", "BI", 7)
         pdf.set_text_color(*_GOLD)
         pdf.cell(0, 5, _safe("Document relu et finalise dans le cadre de l'option Relecture expert personnalisee"))
-        pdf.set_xy(LM, ry + 8)
+        pdf.set_xy(LM, ry + 11)
 
-    pdf.ln(2)
+    pdf.ln(3)
 
-    # ── Render analysis content with premium typography ──
-    def section_title(text):
-        pdf.ln(3)
-        # Gold left accent
-        sy = pdf.get_y()
+    # ══════════════════════════════════════════════════════════════
+    # StrategiIA: Vigilance Level Indicator
+    # ══════════════════════════════════════════════════════════════
+    if is_strategiia:
+        level_label, level_num, level_desc = _detect_vigilance_level(analysis)
+        vy = pdf.get_y()
+        box_h = 16
+        pdf.set_fill_color(*_STRAT_BG)
+        pdf.rect(LM, vy, CW, box_h, "F")
         pdf.set_fill_color(*_GOLD)
-        pdf.rect(LM, sy, 2, 5.5, "F")
-        pdf.set_x(LM + 5)
-        pdf.set_font("Helvetica", "B", 9.5)
-        pdf.set_text_color(*_BLACK)
-        pdf.cell(CW - 5, 5.5, _safe(text))
-        pdf.ln(7)
+        pdf.rect(LM, vy, CW, 0.4, "F")
+        pdf.rect(LM, vy + box_h - 0.4, CW, 0.4, "F")
 
-    def sub_title(text):
-        pdf.ln(1.5)
+        # Label
+        pdf.set_xy(LM + 5, vy + 2)
+        pdf.set_font("Helvetica", "B", 7)
+        pdf.set_text_color(*_MUTED)
+        pdf.cell(30, 3.5, "NIVEAU DE VIGILANCE")
+
+        # Gauge dots
+        dot_x = LM + 5
+        dot_y = vy + 7
+        dot_r = 2.2
+        for i in range(3):
+            if i < level_num:
+                pdf.set_fill_color(*_GOLD)
+            else:
+                pdf.set_fill_color(*_GOLD_SUBTLE)
+            pdf.ellipse(dot_x + i * 8, dot_y, dot_r * 2, dot_r * 2, "F")
+
+        # Level text
+        pdf.set_xy(dot_x + 28, vy + 6.5)
         pdf.set_font("Helvetica", "B", 8.5)
         pdf.set_text_color(*_DARK_TEXT)
-        pdf.set_x(LM)
-        pdf.cell(CW, 5, _safe(text))
-        pdf.ln(5.5)
+        pdf.cell(40, 4, _safe(level_label))
 
-    def body_text(text):
-        pdf.set_font("Helvetica", "", 8)
+        # Description
+        pdf.set_xy(dot_x + 28, vy + 11)
+        pdf.set_font("Helvetica", "I", 6.5)
         pdf.set_text_color(*_BODY_TEXT)
-        pdf.set_x(LM)
-        pdf.multi_cell(CW, 4, _safe(text))
-        pdf.ln(0.5)
+        pdf.cell(CW - 40, 3.5, _safe(level_desc))
 
-    def bullet_text(text):
-        pdf.set_font("Helvetica", "", 8)
-        pdf.set_text_color(*_BODY_TEXT)
-        pdf.set_x(LM + 4)
-        # Gold bullet
-        bx, by = pdf.get_x(), pdf.get_y() + 1.5
-        pdf.set_fill_color(*_GOLD)
-        pdf.rect(bx - 3, by, 1.2, 1.2, "F")
-        pdf.multi_cell(CW - 6, 4, _safe(text))
-        pdf.ln(0.3)
+        pdf.set_xy(LM, vy + box_h + 4)
 
-    def bold_text(text):
-        pdf.set_font("Helvetica", "B", 8)
-        pdf.set_text_color(*_DARK_TEXT)
-        pdf.set_x(LM)
-        pdf.multi_cell(CW, 4, _safe(text))
-        pdf.ln(0.5)
-
-    def italic_text(text):
-        pdf.set_font("Helvetica", "I", 7.5)
-        pdf.set_text_color(*_MUTED)
-        pdf.set_x(LM)
-        pdf.multi_cell(CW, 3.8, _safe(text))
-        pdf.ln(0.5)
-
-    def gold_separator():
-        sep_y = pdf.get_y()
-        pdf.set_draw_color(*_GOLD)
-        pdf.set_line_width(0.3)
-        pdf.line(LM + 20, sep_y, LM + CW - 20, sep_y)
-        pdf.ln(3)
-
-    for line in analysis.split("\n"):
-        stripped = line.strip()
-        if not stripped:
-            pdf.ln(1.5)
-            continue
-        if stripped == "---" or stripped == "***":
-            gold_separator()
-        elif stripped.startswith("# "):
-            section_title(stripped[2:])
-        elif stripped.startswith("## "):
-            section_title(stripped[3:])
-        elif stripped.startswith("### "):
-            sub_title(stripped[4:])
-        elif stripped.startswith("- ") or stripped.startswith("* "):
-            bullet_text(stripped[2:])
-        elif stripped.startswith("**") and stripped.endswith("**"):
-            bold_text(stripped.strip("*"))
-        elif (stripped.startswith("*") and stripped.endswith("*") and not stripped.startswith("**")):
-            italic_text(stripped.strip("*"))
-        elif re.match(r'^\d+\.\s', stripped):
-            bullet_text(stripped)
-        else:
-            body_text(stripped)
-
-    # ── Base documentaire prise en compte ──
-    if document_details:
+    # ══════════════════════════════════════════════════════════════
+    # Dossier Express: Document Summary Compact
+    # ══════════════════════════════════════════════════════════════
+    if is_dossier_express and document_details:
         total_docs = len(document_details)
         total_pages = sum(d.get("pages", 0) for d in document_details)
         statuses = [d.get("status", "") for d in document_details]
 
-        # Readability level
         if all(s == "text_extracted" for s in statuses):
             level = "Excellente"
         elif all(s == "ocr_extracted" for s in statuses):
@@ -302,165 +328,418 @@ def generate_secured_pdf(
         else:
             level = "Limitee"
 
-        # Ensure enough space
-        space_doc = pdf.h - 16 - pdf.get_y()
-        if space_doc < 42:
-            pdf.add_page()
+        dy = pdf.get_y()
+        box_h = 14
+        pdf.set_fill_color(*_DE_BG)
+        pdf.rect(LM, dy, CW, box_h, "F")
+        pdf.set_fill_color(*_DE_ACCENT)
+        pdf.rect(LM, dy, 2, box_h, "F")
 
-        pdf.ln(5)
-        # Subtle separator
-        sep_y = pdf.get_y()
-        pdf.set_draw_color(*_LIGHT_LINE)
-        pdf.set_line_width(0.2)
-        pdf.line(LM + 10, sep_y, LM + CW - 10, sep_y)
-        pdf.ln(4)
+        # Title
+        pdf.set_xy(LM + 6, dy + 2)
+        pdf.set_font("Helvetica", "B", 7)
+        pdf.set_text_color(*_DE_ACCENT)
+        pdf.cell(50, 3.5, "BASE DOCUMENTAIRE EXPLOITEE")
 
-        # Title with gold accent
-        ty = pdf.get_y()
-        pdf.set_fill_color(*_GOLD)
-        pdf.rect(LM, ty, 1.5, 4.5, "F")
-        pdf.set_x(LM + 4)
+        # Metrics in a row
+        col_w = (CW - 12) / 3
+        metrics = [
+            (str(total_docs), "pieces analysees"),
+            (str(total_pages) if total_pages > 0 else "-", "pages exploitees"),
+            (level, "qualite d'extraction"),
+        ]
+        for i, (val, label) in enumerate(metrics):
+            cx = LM + 6 + col_w * i
+            pdf.set_xy(cx, dy + 7)
+            pdf.set_font("Helvetica", "B", 9)
+            pdf.set_text_color(*_DARK_TEXT)
+            pdf.cell(col_w, 4, _safe(val), align="C")
+            pdf.set_xy(cx, dy + 11)
+            pdf.set_font("Helvetica", "", 5.5)
+            pdf.set_text_color(*_MUTED)
+            pdf.cell(col_w, 2.5, _safe(label), align="C")
+
+        pdf.set_xy(LM, dy + box_h + 4)
+
+    # ══════════════════════════════════════════════════════════════
+    # Render analysis — enhanced typography
+    # ══════════════════════════════════════════════════════════════
+    section_count = 0
+
+    def section_title(text):
+        nonlocal section_count
+        section_count += 1
+        # Space before (more breathing)
+        if section_count > 1:
+            pdf.ln(5)
+            # Subtle separator between major sections
+            sep_y = pdf.get_y()
+            pdf.set_draw_color(*_LIGHT_LINE)
+            pdf.set_line_width(0.15)
+            pdf.line(LM + 5, sep_y, LM + CW - 5, sep_y)
+            pdf.ln(5)
+        else:
+            pdf.ln(3)
+
+        # Accent bar — service-specific color
+        sy = pdf.get_y()
+        if is_strategiia:
+            pdf.set_fill_color(*_GOLD)
+            bar_w = 2.5
+        else:
+            pdf.set_fill_color(*_DE_ACCENT)
+            bar_w = 2
+        pdf.rect(LM, sy, bar_w, 6.5, "F")
+
+        # Section title
+        pdf.set_x(LM + bar_w + 4)
+        pdf.set_font("Helvetica", "B", 10)
+        pdf.set_text_color(*_BLACK)
+        pdf.cell(CW - bar_w - 4, 6.5, _safe(text))
+        pdf.ln(9)
+
+    def sub_title(text):
+        pdf.ln(3)
+        pdf.set_font("Helvetica", "B", 8.5)
+        pdf.set_text_color(*_DARK_TEXT)
+        pdf.set_x(LM + 3)
+        pdf.cell(CW - 3, 5, _safe(text))
+        pdf.ln(6)
+
+    def body_text(text):
+        pdf.set_font("Helvetica", "", 8)
+        pdf.set_text_color(*_BODY_TEXT)
+        pdf.set_x(LM)
+        pdf.multi_cell(CW, 4.2, _safe(text), markdown=True)
+        pdf.ln(1)
+
+    def bullet_text(text):
+        pdf.set_font("Helvetica", "", 8)
+        pdf.set_text_color(*_BODY_TEXT)
+        pdf.set_x(LM + 5)
+        bx, by = pdf.get_x(), pdf.get_y() + 1.5
+        if is_strategiia:
+            pdf.set_fill_color(*_GOLD)
+        else:
+            pdf.set_fill_color(*_DE_ACCENT)
+        pdf.rect(bx - 3.5, by, 1.3, 1.3, "F")
+        pdf.multi_cell(CW - 7, 4.2, _safe(text), markdown=True)
+        pdf.ln(0.8)
+
+    def bold_text(text):
         pdf.set_font("Helvetica", "B", 8)
         pdf.set_text_color(*_DARK_TEXT)
-        pdf.cell(CW - 4, 4.5, _safe("Base documentaire prise en compte"))
-        pdf.ln(7)
+        pdf.set_x(LM)
+        pdf.multi_cell(CW, 4.2, _safe(text))
+        pdf.ln(1)
 
-        # Intro line
-        pdf.set_x(LM + 4)
-        pdf.set_font("Helvetica", "", 7)
+    def italic_text(text):
+        pdf.set_font("Helvetica", "I", 7.5)
+        pdf.set_text_color(*_MUTED)
+        pdf.set_x(LM)
+        pdf.multi_cell(CW, 4, _safe(text))
+        pdf.ln(1)
+
+    def callout_box(text, style="info"):
+        """Elegant callout box for key insights."""
+        pdf.ln(2)
+        by = pdf.get_y()
+        # Calculate height needed
+        pdf.set_font("Helvetica", "I", 7.5)
+        # Estimate lines needed
+        line_h = 3.8
+        text_w = CW - 14
+        safe_t = _safe(text)
+        n_lines = max(1, len(safe_t) / (text_w / 2.5))
+        box_h = max(10, n_lines * line_h + 6)
+
+        # Background
+        if is_strategiia:
+            pdf.set_fill_color(*_STRAT_BG)
+            pdf.set_fill_color(252, 250, 244)
+            bar_color = _GOLD
+        else:
+            pdf.set_fill_color(*_DE_BG)
+            bar_color = _DE_ACCENT
+
+        # Draw background rect, then write text, then adjust
+        pdf.set_fill_color(252, 250, 244) if is_strategiia else pdf.set_fill_color(*_DE_BG)
+        # We'll draw the box after knowing the height
+        start_y = pdf.get_y()
+        pdf.set_x(LM + 8)
+        pdf.set_font("Helvetica", "I", 7.5)
         pdf.set_text_color(*_BODY_TEXT)
-        pdf.multi_cell(CW - 8, 3.5, _safe(
-            "Ce rapport a ete etabli a partir des pieces transmises au moment de votre demande."
-        ))
+        bottom_before = pdf.get_y()
+        pdf.multi_cell(CW - 14, 3.8, safe_t, markdown=True)
+        end_y = pdf.get_y()
+        actual_h = end_y - start_y + 4
+
+        # Draw background behind text (on current page)
+        pdf.set_fill_color(252, 250, 244) if is_strategiia else pdf.set_fill_color(245, 247, 252)
+        # Can't draw behind already-written text in fpdf2, so skip background for now
+        # Just draw the accent bar
+        pdf.set_fill_color(*bar_color)
+        pdf.rect(LM + 3, start_y - 1, 1.5, actual_h + 2, "F")
         pdf.ln(2)
 
-        # Metrics row inside a light box
-        by = pdf.get_y()
-        box_h = 11
-        pdf.set_fill_color(*_IVORY)
-        pdf.rect(LM + 4, by, CW - 8, box_h, "F")
+    def gold_separator():
+        sep_y = pdf.get_y()
+        pdf.set_draw_color(*_GOLD)
+        pdf.set_line_width(0.3)
+        pdf.line(LM + 25, sep_y, LM + CW - 25, sep_y)
+        pdf.ln(4)
 
-        col_w = (CW - 8) / 3
-        for i, (label, value) in enumerate([
-            ("Documents analyses", str(total_docs)),
-            ("Pages exploitees", str(total_pages)),
-            ("Lisibilite documentaire", level),
-        ]):
-            cx = LM + 4 + col_w * i
-            pdf.set_xy(cx, by + 1.5)
-            pdf.set_font("Helvetica", "B", 8)
-            pdf.set_text_color(*_DARK_TEXT)
-            pdf.cell(col_w, 4, _safe(value), align="C")
-            pdf.set_xy(cx, by + 5.5)
-            pdf.set_font("Helvetica", "", 6)
-            pdf.set_text_color(*_MUTED)
-            pdf.cell(col_w, 3.5, _safe(label), align="C")
+    # Parse and render analysis
+    lines = analysis.split("\n")
+    i = 0
+    while i < len(lines):
+        stripped = lines[i].strip()
 
-        pdf.set_y(by + box_h + 3)
+        if not stripped:
+            pdf.ln(1.5)
+            i += 1
+            continue
 
-        # Reassurance note
-        pdf.set_x(LM + 4)
-        pdf.set_font("Helvetica", "I", 6.5)
+        if stripped == "---" or stripped == "***":
+            gold_separator()
+        elif stripped.startswith("# "):
+            section_title(stripped[2:])
+        elif stripped.startswith("## "):
+            section_title(stripped[3:])
+        elif stripped.startswith("### "):
+            sub_title(stripped[4:])
+        elif stripped.startswith("- ") or stripped.startswith("* "):
+            bullet_text(stripped[2:])
+        elif stripped.startswith("**") and stripped.endswith("**") and len(stripped) > 4:
+            # Full-line bold — check if it's a key insight
+            inner = stripped.strip("*").strip()
+            if any(kw in inner.lower() for kw in ["important", "attention", "essentiel", "cle", "crucial", "priorite"]):
+                callout_box(inner)
+            else:
+                bold_text(inner)
+        elif stripped.startswith("*") and stripped.endswith("*") and not stripped.startswith("**"):
+            italic_text(stripped.strip("*"))
+        elif re.match(r'^\d+\.\s', stripped):
+            bullet_text(stripped)
+        else:
+            body_text(stripped)
+
+        i += 1
+
+    # ══════════════════════════════════════════════════════════════
+    # Dossier Express: Detailed document table (if details available)
+    # ══════════════════════════════════════════════════════════════
+    if is_dossier_express and document_details and len(document_details) > 0:
+        space_doc = pdf.h - 18 - pdf.get_y()
+        if space_doc < 40:
+            pdf.add_page()
+
+        pdf.ln(6)
+        sep_y = pdf.get_y()
+        pdf.set_draw_color(*_LIGHT_LINE)
+        pdf.set_line_width(0.15)
+        pdf.line(LM + 10, sep_y, LM + CW - 10, sep_y)
+        pdf.ln(5)
+
+        # Title
+        ty = pdf.get_y()
+        pdf.set_fill_color(*_DE_ACCENT)
+        pdf.rect(LM, ty, 2, 5, "F")
+        pdf.set_x(LM + 5)
+        pdf.set_font("Helvetica", "B", 8.5)
+        pdf.set_text_color(*_DARK_TEXT)
+        pdf.cell(CW - 5, 5, _safe("Pieces analysees dans le cadre de cette etude"))
+        pdf.ln(8)
+
+        # Table header
+        col_widths = [90, 30, 50]
+        headers = ["Document", "Pages", "Extraction"]
+        hy = pdf.get_y()
+        pdf.set_fill_color(*_DE_BG)
+        pdf.rect(LM, hy, CW, 6, "F")
+        pdf.set_font("Helvetica", "B", 6.5)
+        pdf.set_text_color(*_DE_ACCENT)
+        cx = LM + 3
+        for j, (hdr, w) in enumerate(zip(headers, col_widths)):
+            pdf.set_xy(cx, hy + 1)
+            pdf.cell(w, 4, _safe(hdr))
+            cx += w
+        pdf.set_y(hy + 7)
+
+        # Table rows
+        for idx, doc in enumerate(document_details[:12]):
+            ry = pdf.get_y()
+            if ry > pdf.h - 25:
+                pdf.add_page()
+                ry = pdf.get_y()
+
+            if idx % 2 == 0:
+                pdf.set_fill_color(*_IVORY)
+                pdf.rect(LM, ry, CW, 5.5, "F")
+
+            pdf.set_font("Helvetica", "", 6.5)
+            pdf.set_text_color(*_BODY_TEXT)
+            cx = LM + 3
+            doc_name = doc.get("filename", doc.get("name", f"Document {idx+1}"))
+            if len(doc_name) > 45:
+                doc_name = doc_name[:42] + "..."
+            pdf.set_xy(cx, ry + 1)
+            pdf.cell(col_widths[0], 3.5, _safe(doc_name))
+            cx += col_widths[0]
+
+            pdf.set_xy(cx, ry + 1)
+            pages = doc.get("pages", "-")
+            pdf.cell(col_widths[1], 3.5, _safe(str(pages)), align="C")
+            cx += col_widths[1]
+
+            pdf.set_xy(cx, ry + 1)
+            status = doc.get("status", "")
+            status_label = {"text_extracted": "Texte natif", "ocr_extracted": "OCR", "failed": "Non lisible"}.get(status, "Traite")
+            pdf.cell(col_widths[2], 3.5, _safe(status_label))
+
+            pdf.set_y(ry + 5.5)
+
+        pdf.ln(2)
+        pdf.set_x(LM + 3)
+        pdf.set_font("Helvetica", "I", 6)
         pdf.set_text_color(*_MUTED)
-        pdf.multi_cell(CW - 8, 3.2, _safe(
+        pdf.multi_cell(CW - 6, 3, _safe(
             "Certaines pieces peuvent necessiter une relecture humaine complementaire "
             "lorsqu'elles sont scannees, manuscrites ou de qualite inegale."
         ))
-        pdf.ln(2)
+        pdf.ln(3)
 
-    # ── Et maintenant ? — Bloc de conversion stratégique en 3 parties ──
-    space = pdf.h - 16 - pdf.get_y()
-    if space < 80:
+    # ══════════════════════════════════════════════════════════════
+    # Service-specific closing section
+    # ══════════════════════════════════════════════════════════════
+    space = pdf.h - 18 - pdf.get_y()
+    if space < 75:
         pdf.add_page()
 
     pdf.ln(6)
 
-    # ── Titre de section "Et maintenant ?" ──
+    # Section title
     ty = pdf.get_y()
-    pdf.set_fill_color(*_GOLD)
+    if is_strategiia:
+        pdf.set_fill_color(*_GOLD)
+    else:
+        pdf.set_fill_color(*_DE_ACCENT)
     pdf.rect(LM, ty, 2.5, 7, "F")
     pdf.set_x(LM + 6)
     pdf.set_font("Helvetica", "B", 11)
     pdf.set_text_color(*_BLACK)
-    pdf.cell(CW - 6, 7, _safe("Et maintenant ?"))
-    pdf.ln(10)
+    if is_strategiia:
+        pdf.cell(CW - 6, 7, _safe("Votre situation, notre regard"))
+    else:
+        pdf.cell(CW - 6, 7, _safe("Ce que cette etude vous apporte"))
+    pdf.ln(11)
 
-    # ── Partie 1 : Cloture emotionnelle ──
+    # ── Part 1: Emotional close ──
     pdf.set_font("Helvetica", "I", 8.5)
     pdf.set_text_color(*_BODY_TEXT)
     pdf.set_x(LM)
-    pdf.multi_cell(CW, 4.2, _safe(
-        "Si vous lisez ces lignes, c'est que vous traversez une epreuve "
-        "que personne ne devrait affronter seul(e). Ce rapport a ete concu "
-        "pour poser un premier eclairage clair et structure sur votre situation. "
-        "C'est deja un pas important."
-    ))
-    pdf.ln(3)
+    if is_strategiia:
+        pdf.multi_cell(CW, 4.5, _safe(
+            "Ce rapport a ete concu pour structurer votre situation avec clarte et precision. "
+            "Il met en lumiere les elements determinants de votre dossier, les enjeux reels, "
+            "et les axes d'action qui s'offrent a vous. Chaque situation est unique, "
+            "et c'est cette singularite que nous avons cherche a capter ici."
+        ))
+    else:
+        pdf.multi_cell(CW, 4.5, _safe(
+            "Ce document constitue une premiere lecture structuree de vos pieces. "
+            "Il organise les faits, identifie les elements juridiques et medicaux cles, "
+            "et pose les bases d'une strategie exploitable. "
+            "C'est un travail de fond, concu pour servir votre demarche."
+        ))
+    pdf.ln(4)
 
-    # ── Partie 2 : Transition strategique ──
-    # Subtle separator
+    # ── Part 2: Strategic transition ──
     sep_y = pdf.get_y()
     pdf.set_draw_color(*_LIGHT_LINE)
-    pdf.set_line_width(0.2)
-    pdf.line(LM + 15, sep_y, LM + CW - 15, sep_y)
-    pdf.ln(4)
+    pdf.set_line_width(0.15)
+    pdf.line(LM + 20, sep_y, LM + CW - 20, sep_y)
+    pdf.ln(5)
 
     pdf.set_font("Helvetica", "", 8)
     pdf.set_text_color(*_BODY_TEXT)
     pdf.set_x(LM)
-    pdf.multi_cell(CW, 4.2, _safe(
-        "Mais un rapport, aussi precis soit-il, reste un point de depart. "
-        "Chaque dossier comporte des subtilites que seule une analyse humaine "
-        "approfondie peut reveler : des leviers juridiques inexploites, "
-        "des erreurs de consolidation, des prejudices sous-evalues."
-    ))
-    pdf.ln(3)
+    if is_strategiia:
+        pdf.multi_cell(CW, 4.5, _safe(
+            "Un rapport, aussi complet soit-il, reste une photographie a un instant donne. "
+            "Votre dossier comporte des nuances que seul un accompagnement humain "
+            "approfondi peut reveler pleinement : des leviers juridiques a activer, "
+            "des erreurs de procedure a identifier, des prejudices a chiffrer avec precision."
+        ))
+    else:
+        pdf.multi_cell(CW, 4.5, _safe(
+            "Cette pre-analyse pose un cadre solide. Mais transformer ce cadre en resultat "
+            "concret demande une expertise humaine : verifier chaque element, confronter les pieces "
+            "a la jurisprudence actuelle, et construire un argumentaire adapte a votre contexte specifique."
+        ))
+    pdf.ln(4)
 
     pdf.set_font("Helvetica", "B", 8)
     pdf.set_text_color(*_BLACK)
     pdf.set_x(LM)
-    pdf.multi_cell(CW, 4.2, _safe(
-        "Ce que ce rapport vous montre, c'est le potentiel de votre dossier. "
-        "Ce qu'un accompagnement personnalise vous apporte, c'est la capacite "
-        "de le transformer en resultat concret."
-    ))
-    pdf.ln(3)
+    if is_strategiia:
+        pdf.multi_cell(CW, 4.5, _safe(
+            "Ce que ce rapport vous montre, c'est le potentiel reel de votre dossier. "
+            "Ce qu'un accompagnement expert vous apporte, c'est la capacite "
+            "de transformer ce potentiel en resultat tangible."
+        ))
+    else:
+        pdf.multi_cell(CW, 4.5, _safe(
+            "Ce que cette etude vous montre, c'est la solidite de vos elements. "
+            "Ce qu'un expert peut vous apporter, c'est la methode pour les "
+            "assembler en un dossier incontestable."
+        ))
+    pdf.ln(4)
 
-    # ── Partie 3 : Orientation vers l'offre finale ──
-    # Elegant box
+    # ── Part 3: CTA box ──
     sep_y2 = pdf.get_y()
     pdf.set_draw_color(*_LIGHT_LINE)
-    pdf.set_line_width(0.2)
-    pdf.line(LM + 15, sep_y2, LM + CW - 15, sep_y2)
-    pdf.ln(4)
+    pdf.set_line_width(0.15)
+    pdf.line(LM + 20, sep_y2, LM + CW - 20, sep_y2)
+    pdf.ln(5)
 
     box_y = pdf.get_y()
     pdf.set_fill_color(*_IVORY)
-    box_h = 26
+    box_h = 28
     pdf.rect(LM, box_y, CW, box_h, "F")
-    # Gold left accent on the box
-    pdf.set_fill_color(*_GOLD)
+    if is_strategiia:
+        pdf.set_fill_color(*_GOLD)
+    else:
+        pdf.set_fill_color(*_DE_ACCENT)
     pdf.rect(LM, box_y, 2, box_h, "F")
 
-    pdf.set_xy(LM + 6, box_y + 3)
-    pdf.set_font("Helvetica", "B", 8.5)
+    pdf.set_xy(LM + 7, box_y + 3)
+    pdf.set_font("Helvetica", "B", 9)
     pdf.set_text_color(*_BLACK)
-    pdf.cell(CW - 10, 4.5, _safe("Vous souhaitez aller plus loin ?"))
+    pdf.cell(CW - 12, 5, _safe("Vous souhaitez aller plus loin ?"))
 
-    pdf.set_xy(LM + 6, box_y + 9)
+    pdf.set_xy(LM + 7, box_y + 10)
     pdf.set_font("Helvetica", "", 7.5)
     pdf.set_text_color(*_BODY_TEXT)
-    pdf.multi_cell(CW - 10, 3.8, _safe(
-        "Nos experts vous proposent un accompagnement sur mesure : "
-        "relecture approfondie de votre dossier, strategie de recours, "
-        "preparation d'expertise medicale, et defense de vos interets "
-        "a chaque etape."
-    ))
+    if is_strategiia:
+        pdf.multi_cell(CW - 12, 4, _safe(
+            "Nos experts vous proposent un accompagnement sur mesure : "
+            "analyse approfondie de votre situation, strategie de recours personnalisee, "
+            "preparation d'expertise medicale, et defense de vos interets "
+            "a chaque etape decisive."
+        ))
+    else:
+        pdf.multi_cell(CW - 12, 4, _safe(
+            "Nos experts peuvent prolonger cette etude : "
+            "relecture approfondie de chaque piece, verification des delais et procedures, "
+            "chiffrage precis des prejudices, et construction d'un dossier "
+            "pret a etre presente en instance."
+        ))
 
-    pdf.set_y(box_y + box_h + 4)
+    pdf.set_y(box_y + box_h + 5)
 
-    # ── QR Code + Lien discret — Conversion depuis le PDF ──
-    qr_url = "https://strategie-expertise-sante.fr/contact?via=qr&source=dossier_express"
+    # ── QR Code + Contact ──
+    qr_url = "https://strategie-expertise-sante.fr/contact?via=qr&source=" + ("strategiia" if is_strategiia else "dossier_express")
     qr_tmp_path = None
     try:
         import qrcode
@@ -479,39 +758,33 @@ def generate_secured_pdf(
     except Exception:
         qr_tmp_path = None
 
-    # Check space for QR block (~45mm)
-    space_qr = pdf.h - 16 - pdf.get_y()
+    space_qr = pdf.h - 18 - pdf.get_y()
     if space_qr < 48:
         pdf.add_page()
         pdf.ln(4)
 
-    # Subtle separator
     sep_qr = pdf.get_y()
     pdf.set_draw_color(*_LIGHT_LINE)
-    pdf.set_line_width(0.2)
-    pdf.line(LM + 20, sep_qr, LM + CW - 20, sep_qr)
+    pdf.set_line_width(0.15)
+    pdf.line(LM + 25, sep_qr, LM + CW - 25, sep_qr)
     pdf.ln(5)
 
     if qr_tmp_path and os.path.isfile(qr_tmp_path):
-        # QR label
         pdf.set_font("Helvetica", "B", 7)
         pdf.set_text_color(*_MUTED)
         pdf.cell(CW, 3.5, _safe("Prochaine etape recommandee"), align="C", new_x="LMARGIN", new_y="NEXT")
         pdf.ln(3)
 
-        # QR code — centered, 22mm
         qr_size = 22
         qr_x = LM + (CW - qr_size) / 2
         pdf.image(qr_tmp_path, x=qr_x, y=pdf.get_y(), w=qr_size, h=qr_size)
         pdf.set_y(pdf.get_y() + qr_size + 2)
 
-        # QR description
         pdf.set_font("Helvetica", "I", 6.5)
         pdf.set_text_color(*_MUTED)
         pdf.cell(CW, 3, _safe("Scannez pour acceder a l'accompagnement expert personnalise S.E.S"), align="C", new_x="LMARGIN", new_y="NEXT")
         pdf.ln(1.5)
 
-        # Cleanup temp file
         try:
             os.unlink(qr_tmp_path)
         except Exception:
@@ -519,23 +792,25 @@ def generate_secured_pdf(
     else:
         pdf.ln(2)
 
-    # Text link fallback (always present)
     pdf.set_font("Helvetica", "", 6)
     pdf.set_text_color(*_MUTED)
     pdf.cell(CW, 3, _safe("Premiere consultation offerte  |  strategie-expertise-sante.fr/contact"), align="C", new_x="LMARGIN", new_y="NEXT")
 
-    pdf.ln(3)
+    pdf.ln(4)
 
-    # ── Signature de marque finale ──
+    # ── Brand signature ──
     sep_y3 = pdf.get_y()
     pdf.set_draw_color(*_GOLD)
     pdf.set_line_width(0.3)
-    pdf.line(65, sep_y3, 145, sep_y3)
+    pdf.line(70, sep_y3, 140, sep_y3)
     pdf.ln(4)
 
     pdf.set_font("Helvetica", "BI", 8.5)
     pdf.set_text_color(*_GOLD)
-    pdf.cell(CW, 4.5, _safe("Strategie & Expertise Sante — Votre bouclier."), align="C")
+    if is_strategiia:
+        pdf.cell(CW, 4.5, _safe("Strategie & Expertise Sante -- Votre bouclier."), align="C")
+    else:
+        pdf.cell(CW, 4.5, _safe("Strategie & Expertise Sante -- La methode au service de vos droits."), align="C")
 
     # ── Watermark ──
     if with_watermark:
