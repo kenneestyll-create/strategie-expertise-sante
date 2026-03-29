@@ -9,6 +9,14 @@ import jwt
 import anthropic
 import stripe as stripe_sdk
 
+# Force LLM timeout to 300s for large analyses
+os.environ.setdefault("OPENAI_TIMEOUT", "300")
+try:
+    import litellm
+    litellm.request_timeout = 300
+except ImportError:
+    pass
+
 from config import db, STRIPE_API_KEY, RESEND_AVAILABLE, SENDER_EMAIL, logger, JWT_SECRET, JWT_ALGORITHM, SITE_URL
 from utils.auth import get_current_admin, get_optional_admin
 from utils.email import notify_admin_premium_analysis
@@ -71,6 +79,7 @@ async def _check_llm_health():
             from emergentintegrations.llm.chat import LlmChat, UserMessage
             chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id="health_check", system_message="OK")
             chat.with_model("anthropic", "claude-sonnet-4-5-20250929")
+            chat.with_params(timeout=30, max_tokens=10)
             resp = await chat.send_message(UserMessage(text="OK"))
             if resp:
                 return True, ""
@@ -944,8 +953,8 @@ CONTENU DES DOCUMENTS FOURNIS :
     for attempt in range(3):
         try:
             session_id_llm = f"dexpress_{dossier_id[:8]}_{attempt}"
-            analysis = await asyncio.to_thread(
-                _llm_sync_call, ANTHROPIC_API_KEY, session_id_llm, DOSSIER_EXPRESS_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
+            analysis = await llm_call(
+                ANTHROPIC_API_KEY, session_id_llm, DOSSIER_EXPRESS_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
             )
             logger.info(f"Dossier Express IA {dossier_id}: analyse reussie (tentative {attempt+1})")
             break
@@ -1403,7 +1412,7 @@ async def dossier_express_weekly_count():
 _jobs = {}
 
 def _llm_sync_call(api_key, session_id, system_message, user_text, provider, model):
-    """Run LLM call. Uses native Anthropic SDK if key available, else Emergent fallback."""
+    """Run LLM call synchronously. Native Anthropic SDK if key available."""
     if api_key:
         client = anthropic.Anthropic(api_key=api_key)
         response = client.messages.create(
@@ -1413,18 +1422,40 @@ def _llm_sync_call(api_key, session_id, system_message, user_text, provider, mod
             messages=[{"role": "user", "content": user_text}],
         )
         return response.content[0].text
-    # Fallback to Emergent Universal Key
+    raise Exception("Cle Anthropic native requise pour appel synchrone")
+
+
+async def _llm_async_call(session_id, system_message, user_text, model):
+    """Async LLM call via Emergent Universal Key — direct httpx call with 300s timeout."""
+    import httpx
+    from emergentintegrations.llm.utils import get_integration_proxy_url
+    proxy_url = get_integration_proxy_url()
+    async with httpx.AsyncClient(timeout=httpx.Timeout(300.0, connect=30.0)) as client:
+        resp = await client.post(
+            f"{proxy_url}/llm/chat/completions",
+            headers={"Authorization": f"Bearer {EMERGENT_LLM_KEY}", "Content-Type": "application/json"},
+            json={
+                "model": model,
+                "messages": [
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": user_text},
+                ],
+                "max_tokens": 6000,
+            },
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        return data["choices"][0]["message"]["content"]
+
+
+async def llm_call(api_key, session_id, system_message, user_text, provider, model):
+    """Unified LLM call — native Anthropic in thread if key, else Emergent async fallback."""
+    if api_key:
+        return await asyncio.to_thread(
+            _llm_sync_call, api_key, session_id, system_message, user_text, provider, model
+        )
     if EMERGENT_LLM_KEY:
-        import asyncio as _aio
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
-        chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id=session_id, system_message=system_message)
-        chat.with_model("anthropic", model)
-        loop = _aio.new_event_loop()
-        try:
-            resp = loop.run_until_complete(chat.send_message(UserMessage(text=user_text)))
-            return resp
-        finally:
-            loop.close()
+        return await _llm_async_call(session_id, system_message, user_text, model)
     raise Exception("Aucune cle IA disponible")
 
 
@@ -1456,8 +1487,8 @@ INSTRUCTION : Utilise cette matiere documentaire structuree pour affiner ta lect
             analysis_prompt = STRATEGIIA_PREMIUM_PROMPT if is_premium else STRATEGIIA_BASIC_PROMPT
             user_msg = f"""Type de dossier : {type_dossier}\nRegime : {regime}\nDescription de la situation : {situation}\n{case_context}{dossier_express_context}\n\n{analysis_prompt}"""
             session_id = f"strategiia_{str(uuid.uuid4())[:8]}"
-            response = await asyncio.to_thread(
-                _llm_sync_call, ANTHROPIC_API_KEY, session_id, STRATEGIIA_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
+            response = await llm_call(
+                ANTHROPIC_API_KEY, session_id, STRATEGIIA_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
             )
             analysis_doc = {"id": str(uuid.uuid4()), "type_dossier": type_dossier, "regime": regime, "situation": situation[:500], "is_premium": is_premium, "email": email if email else "", "admin_test": is_admin_test, "created_at": datetime.now(timezone.utc).isoformat()}
             await db.strategiia_analyses.insert_one(analysis_doc)
@@ -1789,7 +1820,7 @@ async def strategiia_admin_bypass(request: Request):
     premium_pdf = body.get("premium_pdf", False)
     analyse_premium = body.get("analyse_premium", False)
     email = payload.get("email", "admin@test")
-    if not situation.strip() or not ANTHROPIC_API_KEY:
+    if not situation.strip() or not _has_llm_key():
         raise HTTPException(status_code=400, detail="Situation requise et service IA actif")
     similar_cases = []
     if type_dossier:
@@ -1838,6 +1869,8 @@ async def dossier_express_admin_bypass(request: Request):
         "original_documents": original_documents,
         "premium_pdf": premium_pdf,
         "status": "processing", "payment_verified": True, "admin_test": True,
+        "delivery_status": "en_attente_traitement",
+        "processing_step": "checkout_valide",
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.dossier_express.insert_one(dossier_doc)
