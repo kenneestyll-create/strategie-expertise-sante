@@ -10,72 +10,53 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA i
 - **PDF** : fpdf2 + jsPDF | **Email** : Resend | **Paiements** : Stripe + PayPal
 
 ## Services (ISOLES — voir ARCHITECTURE_GUARDRAILS.md)
-- **StrategiIA** : Analyse strategique MP/AT. Collection: strategiia_analyses.
+- **StrategiIA** : Analyse strategique MP/AT. Collection: strategiia_analyses. Analyse STOCKEE en DB avec job_id.
 - **Dossier Express IA** : Pipeline documentaire optimise. Collection: dossier_express. 8 etapes tracees.
-- **Relecture admin** : Collection partagee premium_analyses (filtre par type).
+- **Relecture admin** : Collection partagee premium_analyses (filtre par type). Liee a strategiia_analyses via job_id.
+
+## Bug Fix: Analyse StrategiIA non stockee (29/03/2026)
+### Cause racine
+- _run_analysis() stockait le resultat uniquement dans un dict en memoire (_jobs[job_id])
+- Le document strategiia_analyses ne contenait PAS le texte de l'analyse
+- premium_analyses n'etait jamais mis a jour avec l'analyse generee
+- Resultat: la modale admin "Relire/Valider" affichait le texte brut du client au lieu de l'analyse IA
+
+### Fix applique
+1. strategiia.py: Stocker l'analyse + job_id dans strategiia_analyses
+2. strategiia.py: Mettre a jour premium_analyses avec l'analyse via job_id
+3. admin.py: Ameliorer le lookup full-content pour chercher via job_id (puis fallback email)
+
+### Verification
+- iteration_152: 10/10 PASS, analyse de 14,334 chars correctement retournee par full-content
+- Frontend: modale affiche "## Votre situation analysee" au lieu du texte brut
 
 ## Pipeline Dossier Express IA (OPTIMISE 29/03/2026)
-
-### Performance mesuree (PATH B — Emergent proxy)
-| Metrique | Avant optimisation | Apres optimisation |
-|----------|-------------------|-------------------|
-| Temps total moyen | 186s | 95-110s |
-| Parallelisme batches | Sequentiel (LlmChat bloquant) | Parallele reel (httpx streaming async) |
-| LLM (% du total) | 99.5% | 99.5% |
-| PDF generation | <0.5s | <0.5s |
-| Email | <0.4s | <0.4s |
-| Stockage S3 | Non configure | Non configure |
-
-### Performance estimee (PATH A — Cle Anthropic native)
-- Appel unique direct : ~25-35s (pas de batching necessaire)
-- max_tokens=8000 (vs 1500 par section en multi-stage)
-- documents_text: jusqu'a 12000 chars (vs 8000 avant)
-
-### Structure du pipeline
-- 7 sections : synthese, pieces, chrono, juridique, forces_vigilance, strategie_prejudices, plan_conclusion
-- 3 batches paralleles via httpx streaming async
-- Chaque appel < 40s (sous le timeout 60s du proxy Emergent)
-- Instrumentation complete : timings par etape stockes en DB
-
-### Qualite validee (29/03/2026 — 3 dossiers test)
-| Dossier | Documents | Chars | Sections | Qualite |
-|---------|-----------|-------|----------|---------|
-| Leger (2 docs) | 2 | 24,671 | 21 | OK |
-| Moyen (7 docs) | 7 | 25,389 | 26 | OK |
-| Lourd (18 docs) | 18 | 25,975 | 31 | OK |
-
-### Frontend UX attente
-- Polling : 3s (vs 5s avant)
-- Duree affichee : "1 a 3 minutes"
-- Message erreur : "Restez sur cette page" (pas de "quittez/fermez")
-- 7 etapes visuelles premium
+- 7 sections, 3 batches paralleles httpx streaming
+- PATH B (Emergent proxy): ~95-110s
+- PATH A (cle native Anthropic): estimee ~25-35s
+- Qualite validee: 3 dossiers (24-26K chars, 21-31 sections)
+- Instrumentation: timings stockes en DB par etape
 
 ## Tests de non-regression
-- `/app/test_reports/iteration_150.json` — 16/16 PASS (post-endpoint fix)
-- `/app/test_reports/iteration_151.json` — 13/13 PASS (post-optimisation pipeline)
-- `/app/backend/tests/test_pipeline_optimization.py`
+- iteration_150: 16/16 PASS (post-endpoint admin-bypass)
+- iteration_151: 13/13 PASS (post-optimisation pipeline)
+- iteration_152: 10/10 PASS (post-fix analyse StrategiIA stockage)
 
 ## Etat des services (Preview)
-- IA Anthropic : OK (Emergent fallback multi-stage httpx)
+- IA Anthropic : OK (Emergent fallback + pipeline multi-stage httpx)
 - Paiement Stripe : TEST MODE
 - Email Resend : OK (sandbox)
-- Stockage S3 : NON CONFIGURE (manque S3_ACCESS_KEY + S3_SECRET_KEY)
+- Stockage S3 : NON CONFIGURE
 - Database MongoDB : OK
 
 ## Backlog
 ### P0 : TERMINE
-- Fix pipeline Dossier Express IA (multi-stage parallele) — DONE 29/03/2026
-- UX Premium vue de traitement — DONE 29/03/2026
-- Consolidation architecture — DONE 29/03/2026
-- Livrable Final consolidation — DONE 29/03/2026
-- Endpoint admin-bypass — DONE 29/03/2026
-- Optimisation temps pipeline (186s→95-110s, -40%) — DONE 29/03/2026
-- Instrumentation timings — DONE 29/03/2026
-- Validation qualite 3 dossiers — DONE 29/03/2026
-- UX: polling 3s, messages ameliores — DONE 29/03/2026
+- Consolidation architecture — DONE
+- Optimisation pipeline Dossier Express — DONE
+- Fix analyse StrategiIA non stockee en DB — DONE 29/03/2026
 
 ### P1 : Cles de production
-- ANTHROPIC_API_KEY native → pipeline ~30s
+- ANTHROPIC_API_KEY native (pipeline ~30s)
 - STRIPE_API_KEY live
 - S3 config (S3_ACCESS_KEY + S3_SECRET_KEY)
 - Domaine Resend verifie
