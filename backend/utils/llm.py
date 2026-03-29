@@ -179,20 +179,12 @@ async def llm_call(api_key, session_id, system_message, user_text, provider, mod
 
 async def generate_section_llmchat(section_id: str, system_msg: str, user_msg: str,
                                      dossier_id: str, max_tokens: int = 1500, retries: int = 2) -> str:
-    """Generate a single report section via LlmChat with per-section retry.
+    """Generate a single report section via httpx streaming (truly async for parallel batches).
     Returns the generated text or raises Exception on total failure."""
+    msgs = [{"role": "system", "content": system_msg}, {"role": "user", "content": user_msg}]
     for attempt in range(retries):
         try:
-            from emergentintegrations.llm.chat import LlmChat, UserMessage
-            chat = LlmChat(
-                api_key=EMERGENT_LLM_KEY,
-                session_id=f"de_{dossier_id[:8]}_{section_id}_{attempt}",
-                system_message=system_msg
-            )
-            chat.with_model("anthropic", "claude-sonnet-4-5-20250929")
-            chat.with_params(timeout=55, max_tokens=max_tokens)
-            resp = await chat.send_message(UserMessage(text=user_msg))
-            text = str(resp) if resp else ""
+            text = await llm_stream_call(msgs, "claude-sonnet-4-5-20250929", max_tokens=max_tokens)
             if not text.strip():
                 raise Exception(f"Section {section_id}: reponse vide")
             logger.info(f"[DOSSIER_EXPRESS][{dossier_id}][{section_id}] OK attempt={attempt+1} chars={len(text)}")
