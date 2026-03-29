@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,6 +7,19 @@ import { SEO } from '@/components/SEO';
 
 export const AboutPage = () => {
   const [pdfError, setPdfError] = useState(false);
+  const [pdfVisible, setPdfVisible] = useState(false);
+  const pdfSectionRef = useRef(null);
+
+  useEffect(() => {
+    const ref = pdfSectionRef.current;
+    if (!ref) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setPdfVisible(true); observer.disconnect(); } },
+      { rootMargin: '200px' }
+    );
+    observer.observe(ref);
+    return () => observer.disconnect();
+  }, []);
   const timeline = [
     {
       year: "Année 1",
@@ -256,7 +269,7 @@ export const AboutPage = () => {
       </section>
 
       {/* Document Juridique Section - PDF Viewer */}
-      <section className="section-padding bg-secondary" data-testid="pdf-viewer-section">
+      <section className="section-padding bg-secondary" data-testid="pdf-viewer-section" ref={pdfSectionRef}>
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
             <span className="text-sm font-medium text-accent uppercase tracking-wider">Document officiel</span>
@@ -271,36 +284,41 @@ export const AboutPage = () => {
 
           <Card className="border-border overflow-hidden">
             <CardContent className="p-0">
-              {/* PDF Embedded Viewer */}
+              {/* PDF Embedded Viewer — lazy-loaded to prevent focus steal on page load */}
               <div className="w-full bg-muted/30" data-testid="pdf-embed-container">
-                <object
-                  data="/decision-tribunal-chartres.pdf"
-                  type="application/pdf"
-                  className="w-full"
-                  style={{ height: '700px' }}
-                  tabIndex={-1}
-                  onFocus={(e) => e.preventDefault()}
-                  data-testid="pdf-object"
-                >
-                  <div className="p-12 text-center">
-                    <FileText className="w-16 h-16 text-accent mx-auto mb-4" strokeWidth={1} />
-                    <h3 className="font-semibold text-lg mb-2">Décision du Tribunal Judiciaire de Chartres</h3>
-                    <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
-                      Votre navigateur ne prend pas en charge l'affichage PDF intégré. 
-                      Vous pouvez télécharger le document ci-dessous.
-                    </p>
-                    <a 
-                      href="/decision-tribunal-chartres.pdf" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                    >
-                      <Button className="rounded-lg gap-2">
-                        <Download className="w-4 h-4" />
-                        Ouvrir le PDF
-                      </Button>
-                    </a>
+                {pdfVisible ? (
+                  <object
+                    data="/decision-tribunal-chartres.pdf"
+                    type="application/pdf"
+                    className="w-full"
+                    style={{ height: '700px' }}
+                    tabIndex={-1}
+                    data-testid="pdf-object"
+                  >
+                    <div className="p-12 text-center">
+                      <FileText className="w-16 h-16 text-accent mx-auto mb-4" strokeWidth={1} />
+                      <h3 className="font-semibold text-lg mb-2">Décision du Tribunal Judiciaire de Chartres</h3>
+                      <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
+                        Votre navigateur ne prend pas en charge l'affichage PDF intégré. 
+                        Vous pouvez télécharger le document ci-dessous.
+                      </p>
+                      <a 
+                        href="/decision-tribunal-chartres.pdf" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                      >
+                        <Button className="rounded-lg gap-2">
+                          <Download className="w-4 h-4" />
+                          Ouvrir le PDF
+                        </Button>
+                      </a>
+                    </div>
+                  </object>
+                ) : (
+                  <div className="flex items-center justify-center" style={{ height: '700px' }}>
+                    <FileText className="w-12 h-12 text-muted-foreground/30" strokeWidth={1} />
                   </div>
-                </object>
+                )}
               </div>
               {/* Download bar */}
               <div className="flex items-center justify-between p-4 bg-card border-t border-border">
