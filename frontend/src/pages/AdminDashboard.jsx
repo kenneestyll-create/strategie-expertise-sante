@@ -305,6 +305,7 @@ export const AdminDashboard = () => {
   const [monitoring, setMonitoring] = useState(null);
   const [launchMode, setLaunchMode] = useState({ mode: 'ouvert', message: '' });
   const [launchLoading, setLaunchLoading] = useState(false);
+  const [servicesStatus, setServicesStatus] = useState(null);
   const [analyticsData, setAnalyticsData] = useState(null);
   const [analyticsPeriod, setAnalyticsPeriod] = useState('30d');
   const [newCas, setNewCas] = useState({ type_dossier: '', regime: '', duree: '', strategie: '', resultat: '', score_pertinence: 0, notes: '' });
@@ -391,6 +392,7 @@ export const AdminDashboard = () => {
       axios.get(`${API}/admin/dossier-express`, axiosConfig).then(r => setDossierExpressAdmin(r.data)).catch(() => {});
       axios.get(`${API}/admin/monitoring`, axiosConfig).then(r => setMonitoring(r.data)).catch(() => {});
       axios.get(`${API}/admin/launch-mode`, axiosConfig).then(r => setLaunchMode(r.data)).catch(() => {});
+      axios.get(`${API}/admin/services-status`, axiosConfig).then(r => setServicesStatus(r.data)).catch(() => {});
       axios.get(`${API}/admin/documents`, axiosConfig).then(r => setAdminDocs(r.data)).catch(() => {});
       axios.get(`${API}/admin/email/status`, axiosConfig).then(r => setEmailStatus(r.data)).catch(() => {});
       axios.get(`${API}/admin/completeness-notifications`, axiosConfig).then(r => setCompletenessNotifs(r.data)).catch(() => {});
@@ -1821,6 +1823,37 @@ export const AdminDashboard = () => {
                 </div>
               </div>
             )}
+            {/* ====== SERVICES STATUS ====== */}
+            {servicesStatus && (
+              <Card className={`border-2 ${servicesStatus.critical_services_ok ? 'border-green-200/60' : 'border-red-300'}`} data-testid="services-status-card">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                      <Shield className="w-3.5 h-3.5" />
+                      Etat des services
+                    </h3>
+                    <Badge variant="outline" className={`text-[10px] ${servicesStatus.critical_services_ok ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>
+                      {servicesStatus.all_services_ok ? 'Tous operationnels' : servicesStatus.critical_services_ok ? 'Services critiques OK' : 'Attention requise'}
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+                    {Object.entries(servicesStatus.services).map(([key, svc]) => (
+                      <div key={key} className={`flex items-center gap-2 p-2 rounded-lg text-xs ${svc.status === 'ok' ? 'bg-green-50/60' : svc.status === 'missing' ? 'bg-amber-50/60' : 'bg-red-50/60'}`}
+                        data-testid={`service-${key}`}>
+                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${svc.status === 'ok' ? 'bg-green-500' : svc.status === 'missing' ? 'bg-amber-400' : 'bg-red-500'}`} />
+                        <div className="min-w-0">
+                          <span className="font-medium block truncate">
+                            {key === 'ia_anthropic' ? 'IA' : key === 'stripe' ? 'Paiement' : key === 'email_resend' ? 'Email' : key === 'storage_s3' ? 'Stockage' : key === 'database' ? 'Base' : key === 'launch_mode' ? 'Mode' : key}
+                          </span>
+                          <span className="text-muted-foreground text-[10px] block truncate">{svc.mode}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Section header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">

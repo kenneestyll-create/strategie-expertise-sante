@@ -16,6 +16,7 @@ from utils.pdf import generate_secured_pdf, generate_dossier_pdf
 from utils.storage import put_object
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 NOTIFICATION_EMAIL = os.environ.get("NOTIFICATION_EMAIL", "")
 
@@ -29,30 +30,54 @@ router = APIRouter()
 
 # ==================== LLM HEALTH CHECK ====================
 
+def _has_llm_key():
+    """Check if any LLM key is available (native Anthropic or Emergent fallback)."""
+    return bool(ANTHROPIC_API_KEY) or bool(EMERGENT_LLM_KEY)
+
+
 async def _check_llm_health():
-    """Verify Anthropic API key is valid and responsive. Returns (ok: bool, error: str)."""
-    if not ANTHROPIC_API_KEY:
+    """Verify LLM availability. Returns (ok: bool, error: str)."""
+    if not _has_llm_key():
         return False, "cle_absente"
-    try:
-        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-        resp = await asyncio.to_thread(
-            client.messages.create,
-            model="claude-sonnet-4-5-20250929",
-            max_tokens=10,
-            messages=[{"role": "user", "content": "OK"}],
-        )
-        if resp and resp.content:
-            return True, ""
-        return False, "reponse_vide"
-    except anthropic.AuthenticationError:
-        return False, "cle_invalide"
-    except anthropic.RateLimitError:
-        return False, "quota_depasse"
-    except Exception as e:
-        err = str(e).lower()
-        if "budget" in err or "exceeded" in err:
-            return False, "budget_depasse"
-        return False, f"erreur: {str(e)[:100]}"
+    # Try native Anthropic key first
+    if ANTHROPIC_API_KEY:
+        try:
+            client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+            resp = await asyncio.to_thread(
+                client.messages.create,
+                model="claude-sonnet-4-5-20250929",
+                max_tokens=10,
+                messages=[{"role": "user", "content": "OK"}],
+            )
+            if resp and resp.content:
+                return True, ""
+            return False, "reponse_vide"
+        except anthropic.AuthenticationError:
+            if EMERGENT_LLM_KEY:
+                return True, "fallback_emergent"
+            return False, "cle_invalide"
+        except anthropic.RateLimitError:
+            return False, "quota_depasse"
+        except Exception as e:
+            err = str(e).lower()
+            if "budget" in err or "exceeded" in err:
+                return False, "budget_depasse"
+            if EMERGENT_LLM_KEY:
+                return True, "fallback_emergent"
+            return False, f"erreur: {str(e)[:100]}"
+    # Emergent fallback key available
+    if EMERGENT_LLM_KEY:
+        try:
+            from emergentintegrations.llm.chat import LlmChat, UserMessage
+            chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id="health_check", system_message="OK")
+            chat.with_model("anthropic", "claude-sonnet-4-5-20250929")
+            resp = await chat.send_message(UserMessage(text="OK"))
+            if resp:
+                return True, ""
+            return False, "reponse_vide"
+        except Exception as e:
+            return False, f"erreur_emergent: {str(e)[:100]}"
+    return False, "aucune_cle"
 
 
 @router.get("/health/llm")
@@ -873,10 +898,10 @@ async def _process_dossier_express(dossier_id: str, email: str, name: str, situa
     await _update_dossier_step(dossier_id, "documents_recus", "en_attente_traitement")
 
     # === STEP 2: Check LLM availability ===
-    if not ANTHROPIC_API_KEY:
-        logger.error("Dossier Express IA: ANTHROPIC_API_KEY not available")
+    if not _has_llm_key():
+        logger.error("Dossier Express IA: aucune cle IA disponible")
         await _update_dossier_step(dossier_id, "erreur_ia", "incident_technique", {"status": "error", "error": "Service IA non disponible"})
-        await _notify_admin_incident(dossier_id, email, name, "Dossier Express IA", "Verification cle API", "ANTHROPIC_API_KEY absente ou vide")
+        await _notify_admin_incident(dossier_id, email, name, "Dossier Express IA", "Verification cle API", "Aucune cle IA configuree (ANTHROPIC_API_KEY et EMERGENT_LLM_KEY absentes)")
         await _notify_client_delay(email, name, "Dossier Express IA")
         return
 
@@ -1378,15 +1403,29 @@ async def dossier_express_weekly_count():
 _jobs = {}
 
 def _llm_sync_call(api_key, session_id, system_message, user_text, provider, model):
-    """Run Anthropic Claude LLM call synchronously (called via asyncio.to_thread)."""
-    client = anthropic.Anthropic(api_key=api_key)
-    response = client.messages.create(
-        model=model,
-        max_tokens=6000,
-        system=system_message,
-        messages=[{"role": "user", "content": user_text}],
-    )
-    return response.content[0].text
+    """Run LLM call. Uses native Anthropic SDK if key available, else Emergent fallback."""
+    if api_key:
+        client = anthropic.Anthropic(api_key=api_key)
+        response = client.messages.create(
+            model=model,
+            max_tokens=6000,
+            system=system_message,
+            messages=[{"role": "user", "content": user_text}],
+        )
+        return response.content[0].text
+    # Fallback to Emergent Universal Key
+    if EMERGENT_LLM_KEY:
+        import asyncio as _aio
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id=session_id, system_message=system_message)
+        chat.with_model("anthropic", model)
+        loop = _aio.new_event_loop()
+        try:
+            resp = loop.run_until_complete(chat.send_message(UserMessage(text=user_text)))
+            return resp
+        finally:
+            loop.close()
+    raise Exception("Aucune cle IA disponible")
 
 
 async def _run_analysis(job_id, type_dossier, regime, situation, is_premium, email, similar_cases, case_context, is_admin_test=False):
@@ -1464,8 +1503,8 @@ async def strategiia_analyze(request: Request):
             is_admin_test = False
     if not situation.strip():
         raise HTTPException(status_code=400, detail="Description de la situation requise")
-    if not ANTHROPIC_API_KEY:
-        raise HTTPException(status_code=503, detail="Service IA non disponible")
+    if not _has_llm_key():
+        raise HTTPException(status_code=503, detail="Service IA non disponible — aucune cle configuree")
     # Admin bypass: skip quota check
     if not is_admin_test and not is_premium and email:
         now = datetime.now(timezone.utc)

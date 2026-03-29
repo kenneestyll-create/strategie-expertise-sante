@@ -1764,3 +1764,89 @@ async def admin_monitoring(admin: dict = Depends(get_current_admin)):
             for d in incidents_week[:10]
         ],
     }
+
+
+
+# ==================== SERVICE DIAGNOSTIC ====================
+
+@router.get("/admin/services-status")
+async def admin_services_status(admin: dict = Depends(get_current_admin)):
+    """Comprehensive diagnostic of all services before live launch."""
+    results = {}
+
+    # 1. IA (Anthropic / Emergent fallback)
+    anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    emergent_key = os.environ.get("EMERGENT_LLM_KEY", "")
+    if anthropic_key:
+        try:
+            import anthropic as _anth
+            client = _anth.Anthropic(api_key=anthropic_key)
+            await asyncio.to_thread(
+                client.messages.create, model="claude-sonnet-4-5-20250929", max_tokens=10,
+                messages=[{"role": "user", "content": "Ping"}],
+            )
+            results["ia_anthropic"] = {"status": "ok", "mode": "natif", "detail": "Cle Anthropic valide et operationnelle"}
+        except Exception as e:
+            results["ia_anthropic"] = {"status": "error", "mode": "natif", "detail": str(e)[:150]}
+    elif emergent_key:
+        try:
+            from emergentintegrations.llm.chat import LlmChat, UserMessage
+            chat = LlmChat(api_key=emergent_key, session_id="diag", system_message="Ping")
+            chat.with_model("anthropic", "claude-sonnet-4-5-20250929")
+            await chat.send_message(UserMessage(text="Ping"))
+            results["ia_anthropic"] = {"status": "ok", "mode": "emergent_fallback", "detail": "Cle Emergent Universal fonctionnelle (fallback)"}
+        except Exception as e:
+            results["ia_anthropic"] = {"status": "error", "mode": "emergent_fallback", "detail": str(e)[:150]}
+    else:
+        results["ia_anthropic"] = {"status": "missing", "mode": "aucun", "detail": "Aucune cle IA configuree (ANTHROPIC_API_KEY ou EMERGENT_LLM_KEY)"}
+
+    # 2. Stripe
+    stripe_key = os.environ.get("STRIPE_API_KEY", "")
+    if stripe_key:
+        try:
+            import stripe as _stripe
+            _stripe.api_key = stripe_key
+            await asyncio.to_thread(_stripe.Balance.retrieve)
+            is_live = stripe_key.startswith("sk_live_")
+            results["stripe"] = {"status": "ok", "mode": "live" if is_live else "test", "detail": f"Stripe {'live' if is_live else 'test'} operationnel"}
+        except Exception as e:
+            results["stripe"] = {"status": "error", "mode": "unknown", "detail": str(e)[:150]}
+    else:
+        results["stripe"] = {"status": "missing", "mode": "aucun", "detail": "STRIPE_API_KEY non configuree"}
+
+    # 3. Resend (Email)
+    resend_key = os.environ.get("RESEND_API_KEY", "")
+    if resend_key and RESEND_AVAILABLE:
+        results["email_resend"] = {"status": "ok", "mode": "sandbox" if "re_" in resend_key[:10] else "live", "detail": "Resend configure"}
+    else:
+        results["email_resend"] = {"status": "missing", "mode": "aucun", "detail": "RESEND_API_KEY non configuree ou Resend non installe"}
+
+    # 4. Object Storage (S3)
+    s3_key = os.environ.get("AWS_ACCESS_KEY_ID", "") or os.environ.get("S3_ACCESS_KEY", "")
+    if s3_key:
+        results["storage_s3"] = {"status": "ok", "mode": "configure", "detail": "Stockage S3 configure"}
+    else:
+        results["storage_s3"] = {"status": "missing", "mode": "aucun", "detail": "Cles S3 non configurees"}
+
+    # 5. MongoDB
+    try:
+        await db.command("ping")
+        results["database"] = {"status": "ok", "mode": "operationnel", "detail": "MongoDB connecte"}
+    except Exception as e:
+        results["database"] = {"status": "error", "mode": "unknown", "detail": str(e)[:150]}
+
+    # 6. Launch mode
+    config = await db.system_config.find_one({"key": "launch_mode"}, {"_id": 0})
+    launch_mode = config.get("value", "ouvert") if config else "ouvert"
+    results["launch_mode"] = {"status": "ok", "mode": launch_mode, "detail": f"Mode actuel: {launch_mode}"}
+
+    # Summary
+    all_ok = all(r["status"] == "ok" for r in results.values())
+    critical_ok = results.get("ia_anthropic", {}).get("status") == "ok" and results.get("database", {}).get("status") == "ok"
+
+    return {
+        "all_services_ok": all_ok,
+        "critical_services_ok": critical_ok,
+        "ready_for_launch": all_ok,
+        "services": results,
+    }
