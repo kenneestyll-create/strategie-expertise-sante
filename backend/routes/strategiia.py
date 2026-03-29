@@ -1425,27 +1425,95 @@ def _llm_sync_call(api_key, session_id, system_message, user_text, provider, mod
     raise Exception("Cle Anthropic native requise pour appel synchrone")
 
 
-async def _llm_async_call(session_id, system_message, user_text, model):
-    """Async LLM call via Emergent Universal Key — direct httpx call with 300s timeout."""
+async def _llm_stream_call(messages, model, max_tokens=4000):
+    """Single streaming LLM call via httpx to Emergent proxy. Handles 60s gateway timeout."""
     import httpx
+    import json as json_mod
     from emergentintegrations.llm.utils import get_integration_proxy_url
     proxy_url = get_integration_proxy_url()
+    url = f"{proxy_url}/llm/chat/completions"
+    headers = {"Authorization": f"Bearer {EMERGENT_LLM_KEY}", "Content-Type": "application/json"}
+    payload = {"model": model, "messages": messages, "max_tokens": max_tokens, "stream": True}
     async with httpx.AsyncClient(timeout=httpx.Timeout(300.0, connect=30.0)) as client:
-        resp = await client.post(
-            f"{proxy_url}/llm/chat/completions",
-            headers={"Authorization": f"Bearer {EMERGENT_LLM_KEY}", "Content-Type": "application/json"},
-            json={
-                "model": model,
-                "messages": [
-                    {"role": "system", "content": system_message},
-                    {"role": "user", "content": user_text},
-                ],
-                "max_tokens": 6000,
-            },
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        return data["choices"][0]["message"]["content"]
+        async with client.stream("POST", url, headers=headers, json=payload) as resp:
+            if resp.status_code != 200:
+                await resp.aread()
+                raise Exception(f"LLM proxy error {resp.status_code}")
+            full_text = ""
+            async for line in resp.aiter_lines():
+                if line.startswith("data: "):
+                    data = line[6:]
+                    if data.strip() == "[DONE]":
+                        break
+                    try:
+                        chunk = json_mod.loads(data)
+                        content = chunk.get("choices", [{}])[0].get("delta", {}).get("content", "")
+                        if content:
+                            full_text += content
+                    except (json_mod.JSONDecodeError, IndexError, KeyError):
+                        pass
+    return full_text
+
+
+# Condensed system prompt for split premium calls (keeps under 60s gateway timeout)
+_SYSTEM_COMPACT = """Tu es StrategiIA, copilote strategique de Strategie & Expertise Sante. Expert en droit de la securite sociale, evaluation des prejudices corporels, strategie contentieuse. Reponds toujours en francais. Verification croisee x3. Nuance intelligente. Cite textes et jurisprudences. Ne genere aucune URL."""
+
+
+async def _llm_async_call(session_id, system_message, user_text, model):
+    """Async LLM call via Emergent Universal Key. Splits premium analyses into 2 calls to stay under 60s gateway timeout."""
+    is_premium = "PILOTAGE STRATEGIQUE APPROFONDI" in user_text or len(user_text) > 4000
+
+    if not is_premium:
+        # Short analysis — single streaming call with full prompts
+        msgs = [{"role": "system", "content": system_message}, {"role": "user", "content": user_text}]
+        result = await _llm_stream_call(msgs, model, max_tokens=3000)
+        if not result.strip():
+            raise Exception("Réponse LLM vide")
+        return result
+
+    # Premium analysis — split into 2 lighter calls to avoid 60s gateway timeout
+    # PART 1: Sections 1-5 (situation, lecture, cadre juridique, leviers, vigilance)
+    part1_prompt = f"""{user_text}
+
+INSTRUCTION PARTIELLE : Genere UNIQUEMENT les sections suivantes du rapport premium :
+1. "## Votre situation analysee" (5-6 lignes)
+2. "## Lecture strategique du dossier" (6-8 lignes)
+3. "## Cadre juridique applicable" (4-5 lignes)
+4. "## Leviers prioritaires identifies" (4-6 leviers)
+5. "## Points de vigilance" (4-5 points)
+Commence directement par "## Votre situation analysee". Ne genere pas de titre principal."""
+
+    msgs1 = [{"role": "system", "content": _SYSTEM_COMPACT}, {"role": "user", "content": part1_prompt}]
+    part1 = await _llm_stream_call(msgs1, model, max_tokens=3000)
+    if not part1.strip():
+        raise Exception("Réponse LLM vide (partie 1)")
+    logger.info(f"StrategiIA {session_id}: Part 1 OK ({len(part1)} chars)")
+
+    # PART 2: Sections 6-9 (angles sous-exploites, evaluation, plan d'action, engagement)
+    part2_prompt = f"""Suite du rapport. Dossier : {user_text[:500]}
+
+Premiere partie generee :
+{part1[:1200]}
+
+Complete maintenant avec UNIQUEMENT ces sections :
+## Angles potentiellement sous-exploites
+(3-4 angles concrets)
+## Evaluation et perspectives
+(5-6 lignes avec estimation)
+## Plan d'action recommande
+(5 actions numerotees avec delais)
+## Notre engagement a vos cotes
+(termine par : **Vous n'etes plus seul(e) face a votre situation.** et **Desormais, Strategie & Expertise Sante devient votre bouclier.**)
+
+Commence directement par ## Angles potentiellement sous-exploites."""
+
+    msgs2 = [{"role": "system", "content": _SYSTEM_COMPACT}, {"role": "user", "content": part2_prompt}]
+    part2 = await _llm_stream_call(msgs2, model, max_tokens=2500)
+    if not part2.strip():
+        raise Exception("Réponse LLM vide (partie 2)")
+    logger.info(f"StrategiIA {session_id}: Part 2 OK ({len(part2)} chars)")
+
+    return part1.strip() + "\n\n" + part2.strip()
 
 
 async def llm_call(api_key, session_id, system_message, user_text, provider, model):

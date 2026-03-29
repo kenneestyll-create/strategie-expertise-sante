@@ -503,7 +503,7 @@ export const StrategiIA = () => {
                             />
                             <Button
                               onClick={handleRegisterEmail}
-                              disabled={!email.includes('@') || registerLoading}
+                              disabled={(!email.includes('@') && !(isAdminMode && adminToken)) || registerLoading}
                               className="gap-1.5 rounded-lg px-5"
                               data-testid="strategiia-readwall-submit"
                             >

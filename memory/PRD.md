@@ -6,12 +6,13 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA s
 ## Architecture
 - **Frontend** : React 18 + Shadcn/UI + Tailwind CSS
 - **Backend** : FastAPI + MongoDB
-- **IA** : Anthropic Claude Sonnet 4 (natif) + Fallback Emergent Universal Key
+- **IA** : Anthropic Claude Sonnet 4.5 (natif) + Fallback Emergent Universal Key (streaming httpx)
 - **PDF** : fpdf2 + jsPDF | **Email** : Resend | **Paiements** : Stripe + PayPal | **Stockage** : S3
 
 ## Agents IA V2 Premium
 - StrategiIA (8.97/10) et Dossier Express IA (9.15/10)
-- Fonctionnels via cle Anthropic native OU Emergent Universal Key (fallback)
+- Fonctionnels via cle Anthropic native OU Emergent Universal Key (fallback streaming)
+- Premium: analyse en 2 appels streaming pour contourner le gateway timeout de 60s du proxy Emergent
 
 ## Pipeline de Securite Paiement (DONE)
 - Double protection pre-paiement : Launch Mode + LLM Health Check
@@ -23,25 +24,19 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA s
 - Monitoring Live 7 KPIs
 - Suivi Client Temps Reel (/dossier-express/suivi)
 - Diagnostic Services Admin (/admin/services-status)
-- Documents : CHECKLIST_LIVE.md, STRATEGIE_SOFT_LAUNCH.md, PROTOCOLE_TESTS_LIVE.md
 
-## Bug Fix - StrategiIA accessible en mode admin (DONE - 29 mars 2026)
-- Cause : ANTHROPIC_API_KEY vide bloquait tous les utilisateurs y compris admins
-- Fix : Fallback Emergent Universal Key (emergentintegrations) quand cle native absente
-- _llm_sync_call utilise cle native en priorite, sinon emergentintegrations
-- Health check enrichi (/api/health/llm) verifie les deux cles
-- Endpoint diagnostic (/api/admin/services-status) pour visibilite complete
-- UI Admin : panneau "Etat des services" avec 6 services couleur-codes
+## Bug Fix - StrategiIA Premium Timeout (DONE - 29 mars 2026)
+- Cause racine : proxy Emergent gateway timeout 60s, prompt premium trop lourd (>9000 chars)
+- Fix : streaming httpx direct + decoupe en 2 appels (Part 1: sections 1-5, Part 2: sections 6-9)
+- Resultat : analyses premium de 13000+ chars generees en ~90s
+- Fix supplementaire : bouton "Debloquer" readwall active en mode admin sans email
 
 ## Tests passes
-- iteration_140-142 : UI + Dark Mode + Premium (61/61)
-- iteration_143 : Pipeline securite (16/16)
-- iteration_144 : Bascule commerciale (25/25)
-- iteration_145 : Bug fix IA + diagnostic (19/19)
-- Total cumule : 121 tests, 0 echec
+- iteration_140-145 : 121 tests, 0 echec
+- Test pratique UI admin 29/03/2026 : Formulaire -> Loading -> Teaser -> Readwall bypass -> Basic -> Premium COMPLET
 
 ## Etat des services (Preview)
-- IA Anthropic : OK (emergent_fallback)
+- IA Anthropic : OK (emergent_fallback + streaming)
 - Paiement Stripe : ERREUR (cle test invalide)
 - Email Resend : OK (sandbox)
 - Stockage S3 : NON CONFIGURE
