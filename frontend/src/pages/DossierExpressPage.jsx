@@ -711,7 +711,7 @@ export const DossierExpressPage = () => {
                     />
                   </div>
 
-                  {!isAdminMode && <DataConsentBox checked={consent} onChange={setConsent} className="mt-3" />}
+                  <DataConsentBox checked={consent} onChange={setConsent} className="mt-3" />
 
                   {/* Upsell options */}
                   <div className="space-y-2.5 pt-2">
