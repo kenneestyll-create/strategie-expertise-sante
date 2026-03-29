@@ -1142,7 +1142,8 @@ CONTENU DES DOCUMENTS FOURNIS :
             pa_id = str(uuid.uuid4())
             await db.premium_analyses.insert_one({
                 "id": pa_id, "type": "dossier_express", "email": email, "name": name,
-                "dossier_id": dossier_id, "status": "en_attente", "premium_pdf": premium_pdf,
+                "dossier_id": dossier_id, "status": "en_attente",
+                "relecture_expert_required": True, "premium_pdf": premium_pdf,
                 "amount": 0, "admin_test": True,
                 "created_at": datetime.now(timezone.utc).isoformat()
             })
@@ -1460,7 +1461,7 @@ _SYSTEM_COMPACT = """Tu es StrategiIA, copilote strategique de Strategie & Exper
 
 
 async def _llm_async_call(session_id, system_message, user_text, model):
-    """Async LLM call via Emergent Universal Key. Splits premium analyses into 2 calls to stay under 60s gateway timeout."""
+    """Async LLM call via Emergent Universal Key. Parallelized split for premium to stay under 60s proxy timeout."""
     is_premium = "PILOTAGE STRATEGIQUE APPROFONDI" in user_text or len(user_text) > 4000
 
     if not is_premium:
@@ -1471,47 +1472,47 @@ async def _llm_async_call(session_id, system_message, user_text, model):
             raise Exception("Réponse LLM vide")
         return result
 
-    # Premium analysis — split into 2 lighter calls to avoid 60s gateway timeout
-    # PART 1: Sections 1-5 (situation, lecture, cadre juridique, leviers, vigilance)
-    part1_prompt = f"""{user_text}
+    # Premium analysis — 2 PARALLEL calls (no dependency between them)
+    # Each gets the full situation but only generates its assigned sections
+    situation_block = user_text[:2000]  # Situation + case context (truncated to stay light)
 
-INSTRUCTION PARTIELLE : Genere UNIQUEMENT les sections suivantes du rapport premium :
-1. "## Votre situation analysee" (5-6 lignes)
-2. "## Lecture strategique du dossier" (6-8 lignes)
-3. "## Cadre juridique applicable" (4-5 lignes)
-4. "## Leviers prioritaires identifies" (4-6 leviers)
-5. "## Points de vigilance" (4-5 points)
-Commence directement par "## Votre situation analysee". Ne genere pas de titre principal."""
+    part1_prompt = f"""{situation_block}
 
-    msgs1 = [{"role": "system", "content": _SYSTEM_COMPACT}, {"role": "user", "content": part1_prompt}]
-    part1 = await _llm_stream_call(msgs1, model, max_tokens=3000)
-    if not part1.strip():
-        raise Exception("Réponse LLM vide (partie 1)")
-    logger.info(f"StrategiIA {session_id}: Part 1 OK ({len(part1)} chars)")
+Genere un rapport de pilotage strategique approfondi.
+INSTRUCTION : Genere UNIQUEMENT les sections 1 a 5 ci-dessous.
+## Votre situation analysee (5-6 lignes, ton empathique, montre que tu as compris)
+## Lecture strategique du dossier (6-8 lignes, qualifie le dossier, identifie enjeu et frein)
+## Cadre juridique applicable (4-5 lignes, cite articles et jurisprudences)
+## Leviers prioritaires identifies (4-6 leviers concrets avec chiffres si possible)
+## Points de vigilance (4-5 points, formules de maniere rassurante)
+Commence directement par ## Votre situation analysee."""
 
-    # PART 2: Sections 6-9 (angles sous-exploites, evaluation, plan d'action, engagement)
-    part2_prompt = f"""Suite du rapport. Dossier : {user_text[:500]}
+    part2_prompt = f"""{situation_block}
 
-Premiere partie generee :
-{part1[:1200]}
-
-Complete maintenant avec UNIQUEMENT ces sections :
-## Angles potentiellement sous-exploites
-(3-4 angles concrets)
-## Evaluation et perspectives
-(5-6 lignes avec estimation)
-## Plan d'action recommande
-(5 actions numerotees avec delais)
-## Notre engagement a vos cotes
-(termine par : **Vous n'etes plus seul(e) face a votre situation.** et **Desormais, Strategie & Expertise Sante devient votre bouclier.**)
-
+Genere la SUITE d'un rapport de pilotage strategique approfondi.
+INSTRUCTION : Genere UNIQUEMENT les sections 6 a 9 ci-dessous.
+## Angles potentiellement sous-exploites (3-4 angles concrets que le client n'a pas envisages)
+## Evaluation et perspectives (5-6 lignes avec estimation financiere si applicable)
+## Plan d action recommande (5 actions numerotees avec delais concrets)
+## Notre engagement a vos cotes (4-5 lignes, termine EXACTEMENT par :
+**Vous n'etes plus seul(e) face a votre situation.**
+**Desormais, Strategie & Expertise Sante devient votre bouclier.**)
 Commence directement par ## Angles potentiellement sous-exploites."""
 
+    msgs1 = [{"role": "system", "content": _SYSTEM_COMPACT}, {"role": "user", "content": part1_prompt}]
     msgs2 = [{"role": "system", "content": _SYSTEM_COMPACT}, {"role": "user", "content": part2_prompt}]
-    part2 = await _llm_stream_call(msgs2, model, max_tokens=2500)
+
+    # Run BOTH calls in parallel
+    part1, part2 = await asyncio.gather(
+        _llm_stream_call(msgs1, model, max_tokens=3000),
+        _llm_stream_call(msgs2, model, max_tokens=2500),
+    )
+
+    if not part1.strip():
+        raise Exception("Réponse LLM vide (partie 1)")
     if not part2.strip():
         raise Exception("Réponse LLM vide (partie 2)")
-    logger.info(f"StrategiIA {session_id}: Part 2 OK ({len(part2)} chars)")
+    logger.info(f"StrategiIA {session_id}: Parallel OK — Part1={len(part1)} chars, Part2={len(part2)} chars")
 
     return part1.strip() + "\n\n" + part2.strip()
 
@@ -1901,6 +1902,19 @@ async def strategiia_admin_bypass(request: Request):
     job_id = str(uuid.uuid4())[:12]
     _jobs[job_id] = {"status": "pending"}
     asyncio.create_task(_run_analysis(job_id, type_dossier, regime, situation, True, email, similar_cases, case_context, is_admin_test=True))
+
+    # Register in premium_analyses for admin relecture workflow
+    pa_id = str(uuid.uuid4())
+    await db.premium_analyses.insert_one({
+        "id": pa_id, "type": "strategiia", "email": email,
+        "context": situation[:500], "status": "en_attente",
+        "premium_pdf": premium_pdf, "analyse_premium": True,
+        "relecture_expert_required": True, "admin_test": True,
+        "amount": 0, "job_id": job_id,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    logger.info(f"StrategiIA admin-bypass {job_id}: premium_analyses entry {pa_id} created")
+
     return {"job_id": job_id, "status": "pending", "admin_test": True, "premium_pdf": premium_pdf, "analyse_premium": analyse_premium}
 
 

@@ -6,13 +6,22 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA s
 ## Architecture
 - **Frontend** : React 18 + Shadcn/UI + Tailwind CSS
 - **Backend** : FastAPI + MongoDB
-- **IA** : Anthropic Claude Sonnet 4.5 (natif) + Fallback Emergent Universal Key (streaming httpx)
+- **IA** : Anthropic Claude Sonnet 4.5 (natif) + Fallback Emergent Universal Key (streaming httpx parallele)
 - **PDF** : fpdf2 + jsPDF | **Email** : Resend | **Paiements** : Stripe + PayPal | **Stockage** : S3
 
 ## Agents IA V2 Premium
 - StrategiIA (8.97/10) et Dossier Express IA (9.15/10)
 - Fonctionnels via cle Anthropic native OU Emergent Universal Key (fallback streaming)
-- Premium: analyse en 2 appels streaming pour contourner le gateway timeout de 60s du proxy Emergent
+- Premium Emergent: 2 appels LLM PARALLELES (asyncio.gather) pour contourner le 60s gateway timeout
+- Sections 1-5 et sections 6-9 generes independamment puis assembles
+- Temps: ~57s backend, ~90s UX totale
+
+## Pipeline de relecture expert (CORRIGE 29/03/2026)
+- `premium_analyses` collection : file d'attente relecture pour StrategiIA ET Dossier Express
+- Chaque entry a : type, email, status, relecture_expert_required=true, dossier_id
+- admin-bypass-premium cree maintenant une entree automatiquement
+- 47/47 documents ont relecture_expert_required=True
+- Workflow: En attente -> Traiter -> En cours -> Relire/Valider -> Valide -> Envoyer au client
 
 ## Pipeline de Securite Paiement (DONE)
 - Double protection pre-paiement : Launch Mode + LLM Health Check
@@ -25,18 +34,14 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA s
 - Suivi Client Temps Reel (/dossier-express/suivi)
 - Diagnostic Services Admin (/admin/services-status)
 
-## Bug Fix - StrategiIA Premium Timeout (DONE - 29 mars 2026)
-- Cause racine : proxy Emergent gateway timeout 60s, prompt premium trop lourd (>9000 chars)
-- Fix : streaming httpx direct + decoupe en 2 appels (Part 1: sections 1-5, Part 2: sections 6-9)
-- Resultat : analyses premium de 13000+ chars generees en ~90s
-- Fix supplementaire : bouton "Debloquer" readwall active en mode admin sans email
-
 ## Tests passes
 - iteration_140-145 : 121 tests, 0 echec
-- Test pratique UI admin 29/03/2026 : Formulaire -> Loading -> Teaser -> Readwall bypass -> Basic -> Premium COMPLET
+- Audit timing 29/03/2026 : 57s backend, 90s UX totale
+- Test UI admin : Formulaire -> Teaser -> Basic -> Premium COMPLET
+- Test admin relecture : StrategiIA 5 items, Dossier Express 42 items
 
 ## Etat des services (Preview)
-- IA Anthropic : OK (emergent_fallback + streaming)
+- IA Anthropic : OK (emergent_fallback + streaming parallele)
 - Paiement Stripe : ERREUR (cle test invalide)
 - Email Resend : OK (sandbox)
 - Stockage S3 : NON CONFIGURE
@@ -45,10 +50,10 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA s
 
 ## Backlog
 ### P1 : Cles de production
-- Fournir ANTHROPIC_API_KEY live
-- Fournir STRIPE_API_KEY live (sk_live_...)
+- Fournir ANTHROPIC_API_KEY live (elimine le split, retour a 1 appel = ~30s)
+- Fournir STRIPE_API_KEY live
 - Configurer webhook Stripe live
-- Configurer S3 (AWS_ACCESS_KEY_ID, etc.)
+- Configurer S3
 - Verifier domaine Resend
 
 ### P2 : Integration HubSpot CRM
