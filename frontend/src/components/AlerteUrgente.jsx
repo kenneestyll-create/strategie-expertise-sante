@@ -20,8 +20,8 @@ export const AlerteUrgente = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!nom.trim() || !telephone.trim()) {
-      toast.error('Veuillez renseigner votre nom et téléphone');
+    if (!nom.trim() || !telephone.trim() || !email.trim() || !email.includes('@')) {
+      toast.error('Veuillez renseigner votre nom, téléphone et email');
       return;
     }
     setSending(true);
@@ -179,7 +179,7 @@ export const AlerteUrgente = () => {
 
                 {/* Email (optional) */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="alerte-email" className="text-sm font-medium">Email (optionnel)</Label>
+                  <Label htmlFor="alerte-email" className="text-sm font-medium">Email *</Label>
                   <Input
                     id="alerte-email"
                     value={email}
