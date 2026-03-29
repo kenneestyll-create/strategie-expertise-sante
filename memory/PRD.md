@@ -7,35 +7,36 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA i
 - **Frontend** : React 18 + Shadcn/UI + Tailwind CSS
 - **Backend** : FastAPI + MongoDB
 - **IA** : Anthropic Claude Sonnet 4.5 — via Emergent LLM proxy
-- **PDF** : fpdf2 (premiumise 29/03/2026) | **Email** : Resend | **Paiements** : Stripe + PayPal
+- **PDF** : fpdf2 (Premium Signature V2 - 30/03/2026) | **Email** : Resend | **Paiements** : Stripe + PayPal
 
-## Corrections effectuees (29-30/03/2026)
+## PDF Premium Signature V2 (30/03/2026)
+
+### Ameliorations visuelles (Dossier Express + StrategiIA)
+1. **Espacement augmente** : section_title +60%, body_text line-height 4.2→4.8, bullet spacing +88%, lignes vides +67%
+2. **Hierarchie renforcee** : sous-titres colores par service (or/navy), titres 10→10.5pt
+3. **Closing standardise** : bloc officiel identique sur tous les PDFs
+4. **Footer officiel** : `(c) 2026 SES -- SES-2026-XXXXX -- Document confidentiel -- Analyse preliminaire a visee informative -- strategie-expertise-sante.fr`
+5. **Mention confidentialite** : bloc discret avant la signature
+6. **Signature emotionnelle** : "Vous n'etes plus seul face a votre combat. Dorenavant, S.E.S est votre bouclier."
+
+### Fichier modifie
+- `/app/backend/utils/pdf.py` — SEUL fichier modifie
+
+## Corrections precedentes (29-30/03/2026)
 
 ### DataConsentBox variants
-- `StrategiIA.jsx` : `variant="informations"` (ne collecte pas de documents)
-- `ContactPage.jsx` : `variant="informations"` (ne collecte pas de documents)
-- `DossierExpressPage.jsx` : variant par defaut `"documents"` (collecte documents) + toujours visible (meme admin)
+- `StrategiIA.jsx` : `variant="informations"`
+- `ContactPage.jsx` : `variant="informations"`
+- `DossierExpressPage.jsx` : variant defaut `"documents"` + toujours visible
 
-### Bug focus PDF - Page A propos
-- Lazy-loading du PDF via IntersectionObserver (charge uniquement quand visible)
-- Empeche le plugin PDF Chrome de voler le focus au chargement
+### Robot assistant refonte
+- Bulle texte supprimee, prompt reecrit (orienteur ultra-court), limite 3 questions
+- Backend chatbot branche sur Emergent LLM proxy
 
-### Bug outline bleu "Outils" navbar
-- Ajout `outline-none focus:outline-none focus-visible:outline-none` sur dropdownBtnClass
-
-### Email obligatoire - Question urgente
-- Label "Email (optionnel)" → "Email *"
-- Validation ajoutee : email requis + format basique
-
-### Robot assistant - Refonte complete (30/03/2026)
-- **Bulle texte supprimee** : plus de "StrategiIA — Je vous aide..." en bas a droite
-- **Animation pulsante supprimee** sur le bouton robot
-- **Prompt systeme reecrit** : orienteur ultra-court (1 phrase + 1 lien, 2 lignes max)
-- **Limite 3 questions** par session (etait 5)
-- **max_tokens reduit** de 350 a 100
-- **Message d'accueil simplifie** 
-- **Header robot** : "Assistant d'orientation — Je vous guide vers le bon outil"
-- **Backend chatbot** : utilise Emergent LLM proxy (etait branche sur ANTHROPIC_API_KEY vide)
+### Bugs corriges
+- Focus PDF page A propos (lazy-load)
+- Outline bleu "Outils" navbar
+- Email obligatoire Question urgente
 
 ## Etat des services
 - IA Anthropic (Emergent proxy) : OK
@@ -46,14 +47,11 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA i
 
 ## Backlog
 ### P0 : TERMINE
-- Toutes corrections ci-dessus
 
 ### P1 : Cles de production
-- ANTHROPIC_API_KEY native (pipeline ~30s)
 - STRIPE_API_KEY live
-- S3 config (S3_ACCESS_KEY + S3_SECRET_KEY)
+- S3 config
 - Domaine Resend verifie
 
 ### P2 : Integration HubSpot CRM (en attente credentials)
-### P3 : Consolidation moteurs PDF
 ### P4 : Contenu juridique final

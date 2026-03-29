@@ -23,6 +23,7 @@ _STRIP_PATTERNS = [
     re.compile(r'^---+$'),
     re.compile(r'(?i)^\W*vous\s+n.{0,3}tes\s+plus\s+seul'),
     re.compile(r'(?i)^\W*d.sormais.*devient\s+votre\s+bouclier'),
+    re.compile(r'(?i)^\W*d.r.navant.*bouclier'),
     re.compile(r'(?i)^\W*et\s+maintenant\s*\??'),
     re.compile(r'(?i)^\W*vous\s+souhaitez\s+aller\s+plus\s+loin'),
     re.compile(r'(?i)^\W*premi.re\s+consultation\s+offerte'),
@@ -185,11 +186,12 @@ def generate_secured_pdf(
             self.set_line_width(0.3)
             self.line(LM, self.get_y(), 210 - RM, self.get_y())
             self.ln(2.5)
-            self.set_font("Helvetica", "", 6)
+            self.set_font("Helvetica", "", 5.5)
             self.set_text_color(*_MUTED)
+            footer_txt = f"(c) {year} Strategie & Expertise Sante -- {report_number} -- Document confidentiel -- Analyse preliminaire a visee informative -- strategie-expertise-sante.fr"
             self.cell(
-                CW, 4,
-                f"(c) {year} Strategie & Expertise Sante  |  strategie-expertise-sante.fr  |  Document confidentiel",
+                CW, 3.5,
+                footer_txt,
                 align="C",
             )
 
@@ -369,17 +371,17 @@ def generate_secured_pdf(
     def section_title(text):
         nonlocal section_count
         section_count += 1
-        # Space before (more breathing)
+        # Generous breathing between major sections
         if section_count > 1:
-            pdf.ln(5)
-            # Subtle separator between major sections
+            pdf.ln(8)
+            # Subtle separator
             sep_y = pdf.get_y()
             pdf.set_draw_color(*_LIGHT_LINE)
             pdf.set_line_width(0.15)
             pdf.line(LM + 5, sep_y, LM + CW - 5, sep_y)
-            pdf.ln(5)
+            pdf.ln(8)
         else:
-            pdf.ln(3)
+            pdf.ln(5)
 
         # Accent bar — service-specific color
         sy = pdf.get_y()
@@ -388,30 +390,33 @@ def generate_secured_pdf(
             bar_w = 2.5
         else:
             pdf.set_fill_color(*_DE_ACCENT)
-            bar_w = 2
-        pdf.rect(LM, sy, bar_w, 6.5, "F")
+            bar_w = 2.5
+        pdf.rect(LM, sy, bar_w, 7, "F")
 
-        # Section title
+        # Section title — larger, bolder
         pdf.set_x(LM + bar_w + 4)
-        pdf.set_font("Helvetica", "B", 10)
+        pdf.set_font("Helvetica", "B", 10.5)
         pdf.set_text_color(*_BLACK)
-        pdf.cell(CW - bar_w - 4, 6.5, _safe(text))
-        pdf.ln(9)
+        pdf.cell(CW - bar_w - 4, 7, _safe(text))
+        pdf.ln(11)
 
     def sub_title(text):
-        pdf.ln(3)
+        pdf.ln(5)
         pdf.set_font("Helvetica", "B", 8.5)
-        pdf.set_text_color(*_DARK_TEXT)
+        if is_strategiia:
+            pdf.set_text_color(*_STRAT_ACCENT)
+        else:
+            pdf.set_text_color(*_DE_ACCENT)
         pdf.set_x(LM + 3)
         pdf.cell(CW - 3, 5, _safe(text))
-        pdf.ln(6)
+        pdf.ln(7)
 
     def body_text(text):
         pdf.set_font("Helvetica", "", 8)
         pdf.set_text_color(*_BODY_TEXT)
         pdf.set_x(LM)
-        pdf.multi_cell(CW, 4.2, _safe(text), markdown=True)
-        pdf.ln(1)
+        pdf.multi_cell(CW, 4.8, _safe(text), markdown=True)
+        pdf.ln(2.5)
 
     def bullet_text(text):
         pdf.set_font("Helvetica", "", 8)
@@ -423,8 +428,8 @@ def generate_secured_pdf(
         else:
             pdf.set_fill_color(*_DE_ACCENT)
         pdf.rect(bx - 3.5, by, 1.3, 1.3, "F")
-        pdf.multi_cell(CW - 7, 4.2, _safe(text), markdown=True)
-        pdf.ln(0.8)
+        pdf.multi_cell(CW - 7, 4.8, _safe(text), markdown=True)
+        pdf.ln(1.5)
 
     def bold_text(text):
         pdf.set_font("Helvetica", "B", 8)
@@ -496,7 +501,7 @@ def generate_secured_pdf(
         stripped = lines[i].strip()
 
         if not stripped:
-            pdf.ln(1.5)
+            pdf.ln(2.5)
             i += 1
             continue
 
@@ -610,13 +615,13 @@ def generate_secured_pdf(
         pdf.ln(3)
 
     # ══════════════════════════════════════════════════════════════
-    # Service-specific closing section
+    # Closing section — Premium Signature S.E.S (standardized)
     # ══════════════════════════════════════════════════════════════
     space = pdf.h - 18 - pdf.get_y()
-    if space < 75:
+    if space < 95:
         pdf.add_page()
 
-    pdf.ln(6)
+    pdf.ln(8)
 
     # Section title
     ty = pdf.get_y()
@@ -632,80 +637,50 @@ def generate_secured_pdf(
         pdf.cell(CW - 6, 7, _safe("Votre situation, notre regard"))
     else:
         pdf.cell(CW - 6, 7, _safe("Ce que cette etude vous apporte"))
-    pdf.ln(11)
+    pdf.ln(12)
 
-    # ── Part 1: Emotional close ──
+    # ── Part 1: Standardized emotional opening ──
     pdf.set_font("Helvetica", "I", 8.5)
     pdf.set_text_color(*_BODY_TEXT)
     pdf.set_x(LM)
-    if is_strategiia:
-        pdf.multi_cell(CW, 4.5, _safe(
-            "Ce rapport a ete concu pour structurer votre situation avec clarte et precision. "
-            "Il met en lumiere les elements determinants de votre dossier, les enjeux reels, "
-            "et les axes d'action qui s'offrent a vous. Chaque situation est unique, "
-            "et c'est cette singularite que nous avons cherche a capter ici."
-        ))
-    else:
-        pdf.multi_cell(CW, 4.5, _safe(
-            "Ce document constitue une premiere lecture structuree de vos pieces. "
-            "Il organise les faits, identifie les elements juridiques et medicaux cles, "
-            "et pose les bases d'une strategie exploitable. "
-            "C'est un travail de fond, concu pour servir votre demarche."
-        ))
+    pdf.multi_cell(CW, 5, _safe(
+        "Votre situation merite plus qu'une simple lecture automatisee : "
+        "elle merite une strategie claire, humaine et rigoureuse."
+    ))
     pdf.ln(4)
 
-    # ── Part 2: Strategic transition ──
+    # ── Part 2: Structured value ──
+    pdf.set_font("Helvetica", "", 8)
+    pdf.set_text_color(*_BODY_TEXT)
+    pdf.set_x(LM)
+    pdf.multi_cell(CW, 5, _safe(
+        "Ce document vous apporte une premiere vision structuree de votre dossier, "
+        "mais certaines situations necessitent un regard plus approfondi, une relecture experte "
+        "et un accompagnement reellement adapte a vos enjeux."
+    ))
+    pdf.ln(4)
+
+    # ── Part 3: Elegant commercial transition ──
     sep_y = pdf.get_y()
     pdf.set_draw_color(*_LIGHT_LINE)
     pdf.set_line_width(0.15)
     pdf.line(LM + 20, sep_y, LM + CW - 20, sep_y)
-    pdf.ln(5)
+    pdf.ln(6)
 
     pdf.set_font("Helvetica", "", 8)
     pdf.set_text_color(*_BODY_TEXT)
     pdf.set_x(LM)
-    if is_strategiia:
-        pdf.multi_cell(CW, 4.5, _safe(
-            "Un rapport, aussi complet soit-il, reste une photographie a un instant donne. "
-            "Votre dossier comporte des nuances que seul un accompagnement humain "
-            "approfondi peut reveler pleinement : des leviers juridiques a activer, "
-            "des erreurs de procedure a identifier, des prejudices a chiffrer avec precision."
-        ))
-    else:
-        pdf.multi_cell(CW, 4.5, _safe(
-            "Cette pre-analyse pose un cadre solide. Mais transformer ce cadre en resultat "
-            "concret demande une expertise humaine : verifier chaque element, confronter les pieces "
-            "a la jurisprudence actuelle, et construire un argumentaire adapte a votre contexte specifique."
-        ))
+    pdf.multi_cell(CW, 5, _safe(
+        "Si vous souhaitez aller plus loin, Strategie & Expertise Sante peut vous accompagner "
+        "a travers une prestation personnalisee avec un de nos experts, "
+        "afin de transformer cette premiere analyse en veritable levier d'action."
+    ))
     pdf.ln(4)
 
-    pdf.set_font("Helvetica", "B", 8)
-    pdf.set_text_color(*_BLACK)
-    pdf.set_x(LM)
-    if is_strategiia:
-        pdf.multi_cell(CW, 4.5, _safe(
-            "Ce que ce rapport vous montre, c'est le potentiel reel de votre dossier. "
-            "Ce qu'un accompagnement expert vous apporte, c'est la capacite "
-            "de transformer ce potentiel en resultat tangible."
-        ))
-    else:
-        pdf.multi_cell(CW, 4.5, _safe(
-            "Ce que cette etude vous montre, c'est la solidite de vos elements. "
-            "Ce qu'un expert peut vous apporter, c'est la methode pour les "
-            "assembler en un dossier incontestable."
-        ))
-    pdf.ln(4)
-
-    # ── Part 3: CTA box ──
-    sep_y2 = pdf.get_y()
-    pdf.set_draw_color(*_LIGHT_LINE)
-    pdf.set_line_width(0.15)
-    pdf.line(LM + 20, sep_y2, LM + CW - 20, sep_y2)
-    pdf.ln(5)
-
+    # ── Part 4: CTA box ──
     box_y = pdf.get_y()
     pdf.set_fill_color(*_IVORY)
-    box_h = 28
+    box_h = 24
     pdf.rect(LM, box_y, CW, box_h, "F")
     if is_strategiia:
         pdf.set_fill_color(*_GOLD)
@@ -722,21 +697,19 @@ def generate_secured_pdf(
     pdf.set_font("Helvetica", "", 7.5)
     pdf.set_text_color(*_BODY_TEXT)
     if is_strategiia:
-        pdf.multi_cell(CW - 12, 4, _safe(
+        pdf.multi_cell(CW - 12, 4.2, _safe(
             "Nos experts vous proposent un accompagnement sur mesure : "
-            "analyse approfondie de votre situation, strategie de recours personnalisee, "
-            "preparation d'expertise medicale, et defense de vos interets "
-            "a chaque etape decisive."
+            "analyse approfondie, strategie de recours personnalisee, "
+            "preparation d'expertise medicale et defense de vos interets."
         ))
     else:
-        pdf.multi_cell(CW - 12, 4, _safe(
+        pdf.multi_cell(CW - 12, 4.2, _safe(
             "Nos experts peuvent prolonger cette etude : "
-            "relecture approfondie de chaque piece, verification des delais et procedures, "
-            "chiffrage precis des prejudices, et construction d'un dossier "
-            "pret a etre presente en instance."
+            "relecture approfondie, verification des delais et procedures, "
+            "chiffrage precis des prejudices et construction d'un dossier incontestable."
         ))
 
-    pdf.set_y(box_y + box_h + 5)
+    pdf.set_y(box_y + box_h + 6)
 
     # ── QR Code + Contact ──
     qr_url = "https://strategie-expertise-sante.fr/contact?via=qr&source=" + ("strategiia" if is_strategiia else "dossier_express")
@@ -796,21 +769,46 @@ def generate_secured_pdf(
     pdf.set_text_color(*_MUTED)
     pdf.cell(CW, 3, _safe("Premiere consultation offerte  |  strategie-expertise-sante.fr/contact"), align="C", new_x="LMARGIN", new_y="NEXT")
 
-    pdf.ln(4)
+    pdf.ln(6)
 
-    # ── Brand signature ──
+    # ── Confidentiality notice ──
+    conf_y = pdf.get_y()
+    space_conf = pdf.h - 18 - conf_y
+    if space_conf < 35:
+        pdf.add_page()
+        pdf.ln(4)
+
+    pdf.set_font("Helvetica", "B", 7)
+    pdf.set_text_color(*_MUTED)
+    pdf.set_x(LM)
+    pdf.cell(CW, 4, _safe("Confidentialite"), align="L")
+    pdf.ln(5)
+    pdf.set_font("Helvetica", "I", 6.5)
+    pdf.set_text_color(*_MUTED)
+    pdf.set_x(LM)
+    pdf.multi_cell(CW, 3.5, _safe(
+        "Ce rapport a ete elabore a partir des informations et pieces transmises "
+        "dans le cadre exclusif de l'analyse de votre dossier. "
+        "Les documents fournis sont traites avec une attention particuliere "
+        "en raison de leur caractere potentiellement sensible."
+    ))
+
+    pdf.ln(6)
+
+    # ── Brand signature — Standardized emotional close ──
     sep_y3 = pdf.get_y()
     pdf.set_draw_color(*_GOLD)
     pdf.set_line_width(0.3)
     pdf.line(70, sep_y3, 140, sep_y3)
-    pdf.ln(4)
+    pdf.ln(5)
 
-    pdf.set_font("Helvetica", "BI", 8.5)
+    pdf.set_font("Helvetica", "BI", 9)
+    pdf.set_text_color(*_BLACK)
+    pdf.cell(CW, 5, _safe("Vous n'etes plus seul face a votre combat."), align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(1)
+    pdf.set_font("Helvetica", "B", 9)
     pdf.set_text_color(*_GOLD)
-    if is_strategiia:
-        pdf.cell(CW, 4.5, _safe("Strategie & Expertise Sante -- Votre bouclier."), align="C")
-    else:
-        pdf.cell(CW, 4.5, _safe("Strategie & Expertise Sante -- La methode au service de vos droits."), align="C")
+    pdf.cell(CW, 5, _safe("Dorenavant, S.E.S est votre bouclier."), align="C")
 
     # ── Watermark ──
     if with_watermark:
