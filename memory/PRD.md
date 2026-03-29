@@ -13,76 +13,95 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA s
 ## Autonomie : 100%
 0 dependance a emergentintegrations. Tous SDK natifs.
 
+---
+
 ## Agents IA V2 Premium (Valides le 29 mars 2026)
 
 ### StrategiIA — Note globale : 8.97/10
 - 9 sections systematiques (100% conformite)
-- Cible volume ajustee : 1400-1800 mots
-- Citations juridiques reelles (articles CSS, jurisprudences Cour de cassation)
-- Chiffrage realiste des indemnisations (IP, PGPF)
+- Citations juridiques reelles
+- Chiffrage realiste des indemnisations
 
 ### Dossier Express IA — Note globale : 9.15/10
 - 9 sections systematiques (100% conformite)
-- Cible volume ajustee : 1500-2200 mots
-- Pieces detectees, Chronologie reconstruite, Elements cles, Completude documentaire
+- Pieces detectees, Chronologie reconstruite, Completude documentaire
 
-### Articulation Dossier Express -> StrategiIA
-- Chaine intelligente : DE structure la matiere -> StrategiIA produit lecture strategique enrichie
-
-### Validation metier (29 mars 2026)
-- 9/10 tests reels executes sur Claude Sonnet 4
-- Grille a 8 criteres x 10 points
-- **Verdict : COMMERCIALISABLE avec confiance**
+---
 
 ## Pipeline de Securite Paiement (DONE - 29 mars 2026)
 
-### Pre-paiement : LLM Health Check Bloquant
-- Endpoint `/api/health/llm` verifie cle Anthropic, quota, reponse
-- Checkout `/api/dossier-express/checkout` BLOQUE si LLM indisponible (HTTP 503)
-- Frontend verifie AVANT de lancer le checkout
-- Message client premium : "Le service est momentanement indisponible pour finalisation technique"
+### Pre-paiement : Double Protection
+1. **Launch Mode Check** : Mode Ouvert/Controle/Indisponible — bloque le checkout si indisponible
+2. **LLM Health Check** : Verifie cle Anthropic, quota, reponse — bloque le checkout si IA down
+- Message client premium : "Le service est momentanement indisponible"
 
 ### Post-paiement : Pipeline Fail-safe Granulaire
-- 8 etapes tracees : checkout_valide -> documents_recus -> extraction_en_cours -> analyse_ia -> pdf_en_cours -> stockage_en_cours -> email_en_cours -> termine
-- 2 niveaux de statut : `delivery_status` + `processing_step`
-- delivery_status : en_attente_traitement | incident_technique | livre_client | genere_sans_email
-- processing_step : checkout_valide | documents_recus | extraction_en_cours | analyse_ia | pdf_en_cours | stockage_en_cours | email_en_cours | termine | erreur_ia | erreur_pdf | erreur_stockage | erreur_email | relance_admin
-- Notification admin automatique en cas d'echec
-- Email de delai professionnel au client en cas d'incident
+- 8 etapes tracees avec double statut (`delivery_status` + `processing_step`)
+- Notification admin automatique + email delai client en cas d'echec
 - Validation analyse (>200 chars) avant PDF
 
-### Admin Visibility
-- 5 KPI cards : Total | Livres | En cours | En attente | Incidents
-- Barre de filtres : Tous | Livres | En cours | Incidents | En attente
-- Badges delivery_status colores + processing_step
-- Bouton "Relancer" pour dossiers en erreur (avec retry_count)
-- Endpoint `/api/admin/dossier-express/{id}/retry`
+### Admin Visibility Operationnelle
+- 5 KPI cards production : Total | Livres | En cours | En attente | Incidents
+- Filtres : Tous | Livres | En cours | Incidents | En attente
+- Bouton "Relancer" pour dossiers en erreur
 
-### Client UX Premium
-- Pre-checkout : verification sante LLM, message rassurant si indisponible
-- Processing : timeline 5 etapes avec detection incident
-- Incident : page dediee "Votre dossier est bien pris en charge" avec message premium
-- Erreur : zero mention technique, ton humain et rassurant
+---
 
-## Fonctionnalites Frontend (DONE)
-- PremiumAnalysisRenderer : sections parsees avec icones dediees
-- Dashboard Admin cockpit premium + Dark Mode Noir & Or
-- Scanner documents natif, Upload chunke 45MB
-- Admin Human Review, Badge "Relu par expert"
-- Mascotte Strate + TTS francais + Admin CRUD
+## Preparation Bascule Commerciale (DONE - 29 mars 2026)
 
-## Tests passes
+### Mode Soft Launch
+- 3 etats systeme : **Ouvert** | **Ouverture controlee** | **Temporairement indisponible**
+- Toggle admin en temps reel
+- Impact direct sur la possibilite de commander
+- Message client premium en mode indisponible
+
+### Monitoring Live Dashboard (Admin)
+- 7 KPIs temps reel :
+  - Commandes du jour / 7 jours
+  - Taux de reussite (7j)
+  - Incidents du jour
+  - Delai moyen de traitement
+  - Dossiers en attente
+  - Interventions requises
+- Incidents recents avec details
+
+### Suivi Client Temps Reel
+- Page publique `/dossier-express/suivi?id={dossier_id}`
+- Timeline 7 etapes visuelles :
+  1. Dossier bien recu
+  2. Documents en cours de preparation
+  3. Lecture documentaire en cours
+  4. Analyse en cours de finalisation
+  5. Rapport en cours de preparation
+  6. Envoi en cours
+  7. Rapport disponible
+- En cas d'incident : message premium rassurant
+- Bouton de telechargement quand rapport pret
+- Auto-refresh toutes les 15 secondes
+- Zero terme technique visible
+
+### Documents de Lancement
+- `CHECKLIST_LIVE.md` : 35+ elements par categorie
+- `STRATEGIE_SOFT_LAUNCH.md` : 3 phases de montee progressive
+- `PROTOCOLE_TESTS_LIVE.md` : 8 scenarios de test avec criteres
+
+---
+
+## Tests Passes
 - iteration_140 : Cockpit UI (35/35)
 - iteration_141 : Dark Mode (14/14)
 - iteration_142 : V2 Premium IA (12/12)
-- iteration_143 : Pipeline Securite Paiement (16/16 — 9 backend + 7 frontend)
+- iteration_143 : Pipeline Securite Paiement (16/16)
+- iteration_144 : Bascule Commerciale (25/25)
 - Validation metier : 9 analyses reelles evaluees
+
+---
 
 ## Backlog
 ### P1
-- Activation paiements live (cles Stripe live + Anthropic)
+- Activation paiements live (cles Stripe live + Anthropic a fournir)
 ### P2
-- Integration HubSpot CRM
+- Integration HubSpot CRM (en attente credentials)
 ### P3
 - Refactoring EmailTemplateEditor.jsx
 - Consolidation moteurs PDF
