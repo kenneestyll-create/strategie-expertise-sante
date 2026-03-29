@@ -674,6 +674,11 @@ export const DossierExpressPage = () => {
                   {/* Document upload */}
                   <div className="space-y-2">
                     <Label>Documents (optionnel, max 10 fichiers)</Label>
+                    {isAdminMode && (
+                      <div className="text-[10px] font-mono bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded inline-block" data-testid="admin-debug-badge">
+                        Uploader actif: DocumentUploader.jsx | Admin: ON | Drag&Drop: v2-refcounter
+                      </div>
+                    )}
                     <DocumentUploader
                       files={files}
                       onFilesChange={setFiles}
@@ -711,7 +716,7 @@ export const DossierExpressPage = () => {
                     />
                   </div>
 
-                  <DataConsentBox checked={consent} onChange={setConsent} className="mt-3" />
+                  {!isAdminMode && <DataConsentBox checked={consent} onChange={setConsent} className="mt-3" />}
 
                   {/* Upsell options */}
                   <div className="space-y-2.5 pt-2">
@@ -747,7 +752,7 @@ export const DossierExpressPage = () => {
                       size="lg"
                       className="w-full rounded-xl gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold shadow-lg shadow-amber-500/15 hover:shadow-amber-500/25 transition-all"
                       onClick={handleSubmitDossier}
-                      disabled={loading || !form.situation.trim() || (!isAdminMode && !form.email) || !consent}
+                      disabled={loading || !form.situation.trim() || (!isAdminMode && (!form.email || !consent))}
                       data-testid="de-submit-button"
                     >
                       {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi et analyse en cours...</> : <><Brain className="w-5 h-5" /> Lancer l'analyse Dossier Express IA</>}
@@ -757,7 +762,7 @@ export const DossierExpressPage = () => {
                       size="lg"
                       className="w-full rounded-xl gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold shadow-lg shadow-amber-500/15 hover:shadow-amber-500/25 transition-all"
                       onClick={handleCheckout}
-                      disabled={loading || (!isAdminMode && (!form.email || !form.name)) || !consent}
+                      disabled={loading || (!isAdminMode && (!form.email || !form.name || !consent))}
                       data-testid="de-checkout-button"
                     >
                       {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection vers le paiement...</> : <><CreditCard className="w-5 h-5" /> {adminPaid ? 'Mode Admin — Paiement validé' : `Payer ${totalAmount} € — Analyse sous 2h`}</>}

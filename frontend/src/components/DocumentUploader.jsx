@@ -387,12 +387,41 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
     }
   };
 
+  const dragCounterRef = useRef(0);
+
   const handleDrop = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
+    dragCounterRef.current = 0;
     setDragOver(false);
-    handleFiles(e.dataTransfer.files);
+    if (e.dataTransfer?.files?.length > 0) {
+      handleFiles(e.dataTransfer.files);
+    }
   }, [handleFiles]);
+
+  const handleDragEnter = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current += 1;
+    if (e.dataTransfer?.types?.includes('Files')) {
+      setDragOver(true);
+    }
+  }, []);
+
+  const handleDragLeave = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current -= 1;
+    if (dragCounterRef.current <= 0) {
+      dragCounterRef.current = 0;
+      setDragOver(false);
+    }
+  }, []);
+
+  const handleDragOver = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
 
   const handleScanCapture = useCallback(async (file, imageFiles) => {
     setShowScanner(false);
@@ -438,11 +467,11 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
       {/* Drop zone + Scan button */}
       <div className="flex gap-2">
         <div
-          className={`flex-1 border-2 border-dashed rounded-xl p-6 text-center transition-colors cursor-pointer relative ${dragOver ? 'border-accent bg-accent/5 scale-[1.01]' : 'border-border hover:border-accent/50'}`}
+          className={`flex-1 border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200 cursor-pointer relative ${dragOver ? 'border-accent bg-accent/5 scale-[1.01] ring-2 ring-accent/20' : 'border-border hover:border-accent/50'}`}
           onDrop={handleDrop}
-          onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
-          onDragEnter={e => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }}
-          onDragLeave={e => { e.preventDefault(); e.stopPropagation(); setDragOver(false); }}
+          onDragOver={handleDragOver}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
           onClick={() => inputRef.current?.click()}
           data-testid="upload-dropzone"
         >
