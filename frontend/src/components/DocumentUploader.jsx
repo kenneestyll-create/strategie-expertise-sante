@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -285,6 +285,9 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
 
   const [compressInfo, setCompressInfo] = useState(null); // { count, savedBytes }
   const [dragOver, setDragOver] = useState(false);
+  const dropzoneRef = useRef(null);
+  const dragCounterRef = useRef(0);
+  const lastDropRef = useRef(0);
 
   const allChecked = checks.readable && checks.personal_info && checks.dates_signatures;
   const hasFiles = files.length > 0;
@@ -387,40 +390,71 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
     }
   };
 
-  const dragCounterRef = useRef(0);
+  // Native DOM drag-and-drop — most reliable cross-browser approach
+  useEffect(() => {
+    const el = dropzoneRef.current;
+    if (!el) return;
 
-  const handleDrop = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dragCounterRef.current = 0;
-    setDragOver(false);
-    if (e.dataTransfer?.files?.length > 0) {
-      handleFiles(e.dataTransfer.files);
-    }
-  }, [handleFiles]);
-
-  const handleDragEnter = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dragCounterRef.current += 1;
-    if (e.dataTransfer?.types?.includes('Files')) {
-      setDragOver(true);
-    }
-  }, []);
-
-  const handleDragLeave = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dragCounterRef.current -= 1;
-    if (dragCounterRef.current <= 0) {
+    const onDragEnter = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounterRef.current += 1;
+      if (e.dataTransfer && e.dataTransfer.types && e.dataTransfer.types.indexOf('Files') !== -1) {
+        setDragOver(true);
+      }
+    };
+    const onDragOver = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+    };
+    const onDragLeave = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounterRef.current -= 1;
+      if (dragCounterRef.current <= 0) {
+        dragCounterRef.current = 0;
+        setDragOver(false);
+      }
+    };
+    const onDrop = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       dragCounterRef.current = 0;
       setDragOver(false);
-    }
+      lastDropRef.current = Date.now();
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleFiles(e.dataTransfer.files);
+      }
+    };
+
+    el.addEventListener('dragenter', onDragEnter);
+    el.addEventListener('dragover', onDragOver);
+    el.addEventListener('dragleave', onDragLeave);
+    el.addEventListener('drop', onDrop);
+    return () => {
+      el.removeEventListener('dragenter', onDragEnter);
+      el.removeEventListener('dragover', onDragOver);
+      el.removeEventListener('dragleave', onDragLeave);
+      el.removeEventListener('drop', onDrop);
+    };
+  }, [handleFiles]);
+
+  // Prevent window-level drag from navigating away
+  useEffect(() => {
+    const prevent = (e) => { e.preventDefault(); };
+    window.addEventListener('dragover', prevent);
+    window.addEventListener('drop', prevent);
+    return () => {
+      window.removeEventListener('dragover', prevent);
+      window.removeEventListener('drop', prevent);
+    };
   }, []);
 
-  const handleDragOver = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  // Click handler that prevents opening dialog right after a drop
+  const handleDropzoneClick = useCallback(() => {
+    if (Date.now() - lastDropRef.current < 500) return;
+    inputRef.current?.click();
   }, []);
 
   const handleScanCapture = useCallback(async (file, imageFiles) => {
@@ -467,12 +501,9 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
       {/* Drop zone + Scan button */}
       <div className="flex gap-2">
         <div
+          ref={dropzoneRef}
           className={`flex-1 border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200 cursor-pointer relative ${dragOver ? 'border-accent bg-accent/5 scale-[1.01] ring-2 ring-accent/20' : 'border-border hover:border-accent/50'}`}
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onDragEnter={handleDragEnter}
-          onDragLeave={handleDragLeave}
-          onClick={() => inputRef.current?.click()}
+          onClick={handleDropzoneClick}
           data-testid="upload-dropzone"
         >
           <input
