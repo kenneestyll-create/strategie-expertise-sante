@@ -22,6 +22,9 @@ from utils.auth import get_current_admin, get_optional_admin
 from utils.email import notify_admin_premium_analysis
 from utils.pdf import generate_secured_pdf, generate_dossier_pdf
 from utils.storage import put_object
+from constants.statuses import Service, DossierStatus, DossierDelivery, DossierStep, PremiumStatus, JobStatus, DOSSIER_STEP_CLIENT_MAP, CLIENT_STEPS_DISPLAY
+from constants.workflows import LLM_MAX_RETRIES, LLM_RETRY_DELAY_SECONDS, LLM_MIN_ANALYSIS_LENGTH, STRATEGIIA_FREE_MONTHLY_QUOTA, MAX_FILE_SIZE, MAX_TOTAL_SIZE, MAX_FILES
+from constants.guards import assert_valid_service, assert_premium_analyses_entry
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY", "")
@@ -488,16 +491,16 @@ async def extract_document_text(request: Request):
     if not files_data:
         return {"extracted_text": "", "files_processed": 0, "details": []}
 
-    MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
-    MAX_TOTAL_SIZE = 100 * 1024 * 1024  # 100 MB
-    MAX_FILES = 10
+    MAX_FILE_SIZE_LOCAL = MAX_FILE_SIZE
+    MAX_TOTAL_SIZE_LOCAL = MAX_TOTAL_SIZE
+    MAX_FILES_LOCAL = MAX_FILES
 
-    if len(files_data) > MAX_FILES:
-        raise HTTPException(status_code=400, detail=f"Maximum {MAX_FILES} fichiers autorises")
+    if len(files_data) > MAX_FILES_LOCAL:
+        raise HTTPException(status_code=400, detail=f"Maximum {MAX_FILES_LOCAL} fichiers autorises")
 
     results = []
     total_size = 0
-    for file_info in files_data[:MAX_FILES]:
+    for file_info in files_data[:MAX_FILES_LOCAL]:
         name = file_info.get("name", "unknown")
         file_type = file_info.get("type", "")
         data_b64 = file_info.get("data", "")
@@ -511,12 +514,12 @@ async def extract_document_text(request: Request):
             results.append({"name": name, "text": "", "method": "erreur decodage", "pages": 0, "size_kb": 0, "status": "decode_error"})
             continue
 
-        if len(file_bytes) > MAX_FILE_SIZE:
+        if len(file_bytes) > MAX_FILE_SIZE_LOCAL:
             results.append({"name": name, "text": "", "method": "fichier trop volumineux", "pages": 0, "size_kb": round(len(file_bytes) / 1024, 1), "status": "too_large"})
             continue
 
         total_size += len(file_bytes)
-        if total_size > MAX_TOTAL_SIZE:
+        if total_size > MAX_TOTAL_SIZE_LOCAL:
             results.append({"name": name, "text": "", "method": "taille totale depassee", "pages": 0, "size_kb": round(len(file_bytes) / 1024, 1), "status": "total_exceeded"})
             continue
 
@@ -570,7 +573,7 @@ async def extract_document_text(request: Request):
     stored_files = []
     try:
         from utils.storage import upload_file as storage_upload
-        for file_info in files_data[:MAX_FILES]:
+        for file_info in files_data[:MAX_FILES_LOCAL]:
             data_b64 = file_info.get("data", "")
             if not data_b64:
                 continue
@@ -902,6 +905,7 @@ async def _update_dossier_step(dossier_id: str, processing_step: str, delivery_s
 
 async def _process_dossier_express(dossier_id: str, email: str, name: str, situation: str, type_dossier: str, regime: str, documents_text: str, premium_pdf: bool = False):
     """Full pipeline with granular step tracking and fail-safe notifications."""
+    logger.info(f"[DOSSIER_EXPRESS][{dossier_id}][START] email={email} type={type_dossier} regime={regime} premium_pdf={premium_pdf}")
 
     # === STEP 1: Documents received ===
     await _update_dossier_step(dossier_id, "documents_recus", "en_attente_traitement")
@@ -1134,22 +1138,23 @@ CONTENU DES DOCUMENTS FOURNIS :
 
     # Auto-register in premium_analyses for admin review workflow
     try:
-        existing_pa = await db.premium_analyses.find_one({"type": "dossier_express", "email": email, "dossier_id": {"$exists": False}})
+        existing_pa = await db.premium_analyses.find_one({"type": Service.DOSSIER_EXPRESS, "email": email, "dossier_id": {"$exists": False}})
         if existing_pa:
             await db.premium_analyses.update_one({"id": existing_pa["id"]}, {"$set": {"dossier_id": dossier_id}})
-            logger.info(f"Dossier Express {dossier_id}: linked to existing premium_analyses {existing_pa['id']}")
+            logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] linked to existing premium_analyses {existing_pa['id']}")
         else:
-            pa_id = str(uuid.uuid4())
-            await db.premium_analyses.insert_one({
-                "id": pa_id, "type": "dossier_express", "email": email, "name": name,
-                "dossier_id": dossier_id, "status": "en_attente",
+            pa_entry = {
+                "id": str(uuid.uuid4()), "type": Service.DOSSIER_EXPRESS, "email": email, "name": name,
+                "dossier_id": dossier_id, "status": PremiumStatus.EN_ATTENTE,
                 "relecture_expert_required": True, "premium_pdf": premium_pdf,
                 "amount": 0, "admin_test": True,
                 "created_at": datetime.now(timezone.utc).isoformat()
-            })
-            logger.info(f"Dossier Express {dossier_id}: created premium_analyses entry {pa_id}")
+            }
+            assert_premium_analyses_entry(pa_entry, f"dossier_express_auto_register_{dossier_id}")
+            await db.premium_analyses.insert_one(pa_entry)
+            logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] created premium_analyses entry {pa_entry['id']}")
     except Exception as e:
-        logger.warning(f"Dossier Express {dossier_id}: premium_analyses registration failed (non-blocking): {e}")
+        logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}] premium_analyses registration failed (non-blocking): {e}")
 
 
 @router.get("/dossier-express/{dossier_id}/download")
@@ -1235,8 +1240,11 @@ async def dossier_express_checkout(request: Request):
         tag = "dossier_express_analyse_premium"
     metadata = {"package_id": tag, "package_name": f"Dossier Express IA ({amount:.0f}€)", "customer_email": email, "customer_name": name, "premium_pdf": "1" if premium_pdf else "0", "analyse_premium": "1" if analyse_premium else "0"}
     if analyse_premium:
-        await db.premium_analyses.insert_one({"id": str(uuid.uuid4()), "type": "dossier_express", "email": email, "name": name, "status": "en_attente", "relecture_expert_required": True, "premium_pdf": premium_pdf, "amount": amount, "created_at": datetime.now(timezone.utc).isoformat()})
-        asyncio.create_task(notify_admin_premium_analysis("dossier_express", email, name, amount, options={"analyse_premium": True, "premium_pdf": premium_pdf}))
+        pa_entry = {"id": str(uuid.uuid4()), "type": Service.DOSSIER_EXPRESS, "email": email, "name": name, "status": PremiumStatus.EN_ATTENTE, "relecture_expert_required": True, "premium_pdf": premium_pdf, "amount": amount, "created_at": datetime.now(timezone.utc).isoformat()}
+        assert_premium_analyses_entry(pa_entry, "dossier_express_checkout")
+        await db.premium_analyses.insert_one(pa_entry)
+        logger.info(f"[DOSSIER_EXPRESS][checkout] premium_analyses entry {pa_entry['id']} created for {email}")
+        asyncio.create_task(notify_admin_premium_analysis(Service.DOSSIER_EXPRESS, email, name, amount, options={"analyse_premium": True, "premium_pdf": premium_pdf}))
     try:
         session = await asyncio.to_thread(
             stripe_sdk.checkout.Session.create,
@@ -1262,32 +1270,10 @@ async def dossier_express_suivi(dossier_id: str, token: str = ""):
     if token and dossier.get("download_token") and token != dossier.get("download_token"):
         raise HTTPException(status_code=403, detail="Acces non autorise")
 
-    # Map internal steps to premium client-facing labels
-    STEP_MAP = {
-        "checkout_valide":     {"order": 1, "label": "Dossier bien recu",                "done": True},
-        "relance_admin":       {"order": 1, "label": "Dossier bien recu",                "done": True},
-        "documents_recus":     {"order": 2, "label": "Documents en cours de preparation", "done": True},
-        "extraction_en_cours": {"order": 3, "label": "Lecture documentaire en cours",     "done": True},
-        "analyse_ia":          {"order": 4, "label": "Analyse en cours de finalisation",  "done": True},
-        "pdf_en_cours":        {"order": 5, "label": "Rapport en cours de preparation",   "done": True},
-        "stockage_en_cours":   {"order": 6, "label": "Rapport en cours de preparation",   "done": True},
-        "email_en_cours":      {"order": 7, "label": "Envoi en cours",                    "done": True},
-        "termine":             {"order": 8, "label": "Rapport disponible",                 "done": True},
-        "erreur_ia":           {"order": 4, "label": "Verification complementaire en cours", "done": True},
-        "erreur_pdf":          {"order": 5, "label": "Verification complementaire en cours", "done": True},
-        "erreur_stockage":     {"order": 6, "label": "Verification complementaire en cours", "done": True},
-        "erreur_email":        {"order": 7, "label": "Verification complementaire en cours", "done": True},
-    }
+    # Map internal steps to premium client-facing labels (from centralized constants)
+    STEP_MAP = {k: {"order": v["order"], "label": v["label"], "done": True} for k, v in DOSSIER_STEP_CLIENT_MAP.items()}
 
-    CLIENT_STEPS = [
-        {"key": "received",    "label": "Dossier bien recu"},
-        {"key": "preparation", "label": "Documents en cours de preparation"},
-        {"key": "reading",     "label": "Lecture documentaire en cours"},
-        {"key": "analysis",    "label": "Analyse en cours de finalisation"},
-        {"key": "report",      "label": "Rapport en cours de preparation"},
-        {"key": "delivery",    "label": "Envoi en cours"},
-        {"key": "available",   "label": "Rapport disponible"},
-    ]
+    CLIENT_STEPS = CLIENT_STEPS_DISPLAY
 
     current_step = dossier.get("processing_step", "checkout_valide")
     status = dossier.get("status", "processing")
@@ -1851,8 +1837,11 @@ async def strategiia_checkout(request: Request):
         product_tag = "strategiia_analyse_premium"
     metadata = {"product": product_tag, "customer_email": email, "context": analysis_context[:200], "premium_pdf": "1" if premium_pdf else "0", "analyse_premium": "1" if analyse_premium else "0"}
     if analyse_premium:
-        await db.premium_analyses.insert_one({"id": str(uuid.uuid4()), "type": "strategiia", "email": email, "context": analysis_context[:500], "status": "en_attente", "premium_pdf": premium_pdf, "analyse_premium": True, "relecture_expert_required": True, "amount": amount, "created_at": datetime.now(timezone.utc).isoformat()})
-        asyncio.create_task(notify_admin_premium_analysis("strategiia", email, "", amount, options={"analyse_premium": True, "premium_pdf": premium_pdf, "context": analysis_context[:300]}))
+        pa_entry = {"id": str(uuid.uuid4()), "type": Service.STRATEGIIA, "email": email, "context": analysis_context[:500], "status": PremiumStatus.EN_ATTENTE, "premium_pdf": premium_pdf, "analyse_premium": True, "relecture_expert_required": True, "amount": amount, "created_at": datetime.now(timezone.utc).isoformat()}
+        assert_premium_analyses_entry(pa_entry, "strategiia_checkout")
+        await db.premium_analyses.insert_one(pa_entry)
+        logger.info(f"[STRATEGIIA][checkout] premium_analyses entry {pa_entry['id']} created for {email}")
+        asyncio.create_task(notify_admin_premium_analysis(Service.STRATEGIIA, email, "", amount, options={"analyse_premium": True, "premium_pdf": premium_pdf, "context": analysis_context[:300]}))
     try:
         session = await asyncio.to_thread(
             stripe_sdk.checkout.Session.create,
@@ -1904,16 +1893,17 @@ async def strategiia_admin_bypass(request: Request):
     asyncio.create_task(_run_analysis(job_id, type_dossier, regime, situation, True, email, similar_cases, case_context, is_admin_test=True))
 
     # Register in premium_analyses for admin relecture workflow
-    pa_id = str(uuid.uuid4())
-    await db.premium_analyses.insert_one({
-        "id": pa_id, "type": "strategiia", "email": email,
-        "context": situation[:500], "status": "en_attente",
+    pa_entry = {
+        "id": str(uuid.uuid4()), "type": Service.STRATEGIIA, "email": email,
+        "context": situation[:500], "status": PremiumStatus.EN_ATTENTE,
         "premium_pdf": premium_pdf, "analyse_premium": True,
         "relecture_expert_required": True, "admin_test": True,
         "amount": 0, "job_id": job_id,
         "created_at": datetime.now(timezone.utc).isoformat()
-    })
-    logger.info(f"StrategiIA admin-bypass {job_id}: premium_analyses entry {pa_id} created")
+    }
+    assert_premium_analyses_entry(pa_entry, f"strategiia_admin_bypass_{job_id}")
+    await db.premium_analyses.insert_one(pa_entry)
+    logger.info(f"[STRATEGIIA][admin-bypass][{job_id}] premium_analyses entry {pa_entry['id']} created")
 
     return {"job_id": job_id, "status": "pending", "admin_test": True, "premium_pdf": premium_pdf, "analyse_premium": analyse_premium}
 
