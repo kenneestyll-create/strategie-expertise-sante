@@ -903,6 +903,167 @@ async def _update_dossier_step(dossier_id: str, processing_step: str, delivery_s
     await db.dossier_express.update_one({"id": dossier_id}, {"$set": update})
 
 
+async def _generate_section_llmchat(section_id: str, system_msg: str, user_msg: str,
+                                     dossier_id: str, max_tokens: int = 1500, retries: int = 2) -> str:
+    """Generate a single report section via LlmChat with per-section retry.
+    Returns the generated text or raises Exception on total failure."""
+    for attempt in range(retries):
+        try:
+            from emergentintegrations.llm.chat import LlmChat, UserMessage
+            chat = LlmChat(
+                api_key=EMERGENT_LLM_KEY,
+                session_id=f"de_{dossier_id[:8]}_{section_id}_{attempt}",
+                system_message=system_msg
+            )
+            chat.with_model("anthropic", "claude-sonnet-4-5-20250929")
+            chat.with_params(timeout=55, max_tokens=max_tokens)
+            resp = await chat.send_message(UserMessage(text=user_msg))
+            text = str(resp) if resp else ""
+            if not text.strip():
+                raise Exception(f"Section {section_id}: reponse vide")
+            logger.info(f"[DOSSIER_EXPRESS][{dossier_id}][{section_id}] OK attempt={attempt+1} chars={len(text)}")
+            return text.strip()
+        except Exception as e:
+            logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}][{section_id}] attempt={attempt+1}/{retries} failed: {str(e)[:120]}")
+            if attempt < retries - 1:
+                await asyncio.sleep(3)
+    raise Exception(f"Section {section_id}: toutes les tentatives echouees")
+
+
+async def _generate_dossier_report_multistage(dossier_id: str, name: str, type_dossier: str,
+                                                regime: str, situation: str, documents_text: str,
+                                                case_context: str) -> str:
+    """Multi-stage pipeline: generates Dossier Express report in 7 focused sections.
+    Each section stays under the 60s proxy timeout. Sections run in parallel batches.
+    Returns the assembled full report or raises Exception on failure."""
+
+    # Full context block — passed to EVERY section so each has the complete picture
+    context = f"""Client : {name}
+Type de dossier : {type_dossier}
+Regime : {regime}
+
+SITUATION :
+{situation}
+
+DOCUMENTS FOURNIS :
+{documents_text[:8000] if documents_text else "(Aucun document textuel fourni)"}
+{case_context}"""
+
+    SYSTEM = (
+        "Tu es l'expert Dossier Express IA de Strategie & Expertise Sante. "
+        "Specialise en analyse documentaire de dossiers de maladies professionnelles et accidents du travail. "
+        "Tu t'appuies sur les jurisprudences (Cass. soc. 2019 obligation securite, Cass. 2e civ. 2020 IPP incidence professionnelle, "
+        "Cass. 2e civ. 2022 silence CPAM vaut acceptation), les statistiques CNAM, les baremes IPP, "
+        "l'incidence professionnelle (IP) et la PGPF. "
+        "REGLES : Reponds en francais. Verification croisee x3. Nuance intelligente. "
+        "Cite textes de loi et jurisprudences. Ne genere aucune URL. "
+        "Ce rapport est un outil d'aide a la decision, pas un avis juridique."
+    )
+
+    # Define the 7 sections with their specific instructions
+    sections_def = [
+        ("synthese", f"""{context}
+
+Redige UNIQUEMENT la section suivante du rapport de PRE-EXPERTISE DOCUMENTAIRE :
+## Synthese du dossier
+Resume factuel de la situation : contexte professionnel du client, pathologie, type de procedure engagee, cadre juridique applicable, textes de loi pertinents, enjeux identifies. 8-10 lignes minimum. Montre que tu as compris la matiere documentaire.
+Commence directement par ## Synthese du dossier"""),
+
+        ("pieces", f"""{context}
+
+Redige UNIQUEMENT la section suivante du rapport de PRE-EXPERTISE DOCUMENTAIRE :
+## Pieces detectees
+Liste structuree des categories documentaires reconnues dans les pieces fournies. Pour chaque categorie, indique le nombre de pieces et une description courte.
+Categories possibles : Certificats medicaux, Comptes rendus specialises (IRM, scanner, EMG), Arrets de travail, Expertises medicales, Courriers administratifs, Decisions/notifications, Examens/imagerie, Attestations/correspondances.
+Montre ce que tu as reconnu et exploite, pas seulement ce que tu as compte.
+Commence directement par ## Pieces detectees"""),
+
+        ("chrono", f"""{context}
+
+Redige UNIQUEMENT la section suivante du rapport de PRE-EXPERTISE DOCUMENTAIRE :
+## Chronologie synthetique du dossier
+Reconstitue une frise chronologique a partir des dates detectees dans les documents. Structure en etapes :
+- Debut des troubles / fait generateur
+- Premiers soins / examens
+- Arrets de travail (periodes)
+- Expertises et evaluations
+- Aggravations ou episodes significatifs
+- Decisions administratives
+Commence directement par ## Chronologie synthetique du dossier"""),
+
+        ("juridique", f"""{context}
+
+Redige UNIQUEMENT la section suivante du rapport de PRE-EXPERTISE DOCUMENTAIRE :
+## Cadre juridique applicable
+Articles de loi pertinents, tableaux de maladies professionnelles concernes, jurisprudences de reference (Cass. soc., Cass. 2e civ., CE), baremes IPP applicables. Cite au moins 3 textes ou jurisprudences precises avec dates. Analyse l'applicabilite au cas present.
+Commence directement par ## Cadre juridique applicable"""),
+
+        ("forces_vigilance", f"""{context}
+
+Redige UNIQUEMENT les 2 sections suivantes du rapport de PRE-EXPERTISE DOCUMENTAIRE :
+## Points forts du dossier
+Elements favorables identifies dans les pieces : preuves solides, coherences entre documents, elements medico-administratifs robustes. Explique POURQUOI chaque point est un atout strategique.
+## Points de vigilance et pieces manquantes
+Lacunes documentaires, incoherences detectees, risques identifies, documents supplementaires a obtenir pour renforcer le dossier. Formulations nuancees.
+Commence directement par ## Points forts du dossier"""),
+
+        ("strategie_prejudices", f"""{context}
+
+Redige UNIQUEMENT les 2 sections suivantes du rapport de PRE-EXPERTISE DOCUMENTAIRE :
+## Strategie recommandee
+Orientation strategique, voies de recours pertinentes, demarches prioritaires, instances competentes. Justifie tes recommandations.
+## Estimation des prejudices
+Si applicable : Incidence Professionnelle (IP), Perte de Gains Professionnels Futurs (PGPF), Deficit Fonctionnel Temporaire (DFT), souffrances endurees, prejudice d'agrement. Donne des fourchettes chiffrees quand les elements le permettent. Mentionne l'aide juridictionnelle si le profil le suggere.
+Commence directement par ## Strategie recommandee"""),
+
+        ("plan_conclusion", f"""{context}
+
+Redige UNIQUEMENT les 2 sections suivantes du rapport de PRE-EXPERTISE DOCUMENTAIRE :
+## Plan d'action detaille
+5 a 7 actions numerotees avec delais concrets et interlocuteurs identifies. Chaque action doit etre actionnable immediatement.
+## Conclusion et recommandation finale
+4-5 lignes, ton professionnel et rassurant. Rappelle les points cles, la strategie recommandee et que ce rapport constitue une base fiable pour la suite de l'accompagnement.
+Commence directement par ## Conclusion et recommandation finale"""),
+    ]
+
+    # Execute in 3 parallel batches with delays between batches
+    results = {}
+    batch_plan = [
+        (["synthese", "pieces", "chrono"], "Batch 1/3"),
+        (["juridique", "forces_vigilance"], "Batch 2/3"),
+        (["strategie_prejudices", "plan_conclusion"], "Batch 3/3"),
+    ]
+
+    sections_map = {s[0]: s[1] for s in sections_def}
+
+    for batch_keys, batch_label in batch_plan:
+        logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] {batch_label}: {batch_keys}")
+        tasks = [
+            _generate_section_llmchat(key, SYSTEM, sections_map[key], dossier_id)
+            for key in batch_keys
+        ]
+        batch_results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        for key, result in zip(batch_keys, batch_results):
+            if isinstance(result, Exception):
+                logger.error(f"[DOSSIER_EXPRESS][{dossier_id}] Section {key} FAILED: {result}")
+                raise result
+            results[key] = result
+
+        # Pause between batches to avoid proxy concurrency pressure
+        if batch_label != "Batch 3/3":
+            await asyncio.sleep(2)
+
+    # Assemble the final report in order
+    section_order = ["synthese", "pieces", "chrono", "juridique", "forces_vigilance", "strategie_prejudices", "plan_conclusion"]
+    report_parts = [results[k] for k in section_order if k in results]
+    full_report = "\n\n".join(report_parts)
+
+    total_chars = len(full_report)
+    logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] REPORT ASSEMBLED: {total_chars} chars, {len(report_parts)}/7 sections")
+    return full_report
+
+
 async def _process_dossier_express(dossier_id: str, email: str, name: str, situation: str, type_dossier: str, regime: str, documents_text: str, premium_pdf: bool = False):
     """Full pipeline with granular step tracking and fail-safe notifications."""
     logger.info(f"[DOSSIER_EXPRESS][{dossier_id}][START] email={email} type={type_dossier} regime={regime} premium_pdf={premium_pdf}")
@@ -934,10 +1095,15 @@ async def _process_dossier_express(dossier_id: str, email: str, name: str, situa
         for c in similar_cases:
             case_context += f"- Type: {c.get('type_dossier')}, Regime: {c.get('regime')}, Strategie: {c.get('strategie')}, Resultat: {c.get('resultat')}\n"
 
-    # === STEP 4: AI Generation ===
+    # === STEP 4: AI Generation (multi-stage pipeline) ===
     await _update_dossier_step(dossier_id, "analyse_ia", "en_attente_traitement", {"progress_step": "analyzing"})
 
-    user_msg = f"""DOSSIER EXPRESS IA - Analyse complete demandee
+    analysis = None
+    last_error = ""
+
+    # PATH A: Native Anthropic SDK (no proxy timeout — single call)
+    if ANTHROPIC_API_KEY:
+        user_msg = f"""DOSSIER EXPRESS IA - Analyse complete demandee
 
 Client : {name}
 Type de dossier : {type_dossier}
@@ -952,21 +1118,34 @@ CONTENU DES DOCUMENTS FOURNIS :
 
 {DOSSIER_EXPRESS_PROMPT}"""
 
-    analysis = None
-    last_error = ""
-    for attempt in range(3):
-        try:
-            session_id_llm = f"dexpress_{dossier_id[:8]}_{attempt}"
-            analysis = await llm_call(
-                ANTHROPIC_API_KEY, session_id_llm, DOSSIER_EXPRESS_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
-            )
-            logger.info(f"Dossier Express IA {dossier_id}: analyse reussie (tentative {attempt+1})")
-            break
-        except Exception as e:
-            last_error = str(e)
-            logger.warning(f"Dossier Express IA {dossier_id}: tentative {attempt+1}/3 echouee: {last_error[:120]}")
-            if attempt < 2:
-                await asyncio.sleep(3)
+        for attempt in range(3):
+            try:
+                session_id_llm = f"dexpress_{dossier_id[:8]}_{attempt}"
+                analysis = await llm_call(
+                    ANTHROPIC_API_KEY, session_id_llm, DOSSIER_EXPRESS_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
+                )
+                logger.info(f"Dossier Express IA {dossier_id}: analyse native reussie (tentative {attempt+1})")
+                break
+            except Exception as e:
+                last_error = str(e)
+                logger.warning(f"Dossier Express IA {dossier_id}: native tentative {attempt+1}/3 echouee: {last_error[:120]}")
+                if attempt < 2:
+                    await asyncio.sleep(5)
+
+    # PATH B: Emergent proxy — multi-stage pipeline (handles 60s timeout structurally)
+    if not analysis and EMERGENT_LLM_KEY:
+        for attempt in range(2):
+            try:
+                analysis = await _generate_dossier_report_multistage(
+                    dossier_id, name, type_dossier, regime, situation, documents_text, case_context
+                )
+                logger.info(f"Dossier Express IA {dossier_id}: multi-stage reussie (tentative {attempt+1})")
+                break
+            except Exception as e:
+                last_error = str(e)
+                logger.warning(f"Dossier Express IA {dossier_id}: multi-stage tentative {attempt+1}/2 echouee: {last_error[:150]}")
+                if attempt < 1:
+                    await asyncio.sleep(8)
 
     if not analysis:
         error_label = "Echec generation IA"
@@ -978,8 +1157,8 @@ CONTENU DES DOCUMENTS FOURNIS :
         await _notify_client_delay(email, name, "Dossier Express IA")
         return
 
-    # Validate analysis is substantial (not empty/too short)
-    if len(analysis.strip()) < 200:
+    # Validate analysis is substantial
+    if len(analysis.strip()) < 500:
         logger.error(f"Dossier Express IA {dossier_id}: analyse trop courte ({len(analysis)} chars)")
         await _update_dossier_step(dossier_id, "erreur_ia", "incident_technique", {"status": "error", "error": "Analyse insuffisante"})
         await _notify_admin_incident(dossier_id, email, name, "Dossier Express IA", "Validation analyse", f"Analyse trop courte: {len(analysis)} caracteres")
@@ -987,7 +1166,7 @@ CONTENU DES DOCUMENTS FOURNIS :
         return
 
     # === STEP 5: PDF Generation ===
-    await _update_dossier_step(dossier_id, "pdf_en_cours", "en_attente_traitement", {"progress_step": "generating", "analysis": analysis[:8000]})
+    await _update_dossier_step(dossier_id, "pdf_en_cours", "en_attente_traitement", {"progress_step": "generating", "analysis": analysis[:30000]})
 
     dossier_doc = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0, "document_details": 1})
     doc_details = dossier_doc.get("document_details", []) if dossier_doc else []
