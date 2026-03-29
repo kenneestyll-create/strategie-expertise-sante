@@ -674,11 +674,6 @@ export const DossierExpressPage = () => {
                   {/* Document upload */}
                   <div className="space-y-2">
                     <Label>Documents (optionnel, max 10 fichiers)</Label>
-                    {isAdminMode && (
-                      <div className="text-[10px] font-mono bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded inline-block" data-testid="admin-debug-badge">
-                        Uploader actif: DocumentUploader.jsx | Admin: ON | Drag&Drop: v3-native-dom
-                      </div>
-                    )}
                     <DocumentUploader
                       files={files}
                       onFilesChange={setFiles}
