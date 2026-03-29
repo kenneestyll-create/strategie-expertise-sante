@@ -299,8 +299,9 @@ export const AdminDashboard = () => {
   const [casAnonymises, setCasAnonymises] = useState({ items: [], total: 0 });
   const [premiumAnalyses, setPremiumAnalyses] = useState({ items: [], stats: { total: 0, en_attente: 0, en_cours: 0, valide: 0, envoye: 0, termine: 0 } });
   const [reviewDialog, setReviewDialog] = useState(null);
-  const [dossierExpressAdmin, setDossierExpressAdmin] = useState({ items: [], stats: { total: 0, completed: 0, processing: 0, errors: 0 } });
+  const [dossierExpressAdmin, setDossierExpressAdmin] = useState({ items: [], stats: { total: 0, completed: 0, processing: 0, errors: 0, incidents: 0, delivered: 0, pending: 0 } });
   const [dossierViewDialog, setDossierViewDialog] = useState(null);
+  const [deFilter, setDeFilter] = useState('all');
   const [analyticsData, setAnalyticsData] = useState(null);
   const [analyticsPeriod, setAnalyticsPeriod] = useState('30d');
   const [newCas, setNewCas] = useState({ type_dossier: '', regime: '', duree: '', strategie: '', resultat: '', score_pertinence: 0, notes: '' });
@@ -1745,7 +1746,7 @@ export const AdminDashboard = () => {
                 </div>
                 <div>
                   <h2 className="text-xl font-semibold tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Dossier Express IA</h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">Vue d'ensemble de la production</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Pilotage operationnel de la production</p>
                 </div>
               </div>
               <Button variant="outline" size="sm" onClick={fetchData} className="gap-2 text-xs" data-testid="de-refresh-btn">
@@ -1753,8 +1754,8 @@ export const AdminDashboard = () => {
               </Button>
             </div>
 
-            {/* Premium KPI Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" data-testid="de-kpi-grid">
+            {/* Premium KPI Cards — 5 columns with delivery stats */}
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4" data-testid="de-kpi-grid">
               <Card className="relative overflow-hidden border-border/60 hover:shadow-md transition-shadow" data-testid="de-kpi-total">
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between">
@@ -1770,15 +1771,15 @@ export const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="relative overflow-hidden border-green-200/60 hover:shadow-md transition-shadow" data-testid="de-kpi-completed">
+              <Card className="relative overflow-hidden border-green-200/60 hover:shadow-md transition-shadow" data-testid="de-kpi-delivered">
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Terminés</p>
-                      <p className="text-3xl font-bold mt-2 tracking-tight text-green-600">{dossierExpressAdmin.stats?.completed || 0}</p>
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Livres</p>
+                      <p className="text-3xl font-bold mt-2 tracking-tight text-green-600">{dossierExpressAdmin.stats?.delivered || 0}</p>
                       <p className="text-[11px] text-green-600/70 mt-1">
                         {dossierExpressAdmin.stats?.total > 0
-                          ? `${Math.round(((dossierExpressAdmin.stats?.completed || 0) / dossierExpressAdmin.stats.total) * 100)}% du total`
+                          ? `${Math.round(((dossierExpressAdmin.stats?.delivered || 0) / dossierExpressAdmin.stats.total) * 100)}% du total`
                           : 'Aucun dossier'
                         }
                       </p>
@@ -1796,7 +1797,7 @@ export const AdminDashboard = () => {
                     <div>
                       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">En cours</p>
                       <p className="text-3xl font-bold mt-2 tracking-tight text-blue-600">{dossierExpressAdmin.stats?.processing || 0}</p>
-                      <p className="text-[11px] text-blue-600/70 mt-1">Traitement en cours</p>
+                      <p className="text-[11px] text-blue-600/70 mt-1">Traitement actif</p>
                     </div>
                     <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
                       <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
@@ -1805,16 +1806,31 @@ export const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className={`relative overflow-hidden hover:shadow-md transition-shadow ${(dossierExpressAdmin.stats?.errors || 0) > 0 ? 'border-red-300 bg-red-50/30 ring-1 ring-red-200/50' : 'border-border/60'}`} data-testid="de-kpi-errors">
+              <Card className="relative overflow-hidden border-amber-200/60 hover:shadow-md transition-shadow" data-testid="de-kpi-pending">
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Erreurs</p>
-                      <p className={`text-3xl font-bold mt-2 tracking-tight ${(dossierExpressAdmin.stats?.errors || 0) > 0 ? 'text-red-600' : 'text-foreground/40'}`}>{dossierExpressAdmin.stats?.errors || 0}</p>
-                      <p className="text-[11px] text-red-500/70 mt-1">{(dossierExpressAdmin.stats?.errors || 0) > 0 ? 'Attention requise' : 'Aucune erreur'}</p>
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">En attente</p>
+                      <p className="text-3xl font-bold mt-2 tracking-tight text-amber-600">{dossierExpressAdmin.stats?.pending || 0}</p>
+                      <p className="text-[11px] text-amber-600/70 mt-1">A traiter</p>
                     </div>
-                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${(dossierExpressAdmin.stats?.errors || 0) > 0 ? 'bg-red-100' : 'bg-muted/60'}`}>
-                      <AlertTriangle className={`w-5 h-5 ${(dossierExpressAdmin.stats?.errors || 0) > 0 ? 'text-red-500' : 'text-foreground/30'}`} />
+                    <div className="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center">
+                      <Clock className="w-5 h-5 text-amber-500" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className={`relative overflow-hidden hover:shadow-md transition-shadow ${(dossierExpressAdmin.stats?.incidents || 0) > 0 ? 'border-red-300 bg-red-50/30 ring-1 ring-red-200/50' : 'border-border/60'}`} data-testid="de-kpi-incidents">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Incidents</p>
+                      <p className={`text-3xl font-bold mt-2 tracking-tight ${(dossierExpressAdmin.stats?.incidents || 0) > 0 ? 'text-red-600' : 'text-foreground/40'}`}>{dossierExpressAdmin.stats?.incidents || 0}</p>
+                      <p className="text-[11px] text-red-500/70 mt-1">{(dossierExpressAdmin.stats?.incidents || 0) > 0 ? 'Intervention requise' : 'Aucun incident'}</p>
+                    </div>
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${(dossierExpressAdmin.stats?.incidents || 0) > 0 ? 'bg-red-100' : 'bg-muted/60'}`}>
+                      <AlertTriangle className={`w-5 h-5 ${(dossierExpressAdmin.stats?.incidents || 0) > 0 ? 'text-red-500' : 'text-foreground/30'}`} />
                     </div>
                   </div>
                 </CardContent>
@@ -1839,47 +1855,96 @@ export const AdminDashboard = () => {
               }}
             />
 
-            {/* Recent Dossier Express submissions — enriched cards */}
+            {/* Recent Dossier Express submissions — enriched cards with filters */}
             {dossierExpressAdmin.items?.length > 0 && (
               <Card className="border-border/60">
                 <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between flex-wrap gap-3">
                     <CardTitle className="flex items-center gap-2.5 text-lg" data-testid="de-history-title">
                       <FileText className="w-5 h-5 text-teal-600" />
                       Tous les dossiers soumis
                       <Badge variant="outline" className="text-[10px] ml-1 font-normal">{dossierExpressAdmin.items.length}</Badge>
                     </CardTitle>
+                    <div className="flex gap-1 bg-muted rounded-lg p-1" data-testid="de-filter-bar">
+                      {[
+                        { v: 'all', l: 'Tous' },
+                        { v: 'delivered', l: 'Livres' },
+                        { v: 'processing', l: 'En cours' },
+                        { v: 'incidents', l: 'Incidents' },
+                        { v: 'pending', l: 'En attente' },
+                      ].map(f => (
+                        <button key={f.v}
+                          onClick={() => setDeFilter(f.v)}
+                          className={`px-3 py-1 text-[11px] rounded-md transition-all font-medium ${deFilter === f.v ? 'bg-foreground text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                          data-testid={`de-filter-${f.v}`}
+                        >{f.l}{f.v === 'incidents' && (dossierExpressAdmin.stats?.incidents || 0) > 0 ? ` (${dossierExpressAdmin.stats.incidents})` : ''}</button>
+                      ))}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="space-y-3">
-                    {dossierExpressAdmin.items.slice(0, 30).map(d => {
-                      const statusConfig = {
-                        completed: { label: 'Terminé', bg: 'bg-green-50/60', border: 'border-green-200/60', badgeCls: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle, iconCls: 'text-green-500' },
-                        processing: { label: 'En cours', bg: 'bg-blue-50/40', border: 'border-blue-200/60', badgeCls: 'bg-blue-100 text-blue-700 border-blue-200', icon: Clock, iconCls: 'text-blue-500' },
-                        error: { label: 'Erreur', bg: 'bg-red-50/40', border: 'border-red-200/60', badgeCls: 'bg-red-100 text-red-700 border-red-200', icon: AlertTriangle, iconCls: 'text-red-500' },
+                    {dossierExpressAdmin.items.filter(d => {
+                      if (deFilter === 'all') return true;
+                      if (deFilter === 'delivered') return d.delivery_status === 'livre_client' || (d.status === 'completed' && !d.delivery_status);
+                      if (deFilter === 'processing') return d.status === 'processing';
+                      if (deFilter === 'incidents') return d.delivery_status === 'incident_technique' || (d.status === 'error' && d.delivery_status !== 'incident_technique');
+                      if (deFilter === 'pending') return d.delivery_status === 'en_attente_traitement' || (d.status === 'processing' && !d.delivery_status);
+                      return true;
+                    }).slice(0, 30).map(d => {
+                      const DELIVERY_CONFIG = {
+                        livre_client: { label: 'Livre au client', cls: 'bg-green-100 text-green-700 border-green-200' },
+                        genere_sans_email: { label: 'Genere (email echoue)', cls: 'bg-amber-100 text-amber-700 border-amber-200' },
+                        en_attente_traitement: { label: 'En attente', cls: 'bg-blue-100 text-blue-700 border-blue-200' },
+                        incident_technique: { label: 'Incident technique', cls: 'bg-red-100 text-red-700 border-red-200' },
                       };
-                      const sc = statusConfig[d.status] || { label: d.status || 'En attente', bg: 'bg-amber-50/40', border: 'border-amber-200/60', badgeCls: 'bg-amber-100 text-amber-700 border-amber-200', icon: Clock, iconCls: 'text-amber-500' };
+                      const STEP_CONFIG = {
+                        checkout_valide: 'Paiement confirme',
+                        relance_admin: 'Relance admin',
+                        documents_recus: 'Documents recus',
+                        extraction_en_cours: 'Extraction',
+                        analyse_ia: 'Analyse IA',
+                        pdf_en_cours: 'Generation PDF',
+                        stockage_en_cours: 'Stockage',
+                        email_en_cours: 'Envoi email',
+                        termine: 'Termine',
+                        erreur_ia: 'Erreur IA',
+                        erreur_pdf: 'Erreur PDF',
+                        erreur_stockage: 'Erreur stockage',
+                        erreur_email: 'Erreur email',
+                      };
+                      const dc = DELIVERY_CONFIG[d.delivery_status] || { label: d.delivery_status || (d.status === 'completed' ? 'Termine' : d.status || 'Inconnu'), cls: 'bg-zinc-100 text-zinc-600 border-zinc-200' };
+                      const stepLabel = STEP_CONFIG[d.processing_step] || d.processing_step || d.progress_step || '';
+                      const statusConfig = {
+                        completed: { label: 'Termine', bg: 'bg-green-50/60', border: 'border-green-200/60', icon: CheckCircle, iconCls: 'text-green-500' },
+                        processing: { label: 'En cours', bg: 'bg-blue-50/40', border: 'border-blue-200/60', icon: Clock, iconCls: 'text-blue-500' },
+                        error: { label: 'Erreur', bg: 'bg-red-50/40', border: 'border-red-200/60', icon: AlertTriangle, iconCls: 'text-red-500' },
+                      };
+                      const sc = statusConfig[d.status] || { label: d.status || 'En attente', bg: 'bg-amber-50/40', border: 'border-amber-200/60', icon: Clock, iconCls: 'text-amber-500' };
                       const StatusIcon = sc.icon;
                       return (
                         <div key={d.id} className={`group p-4 rounded-xl border ${sc.border} ${sc.bg} hover:shadow-sm transition-all`} data-testid={`de-row-${d.id}`}>
                           <div className="flex items-start gap-3.5">
-                            {/* Status icon */}
                             <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${d.status === 'completed' ? 'bg-green-100' : d.status === 'error' ? 'bg-red-100' : 'bg-blue-100'}`}>
                               <StatusIcon className={`w-4.5 h-4.5 ${sc.iconCls}`} />
                             </div>
-
-                            {/* Main content */}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap mb-1.5">
                                 <span className="font-semibold text-sm">{d.name || d.email}</span>
-                                <Badge variant="outline" className={`text-[10px] border ${sc.badgeCls}`}>
-                                  {sc.label}
+                                {/* Delivery status badge */}
+                                <Badge variant="outline" className={`text-[10px] border ${dc.cls}`} data-testid={`de-delivery-${d.id}`}>
+                                  {dc.label}
                                 </Badge>
+                                {/* Processing step badge */}
+                                {stepLabel && (
+                                  <Badge variant="outline" className="text-[10px] border-zinc-200 text-zinc-500" data-testid={`de-step-${d.id}`}>
+                                    {stepLabel}
+                                  </Badge>
+                                )}
                                 {d.type_dossier && <Badge variant="outline" className="text-[10px]">{d.type_dossier}</Badge>}
-                                {d.regime && <Badge variant="outline" className="text-[10px]">{d.regime}</Badge>}
                                 {d.premium_pdf && <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">PDF Pro</Badge>}
                                 {d.admin_test && <Badge className="bg-zinc-100 text-zinc-500 border-zinc-200 text-[10px]">Test</Badge>}
+                                {d.retry_count > 0 && <Badge className="bg-purple-100 text-purple-600 border-purple-200 text-[10px]">Relance x{d.retry_count}</Badge>}
                               </div>
                               <div className="flex items-center gap-3 text-xs text-muted-foreground">
                                 <span className="flex items-center gap-1">
@@ -1891,11 +1956,10 @@ export const AdminDashboard = () => {
                                   {d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
                                 </span>
                               </div>
-                              {d.completed_at && <p className="text-[11px] text-green-600 mt-1 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Terminé le {new Date(d.completed_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>}
-                              {d.email_sent && <p className="text-[11px] text-emerald-600 mt-0.5 flex items-center gap-1"><Send className="w-3 h-3" /> Email envoyé</p>}
+                              {d.completed_at && <p className="text-[11px] text-green-600 mt-1 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Livre le {new Date(d.completed_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>}
+                              {d.email_sent && <p className="text-[11px] text-emerald-600 mt-0.5 flex items-center gap-1"><Send className="w-3 h-3" /> Email envoye</p>}
+                              {d.error && d.status === 'error' && <p className="text-[11px] text-red-500 mt-1 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> {d.error}</p>}
                             </div>
-
-                            {/* Actions */}
                             <div className="flex gap-2 flex-shrink-0 items-start">
                               {d.status === 'completed' && (
                                 <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300"
@@ -1910,7 +1974,19 @@ export const AdminDashboard = () => {
                                 </Button>
                               )}
                               {d.status === 'error' && (
-                                <Badge variant="outline" className="text-[10px] border-red-200 text-red-500 max-w-[200px] truncate">{d.error ? d.error.substring(0, 60) + '...' : 'Erreur'}</Badge>
+                                <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 border-amber-200 text-amber-700 hover:bg-amber-50 hover:border-amber-300"
+                                  data-testid={`de-retry-${d.id}`}
+                                  onClick={async () => {
+                                    try {
+                                      await axios.post(`${API}/admin/dossier-express/${d.id}/retry`, {}, axiosConfig);
+                                      toast.success("Relance lancee avec succes");
+                                      fetchData();
+                                    } catch (err) {
+                                      toast.error(err.response?.data?.detail || "Erreur lors de la relance");
+                                    }
+                                  }}>
+                                  <RefreshCw className="w-3.5 h-3.5" /> Relancer
+                                </Button>
                               )}
                             </div>
                           </div>

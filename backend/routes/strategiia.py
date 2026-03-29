@@ -847,6 +847,8 @@ async def dossier_express_submit(request: Request):
         "original_documents": original_documents,
         "premium_pdf": premium_pdf,
         "status": "processing", "payment_verified": payment_verified,
+        "delivery_status": "en_attente_traitement",
+        "processing_step": "checkout_valide",
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.dossier_express.insert_one(dossier)
@@ -854,34 +856,54 @@ async def dossier_express_submit(request: Request):
     return {"success": True, "dossier_id": dossier_id, "message": "Votre dossier est en cours d'analyse. Vous recevrez le rapport par email sous 2 heures."}
 
 
+async def _update_dossier_step(dossier_id: str, processing_step: str, delivery_status: str = None, extra: dict = None):
+    """Atomic helper to update processing step and optionally delivery status."""
+    update = {"processing_step": processing_step, "updated_at": datetime.now(timezone.utc).isoformat()}
+    if delivery_status:
+        update["delivery_status"] = delivery_status
+    if extra:
+        update.update(extra)
+    await db.dossier_express.update_one({"id": dossier_id}, {"$set": update})
+
+
 async def _process_dossier_express(dossier_id: str, email: str, name: str, situation: str, type_dossier: str, regime: str, documents_text: str, premium_pdf: bool = False):
+    """Full pipeline with granular step tracking and fail-safe notifications."""
+
+    # === STEP 1: Documents received ===
+    await _update_dossier_step(dossier_id, "documents_recus", "en_attente_traitement")
+
+    # === STEP 2: Check LLM availability ===
+    if not ANTHROPIC_API_KEY:
+        logger.error("Dossier Express IA: ANTHROPIC_API_KEY not available")
+        await _update_dossier_step(dossier_id, "erreur_ia", "incident_technique", {"status": "error", "error": "Service IA non disponible"})
+        await _notify_admin_incident(dossier_id, email, name, "Dossier Express IA", "Verification cle API", "ANTHROPIC_API_KEY absente ou vide")
+        await _notify_client_delay(email, name, "Dossier Express IA")
+        return
+
+    # === STEP 3: Extraction / reading documents ===
+    await _update_dossier_step(dossier_id, "extraction_en_cours", "en_attente_traitement", {"progress_step": "reading"})
+
+    similar_cases = []
     try:
-        if not ANTHROPIC_API_KEY:
-            logger.error("Dossier Express IA: ANTHROPIC_API_KEY not available")
-            await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"status": "error", "error": "Service IA non disponible", "progress_step": "error"}})
-            return
-
-        # Step 1: Reading documents
-        await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"progress_step": "reading"}})
-
-        similar_cases = []
         if type_dossier:
             similar_cases = await db.cas_anonymises.find({"type_dossier": type_dossier}, {"_id": 0}).sort("score_pertinence", -1).to_list(5)
+    except Exception as e:
+        logger.warning(f"Dossier Express {dossier_id}: cas similaires lookup failed (non-blocking): {e}")
 
-        case_context = ""
-        if similar_cases:
-            case_context = "\n\nCAS SIMILAIRES DANS LA BASE :\n"
-            for c in similar_cases:
-                case_context += f"- Type: {c.get('type_dossier')}, Régime: {c.get('regime')}, Stratégie: {c.get('strategie')}, Résultat: {c.get('resultat')}\n"
+    case_context = ""
+    if similar_cases:
+        case_context = "\n\nCAS SIMILAIRES DANS LA BASE :\n"
+        for c in similar_cases:
+            case_context += f"- Type: {c.get('type_dossier')}, Regime: {c.get('regime')}, Strategie: {c.get('strategie')}, Resultat: {c.get('resultat')}\n"
 
-        # Step 2: Analyzing (Dossier Express IA - pipeline propre)
-        await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"progress_step": "analyzing"}})
+    # === STEP 4: AI Generation ===
+    await _update_dossier_step(dossier_id, "analyse_ia", "en_attente_traitement", {"progress_step": "analyzing"})
 
-        user_msg = f"""DOSSIER EXPRESS IA - Analyse complète demandée
+    user_msg = f"""DOSSIER EXPRESS IA - Analyse complete demandee
 
 Client : {name}
 Type de dossier : {type_dossier}
-Régime : {regime}
+Regime : {regime}
 
 DESCRIPTION DE LA SITUATION :
 {situation}
@@ -892,72 +914,95 @@ CONTENU DES DOCUMENTS FOURNIS :
 
 {DOSSIER_EXPRESS_PROMPT}"""
 
-        # Retry logic (3 attempts) - propre à Dossier Express IA
-        analysis = None
-        last_error = ""
-        for attempt in range(3):
-            try:
-                session_id_llm = f"dexpress_{dossier_id[:8]}_{attempt}"
-                analysis = await asyncio.to_thread(
-                    _llm_sync_call, ANTHROPIC_API_KEY, session_id_llm, DOSSIER_EXPRESS_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
-                )
-                logger.info(f"Dossier Express IA {dossier_id}: analyse réussie (tentative {attempt+1})")
-                break
-            except Exception as e:
-                last_error = str(e)
-                logger.warning(f"Dossier Express IA {dossier_id}: tentative {attempt+1}/3 échouée: {last_error[:120]}")
-                if attempt < 2:
-                    await asyncio.sleep(3)
-
-        if not analysis:
-            error_msg = "L'analyse a échoué après plusieurs tentatives."
-            if "budget" in last_error.lower() or "exceeded" in last_error.lower():
-                error_msg = "Le service d'analyse IA est temporairement indisponible (budget épuisé)."
-            logger.error(f"Dossier Express IA {dossier_id}: toutes les tentatives ont échoué: {last_error[:200]}")
-            await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"status": "error", "error": error_msg, "progress_step": "error"}})
-            return
-
-        # Step 3: Generating PDF
-        await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"progress_step": "generating"}})
-
-        # Fetch document_details from DB for the PDF encart
-        dossier_doc = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0, "document_details": 1})
-        doc_details = dossier_doc.get("document_details", []) if dossier_doc else []
-
-        pdf_bytes = generate_dossier_pdf(name, email, type_dossier, regime, analysis, premium_pdf=premium_pdf, document_details=doc_details)
-
-        # Upload PDF to object storage for download link
-        download_token = str(uuid.uuid4())
-        pdf_storage_path = None
-        download_url = None
+    analysis = None
+    last_error = ""
+    for attempt in range(3):
         try:
-            storage_path = f"strategie-expertise-sante/dossiers/{dossier_id}/{download_token}.pdf"
-            put_object(storage_path, pdf_bytes, "application/pdf")
-            pdf_storage_path = storage_path
-            download_url = f"{SITE_URL}/api/dossier-express/{dossier_id}/download?token={download_token}"
-            await db.dossier_express.update_one({"id": dossier_id}, {"$set": {
-                "pdf_storage_path": pdf_storage_path,
-                "download_token": download_token,
-            }})
-            logger.info(f"Dossier Express {dossier_id}: PDF uploaded to storage")
+            session_id_llm = f"dexpress_{dossier_id[:8]}_{attempt}"
+            analysis = await asyncio.to_thread(
+                _llm_sync_call, ANTHROPIC_API_KEY, session_id_llm, DOSSIER_EXPRESS_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
+            )
+            logger.info(f"Dossier Express IA {dossier_id}: analyse reussie (tentative {attempt+1})")
+            break
         except Exception as e:
-            logger.error(f"Dossier Express {dossier_id}: PDF storage upload failed: {e}")
+            last_error = str(e)
+            logger.warning(f"Dossier Express IA {dossier_id}: tentative {attempt+1}/3 echouee: {last_error[:120]}")
+            if attempt < 2:
+                await asyncio.sleep(3)
 
-        # Step 4: Sending email
-        await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"progress_step": "sending"}})
+    if not analysis:
+        error_label = "Echec generation IA"
+        if "budget" in last_error.lower() or "exceeded" in last_error.lower():
+            error_label = "Budget IA epuise"
+        logger.error(f"Dossier Express IA {dossier_id}: toutes les tentatives ont echoue: {last_error[:200]}")
+        await _update_dossier_step(dossier_id, "erreur_ia", "incident_technique", {"status": "error", "error": error_label})
+        await _notify_admin_incident(dossier_id, email, name, "Dossier Express IA", "Generation IA", f"{error_label}: {last_error[:300]}")
+        await _notify_client_delay(email, name, "Dossier Express IA")
+        return
 
-        expert_url = f"{SITE_URL}/contact?via=email&source=dossier_express"
-        safe_display_name = name or "Madame, Monsieur"
+    # Validate analysis is substantial (not empty/too short)
+    if len(analysis.strip()) < 200:
+        logger.error(f"Dossier Express IA {dossier_id}: analyse trop courte ({len(analysis)} chars)")
+        await _update_dossier_step(dossier_id, "erreur_ia", "incident_technique", {"status": "error", "error": "Analyse insuffisante"})
+        await _notify_admin_incident(dossier_id, email, name, "Dossier Express IA", "Validation analyse", f"Analyse trop courte: {len(analysis)} caracteres")
+        await _notify_client_delay(email, name, "Dossier Express IA")
+        return
 
-        email_html = f"""<!DOCTYPE html>
+    # === STEP 5: PDF Generation ===
+    await _update_dossier_step(dossier_id, "pdf_en_cours", "en_attente_traitement", {"progress_step": "generating", "analysis": analysis[:8000]})
+
+    dossier_doc = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0, "document_details": 1})
+    doc_details = dossier_doc.get("document_details", []) if dossier_doc else []
+
+    pdf_bytes = None
+    try:
+        pdf_bytes = generate_dossier_pdf(name, email, type_dossier, regime, analysis, premium_pdf=premium_pdf, document_details=doc_details)
+        if not pdf_bytes or len(pdf_bytes) < 100:
+            raise ValueError("PDF vide ou corrompu")
+        logger.info(f"Dossier Express {dossier_id}: PDF genere ({len(pdf_bytes)} bytes)")
+    except Exception as e:
+        logger.error(f"Dossier Express {dossier_id}: PDF generation failed: {e}")
+        await _update_dossier_step(dossier_id, "erreur_pdf", "incident_technique", {"status": "error", "error": "Echec generation PDF"})
+        await _notify_admin_incident(dossier_id, email, name, "Dossier Express IA", "Generation PDF", str(e)[:300])
+        await _notify_client_delay(email, name, "Dossier Express IA")
+        return
+
+    # === STEP 6: Storage ===
+    await _update_dossier_step(dossier_id, "stockage_en_cours", "en_attente_traitement", {"progress_step": "generating"})
+
+    download_token = str(uuid.uuid4())
+    pdf_storage_path = None
+    download_url = None
+    try:
+        storage_path = f"strategie-expertise-sante/dossiers/{dossier_id}/{download_token}.pdf"
+        put_object(storage_path, pdf_bytes, "application/pdf")
+        pdf_storage_path = storage_path
+        download_url = f"{SITE_URL}/api/dossier-express/{dossier_id}/download?token={download_token}"
+        await db.dossier_express.update_one({"id": dossier_id}, {"$set": {
+            "pdf_storage_path": pdf_storage_path,
+            "download_token": download_token,
+        }})
+        logger.info(f"Dossier Express {dossier_id}: PDF uploaded to storage")
+    except Exception as e:
+        logger.error(f"Dossier Express {dossier_id}: PDF storage upload failed: {e}")
+        await _update_dossier_step(dossier_id, "erreur_stockage", "incident_technique", {"status": "error", "error": "Echec stockage PDF"})
+        await _notify_admin_incident(dossier_id, email, name, "Dossier Express IA", "Stockage PDF", str(e)[:300])
+        await _notify_client_delay(email, name, "Dossier Express IA")
+        return
+
+    # === STEP 7: Email delivery ===
+    await _update_dossier_step(dossier_id, "email_en_cours", "en_attente_traitement", {"progress_step": "sending"})
+
+    expert_url = f"{SITE_URL}/contact?via=email&source=dossier_express"
+    safe_display_name = name or "Madame, Monsieur"
+
+    email_html = f"""<!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#f4f2ed;font-family:Arial,'Helvetica Neue',sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f2ed;padding:32px 16px;">
 <tr><td align="center">
 <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-
-<!-- HEADER -->
 <tr><td style="background:#1a1a1a;padding:28px 32px;border-radius:8px 8px 0 0;">
   <table width="100%"><tr>
     <td><span style="color:#ffffff;font-size:18px;font-weight:bold;letter-spacing:0.5px;">Strategie & Expertise Sante</span><br/>
@@ -965,19 +1010,14 @@ CONTENU DES DOCUMENTS FOURNIS :
     <td align="right"><span style="color:#999;font-size:12px;">Dossier Express IA</span></td>
   </tr></table>
 </td></tr>
-
-<!-- BODY -->
 <tr><td style="background:#ffffff;padding:36px 32px 24px;">
   <p style="font-size:15px;color:#1a1a1a;margin:0 0 20px;">Bonjour {safe_display_name},</p>
-
   <p style="font-size:15px;color:#333;line-height:1.6;margin:0 0 8px;">
     Votre analyse personnalisee a bien ete finalisee.
   </p>
   <p style="font-size:15px;color:#333;line-height:1.6;margin:0 0 28px;">
     Vous pouvez desormais consulter et telecharger votre rapport en toute simplicite.
   </p>
-
-  <!-- PRIMARY CTA BUTTON -->
   <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:8px 0 32px;">
     <a href="{download_url or '#'}" target="_blank"
        style="display:inline-block;background:#1a1a1a;color:#ffffff;font-size:15px;font-weight:bold;
@@ -986,8 +1026,6 @@ CONTENU DES DOCUMENTS FOURNIS :
       Telecharger mon rapport PDF
     </a>
   </td></tr></table>
-
-  <!-- TRANSITION TEXT -->
   <div style="border-left:3px solid #c9a84c;padding:16px 20px;margin:0 0 28px;background:#faf8f3;">
     <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 12px;">
       Ce document constitue une premiere lecture structuree de votre situation
@@ -998,8 +1036,6 @@ CONTENU DES DOCUMENTS FOURNIS :
       suivi humain peut ensuite vous etre proposee.
     </p>
   </div>
-
-  <!-- SECONDARY CTA BUTTON -->
   <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:0 0 12px;">
     <a href="{expert_url}" target="_blank"
        style="display:inline-block;background:transparent;color:#1a1a1a;font-size:13px;font-weight:600;
@@ -1008,8 +1044,6 @@ CONTENU DES DOCUMENTS FOURNIS :
       Etre accompagne par un expert
     </a>
   </td></tr></table>
-
-  <!-- CONFIDENTIALITY NOTE -->
   <div style="border-top:1px solid #e8e3d6;padding:14px 0 0;margin:16px 0 0;">
     <p style="font-size:11px;color:#888;line-height:1.6;margin:0;text-align:center;">
       &#128274; Vos documents sont traites dans un cadre strictement confidentiel,
@@ -1018,8 +1052,6 @@ CONTENU DES DOCUMENTS FOURNIS :
     </p>
   </div>
 </td></tr>
-
-<!-- FOOTER -->
 <tr><td style="background:#1a1a1a;padding:20px 32px;border-radius:0 0 8px 8px;text-align:center;">
   <p style="color:#c9a84c;font-size:13px;font-style:italic;margin:0 0 8px;font-weight:600;">
     Strategie & Expertise Sante — Votre bouclier.
@@ -1028,32 +1060,46 @@ CONTENU DES DOCUMENTS FOURNIS :
     strategie-expertise-sante.fr &nbsp;|&nbsp; Ce rapport est un outil d'aide a la decision.
   </p>
 </td></tr>
-
 </table>
 </td></tr>
 </table>
 </body>
 </html>"""
 
-        email_sent = False
-        if RESEND_AVAILABLE and resend.api_key:
-            try:
-                email_params = {
-                    "from": SENDER_EMAIL,
-                    "to": [email],
-                    "subject": "Votre Rapport Dossier Express IA est pret - Strategie & Expertise Sante",
-                    "html": email_html,
-                    "attachments": [{"filename": f"Rapport_Dossier_Express_{dossier_id[:8]}.pdf", "content": list(pdf_bytes)}]
-                }
-                await asyncio.to_thread(resend.Emails.send, email_params)
-                email_sent = True
-                logger.info(f"Dossier Express IA {dossier_id}: email envoyé à {email}")
-            except Exception as e:
-                logger.error(f"Dossier Express IA email error: {e}")
+    email_sent = False
+    if RESEND_AVAILABLE and resend.api_key:
+        try:
+            email_params = {
+                "from": SENDER_EMAIL,
+                "to": [email],
+                "subject": "Votre Rapport Dossier Express IA est pret - Strategie & Expertise Sante",
+                "html": email_html,
+                "attachments": [{"filename": f"Rapport_Dossier_Express_{dossier_id[:8]}.pdf", "content": list(pdf_bytes)}]
+            }
+            await asyncio.to_thread(resend.Emails.send, email_params)
+            email_sent = True
+            logger.info(f"Dossier Express IA {dossier_id}: email envoye a {email}")
+        except Exception as e:
+            logger.error(f"Dossier Express IA {dossier_id} email error: {e}")
+            # Email failure is NOT fatal — PDF is already stored, admin is notified
+            await _notify_admin_incident(dossier_id, email, name, "Dossier Express IA", "Envoi email", str(e)[:300])
 
-        await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"status": "completed", "analysis": analysis[:8000], "email_sent": email_sent, "completed_at": datetime.now(timezone.utc).isoformat(), "progress_step": "completed"}})
+    # === STEP 8: Final — mark as delivered ===
+    final_delivery = "livre_client" if email_sent else "genere_sans_email"
+    final_step = "termine" if email_sent else "erreur_email"
+    await _update_dossier_step(dossier_id, final_step, final_delivery, {
+        "status": "completed",
+        "email_sent": email_sent,
+        "completed_at": datetime.now(timezone.utc).isoformat(),
+        "progress_step": "completed",
+    })
 
-        # Auto-register in premium_analyses for admin review workflow
+    if not email_sent:
+        # Partial success — PDF exists but email failed. Notify client via fallback
+        await _notify_client_delay(email, name, "Dossier Express IA")
+
+    # Auto-register in premium_analyses for admin review workflow
+    try:
         existing_pa = await db.premium_analyses.find_one({"type": "dossier_express", "email": email, "dossier_id": {"$exists": False}})
         if existing_pa:
             await db.premium_analyses.update_one({"id": existing_pa["id"]}, {"$set": {"dossier_id": dossier_id}})
@@ -1068,8 +1114,7 @@ CONTENU DES DOCUMENTS FOURNIS :
             })
             logger.info(f"Dossier Express {dossier_id}: created premium_analyses entry {pa_id}")
     except Exception as e:
-        logger.error(f"Dossier Express IA processing error: {e}")
-        await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"status": "error", "error": str(e), "progress_step": "error"}})
+        logger.warning(f"Dossier Express {dossier_id}: premium_analyses registration failed (non-blocking): {e}")
 
 
 @router.get("/dossier-express/{dossier_id}/download")
@@ -1117,6 +1162,16 @@ async def dossier_express_checkout(request: Request):
     name = body.get("name", "")
     premium_pdf = body.get("premium_pdf", False)
     analyse_premium = body.get("analyse_premium", False)
+
+    # ====== PRE-PAYMENT LLM HEALTH CHECK — STRICTLY BLOCKING ======
+    llm_ok, llm_reason = await _check_llm_health()
+    if not llm_ok:
+        logger.warning(f"Dossier Express checkout BLOCKED: LLM unavailable ({llm_reason}) for {email}")
+        raise HTTPException(
+            status_code=503,
+            detail="Le service est momentanement indisponible pour finalisation technique. Merci de reessayer dans quelques instants."
+        )
+
     amount = 97.00
     if premium_pdf:
         amount += 19.00
@@ -1162,8 +1217,52 @@ async def dossier_express_status(dossier_id: str):
 @router.get("/admin/dossier-express")
 async def admin_dossier_express(admin: dict = Depends(get_current_admin)):
     dossiers = await db.dossier_express.find({}, {"_id": 0, "documents_text": 0, "analysis": 0}).sort("created_at", -1).to_list(100)
-    stats = {"total": len(dossiers), "completed": sum(1 for d in dossiers if d.get("status") == "completed"), "processing": sum(1 for d in dossiers if d.get("status") == "processing"), "errors": sum(1 for d in dossiers if d.get("status") == "error")}
+    stats = {
+        "total": len(dossiers),
+        "completed": sum(1 for d in dossiers if d.get("status") == "completed"),
+        "processing": sum(1 for d in dossiers if d.get("status") == "processing"),
+        "errors": sum(1 for d in dossiers if d.get("status") == "error"),
+        "incidents": sum(1 for d in dossiers if d.get("delivery_status") == "incident_technique"),
+        "delivered": sum(1 for d in dossiers if d.get("delivery_status") == "livre_client" or (d.get("status") == "completed" and not d.get("delivery_status"))),
+        "pending": sum(1 for d in dossiers if d.get("delivery_status") == "en_attente_traitement" or (d.get("status") == "processing" and not d.get("delivery_status"))),
+    }
     return {"items": dossiers, "stats": stats}
+
+
+@router.post("/admin/dossier-express/{dossier_id}/retry")
+async def admin_retry_dossier(dossier_id: str, admin: dict = Depends(get_current_admin)):
+    """Admin endpoint to retry a failed dossier processing from scratch."""
+    dossier = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0})
+    if not dossier:
+        raise HTTPException(status_code=404, detail="Dossier non trouve")
+    if dossier.get("status") not in ("error",):
+        raise HTTPException(status_code=400, detail="Seuls les dossiers en erreur peuvent etre relances")
+
+    # Reset status
+    await db.dossier_express.update_one({"id": dossier_id}, {"$set": {
+        "status": "processing",
+        "delivery_status": "en_attente_traitement",
+        "processing_step": "relance_admin",
+        "error": None,
+        "retry_count": (dossier.get("retry_count", 0) + 1),
+        "last_retry_at": datetime.now(timezone.utc).isoformat(),
+        "retried_by": admin.get("email", "admin"),
+    }})
+
+    # Re-launch processing
+    asyncio.create_task(_process_dossier_express(
+        dossier_id,
+        dossier.get("email", ""),
+        dossier.get("name", ""),
+        dossier.get("situation", ""),
+        dossier.get("type_dossier", ""),
+        dossier.get("regime", ""),
+        dossier.get("documents_text", ""),
+        premium_pdf=dossier.get("premium_pdf", False),
+    ))
+
+    logger.info(f"Admin retry launched for dossier {dossier_id} by {admin.get('email')}")
+    return {"success": True, "message": "Relance en cours"}
 
 @router.get("/dossier-express/weekly-count")
 async def dossier_express_weekly_count():

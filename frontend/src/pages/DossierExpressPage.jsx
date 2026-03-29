@@ -195,14 +195,17 @@ export const DossierExpressPage = () => {
         if (res.data.status === 'completed') {
           setStep('success');
           clearInterval(interval);
-          toast.success("Votre rapport est prêt ! Vérifiez votre email.");
+          toast.success("Votre rapport est pret ! Verifiez votre email.");
+        } else if (res.data.delivery_status === 'incident_technique') {
+          // Incident detected — show reassuring fallback (still in processing view)
+          setPollStatus(res.data);
         } else if (res.data.status === 'error') {
           clearInterval(interval);
           const errorMsg = res.data.error || "Une erreur est survenue lors de l'analyse.";
           if (errorMsg.toLowerCase().includes('budget')) {
-            toast.error("Le service d'analyse est temporairement indisponible. Notre équipe a été notifiée. Vous serez contacté par email.", { duration: 10000 });
+            toast.error("Le service d'analyse necessite un traitement complementaire. Notre equipe a ete notifiee. Vous serez contacte par email.", { duration: 10000 });
           } else {
-            toast.error(`Erreur : ${errorMsg}`, { duration: 8000 });
+            toast.error("Votre dossier est bien pris en charge. Un traitement complementaire est en cours.", { duration: 8000 });
           }
           setStep('error');
         }
@@ -228,7 +231,7 @@ export const DossierExpressPage = () => {
       sessionStorage.setItem('dossier_express_premium_pdf', premiumPdf ? '1' : '0');
       sessionStorage.setItem('dossier_express_admin_bypass', '1');
       setAdminPaid(true);
-      toast.success("Mode Admin : paiement bypass — complétez le dossier puis lancez l'analyse.");
+      toast.success("Mode Admin : paiement bypass — completez le dossier puis lancez l'analyse.");
       return;
     }
     sessionStorage.setItem('dossier_express_form', JSON.stringify(form));
@@ -236,6 +239,19 @@ export const DossierExpressPage = () => {
     sessionStorage.setItem('dossier_express_analyse_premium', analysePremium ? '1' : '0');
     setLoading(true);
     try {
+      // === PRE-PAYMENT LLM HEALTH CHECK ===
+      try {
+        const healthRes = await axios.get(`${API}/health/llm`, { timeout: 15000 });
+        if (!healthRes.data?.operational) {
+          toast.error("Le service est momentanement indisponible pour finalisation technique. Merci de reessayer dans quelques instants.", { duration: 8000 });
+          setLoading(false);
+          return;
+        }
+      } catch {
+        toast.error("Le service est momentanement indisponible pour finalisation technique. Merci de reessayer dans quelques instants.", { duration: 8000 });
+        setLoading(false);
+        return;
+      }
       const res = await axios.post(`${API}/dossier-express/checkout`, {
         email: form.email,
         name: form.name,
@@ -245,7 +261,11 @@ export const DossierExpressPage = () => {
       });
       window.location.href = res.data.url;
     } catch (err) {
-      toast.error("Erreur lors du paiement. Veuillez réessayer.");
+      if (err.response?.status === 503) {
+        toast.error("Le service est momentanement indisponible pour finalisation technique. Merci de reessayer dans quelques instants.", { duration: 8000 });
+      } else {
+        toast.error("Erreur lors du paiement. Veuillez reessayer.");
+      }
       setLoading(false);
     }
   };
@@ -743,13 +763,69 @@ export const DossierExpressPage = () => {
   if (step === 'processing') {
     const filesCount = pollStatus?.files_count || files.length || 0;
     const docsExtracted = pollStatus?.documents_extracted || false;
+    const deliveryStatus = pollStatus?.delivery_status;
+    const isIncident = deliveryStatus === 'incident_technique';
+
+    // If incident detected during polling, show reassurance
+    if (isIncident) {
+      return (
+        <main className="page-transition pt-20">
+          <section className="section-padding">
+            <div className="max-w-xl mx-auto text-center">
+              <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Shield className="w-10 h-10 text-amber-600" />
+              </div>
+              <h2 className="text-2xl font-bold mb-3" data-testid="incident-title">Votre dossier est bien pris en charge</h2>
+              <p className="text-muted-foreground mb-6 text-sm leading-relaxed max-w-md mx-auto">
+                Un traitement complementaire est en cours afin de vous garantir la meilleure qualite d'analyse possible.
+                Notre equipe a ete automatiquement informee et reviendra vers vous dans les meilleurs delais.
+              </p>
+              <Card className="text-left mb-8 border-amber-200/60 bg-amber-50/30">
+                <CardContent className="p-5">
+                  <div className="flex items-start gap-3">
+                    <Shield className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-sm font-semibold mb-2">Aucune action requise de votre part</h4>
+                      <ul className="space-y-2">
+                        {[
+                          "Votre paiement est bien confirme et securise",
+                          "Vos documents sont conserves en toute confidentialite",
+                          "Vous recevrez votre rapport par email des qu'il sera finalise",
+                          "En cas de besoin, notre equipe vous contactera directement"
+                        ].map((item, i) => (
+                          <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                            <CheckCircle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link to="/contact">
+                  <Button variant="outline" className="rounded-full px-6 gap-2">
+                    <Mail className="w-4 h-4" />
+                    Nous contacter
+                  </Button>
+                </Link>
+                <Link to="/">
+                  <Button variant="ghost" className="rounded-full px-6">Retour a l'accueil</Button>
+                </Link>
+              </div>
+            </div>
+          </section>
+        </main>
+      );
+    }
 
     const STEPS = [
-      { key: 'uploading', label: `${filesCount > 0 ? filesCount + ' document' + (filesCount > 1 ? 's' : '') + ' reçu' + (filesCount > 1 ? 's' : '') : 'Documents reçus'}`, icon: Upload, detail: 'Vos fichiers ont été transmis avec succès.' },
-      { key: 'reading', label: docsExtracted ? 'Lecture des pièces transmises' : 'Lecture des informations fournies', icon: FileText, detail: 'Extraction et structuration du contenu de vos documents.' },
-      { key: 'analyzing', label: 'Analyse de votre dossier', icon: Brain, detail: 'Croisement avec les jurisprudences, barèmes et cas similaires.' },
-      { key: 'generating', label: 'Rédaction de votre synthèse personnalisée', icon: Sparkles, detail: 'Construction de votre rapport avec stratégie et recommandations.' },
-      { key: 'sending', label: 'Préparation de votre rapport final', icon: Mail, detail: 'Mise en forme PDF et envoi sécurisé par email.' },
+      { key: 'uploading', label: `${filesCount > 0 ? filesCount + ' document' + (filesCount > 1 ? 's' : '') + ' recu' + (filesCount > 1 ? 's' : '') : 'Documents recus'}`, icon: Upload, detail: 'Vos fichiers ont ete transmis avec succes.' },
+      { key: 'reading', label: docsExtracted ? 'Lecture des pieces transmises' : 'Lecture des informations fournies', icon: FileText, detail: 'Extraction et structuration du contenu de vos documents.' },
+      { key: 'analyzing', label: 'Analyse approfondie de votre dossier', icon: Brain, detail: 'Croisement avec les jurisprudences, baremes et cas similaires.' },
+      { key: 'generating', label: 'Redaction de votre rapport personnalise', icon: Sparkles, detail: 'Construction de votre rapport avec strategie et recommandations.' },
+      { key: 'sending', label: 'Verification et envoi securise', icon: Mail, detail: 'Mise en forme PDF et envoi par email.' },
     ];
 
     const currentProgress = pollStatus?.progress_step || 'uploading';
@@ -944,26 +1020,29 @@ export const DossierExpressPage = () => {
       <main className="page-transition pt-20">
         <section className="section-padding">
           <div className="max-w-lg mx-auto text-center">
-            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <AlertTriangle className="w-10 h-10 text-red-600" />
+            <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Shield className="w-10 h-10 text-amber-600" />
             </div>
-            <h2 className="text-2xl font-bold mb-3" data-testid="error-title">Analyse interrompue</h2>
-            <p className="text-muted-foreground mb-6 text-sm">
-              Le traitement de votre dossier a rencontré une erreur technique.
-              Notre équipe a été notifiée et vous serez contacté à <strong className="text-foreground">{form.email || pollStatus?.email}</strong>.
+            <h2 className="text-2xl font-bold mb-3" data-testid="error-title">Votre dossier est bien pris en charge</h2>
+            <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
+              Un traitement complementaire est en cours afin de vous garantir la meilleure qualite d'analyse.
+              Notre equipe a ete automatiquement informee et reviendra vers vous a <strong className="text-foreground">{form.email || pollStatus?.email}</strong>.
             </p>
-            <Card className="text-left mb-8">
+            <Card className="text-left mb-8 border-amber-200/60 bg-amber-50/30">
               <CardContent className="p-5">
-                <h3 className="font-semibold mb-3 text-sm">Que faire maintenant ?</h3>
+                <h3 className="font-semibold mb-3 text-sm flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-amber-600" />
+                  Ce que vous devez savoir
+                </h3>
                 <ul className="space-y-2.5">
                   {[
-                    "Notre équipe technique travaille à résoudre le problème",
-                    "Vous pouvez réessayer dans quelques minutes",
-                    "Si le problème persiste, contactez-nous directement",
-                    "Votre dossier est sauvegardé, aucune donnée n'est perdue"
+                    "Votre paiement est confirme et securise",
+                    "Vos documents sont conserves en toute confidentialite",
+                    "Notre equipe technique finalise votre rapport",
+                    "Vous recevrez votre analyse par email des que possible"
                   ].map((item, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <ChevronRight className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                      <CheckCircle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
                       {item}
                     </li>
                   ))}
@@ -971,14 +1050,14 @@ export const DossierExpressPage = () => {
               </CardContent>
             </Card>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button className="rounded-full px-6 gap-2" onClick={() => { setStep('form'); setDossierId(null); setPollStatus(null); }}>
-                <RefreshCw className="w-4 h-4" />
-                Réessayer
-              </Button>
               <Link to="/contact">
-                <Button variant="outline" className="rounded-full px-6">
+                <Button variant="outline" className="rounded-full px-6 gap-2">
+                  <Mail className="w-4 h-4" />
                   Nous contacter
                 </Button>
+              </Link>
+              <Link to="/">
+                <Button variant="ghost" className="rounded-full px-6">Retour a l'accueil</Button>
               </Link>
             </div>
           </div>
