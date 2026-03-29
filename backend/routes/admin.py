@@ -422,12 +422,23 @@ async def get_premium_analysis_full_content(analysis_id: str, admin: dict = Depe
             full_text = full_text or dossier.get("analysis", "")
             source_data = {"situation": dossier.get("situation", ""), "type_dossier": dossier.get("type_dossier", ""), "regime": dossier.get("regime", ""), "name": dossier.get("name", ""), "dossier_status": dossier.get("status", ""), "dossier_id": dossier.get("id", "")}
     else:
+        # StrategiIA: lookup via job_id (reliable) then fallback to email
+        if analysis.get("analysis"):
+            full_text = full_text or analysis["analysis"]
+        strat = None
+        if analysis.get("job_id"):
+            strat = await db.strategiia_analyses.find_one({"job_id": analysis["job_id"]}, {"_id": 0})
+        if not strat:
+            strat = await db.strategiia_analyses.find_one(
+                {"email": analysis.get("email", ""), "is_premium": True},
+                {"_id": 0},
+                sort=[("created_at", -1)]
+            )
+        if strat:
+            full_text = full_text or strat.get("analysis", "") or ""
+            source_data = {"type_dossier": strat.get("type_dossier", ""), "regime": strat.get("regime", ""), "situation": strat.get("situation", ""), "name": strat.get("name", "")}
         if not full_text and analysis.get("context"):
             full_text = analysis["context"]
-        strat = await db.strategiia_analyses.find_one({"email": analysis.get("email", "")}, {"_id": 0})
-        if strat:
-            full_text = full_text or strat.get("analysis", "") or strat.get("context", "")
-            source_data = {"type_dossier": strat.get("type_dossier", ""), "regime": strat.get("regime", ""), "name": strat.get("name", "")}
     return {"id": analysis_id, "type": analysis.get("type"), "full_text": full_text, "source_data": source_data, "email": analysis.get("email", ""), "status": analysis.get("status", ""), "admin_notes": analysis.get("admin_notes", "")}
 
 

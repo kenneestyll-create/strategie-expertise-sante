@@ -145,8 +145,14 @@ INSTRUCTION : Utilise cette matiere documentaire structuree pour affiner ta lect
             response = await llm_call(
                 ANTHROPIC_API_KEY, session_id, STRATEGIIA_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
             )
-            analysis_doc = {"id": str(uuid.uuid4()), "type_dossier": type_dossier, "regime": regime, "situation": situation[:500], "is_premium": is_premium, "email": email if email else "", "admin_test": is_admin_test, "created_at": datetime.now(timezone.utc).isoformat()}
+            analysis_doc = {"id": str(uuid.uuid4()), "type_dossier": type_dossier, "regime": regime, "situation": situation[:500], "analysis": response, "is_premium": is_premium, "email": email if email else "", "admin_test": is_admin_test, "job_id": job_id, "created_at": datetime.now(timezone.utc).isoformat()}
             await db.strategiia_analyses.insert_one(analysis_doc)
+            # Persist analysis in premium_analyses for admin relecture
+            if is_premium:
+                await db.premium_analyses.update_one(
+                    {"job_id": job_id},
+                    {"$set": {"analysis": response, "analysis_stored_at": datetime.now(timezone.utc).isoformat()}}
+                )
             remaining = 3
             if not is_premium and email:
                 now = datetime.now(timezone.utc)
