@@ -1,11 +1,12 @@
 from typing import Optional
 import os
-
-import anthropic
+import httpx
+import json as json_mod
 
 from config import logger
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY", "")
 
 # ── FAQ limitee aux questions PUREMENT generales (tarifs, contact, RDV) ──
 FAQ_DATABASE = {
@@ -125,46 +126,26 @@ COMPLEX_SIGNALS = [
 ]
 
 
-SYSTEM_PROMPT_LIGHT = """Tu es l'assistant de Strategie & Expertise Sante.
+SYSTEM_PROMPT_LIGHT = """Assistant d'orientation de Strategie & Expertise Sante.
 
-REGLE ABSOLUE DE LONGUEUR : Ta reponse COMPLETE (y compris la redirection finale) doit tenir en 5 a 8 lignes MAXIMUM. Pas une ligne de plus. C'est non negociable.
+REGLE : 1 seule phrase + 1 lien. JAMAIS plus de 2 lignes. Vouvoiement obligatoire.
 
-FORMAT OBLIGATOIRE DE CHAQUE REPONSE (3 parties, toujours dans cet ordre) :
-1. Reponse courte (2-3 lignes max) : Un eclairage clair et utile sur la question posee.
-2. Nuance (1 ligne) : Pourquoi une analyse personnalisee est necessaire.
-3. Redirection (2 lignes) : Toujours terminer par les liens ci-dessous.
+Orientation :
+- Situation / droits / strategie → **[StrategiIA](/simulateur)** (gratuit)
+- Dossier / documents / suivi → **[Dossier Express IA](/dossier-express)**
 
-INTERDICTIONS STRICTES :
-- Jamais de listes a puces detaillees
-- Jamais de paragraphes multiples
-- Jamais de demarches etape par etape
-- Jamais de strategie ou d'analyse complete
-- Jamais plus de 8 lignes au total
-
-REDIRECTION FINALE OBLIGATOIRE (copier tel quel) :
-Pour une analyse complete et personnalisee : **[StrategiIA](/simulateur)** (gratuit) | **[Dossier Express — 97€](/dossier-express)** (rapport sous 2h)"""
+INTERDIT : reponse longue, analyse, liste, explication, tutoiement, emoji."""
 
 
-SYSTEM_PROMPT_FULL = f"""Tu es l'assistant de Strategie & Expertise Sante, specialise en maladies professionnelles et accidents du travail.
+SYSTEM_PROMPT_FULL = """Assistant d'orientation de Strategie & Expertise Sante.
 
-{TABLEAUX_MP}
+REGLE : 1 seule phrase + 1 lien. JAMAIS plus de 2 lignes. Vouvoiement obligatoire.
 
-REGLE ABSOLUE DE LONGUEUR : Ta reponse COMPLETE (y compris la redirection finale) doit tenir en 5 a 8 lignes MAXIMUM. Pas une ligne de plus. C'est non negociable.
+Orientation :
+- Situation / droits / maladie / accident / expertise / MDPH / taux → **[StrategiIA](/simulateur)** (gratuit)
+- Dossier / documents / suivi / recevabilite → **[Dossier Express IA](/dossier-express)**
 
-FORMAT OBLIGATOIRE DE CHAQUE REPONSE (3 parties, toujours dans cet ordre) :
-1. Reponse factuelle courte (2-3 lignes max) : Pour une question sur un tableau, reponds oui/non + numero du tableau ou procedure hors tableau (CRRMP). Pour une autre question, donne l'information cle.
-2. Nuance (1 ligne) : Pourquoi le cas precis de la personne necessite une analyse approfondie.
-3. Redirection (2 lignes) : Toujours terminer par les liens ci-dessous.
-
-INTERDICTIONS STRICTES :
-- Jamais de listes a puces detaillees (max 2 elements si absolument necessaire)
-- Jamais de paragraphes multiples
-- Jamais de demarches etape par etape
-- Jamais d'estimation chiffree personnalisee
-- Jamais plus de 8 lignes au total
-
-REDIRECTION FINALE OBLIGATOIRE (copier tel quel) :
-Pour une analyse complete et personnalisee : **[StrategiIA](/simulateur)** (gratuit) | **[Dossier Express — 97€](/dossier-express)** (rapport sous 2h)"""
+INTERDIT : reponse longue, analyse, liste, explication, tutoiement, emoji."""
 
 
 def _is_complex_question(message: str) -> bool:
@@ -173,25 +154,45 @@ def _is_complex_question(message: str) -> bool:
 
 
 async def get_ai_response(message: str, session_id: str) -> str:
-    if not ANTHROPIC_API_KEY:
-        return ("Je suis desole, le service IA n'est pas disponible actuellement. "
-                "Pour une analyse de votre situation, essayez notre [StrategiIA](/simulateur) "
-                "ou commandez un [Dossier Express IA](/dossier-express).")
+    if not ANTHROPIC_API_KEY and not EMERGENT_LLM_KEY:
+        return ("Je vous oriente : pour analyser votre situation → [StrategiIA](/simulateur) (gratuit) | "
+                "pour analyser un dossier → [Dossier Express IA](/dossier-express) (rapport sous 2h).")
 
     try:
         prompt = SYSTEM_PROMPT_FULL if _is_complex_question(message) else SYSTEM_PROMPT_LIGHT
 
-        client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
-        response = await client.messages.create(
-            model="claude-sonnet-4-5-20250929",
-            max_tokens=350,
-            system=prompt,
-            messages=[{"role": "user", "content": message}],
-        )
-        return response.content[0].text
+        if ANTHROPIC_API_KEY:
+            import anthropic
+            client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
+            response = await client.messages.create(
+                model="claude-sonnet-4-5-20250929",
+                max_tokens=150,
+                system=prompt,
+                messages=[{"role": "user", "content": message}],
+            )
+            return response.content[0].text
+
+        # Fallback: Emergent LLM proxy
+        from emergentintegrations.llm.utils import get_integration_proxy_url
+        proxy_url = get_integration_proxy_url()
+        url = f"{proxy_url}/llm/chat/completions"
+        headers = {"Authorization": f"Bearer {EMERGENT_LLM_KEY}", "Content-Type": "application/json"}
+        payload = {
+            "model": "claude-sonnet-4-5-20250929",
+            "messages": [
+                {"role": "system", "content": prompt},
+                {"role": "user", "content": message}
+            ],
+            "max_tokens": 100
+        }
+        async with httpx.AsyncClient(timeout=httpx.Timeout(30.0, connect=10.0)) as client:
+            resp = await client.post(url, headers=headers, json=payload)
+            if resp.status_code != 200:
+                raise Exception(f"LLM proxy error {resp.status_code}")
+            data = resp.json()
+            return data["choices"][0]["message"]["content"]
 
     except Exception as e:
         logger.error(f"Error getting AI response: {str(e)}")
-        return ("Je suis desole, une erreur s'est produite. "
-                "Vous pouvez analyser votre situation avec [StrategiIA](/simulateur) "
-                "ou consulter nos [ressources](/ressources).")
+        return ("Je vous oriente : analyse de situation → [StrategiIA](/simulateur) (gratuit) | "
+                "analyse de dossier → [Dossier Express IA](/dossier-express).")

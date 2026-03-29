@@ -17,9 +17,9 @@ async def chatbot_message(chat_input: ChatMessage):
     session_doc = await db.chatbot_sessions.find_one({"session_id": session_id}, {"_id": 0})
     question_count = (session_doc.get("count", 0) if session_doc else 0) + 1
 
-    if question_count > 5:
+    if question_count > 3:
         return ChatResponse(
-            response="Vous avez atteint la limite de 5 questions gratuites pour cette session.\n\n"
+            response="Vous avez atteint la limite de 3 questions gratuites pour cette session.\n\n"
                      "Pour aller plus loin dans votre démarche :\n"
                      "- [Réservez un appel gratuit](/agenda) avec notre expert\n"
                      "- [Découvrez le Dossier Express IA](/dossier-express) pour une analyse complète\n"
@@ -48,4 +48,4 @@ async def chatbot_message(chat_input: ChatMessage):
 async def chatbot_quota(session_id: str):
     session_doc = await db.chatbot_sessions.find_one({"session_id": session_id}, {"_id": 0})
     used = session_doc.get("count", 0) if session_doc else 0
-    return {"remaining": max(0, 5 - used), "limit": 5, "used": min(used, 5)}
+    return {"remaining": max(0, 3 - used), "limit": 3, "used": min(used, 3)}

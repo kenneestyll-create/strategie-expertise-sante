@@ -11,7 +11,7 @@ import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
-const CHAT_LIMIT = 5;
+const CHAT_LIMIT = 3;
 
 const WAITING_MESSAGES = [
   "Analyse de votre situation en cours",
@@ -89,11 +89,11 @@ const StrateMascotIcon = ({ size = 40 }) => (
 export const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showBubble, setShowBubble] = useState(false);
-  const [bubbleDismissed, setBubbleDismissed] = useState(false);
+  const [bubbleDismissed, setBubbleDismissed] = useState(true);
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: "Bonjour ! Je suis l'assistant de Stratégie & Expertise Santé, ici pour vous orienter. Comment puis-je vous aider aujourd'hui ?\n\nVous pouvez me poser des questions sur :\n- Les expertises médicales\n- La MDPH et vos droits\n- Les accidents du travail\n- La protection juridique\n- Nos tarifs et services\n\nPour un accompagnement personnalisé, n'hésitez pas à prendre rendez-vous avec notre équipe."
+      content: "Bonjour ! Je suis l'assistant d'orientation de S.E.S.\n\nDites-moi en quelques mots votre besoin et je vous oriente vers le bon outil."
     }
   ]);
   const [input, setInput] = useState('');
@@ -110,12 +110,8 @@ export const ChatBot = () => {
 
   useEffect(() => { scrollToBottom(); }, [messages]);
 
-  // Delayed appearance of the bubble
-  useEffect(() => {
-    if (isOpen || bubbleDismissed) return;
-    const timer = setTimeout(() => setShowBubble(true), 2500);
-    return () => clearTimeout(timer);
-  }, [isOpen, bubbleDismissed]);
+  // Delayed appearance of the bubble — disabled
+  useEffect(() => {}, [isOpen, bubbleDismissed]);
 
   // Listen for AI questions from GlobalSearch
   useEffect(() => {
@@ -198,36 +194,12 @@ export const ChatBot = () => {
       {/* Mascot Floating Button — Premium */}
       {!isOpen && (
         <div className="fixed flex items-end gap-3" style={{ zIndex: 'var(--z-chatbot)', bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))', right: '1rem' }} data-testid="chatbot-fab-wrapper">
-          {/* Text Bubble */}
-          {showBubble && !bubbleDismissed && (
-            <div
-              className="relative bg-[#0a0a08] border border-[#C9A84C]/25 rounded-2xl rounded-br-sm px-4 py-3 shadow-xl max-w-[220px] sm:max-w-[260px] cursor-pointer"
-              style={{ animation: 'chatBubbleFadeIn 0.4s ease-out' }}
-              onClick={() => { setBubbleDismissed(true); setIsOpen(true); }}
-              data-testid="chatbot-bubble-text"
-            >
-              <button
-                className="absolute -top-2 -right-2 w-5 h-5 bg-[#1a1a1a] border border-[#C9A84C]/20 rounded-full flex items-center justify-center text-white/40 hover:text-white/70 transition-colors"
-                onClick={(e) => { e.stopPropagation(); setBubbleDismissed(true); }}
-                aria-label="Fermer"
-              >
-                <X className="w-3 h-3" />
-              </button>
-              <p className="text-[11px] sm:text-xs text-[#f5f0e8]/90 leading-relaxed">
-                <span className="font-semibold text-[#C9A84C]">StratégiIA</span>
-                <span className="text-[#f5f0e8]/50"> — </span>
-                Je vous aide à analyser votre situation
-              </p>
-            </div>
-          )}
-
           {/* Robot Mascot Button */}
           <button
-            onClick={() => { setIsOpen(true); setBubbleDismissed(true); }}
+            onClick={() => { setIsOpen(true); }}
             className="group relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#0a0a08] border-2 border-[#C9A84C]/40 shadow-xl shadow-[#C9A84C]/10 flex items-center justify-center transition-all duration-300 hover:border-[#C9A84C]/70 hover:shadow-[#C9A84C]/25 hover:scale-105"
-            style={{ animation: 'mascotPulse 3s ease-in-out infinite' }}
             data-testid="chatbot-button"
-            aria-label="Ouvrir StratégiIA"
+            aria-label="Ouvrir l'assistant"
           >
             <StrateMascotIcon size={36} />
             {/* Online indicator */}
@@ -249,8 +221,8 @@ export const ChatBot = () => {
                 <Bot className="w-5 h-5 text-accent-foreground" />
               </div>
               <div>
-                <h3 className="font-semibold text-sm">Assistant</h3>
-                <p className="text-xs text-primary-foreground/70">En ligne</p>
+                <h3 className="font-semibold text-sm">Assistant d'orientation</h3>
+                <p className="text-xs text-primary-foreground/70">Je vous guide vers le bon outil</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -345,7 +317,7 @@ export const ChatBot = () => {
               <div className="flex items-start gap-3 mb-3">
                 <Lock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-amber-800">Vous avez utilisé vos 5 questions gratuites</p>
+                  <p className="text-sm font-medium text-amber-800">Vous avez utilisé vos 3 questions gratuites</p>
                   <p className="text-xs text-amber-600 mt-1">Pour aller plus loin dans votre démarche :</p>
                 </div>
               </div>

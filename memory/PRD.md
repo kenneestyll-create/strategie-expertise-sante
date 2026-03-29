@@ -6,46 +6,39 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA i
 ## Architecture
 - **Frontend** : React 18 + Shadcn/UI + Tailwind CSS
 - **Backend** : FastAPI + MongoDB
-- **IA** : Anthropic Claude Sonnet 4.5 — PATH A (natif) / PATH B (Emergent proxy multi-stage)
+- **IA** : Anthropic Claude Sonnet 4.5 — via Emergent LLM proxy
 - **PDF** : fpdf2 (premiumise 29/03/2026) | **Email** : Resend | **Paiements** : Stripe + PayPal
 
-## PDF Premium Upgrade (29/03/2026)
+## Corrections effectuees (29-30/03/2026)
 
-### Fichier modifie
-- `/app/backend/utils/pdf.py` — SEUL fichier modifie. Signatures identiques.
+### DataConsentBox variants
+- `StrategiIA.jsx` : `variant="informations"` (ne collecte pas de documents)
+- `ContactPage.jsx` : `variant="informations"` (ne collecte pas de documents)
+- `DossierExpressPage.jsx` : variant par defaut `"documents"` (collecte documents) + toujours visible (meme admin)
 
-### Ameliorations visuelles
-1. **Identite distincte par service**
-   - StrategiIA : accents or/dore, ton strategique et emotionnel
-   - Dossier Express : accents bleu marine, ton documentaire et structure
-2. **Meilleure respiration** : espacement x2-3 entre sections, separateurs subtils
-3. **Hierarchie renforcee** : titres 10pt bold avec barres d'accent colorees
-4. **Inline markdown** : support **gras** et *italique* en milieu de phrase (fpdf2 markdown=True)
-5. **Bullets colores** : or (StrategiIA) vs marine (Dossier Express)
-6. **Callout boxes** : encadres sobres pour mots-cles (Important, Attention, Essentiel)
+### Bug focus PDF - Page A propos
+- Lazy-loading du PDF via IntersectionObserver (charge uniquement quand visible)
+- Empeche le plugin PDF Chrome de voler le focus au chargement
 
-### Visuels utiles ajoutes
-- **StrategiIA** : Jauge de vigilance (3 niveaux : Suivi recommande / Attention soutenue / Vigilance elevee) — basee sur l'analyse du contenu
-- **Dossier Express** : Bandeau compact (nb pieces, pages, qualite extraction) + tableau detaille des documents
+### Bug outline bleu "Outils" navbar
+- Ajout `outline-none focus:outline-none focus-visible:outline-none` sur dropdownBtnClass
 
-### Closing sections differenciees
-- **StrategiIA** : "Votre situation, notre regard" — ton chirurgical, rassurant, orientant
-- **Dossier Express** : "Ce que cette etude vous apporte" — ton methodique, credible, structurant
-- **Signatures** : "Votre bouclier." (Strat) vs "La methode au service de vos droits." (DE)
+### Email obligatoire - Question urgente
+- Label "Email (optionnel)" → "Email *"
+- Validation ajoutee : email requis + format basique
 
-### Tests de non-regression
-- iteration_154: 10/10 backend + 4/4 frontend = 100% PASS
-- 5 PDFs generes avec succes (29-40 KB, headers %PDF- valides)
-- Routes, endpoints, pipelines, statuts: INTACTS
-
-## DataConsentBox Variant Fix (29/03/2026)
-- `DataConsentBox.jsx` : Supporte prop `variant` (`'informations'` | `'documents'` defaut)
-- `StrategiIA.jsx` ligne 400 : `variant="informations"` (ne collecte pas de documents)
-- `DossierExpressPage.jsx` ligne 714 : variant par defaut `"documents"` (collecte documents)
-- Verifie visuellement : titre, description, accordion et checkbox adaptent le wording
+### Robot assistant - Refonte complete (30/03/2026)
+- **Bulle texte supprimee** : plus de "StrategiIA — Je vous aide..." en bas a droite
+- **Animation pulsante supprimee** sur le bouton robot
+- **Prompt systeme reecrit** : orienteur ultra-court (1 phrase + 1 lien, 2 lignes max)
+- **Limite 3 questions** par session (etait 5)
+- **max_tokens reduit** de 350 a 100
+- **Message d'accueil simplifie** 
+- **Header robot** : "Assistant d'orientation — Je vous guide vers le bon outil"
+- **Backend chatbot** : utilise Emergent LLM proxy (etait branche sur ANTHROPIC_API_KEY vide)
 
 ## Etat des services
-- IA Anthropic : OK (Emergent fallback)
+- IA Anthropic (Emergent proxy) : OK
 - Paiement Stripe : TEST MODE
 - Email Resend : OK (sandbox)
 - Stockage S3 : NON CONFIGURE
@@ -53,12 +46,7 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA i
 
 ## Backlog
 ### P0 : TERMINE
-- Consolidation architecture — DONE
-- Optimisation pipeline Dossier Express — DONE
-- Fix analyse StrategiIA non stockee — DONE
-- Fix PDF StrategiIA inaccessible — DONE
-- Premium PDF visual upgrade — DONE 29/03/2026
-- DataConsentBox wording StrategiIA — DONE 29/03/2026
+- Toutes corrections ci-dessus
 
 ### P1 : Cles de production
 - ANTHROPIC_API_KEY native (pipeline ~30s)
