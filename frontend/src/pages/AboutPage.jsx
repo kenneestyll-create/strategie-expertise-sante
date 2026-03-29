@@ -278,6 +278,8 @@ export const AboutPage = () => {
                   type="application/pdf"
                   className="w-full"
                   style={{ height: '700px' }}
+                  tabIndex={-1}
+                  onFocus={(e) => e.preventDefault()}
                   data-testid="pdf-object"
                 >
                   <div className="p-12 text-center">
