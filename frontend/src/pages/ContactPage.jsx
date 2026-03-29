@@ -319,7 +319,7 @@ export const ContactPage = () => {
                     </div>
 
                     {/* Privacy Notice */}
-                    <DataConsentBox checked={consent} onChange={setConsent} />
+                    <DataConsentBox checked={consent} onChange={setConsent} variant="informations" />
 
                     {/* Submit Button */}
                     <Button 
