@@ -6,34 +6,40 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA i
 ## Architecture
 - **Frontend** : React 18 + Shadcn/UI + Tailwind CSS
 - **Backend** : FastAPI + MongoDB
-- **IA** : Anthropic Claude Sonnet 4.5 — PATH A (natif, appel unique 8000 tokens) / PATH B (Emergent proxy, multi-stage httpx 7 sections)
-- **PDF** : fpdf2 + jsPDF | **Email** : Resend | **Paiements** : Stripe + PayPal
+- **IA** : Anthropic Claude Sonnet 4.5 — PATH A (natif) / PATH B (Emergent proxy multi-stage)
+- **PDF** : fpdf2 (premiumise 29/03/2026) | **Email** : Resend | **Paiements** : Stripe + PayPal
 
-## Services (ISOLES — voir ARCHITECTURE_GUARDRAILS.md)
-- **StrategiIA** : Analyse strategique MP/AT. Collection: strategiia_analyses. Analyse STOCKEE en DB avec job_id. PDF generable via /api/admin/strategiia/{id}/preview-pdf.
-- **Dossier Express IA** : Pipeline documentaire optimise. Collection: dossier_express. PDF generable via /api/admin/dossier-express/{id}/preview-pdf.
-- **Relecture admin** : Collection partagee premium_analyses. Bouton "Voir le PDF final" dans modale de relecture pour les deux services.
+## PDF Premium Upgrade (29/03/2026)
 
-## Bugs corriges (29/03/2026)
+### Fichier modifie
+- `/app/backend/utils/pdf.py` — SEUL fichier modifie. Signatures identiques.
 
-### Bug 1: Analyse StrategiIA non stockee en DB
-- Cause: _run_analysis() stockait le resultat uniquement en memoire (_jobs)
-- Fix: Stocker l'analyse + job_id dans strategiia_analyses ET premium_analyses
-- Fichiers: strategiia.py (lignes 148-155), admin.py (lignes 424-438)
+### Ameliorations visuelles
+1. **Identite distincte par service**
+   - StrategiIA : accents or/dore, ton strategique et emotionnel
+   - Dossier Express : accents bleu marine, ton documentaire et structure
+2. **Meilleure respiration** : espacement x2-3 entre sections, separateurs subtils
+3. **Hierarchie renforcee** : titres 10pt bold avec barres d'accent colorees
+4. **Inline markdown** : support **gras** et *italique* en milieu de phrase (fpdf2 markdown=True)
+5. **Bullets colores** : or (StrategiIA) vs marine (Dossier Express)
+6. **Callout boxes** : encadres sobres pour mots-cles (Important, Attention, Essentiel)
 
-### Bug 2: PDF StrategiIA inaccessible depuis l'admin
-- Cause: Aucun endpoint admin et aucun bouton frontend pour generer/telecharger le PDF
-- Fix: Endpoint GET /api/admin/strategiia/{id}/preview-pdf + bouton "Voir le PDF final" dans AdminPremiumReview
-- Fichiers: admin.py (lignes 499-536), AdminPremiumReview.jsx (lignes 326-349)
+### Visuels utiles ajoutes
+- **StrategiIA** : Jauge de vigilance (3 niveaux : Suivi recommande / Attention soutenue / Vigilance elevee) — basee sur l'analyse du contenu
+- **Dossier Express** : Bandeau compact (nb pieces, pages, qualite extraction) + tableau detaille des documents
 
-## Tests
-- iteration_150: 16/16 PASS (post-endpoint admin-bypass)
-- iteration_151: 13/13 PASS (post-optimisation pipeline)
-- iteration_152: 10/10 PASS (post-fix analyse stockage)
-- iteration_153: 8/8 PASS (post-fix PDF preview)
+### Closing sections differenciees
+- **StrategiIA** : "Votre situation, notre regard" — ton chirurgical, rassurant, orientant
+- **Dossier Express** : "Ce que cette etude vous apporte" — ton methodique, credible, structurant
+- **Signatures** : "Votre bouclier." (Strat) vs "La methode au service de vos droits." (DE)
 
-## Etat des services (Preview)
-- IA Anthropic : OK (Emergent fallback multi-stage httpx)
+### Tests de non-regression
+- iteration_154: 10/10 backend + 4/4 frontend = 100% PASS
+- 5 PDFs generes avec succes (29-40 KB, headers %PDF- valides)
+- Routes, endpoints, pipelines, statuts: INTACTS
+
+## Etat des services
+- IA Anthropic : OK (Emergent fallback)
 - Paiement Stripe : TEST MODE
 - Email Resend : OK (sandbox)
 - Stockage S3 : NON CONFIGURE
@@ -45,6 +51,7 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA i
 - Optimisation pipeline Dossier Express — DONE
 - Fix analyse StrategiIA non stockee — DONE
 - Fix PDF StrategiIA inaccessible — DONE
+- Premium PDF visual upgrade — DONE 29/03/2026
 
 ### P1 : Cles de production
 - ANTHROPIC_API_KEY native (pipeline ~30s)
