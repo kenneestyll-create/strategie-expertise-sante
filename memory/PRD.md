@@ -47,6 +47,7 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA.
 ## Backlog
 ### P0 : TERMINE
 - Fix pipeline Dossier Express IA (multi-stage) — DONE 29/03/2026
+- UX Premium vue de traitement Dossier Express — DONE 29/03/2026
 - Consolidation architecture — DONE 29/03/2026
 - Validation E2E StrategiIA — DONE 29/03/2026
 - Validation E2E Dossier Express — DONE 29/03/2026
