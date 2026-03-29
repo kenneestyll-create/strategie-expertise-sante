@@ -249,30 +249,30 @@ class TestServerStartup:
 
 
 class TestDossierExpressAdminBypass:
-    """Test Dossier Express admin-bypass endpoint."""
+    """Test Dossier Express admin-bypass endpoint (NEW - added in iteration 150)."""
     
-    def test_admin_bypass_endpoint_exists(self, auth_headers):
+    def test_admin_bypass_creates_dossier(self, auth_headers):
         """POST /api/dossier-express/admin-bypass — creates Dossier Express analysis (admin auth)
         
-        NOTE: This test documents a MISSING endpoint after refactoring.
-        The endpoint was supposed to be moved from strategiia.py to dossier_express.py
-        but appears to be missing.
+        This endpoint was added to dossier_express.py (lines 687-741) to allow admin testing
+        without going through Stripe checkout.
         """
         response = requests.post(
             f"{BASE_URL}/api/dossier-express/admin-bypass",
             headers=auth_headers,
             json={
-                "email": "test@test.com",
-                "name": "Test User",
-                "situation": "Test situation for admin bypass",
+                "situation": "Test situation for admin bypass - iteration 150 verification",
+                "name": "Test Admin Bypass",
                 "type_dossier": "at",
                 "regime": "general"
             }
         )
-        # Document the current state - endpoint may be missing
-        if response.status_code == 404:
-            pytest.skip("REGRESSION: /api/dossier-express/admin-bypass endpoint is MISSING after refactoring")
         assert response.status_code == 200
         data = response.json()
-        assert "success" in data or "dossier_id" in data
-        print(f"Dossier Express Admin Bypass: {data}")
+        # Verify response structure matches expected format
+        assert "dossier_id" in data, "Response must contain dossier_id"
+        assert "status" in data, "Response must contain status"
+        assert "admin_test" in data, "Response must contain admin_test flag"
+        assert data["status"] == "processing", f"Expected status='processing', got '{data['status']}'"
+        assert data["admin_test"] is True, "admin_test flag should be True"
+        print(f"Dossier Express Admin Bypass: dossier_id={data['dossier_id']}, status={data['status']}, admin_test={data['admin_test']}")
