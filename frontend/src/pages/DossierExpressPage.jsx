@@ -237,7 +237,7 @@ export const DossierExpressPage = () => {
   }, [dossierId, step]);
 
   const handleCheckout = async () => {
-    if (!form.email || !form.name) {
+    if (!isAdminMode && (!form.email || !form.name)) {
       toast.error("Veuillez renseigner votre nom et email");
       return;
     }
@@ -300,7 +300,7 @@ export const DossierExpressPage = () => {
       toast.error("Veuillez décrire votre situation");
       return;
     }
-    if (!form.email.trim()) {
+    if (!isAdminMode && !form.email.trim()) {
       toast.error("Veuillez renseigner votre email");
       return;
     }
@@ -747,7 +747,7 @@ export const DossierExpressPage = () => {
                       size="lg"
                       className="w-full rounded-xl gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold shadow-lg shadow-amber-500/15 hover:shadow-amber-500/25 transition-all"
                       onClick={handleSubmitDossier}
-                      disabled={loading || !form.situation.trim() || !form.email || !consent}
+                      disabled={loading || !form.situation.trim() || (!isAdminMode && !form.email) || !consent}
                       data-testid="de-submit-button"
                     >
                       {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi et analyse en cours...</> : <><Brain className="w-5 h-5" /> Lancer l'analyse Dossier Express IA</>}
@@ -757,7 +757,7 @@ export const DossierExpressPage = () => {
                       size="lg"
                       className="w-full rounded-xl gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold shadow-lg shadow-amber-500/15 hover:shadow-amber-500/25 transition-all"
                       onClick={handleCheckout}
-                      disabled={loading || !form.email || !form.name || !consent}
+                      disabled={loading || (!isAdminMode && (!form.email || !form.name)) || !consent}
                       data-testid="de-checkout-button"
                     >
                       {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection vers le paiement...</> : <><CreditCard className="w-5 h-5" /> {adminPaid ? 'Mode Admin — Paiement validé' : `Payer ${totalAmount} € — Analyse sous 2h`}</>}

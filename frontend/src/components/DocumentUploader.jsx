@@ -284,6 +284,7 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
   const { extractFromMultiple, enhanceWithAI, processing: ocrProcessing, progress: ocrProgress, cancel: cancelOcr } = useOCR();
 
   const [compressInfo, setCompressInfo] = useState(null); // { count, savedBytes }
+  const [dragOver, setDragOver] = useState(false);
 
   const allChecked = checks.readable && checks.personal_info && checks.dates_signatures;
   const hasFiles = files.length > 0;
@@ -388,6 +389,8 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
 
   const handleDrop = useCallback((e) => {
     e.preventDefault();
+    e.stopPropagation();
+    setDragOver(false);
     handleFiles(e.dataTransfer.files);
   }, [handleFiles]);
 
@@ -435,9 +438,11 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
       {/* Drop zone + Scan button */}
       <div className="flex gap-2">
         <div
-          className="flex-1 border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-accent/50 transition-colors cursor-pointer relative"
+          className={`flex-1 border-2 border-dashed rounded-xl p-6 text-center transition-colors cursor-pointer relative ${dragOver ? 'border-accent bg-accent/5 scale-[1.01]' : 'border-border hover:border-accent/50'}`}
           onDrop={handleDrop}
-          onDragOver={e => e.preventDefault()}
+          onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
+          onDragEnter={e => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }}
+          onDragLeave={e => { e.preventDefault(); e.stopPropagation(); setDragOver(false); }}
           onClick={() => inputRef.current?.click()}
           data-testid="upload-dropzone"
         >
