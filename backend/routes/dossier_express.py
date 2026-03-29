@@ -684,6 +684,62 @@ async def admin_retry_dossier(dossier_id: str, admin: dict = Depends(get_current
     logger.info(f"Admin retry launched for dossier {dossier_id} by {admin.get('email')}")
     return {"success": True, "message": "Relance en cours"}
 
+@router.post("/dossier-express/admin-bypass")
+async def dossier_express_admin_bypass(request: Request):
+    """Admin bypass: skips Stripe checkout and runs Dossier Express pipeline directly for testing."""
+    import jwt as pyjwt
+    auth_header = request.headers.get("authorization", "")
+    if not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Token manquant")
+    token = auth_header.split(" ", 1)[1]
+    try:
+        payload = pyjwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        if not payload.get("is_admin"):
+            raise HTTPException(status_code=403, detail="Non autorise")
+    except Exception:
+        raise HTTPException(status_code=401, detail="Token invalide")
+
+    body = await request.json()
+    situation = body.get("situation", "")
+    name = body.get("name", "Admin Test")
+    type_dossier = body.get("type_dossier", "")
+    regime = body.get("regime", "")
+    documents_text = body.get("documents_text", "")
+    premium_pdf = body.get("premium_pdf", False)
+    email = payload.get("email", "admin@test")
+
+    if not situation.strip():
+        raise HTTPException(status_code=400, detail="Situation requise")
+    if not _has_llm_key():
+        raise HTTPException(status_code=503, detail="Service IA non disponible")
+
+    dossier_id = str(uuid.uuid4())[:12]
+    dossier_entry = {
+        "id": dossier_id,
+        "email": email,
+        "name": name,
+        "situation": situation,
+        "type_dossier": type_dossier,
+        "regime": regime,
+        "documents_text": documents_text,
+        "status": "processing",
+        "delivery_status": "en_attente_traitement",
+        "processing_step": "checkout_valide",
+        "premium_pdf": premium_pdf,
+        "admin_test": True,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.dossier_express.insert_one(dossier_entry)
+
+    # Launch async pipeline
+    asyncio.create_task(_process_dossier_express(
+        dossier_id, email, name, situation, type_dossier, regime, documents_text, premium_pdf=premium_pdf
+    ))
+
+    logger.info(f"[DOSSIER_EXPRESS][admin-bypass][{dossier_id}] Pipeline lance par {email}")
+    return {"dossier_id": dossier_id, "status": "processing", "admin_test": True}
+
+
 @router.get("/dossier-express/weekly-count")
 async def dossier_express_weekly_count():
     from datetime import timedelta
