@@ -38,6 +38,12 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA i
 - 5 PDFs generes avec succes (29-40 KB, headers %PDF- valides)
 - Routes, endpoints, pipelines, statuts: INTACTS
 
+## DataConsentBox Variant Fix (29/03/2026)
+- `DataConsentBox.jsx` : Supporte prop `variant` (`'informations'` | `'documents'` defaut)
+- `StrategiIA.jsx` ligne 400 : `variant="informations"` (ne collecte pas de documents)
+- `DossierExpressPage.jsx` ligne 714 : variant par defaut `"documents"` (collecte documents)
+- Verifie visuellement : titre, description, accordion et checkbox adaptent le wording
+
 ## Etat des services
 - IA Anthropic : OK (Emergent fallback)
 - Paiement Stripe : TEST MODE
@@ -52,6 +58,7 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA i
 - Fix analyse StrategiIA non stockee — DONE
 - Fix PDF StrategiIA inaccessible — DONE
 - Premium PDF visual upgrade — DONE 29/03/2026
+- DataConsentBox wording StrategiIA — DONE 29/03/2026
 
 ### P1 : Cles de production
 - ANTHROPIC_API_KEY native (pipeline ~30s)

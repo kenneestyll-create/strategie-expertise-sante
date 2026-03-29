@@ -397,7 +397,7 @@ export const StrategiIA = () => {
                         data-testid="strategiia-situation-input"
                       />
                     </div>
-                    <DataConsentBox checked={consent} onChange={setConsent} />
+                    <DataConsentBox checked={consent} onChange={setConsent} variant="informations" />
 
                     <Button onClick={handleAnalyze} className="w-full rounded-lg gap-2" disabled={!typeDossier || !situation.trim() || !consent} data-testid="strategiia-analyze-button">
                       <Brain className="w-4 h-4" /> Obtenir ma pré-analyse gratuite
