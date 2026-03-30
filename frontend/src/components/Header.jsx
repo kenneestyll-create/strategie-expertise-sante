@@ -73,21 +73,21 @@ export const Header = () => {
           ? 'bg-[#0a0a08]'
           : scrolled
             ? 'bg-[#0a0a08]/95 backdrop-blur-md'
-            : 'bg-[#0a0a08]/70 backdrop-blur-sm'
+            : 'bg-[#0a0a08]/80 backdrop-blur-sm'
       }`}
-      style={{ zIndex: 'var(--z-header, 9999)', borderBottom: scrolled ? '1px solid rgba(201,168,76,0.1)' : '1px solid transparent' }}
+      style={{ zIndex: 'var(--z-header, 9999)', borderBottom: scrolled ? '1px solid rgba(201,168,76,0.12)' : '1px solid transparent' }}
       data-testid="header"
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between min-h-[4.25rem] lg:min-h-[4.5rem]">
+        <div className="flex items-center justify-between min-h-[4.25rem] lg:min-h-[4.75rem]">
 
-          {/* ═══ Bloc Marque ═══ */}
+          {/* ═══ Bloc Marque — Ancrage premium ═══ */}
           <Link
             to="/"
             className="flex items-center gap-3 hover:opacity-90 transition-opacity flex-shrink-0"
             data-testid="header-logo"
           >
-            <LogoFull className="h-10 w-auto" textColor="#f5f0e8" />
+            <LogoFull className="h-11 w-auto" textColor="#f5f0e8" />
           </Link>
 
           {/* ═══ Desktop Navigation ═══ */}

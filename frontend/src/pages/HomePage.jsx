@@ -159,9 +159,9 @@ export const HomePage = () => {
                 </div>
               </div>
 
-              {/* Titre — compacté pour above-the-fold */}
+              {/* Titre — noble et respirant */}
               <h1
-                className="text-[1.75rem] sm:text-[2rem] lg:text-[2rem] xl:text-[2.2rem] font-bold text-[#f5f0e8] leading-[1.10] mb-2"
+                className="text-[1.75rem] sm:text-[2rem] lg:text-[2.1rem] xl:text-[2.3rem] font-bold text-[#f5f0e8] leading-[1.18] mb-3"
                 style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
                 data-testid="hero-title"
               >
@@ -196,7 +196,7 @@ export const HomePage = () => {
                 ))}
               </div>
 
-              {/* Preuve sociale */}
+              {/* Preuve sociale + CTA Urgent intégré */}
               <div className="flex flex-wrap items-center gap-4 sm:gap-5 mb-3">
                 {visitorCount > 0 && (
                   <div className="flex items-center gap-2.5">
@@ -214,12 +214,14 @@ export const HomePage = () => {
                   </div>
                 )}
                 <div className="h-5 w-px bg-[#f5f0e8]/10 hidden sm:block" />
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-[#C9A84C]/15 flex items-center justify-center">
-                    <Zap className="w-2.5 h-2.5 text-[#C9A84C]" />
-                  </div>
-                  <span className="text-[#f5f0e8]/60 text-xs font-medium">Reponse sous 2h</span>
-                </div>
+                <button
+                  onClick={() => window.dispatchEvent(new Event('alerte-urgente:open'))}
+                  className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg border border-[#C9A84C]/20 bg-[#C9A84C]/[0.06] text-[#C9A84C]/80 hover:text-[#C9A84C] hover:border-[#C9A84C]/35 hover:bg-[#C9A84C]/[0.1] transition-all cursor-pointer"
+                  data-testid="hero-urgent-cta"
+                >
+                  <Zap className="w-3 h-3" />
+                  <span className="text-xs font-medium tracking-wide">Besoin urgent ?</span>
+                </button>
               </div>
 
               {/* CTAs */}
@@ -251,23 +253,29 @@ export const HomePage = () => {
               </p>
             </div>
 
-            {/* ── COLONNE DROITE : Visuel premium — contenu ── */}
+            {/* ── COLONNE DROITE : Visuel signature ── */}
             <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
-              <div className="w-full max-w-[380px]">
+              <div className="w-full max-w-[400px] relative">
+                {/* Halo doré subtil derrière l'image */}
+                <div className="absolute -inset-8 bg-[#C9A84C]/[0.03] rounded-full blur-[60px] pointer-events-none" />
                 {/* Cadre image — ombre profonde + filet doré gauche */}
                 <div className="relative">
-                  <div className="overflow-hidden shadow-[0_25px_60px_-12px_rgba(0,0,0,0.7)]">
+                  <div className="overflow-hidden shadow-[0_30px_70px_-15px_rgba(0,0,0,0.7)]">
                     <img
                       src="https://images.pexels.com/photos/28446973/pexels-photo-28446973.jpeg?auto=compress&cs=tinysrgb&w=800"
                       alt="Expert en strategie sante"
                       className="w-full aspect-[4/5] object-cover object-top"
                       loading="eager"
                     />
+                    {/* Fondu haut — intégration douce */}
+                    <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-[#0a0a08]/40 to-transparent" />
                     {/* Fondu bas — intégration dans le fond */}
-                    <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#0a0a08] to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#0a0a08] via-[#0a0a08]/60 to-transparent" />
                   </div>
-                  {/* Filet doré vertical — accent luxe discret */}
-                  <div className="absolute top-6 bottom-6 -left-3 w-[2px] bg-gradient-to-b from-transparent via-[#C9A84C]/40 to-transparent" />
+                  {/* Filet doré vertical — accent luxe */}
+                  <div className="absolute top-4 bottom-4 -left-3 w-[2px] bg-gradient-to-b from-transparent via-[#C9A84C]/35 to-transparent" />
+                  {/* Filet doré horizontal bas */}
+                  <div className="absolute -bottom-2 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-[#C9A84C]/20 to-transparent" />
                 </div>
               </div>
             </div>

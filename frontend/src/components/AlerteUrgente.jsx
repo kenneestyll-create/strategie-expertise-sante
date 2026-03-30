@@ -25,6 +25,12 @@ export const AlerteUrgente = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    const onOpen = () => setIsOpen(true);
+    window.addEventListener('alerte-urgente:open', onOpen);
+    return () => window.removeEventListener('alerte-urgente:open', onOpen);
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!nom.trim() || !telephone.trim() || !email.trim() || !email.includes('@')) {

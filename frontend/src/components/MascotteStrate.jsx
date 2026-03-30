@@ -245,8 +245,15 @@ export const MascotteStrate = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [conseil, setConseil] = useState(null);
+  const [showWidget, setShowWidget] = useState(false);
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
+
+  useEffect(() => {
+    const onScroll = () => setShowWidget(window.scrollY > 300);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   useEffect(() => {
     if (isAdmin) return;
@@ -271,7 +278,7 @@ export const MascotteStrate = () => {
 
   return (
     <>
-      <DesktopWidget conseil={conseil} isOpen={isOpen} setIsOpen={setIsOpen} isSpeaking={isSpeaking} speak={speak} close={close} />
+      {showWidget && <DesktopWidget conseil={conseil} isOpen={isOpen} setIsOpen={setIsOpen} isSpeaking={isSpeaking} speak={speak} close={close} />}
       <style>{`
         @keyframes stratePulse {
           0%, 100% { opacity: .75; transform: scale(1); }
