@@ -10,7 +10,6 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export const AlerteUrgente = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showButton, setShowButton] = useState(false);
   const [formule, setFormule] = useState('2h');
   const [nom, setNom] = useState('');
   const [telephone, setTelephone] = useState('');
@@ -18,12 +17,6 @@ export const AlerteUrgente = () => {
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setShowButton(window.scrollY > 400);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
 
   useEffect(() => {
     const onOpen = () => setIsOpen(true);
@@ -63,24 +56,6 @@ export const AlerteUrgente = () => {
 
   return (
     <>
-      {/* Floating Button — Urgence — Apparait uniquement après scroll */}
-      {!isOpen && showButton && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="fixed flex items-center gap-2 px-3.5 py-2 rounded-lg shadow-lg text-xs font-medium transition-all hover:scale-105 border border-[#C9A84C]/20 bg-[#111]/95 backdrop-blur-sm text-[#f5f0e8]/70 hover:text-[#f5f0e8] hover:border-[#C9A84C]/40"
-          style={{
-            zIndex: 39,
-            bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))',
-            left: '1rem',
-          }}
-          data-testid="alerte-urgente-button"
-          aria-label="Question urgente"
-        >
-          <Zap className="w-3.5 h-3.5 text-[#C9A84C]" />
-          <span className="hidden sm:inline">Besoin urgent ?</span>
-        </button>
-      )}
-
       {/* Modal */}
       {isOpen && (
         <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-chatbot)' }}>
