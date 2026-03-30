@@ -493,7 +493,7 @@ export const HomePage = () => {
 
           <div className="mt-8 text-center reveal">
             <Link to="/contact" data-testid="solution-card-2">
-              <Button className="rounded-lg px-8 py-5 gap-2.5 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-bold text-sm">
+              <Button className="rounded-lg px-8 py-5 gap-2.5 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-bold text-sm whitespace-normal h-auto">
                 <Shield className="w-4 h-4" />
                 Accompagnement stratégique complet — Sur devis
                 <ArrowRight className="w-4 h-4" />
