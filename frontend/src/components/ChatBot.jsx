@@ -197,13 +197,13 @@ export const ChatBot = () => {
           {/* Robot Mascot Button */}
           <button
             onClick={() => { setIsOpen(true); }}
-            className="group relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#0a0a08] border-2 border-[#C9A84C]/40 shadow-xl shadow-[#C9A84C]/10 flex items-center justify-center transition-all duration-300 hover:border-[#C9A84C]/70 hover:shadow-[#C9A84C]/25 hover:scale-105"
+            className="group relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-[#0a0a08] border-2 border-[#C9A84C]/40 shadow-lg shadow-[#C9A84C]/10 flex items-center justify-center transition-all duration-300 hover:border-[#C9A84C]/70 hover:shadow-[#C9A84C]/25 hover:scale-105"
             data-testid="chatbot-button"
             aria-label="Ouvrir l'assistant"
           >
-            <StrateMascotIcon size={36} />
+            <StrateMascotIcon size={24} />
             {/* Online indicator */}
-            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-[#0a0a08]" />
+            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-[#0a0a08]" />
           </button>
         </div>
       )}
