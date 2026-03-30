@@ -137,8 +137,10 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           1. HERO — Structure propre, stable, 2 colonnes
       ══════════════════════════════════════════════════════════ */}
-      <section className="bg-[#0a0a08]" data-testid="hero-section">
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-16 lg:py-20">
+      <section className="relative bg-[#0a0a08]" data-testid="hero-section">
+        {/* Fond premium — lueur dorée diffuse très discrète */}
+        <div className="absolute top-1/2 right-0 w-[600px] h-[600px] -translate-y-1/2 translate-x-1/4 bg-[#C9A84C]/[0.03] rounded-full blur-[180px] pointer-events-none" />
+        <div className="relative max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-16 lg:py-20">
           <div className="grid lg:grid-cols-[55fr_45fr] gap-10 lg:gap-14 items-center">
 
             {/* ── COLONNE GAUCHE : Contenu ── */}
@@ -254,16 +256,23 @@ export const HomePage = () => {
               </p>
             </div>
 
-            {/* ── COLONNE DROITE : Visuel propre ── */}
+            {/* ── COLONNE DROITE : Visuel premium ── */}
             <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
               <div className="w-full max-w-[460px]">
-                <div className="overflow-hidden shadow-2xl shadow-black/40">
-                  <img
-                    src="https://images.pexels.com/photos/28446973/pexels-photo-28446973.jpeg?auto=compress&cs=tinysrgb&w=800"
-                    alt="Expert en strategie sante"
-                    className="w-full aspect-[3/4] object-cover object-top"
-                    loading="eager"
-                  />
+                {/* Cadre image — ombre profonde + filet doré gauche */}
+                <div className="relative">
+                  <div className="overflow-hidden shadow-[0_25px_60px_-12px_rgba(0,0,0,0.7)]">
+                    <img
+                      src="https://images.pexels.com/photos/28446973/pexels-photo-28446973.jpeg?auto=compress&cs=tinysrgb&w=800"
+                      alt="Expert en strategie sante"
+                      className="w-full aspect-[3/4] object-cover object-top"
+                      loading="eager"
+                    />
+                    {/* Fondu bas — intégration dans le fond */}
+                    <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#0a0a08] to-transparent" />
+                  </div>
+                  {/* Filet doré vertical — accent luxe discret */}
+                  <div className="absolute top-6 bottom-6 -left-3 w-[2px] bg-gradient-to-b from-transparent via-[#C9A84C]/40 to-transparent" />
                 </div>
               </div>
             </div>
