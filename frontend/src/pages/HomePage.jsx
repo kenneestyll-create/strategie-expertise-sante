@@ -286,7 +286,7 @@ export const HomePage = () => {
                   </div>
 
                   {/* Bloc Documents — droite centre */}
-                  <div className="absolute top-[25%] right-[3%] flex items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/85 backdrop-blur-sm rounded-lg px-2.5 py-2 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)]" data-testid="hero-bloc-documents">
+                  <div className="absolute top-[25%] right-[-5%] flex items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/85 backdrop-blur-sm rounded-lg px-2.5 py-2 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)]" data-testid="hero-bloc-documents">
                     <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
                       <FileText className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-[#C9A84C]" />
                     </div>
@@ -297,7 +297,7 @@ export const HomePage = () => {
                   </div>
 
                   {/* Bloc Orientation — bas centre */}
-                  <div className="absolute bottom-[32%] left-1/2 -translate-x-1/2 flex items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/85 backdrop-blur-sm rounded-lg px-2.5 py-2 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)]" data-testid="hero-bloc-orientation">
+                  <div className="absolute bottom-[38%] left-1/2 -translate-x-1/2 flex items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/85 backdrop-blur-sm rounded-lg px-2.5 py-2 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)]" data-testid="hero-bloc-orientation">
                     <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
                       <Compass className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-[#C9A84C]" />
                     </div>
