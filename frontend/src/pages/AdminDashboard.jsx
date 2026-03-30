@@ -1588,10 +1588,10 @@ export const AdminDashboard = () => {
                       {['Général','MSA','Fonction publique','Indépendant','Autre'].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                     </SelectContent>
                   </Select>
-                  <Input placeholder="Durée (ex: 18 mois)" value={newCas.duree} onChange={e => setNewCas(p => ({...p, duree: e.target.value}))} data-testid="cas-durée-input" />
-                  <Input placeholder="Stratégie utilisée" value={newCas.strategie} onChange={e => setNewCas(p => ({...p, strategie: e.target.value}))} data-testid="cas-stratégie-input" />
+                  <Input placeholder="Durée (ex: 18 mois)" value={newCas.duree} onChange={e => setNewCas(p => ({...p, duree: e.target.value}))} data-testid="cas-duree-input" />
+                  <Input placeholder="Stratégie utilisée" value={newCas.strategie} onChange={e => setNewCas(p => ({...p, strategie: e.target.value}))} data-testid="cas-strategie-input" />
                   <Select value={newCas.resultat} onValueChange={v => setNewCas(p => ({...p, resultat: v}))}>
-                    <SelectTrigger data-testid="cas-résultat-select"><SelectValue placeholder="Résultat obtenu" /></SelectTrigger>
+                    <SelectTrigger data-testid="cas-resultat-select"><SelectValue placeholder="Résultat obtenu" /></SelectTrigger>
                     <SelectContent>
                       {['Favorable','Partiellement favorable','Défavorable','En cours'].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                     </SelectContent>
@@ -3047,7 +3047,7 @@ export const AdminDashboard = () => {
                     {cronStatus.last_results && (
                       <div className="flex gap-3">
                         <span>Scannés: <strong>{cronStatus.last_results.scanned}</strong></span>
-                        <span>Éligibles: <strong>{cronStatus.last_results.éligible}</strong></span>
+                        <span>Éligibles: <strong>{cronStatus.last_results.eligible}</strong></span>
                         <span className="text-green-700">Envoyés: <strong>{cronStatus.last_results.sent}</strong></span>
                         <span className="text-red-600">Échoués: <strong>{cronStatus.last_results.failed}</strong></span>
                       </div>
@@ -3059,7 +3059,7 @@ export const AdminDashboard = () => {
                     <p className="font-medium text-blue-800 mb-1">Résultat du scan</p>
                     <div className="grid grid-cols-3 md:grid-cols-6 gap-2 text-xs">
                       <span>Scannés: <strong>{lastReminderResults.scanned}</strong></span>
-                      <span>Éligibles: <strong>{lastReminderResults.éligible}</strong></span>
+                      <span>Éligibles: <strong>{lastReminderResults.eligible}</strong></span>
                       <span className="text-green-700">Envoyés: <strong>{lastReminderResults.sent}</strong></span>
                       <span className="text-red-600">Échoués: <strong>{lastReminderResults.failed}</strong></span>
                       <span className="text-gray-500">Non envoyés: <strong>{lastReminderResults.skipped}</strong></span>

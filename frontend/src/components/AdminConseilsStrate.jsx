@@ -17,7 +17,7 @@ import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const CATEGORIES = ["droits", "expertise", "indemnisation", "emploi", "démarches", "stratégie", "actualite"];
+const CATEGORIES = ["droits", "expertise", "indemnisation", "emploi", "demarches", "strategie", "actualite"];
 const LINK_OPTIONS = [
   { value: "/calculatrice-ipp", label: "Calculatrice IPP" },
   { value: "/dossier-express", label: "Dossier Express IA" },

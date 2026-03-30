@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 export const AccidentTravailPage = () => {
-  const étapesAT = [
+  const etapesAT = [
     "Déclaration de l'accident",
     "Suivi médical",
     "Expertise médicale",
@@ -22,7 +22,7 @@ export const AccidentTravailPage = () => {
     "Évaluation du taux d'incapacité permanente"
   ];
 
-  const étapesMP = [
+  const etapesMP = [
     "Un dossier médical solide",
     "Des expertises médicales",
     "Des échanges avec les organismes sociaux"
@@ -78,7 +78,7 @@ export const AccidentTravailPage = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {étapesAT.map((étape, index) => (
+                    {etapesAT.map((étape, index) => (
                       <div key={index} className="flex items-start gap-3" data-testid={`etape-at-${index}`}>
                         <div className="w-6 h-6 bg-muted rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                           <span className="text-xs font-medium text-muted-foreground">{index + 1}</span>
@@ -138,7 +138,7 @@ export const AccidentTravailPage = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {étapesMP.map((étape, index) => (
+                    {etapesMP.map((étape, index) => (
                       <div key={index} className="flex items-start gap-3" data-testid={`etape-mp-${index}`}>
                         <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" strokeWidth={1.5} />
                         <span>{etape}</span>

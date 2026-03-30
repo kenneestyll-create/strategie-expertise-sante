@@ -3,14 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, Shield, Scale, AlertTriangle } from 'lucide-react';
 
-export const MentionsLégalesPage = () => {
+export const MentionsLegalesPage = () => {
   return (
     <main className="page-transition pt-20">
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-4xl mx-auto">
           <span className="text-sm font-medium text-accent uppercase tracking-wider">Informations légales</span>
-          <h1 className="text-4xl sm:text-5xl font-semibold mt-2 mb-6" data-testid="mentions-légales-title">
+          <h1 className="text-4xl sm:text-5xl font-semibold mt-2 mb-6" data-testid="mentions-legales-title">
             Mentions légales & CGU
           </h1>
           <p className="text-lg text-muted-foreground">

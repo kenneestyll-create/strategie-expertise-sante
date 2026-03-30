@@ -2,7 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
 import { Shield, Lock, Eye, Trash2, Mail, Server, FileText, Users, Cpu, Clock } from 'lucide-react';
 
-export const PolitiqueConfidentialitéPage = () => {
+export const PolitiqueConfidentialitePage = () => {
   const sections = [
     {
       icon: Users, title: "1. Responsable du traitement",
@@ -158,4 +158,4 @@ export const PolitiqueConfidentialitéPage = () => {
   );
 };
 
-export default PolitiqueConfidentialitéPage;
+export default PolitiqueConfidentialitePage;

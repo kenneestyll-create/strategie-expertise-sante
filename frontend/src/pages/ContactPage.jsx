@@ -255,15 +255,15 @@ export const ContactPage = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="téléphone">Téléphone</Label>
+                        <Label htmlFor="telephone">Téléphone</Label>
                         <Input
-                          id="téléphone"
-                          name="téléphone"
+                          id="telephone"
+                          name="telephone"
                           type="tel"
                           value={formData.telephone}
                           onChange={handleInputChange}
                           placeholder="06 00 00 00 00"
-                          data-testid="input-téléphone"
+                          data-testid="input-telephone"
                         />
                       </div>
                     </div>

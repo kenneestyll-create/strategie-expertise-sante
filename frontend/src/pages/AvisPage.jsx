@@ -252,7 +252,7 @@ export const AvisPage = () => {
                 <div className="space-y-2">
                   <Label htmlFor="témoignage">Votre témoignage *</Label>
                   <Textarea
-                    id="témoignage"
+                    id="temoignage"
                     value={formData.témoignage}
                     onChange={(e) => setFormData(prev => ({ ...prev, témoignage: e.target.value }))}
                     placeholder="Partagez votre expérience..."

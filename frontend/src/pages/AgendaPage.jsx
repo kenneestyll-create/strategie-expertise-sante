@@ -34,7 +34,7 @@ export const AgendaPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [booked, setBooked] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [form, setForm] = useState({ name: '', email: '', phone: '', booking_type: 'téléphone', message: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', booking_type: 'telephone', message: '' });
 
   const formatDateStr = (date) => {
     const y = date.getFullYear();
@@ -113,7 +113,7 @@ export const AgendaPage = () => {
           </div>
           <h2 className="text-3xl font-semibold mb-4" data-testid="booking-success-title">Rendez-vous confirmé !</h2>
           <p className="text-muted-foreground mb-2">
-            <strong>{form.booking_type === 'téléphone' ? 'Appel téléphonique' : 'Visioconférence'}</strong>
+            <strong>{form.booking_type === 'telephone' ? 'Appel téléphonique' : 'Visioconférence'}</strong>
           </p>
           <p className="text-muted-foreground mb-6">
             Le <strong>{selectedDate?.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</strong> à <strong>{selectedSlot}</strong>
@@ -240,10 +240,10 @@ export const AgendaPage = () => {
                       <Label>Type de rendez-vous *</Label>
                       <div className="grid grid-cols-2 gap-3">
                         <button type="button"
-                          onClick={() => setForm(f => ({ ...f, booking_type: 'téléphone' }))}
+                          onClick={() => setForm(f => ({ ...f, booking_type: 'telephone' }))}
                           className={`flex items-center gap-2 p-3 rounded-lg border text-sm font-medium transition-all
-                            ${form.booking_type === 'téléphone' ? 'border-accent bg-accent/10 text-accent' : 'border-border hover:border-accent/50'}`}
-                          data-testid="type-téléphone"
+                            ${form.booking_type === 'telephone' ? 'border-accent bg-accent/10 text-accent' : 'border-border hover:border-accent/50'}`}
+                          data-testid="type-telephone"
                         >
                           <Phone className="w-4 h-4" /> Téléphone
                         </button>
@@ -278,7 +278,7 @@ export const AgendaPage = () => {
                       <div className="bg-muted/50 p-4 rounded-xl" data-testid="booking-summary">
                         <p className="text-sm font-medium mb-1">Récapitulatif</p>
                         <p className="text-sm text-muted-foreground">
-                          {form.booking_type === 'téléphone' ? 'Appel téléphonique' : 'Visioconférence'} le{' '}
+                          {form.booking_type === 'telephone' ? 'Appel téléphonique' : 'Visioconférence'} le{' '}
                           <strong>{selectedDate.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</strong> à <strong>{selectedSlot}</strong>
                         </p>
                       </div>

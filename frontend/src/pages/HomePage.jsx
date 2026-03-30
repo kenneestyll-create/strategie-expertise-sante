@@ -44,7 +44,7 @@ export const HomePage = () => {
 
   const chiffresRef = useRevealChildren();
   const risquesRef = useRevealChildren();
-  const méthodeRef = useRevealChildren();
+  const methodeRef = useRevealChildren();
   const solutionsRef = useRevealChildren();
   const confianceRef = useRevealChildren();
   const ctaRef = useReveal();
@@ -84,7 +84,7 @@ export const HomePage = () => {
     { icon: AlertTriangle, text: "Perte financière importante et irreversible" },
   ];
 
-  const méthodeSES = [
+  const methodeSES = [
     { num: "01", icon: Crosshair, title: "Analyse stratégique", desc: "Étude approfondie de votre situation médicale, administrative et financière." },
     { num: "02", icon: ShieldAlert, title: "Identification des risques", desc: "Reperage des failles, incoherences et points de vigilance." },
     { num: "03", icon: Compass, title: "Orientation experte", desc: "Mise en relation avec les experts les plus adaptes a votre pathologie." },
@@ -92,7 +92,7 @@ export const HomePage = () => {
     { num: "05", icon: RefreshCcw, title: "Suivi et ajustement", desc: "Accompagnement continu et adaptation de la stratégie." },
   ];
 
-  const chiffresClés = [
+  const chiffresCles = [
     { icon: HardHat, value: 700000, unit: '', prefix: "Plus de", suffix: "accidents du travail par an en France", source: "CNAM", lien: "https://assurance-maladie.ameli.fr" },
     { icon: Activity, value: 50000, unit: '', prefix: "Environ", suffix: "maladies professionnelles reconnues chaque année", source: "CNAM", lien: "https://assurance-maladie.ameli.fr" },
     { icon: Accessibility, value: 12, unit: ' millions', prefix: "Pres de", suffix: "de personnes en situation de handicap", source: "INSEE", lien: "https://www.insee.fr" },
@@ -106,7 +106,7 @@ export const HomePage = () => {
     { icon: TrendingUp, title: "Vision orientee résultats", desc: "Obtenir la reconnaissance et l'indemnisation que vous méritéz." },
   ];
 
-  const témoignages = [
+  const temoignages = [
     { initials: "M.L.", age: "52 ans", badge: "AT", text: "Apres 18 mois de refus par la CPAM, mon accident du travail a enfin ete reconnu. Sans cet accompagnement, j'aurais abandonne les démarches.", result: "AT reconnue — Rente obtenue" },
     { initials: "P.D.", age: "45 ans", badge: "PTIA", badgeGold: true, text: "Mon assureur refusait de reconnaître ma PTIA malgre l'avis de trois médecins. Grâce à une stratégie méthodique, la garantie a été activée après 8 mois de recours.", result: "Garantie PTIA activée" },
     { initials: "S.B.", age: "38 ans", badge: "MP", text: "Ma maladie professionnelle n'etait pas dans les tableaux. L'accompagnement m'a permis de constituer un dossier solide — reconnaissance obtenue au premier passage.", result: "MP hors tableau reconnue" },
@@ -115,7 +115,7 @@ export const HomePage = () => {
     { initials: "J.T.", age: "48 ans", badge: "ITT", badgeGold: true, text: "Mon assurance refusait les indemnites ITT en invoquant une clause floue. L'analyse du contrat a permis de debloquer 14 mois d'arrieres.", result: "ITT versee — Arrieres récupéres" },
   ];
 
-  const écosystème = [
+  const ecosysteme = [
     { icon: Brain, title: "StrategiIA", desc: "Analyse intelligente de votre situation", href: "/simulateur" },
     { icon: Zap, title: "Dossier Express IA", desc: "Rapport d'analyse complet sous 2h", href: "/dossier-express" },
     { icon: Users, title: "Accompagnement humain", desc: "Suivi personnalisé par un expert", href: "/contact" },
@@ -542,7 +542,7 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           5. ECOSYSTEME DE SERVICES
       ══════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-20 lg:py-28 bg-[#111]" data-testid="méthode-section" ref={méthodeRef}>
+      <section className="py-16 sm:py-20 lg:py-28 bg-[#111]" data-testid="methode-section" ref={methodeRef}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14 reveal">
             <span className="text-xs font-medium text-[#C9A84C] uppercase tracking-[0.2em]">Écosystème complet</span>
@@ -550,12 +550,12 @@ export const HomePage = () => {
               Bien plus qu'un outil IA
             </h2>
             <p className="text-sm text-[#f5f0e8]/40">
-              Un écosystème complet d'accompagnement, de l'analyse initiale au suivi personnalisé.
+              Un ecosysteme complet d'accompagnement, de l'analyse initiale au suivi personnalisé.
             </p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 stagger">
-            {écosystème.map((s, i) => (
+            {ecosysteme.map((s, i) => (
               <Link key={i} to={s.href} className="group reveal" data-testid={`méthode-step-${i}`}>
                 <div className="h-full bg-[#0a0a08] rounded-xl p-5 sm:p-6 border border-white/5 hover:border-[#C9A84C]/20 transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
                   <div className="w-10 h-10 rounded-lg bg-[#C9A84C]/10 flex items-center justify-center mb-4">
@@ -586,7 +586,7 @@ export const HomePage = () => {
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5">
-            {méthodeSES.map((m, i) => (
+            {methodeSES.map((m, i) => (
               <div key={i} className="relative group">
                 <div className="h-full bg-[#111] rounded-xl p-5 border border-white/5 hover:border-[#C9A84C]/15 transition-all duration-300 group-hover:-translate-y-0.5">
                   <div className="flex items-center gap-3 mb-3">
@@ -607,7 +607,7 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           7. MEDECIN CONSEIL
       ══════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-20 bg-[#111] border-b border-white/5" data-testid="médecin-conseil-home-section">
+      <section className="py-16 sm:py-20 bg-[#111] border-b border-white/5" data-testid="medecin-conseil-home-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             <div className="min-w-0">
@@ -699,7 +699,7 @@ export const HomePage = () => {
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 stagger" ref={countSectionRef}>
-            {chiffresClés.map((item, index) => (
+            {chiffresCles.map((item, index) => (
               <div key={index} className="reveal" data-testid={`chiffre-bloc-${index}`}>
                 <div className="h-full bg-[#0a0a08] border border-white/5 rounded-xl p-5 sm:p-6 flex flex-col items-center text-center transition-all hover:border-[#C9A84C]/10">
                   <div className="w-10 h-10 rounded-lg bg-[#C9A84C]/10 flex items-center justify-center mb-4">
@@ -763,7 +763,7 @@ export const HomePage = () => {
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-            {témoignages.map((t, i) => (
+            {temoignages.map((t, i) => (
               <div
                 key={i}
                 className={`p-5 rounded-xl border ${t.badgeGold ? 'border-[#C9A84C]/20 bg-[#C9A84C]/[0.03]' : 'border-white/5 bg-white/[0.01]'} hover:border-[#C9A84C]/15 transition-all`}

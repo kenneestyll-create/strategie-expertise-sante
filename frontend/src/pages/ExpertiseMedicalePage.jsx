@@ -14,7 +14,7 @@ import {
   Phone
 } from 'lucide-react';
 
-export const ExpertiseMédicalePage = () => {
+export const ExpertiseMedicalePage = () => {
   const contexts = [
     "Accident du travail",
     "Maladie professionnelle",
@@ -31,7 +31,7 @@ export const ExpertiseMédicalePage = () => {
     "Attribution d'une aide tierce personne"
   ];
 
-  const étapes = [
+  const etapes = [
     { icon: FileText, text: "Étude du dossier médical" },
     { icon: UserCheck, text: "Entretien avec la personne concernée" },
     { icon: Stethoscope, text: "Examen clinique" },
@@ -140,7 +140,7 @@ export const ExpertiseMédicalePage = () => {
               Comment se déroule une expertise
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Une expertise médicale se déroule généralement en plusieurs étapes.
+              Une expertise médicale se déroule généralement en plusieurs etapes.
             </p>
           </div>
 
@@ -149,7 +149,7 @@ export const ExpertiseMédicalePage = () => {
               {/* Timeline line */}
               <div className="absolute left-6 top-0 bottom-0 w-px bg-border" />
 
-              {étapes.map((étape, index) => (
+              {etapes.map((étape, index) => (
                 <div 
                   key={index} 
                   className="relative flex items-start gap-6 pb-8 last:pb-0"

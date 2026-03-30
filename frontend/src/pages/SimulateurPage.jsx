@@ -84,7 +84,7 @@ const getResults = (answers, autreTexte = '') => {
   let recommendations = [];
   let services = [];
   let droits = [];
-  let démarches = [];
+  let demarches = [];
   let delais = [];
 
   if (situation === 'at' || situation === 'mp') {
@@ -96,17 +96,17 @@ const getResults = (answers, autreTexte = '') => {
     services.push({ id: 'analyse_dossier', label: 'Analyse de dossier AT/MP', prix: '150€' });
 
     if (situation === 'mp') {
-      démarches.push("Obtenir un certificat médical initial (CMI) de votre médecin");
-      démarches.push("Remplir la déclaration de maladie professionnelle (Cerfa n°60-3950)");
-      démarches.push("Envoyer le dossier complet à votre CPAM");
-      démarches.push("Attendre l'instruction et la décision de la CPAM");
+      demarches.push("Obtenir un certificat médical initial (CMI) de votre médecin");
+      demarches.push("Remplir la déclaration de maladie professionnelle (Cerfa n°60-3950)");
+      demarches.push("Envoyer le dossier complet à votre CPAM");
+      demarches.push("Attendre l'instruction et la décision de la CPAM");
       delais.push("Déclaration : dans les 15 jours suivant le certificat médical");
       delais.push("Instruction CPAM : 3 mois (+ 3 mois si enquête complémentaire)");
       delais.push("Contestation : 2 mois après notification de la décision");
     } else {
-      démarches.push("Faire constater l'accident par votre employeur (déclaration AT)");
-      démarches.push("Consulter un médecin pour le certificat médical initial");
-      démarches.push("Vérifier que votre employeur a bien déclaré l'AT à la CPAM");
+      demarches.push("Faire constater l'accident par votre employeur (déclaration AT)");
+      demarches.push("Consulter un médecin pour le certificat médical initial");
+      demarches.push("Vérifier que votre employeur a bien déclaré l'AT à la CPAM");
       delais.push("Déclaration employeur : 48h après l'accident");
       delais.push("Certificat médical : dans les 24h si possible");
       delais.push("Contestation : 2 mois après notification");
@@ -116,8 +116,8 @@ const getResults = (answers, autreTexte = '') => {
       urgency = 'important';
       recommendations.push("Votre refus doit être analysé en détail pour identifier les motifs et préparer un recours solide.");
       recommendations.push("Un accompagnement spécialisé peut significativement améliorer vos chances de succès en recours.");
-      démarches.push("Demander la notification écrite du refus avec ses motifs");
-      démarches.push("Saisir la Commission de Recours Amiable (CRA) de votre CPAM");
+      demarches.push("Demander la notification écrite du refus avec ses motifs");
+      demarches.push("Saisir la Commission de Recours Amiable (CRA) de votre CPAM");
       delais.push("Recours CRA : 2 mois après la notification du refus");
       delais.push("Tribunal (TASS/TJ) : 2 mois après la décision de la CRA");
       services.push({ id: 'préparation_recours', label: 'Préparation du recours', prix: '250€' });
@@ -138,10 +138,10 @@ const getResults = (answers, autreTexte = '') => {
     droits.push("CMI — Carte Mobilité Inclusion (invalidité, priorité, stationnement)");
     droits.push("PCH — Prestation de Compensation du Handicap");
     droits.push("Orientation professionnelle ou en établissement");
-    démarches.push("Retirer le formulaire Cerfa n°15692 auprès de votre MDPH");
-    démarches.push("Faire remplir le certificat médical par votre médecin");
-    démarches.push("Constituer le dossier complet avec pièces justificatives");
-    démarches.push("Déposer le dossier à la MDPH de votre département");
+    demarches.push("Retirer le formulaire Cerfa n°15692 auprès de votre MDPH");
+    demarches.push("Faire remplir le certificat médical par votre médecin");
+    demarches.push("Constituer le dossier complet avec pièces justificatives");
+    demarches.push("Déposer le dossier à la MDPH de votre département");
     delais.push("Instruction MDPH : 4 mois en moyenne (peut aller jusqu'à 6 mois)");
     delais.push("Renouvellement : déposer 6 mois avant l'expiration des droits");
     delais.push("Contestation : 2 mois après notification de la décision");
@@ -158,9 +158,9 @@ const getResults = (answers, autreTexte = '') => {
     droits.push("Protection juridique (si incluse dans votre contrat)");
     droits.push("Droit de contester l'évaluation de l'assureur");
     droits.push("Droit à une contre-expertise médicale");
-    démarches.push("Relire attentivement votre contrat d'assurance et ses garanties");
-    démarches.push("Vérifier si vous disposez d'une protection juridique");
-    démarches.push("Contester par écrit (LRAR) l'évaluation de l'assureur si inadéquate");
+    demarches.push("Relire attentivement votre contrat d'assurance et ses garanties");
+    demarches.push("Vérifier si vous disposez d'une protection juridique");
+    demarches.push("Contester par écrit (LRAR) l'évaluation de l'assureur si inadéquate");
     delais.push("Prescription : 2 ans pour les contrats d'assurance (L.114-1 Code Assurances)");
     delais.push("Contestation expertise : dans les meilleurs délais après réception du rapport");
     services.push({ id: 'protection_juridique', label: 'Activation protection juridique', prix: '150€' });
@@ -176,10 +176,10 @@ const getResults = (answers, autreTexte = '') => {
     droits.push("Droit de fournir tous documents médicaux utiles");
     droits.push("Droit de contester les conclusions de l'expert");
     droits.push("Droit de demander une contre-expertise");
-    démarches.push("Rassembler l'intégralité de votre dossier médical");
-    démarches.push("Préparer une chronologie précise de vos symptômes et traitements");
-    démarches.push("Lister les impacts concrets sur votre vie quotidienne et professionnelle");
-    démarches.push("Envisager d'être assisté par un médecin-conseil lors de l'expertise");
+    demarches.push("Rassembler l'intégralité de votre dossier médical");
+    demarches.push("Préparer une chronologie précise de vos symptômes et traitements");
+    demarches.push("Lister les impacts concrets sur votre vie quotidienne et professionnelle");
+    demarches.push("Envisager d'être assisté par un médecin-conseil lors de l'expertise");
     delais.push("Convocation expertise : se présenter impérativement à la date fixée");
     delais.push("Contestation rapport : dans les 2 mois suivant la notification");
     services.push({ id: 'préparation_expertise', label: 'Préparation expertise médicale', prix: '200€' });
@@ -190,7 +190,7 @@ const getResults = (answers, autreTexte = '') => {
     if (autreTexte) {
       recommendations.push(`Vous avez décrit votre situation comme suit : « ${autreTexte} ». Un expert pourra analyser votre cas en détail.`);
     }
-    démarches.push("Prendre contact pour une première consultation gratuite de 10 minutes, sans engagement");
+    demarches.push("Prendre contact pour une première consultation gratuite de 10 minutes, sans engagement");
     services.push({ id: 'consultation_personnalisée', label: 'Consultation personnalisée', prix: '100€' });
   }
 
@@ -212,7 +212,7 @@ const getResults = (answers, autreTexte = '') => {
   // Select best service recommendation
   const prestation = services.length > 0 ? services[0].label : 'Accompagnement personnalisé';
 
-  return { profile, urgency, recommendations, services, droits, démarches, delais, prestation };
+  return { profile, urgency, recommendations, services, droits, demarches, delais, prestation };
 };
 
 
@@ -366,7 +366,7 @@ const generatePDF = (results, email) => {
 
   addSection("R\u00e9sum\u00e9 de votre situation", results.recommendations);
   addSection("Vos droits potentiels", results.droits);
-  addSection("D\u00e9marches prioritaires", results.démarches);
+  addSection("D\u00e9marches prioritaires", results.demarches);
   addSection("D\u00e9lais importants", results.delais);
 
   /* Services block */
@@ -510,7 +510,7 @@ export const SimulateurPage = () => {
         profile: result.profile,
         recommendations: result.recommendations,
         droits: result.droits,
-        démarches: result.démarches,
+        demarches: result.demarches,
         delais: result.delais,
         prestation: result.prestation,
       });
@@ -580,7 +580,7 @@ export const SimulateurPage = () => {
             </h1>
             <p className="text-lg text-muted-foreground">
               Répondez à quelques questions pour obtenir un rapport personnalisé avec vos droits,
-              les démarches prioritaires et une recommandation d'accompagnement.
+              les demarches prioritaires et une recommandation d'accompagnement.
             </p>
           </div>
         </div>
@@ -776,11 +776,11 @@ export const SimulateurPage = () => {
               )}
 
               {/* Démarches prioritaires */}
-              {results.démarches.length > 0 && (
+              {results.demarches.length > 0 && (
                 <div className="mb-6">
                   <h3 className="font-semibold mb-3">Démarches prioritaires</h3>
                   <div className="space-y-2">
-                    {results.démarches.map((d, i) => (
+                    {results.demarches.map((d, i) => (
                       <div key={i} className="flex items-start gap-3 p-3 bg-accent/5 border border-accent/10 rounded-lg">
                         <span className="w-6 h-6 rounded-full bg-accent/10 flex items-center justify-center text-xs font-bold text-accent flex-shrink-0">{i + 1}</span>
                         <span className="text-sm">{d}</span>

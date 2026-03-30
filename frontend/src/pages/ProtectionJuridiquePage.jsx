@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 export const ProtectionJuridiquePage = () => {
-  const étapesActivation = [
+  const etapesActivation = [
     {
       step: "1",
       title: "Identifiez vos contrats",
@@ -204,18 +204,18 @@ export const ProtectionJuridiquePage = () => {
           </div>
 
           <div className="space-y-6">
-            {étapesActivation.map((étape, index) => (
+            {etapesActivation.map((etape, index) => (
               <div 
                 key={index}
                 className="flex gap-6 bg-background p-6 rounded-xl border border-border"
                 data-testid={`etape-activation-${index}`}
               >
                 <div className="w-12 h-12 bg-accent text-accent-foreground rounded-full flex items-center justify-center flex-shrink-0 font-bold text-lg">
-                  {étape.step}
+                  {etape.step}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">{étape.title}</h3>
-                  <p className="text-muted-foreground">{étape.description}</p>
+                  <h3 className="font-semibold text-lg mb-2">{etape.title}</h3>
+                  <p className="text-muted-foreground">{etape.description}</p>
                 </div>
               </div>
             ))}

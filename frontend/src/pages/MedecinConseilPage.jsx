@@ -27,7 +27,7 @@ const trackClick = (action) => {
   }).catch(() => {});
 };
 
-export default function MédecinConseilPage() {
+export default function MedecinConseilPage() {
   useEffect(() => {
     trackClick('page-view');
   }, []);
