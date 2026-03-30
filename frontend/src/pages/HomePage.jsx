@@ -155,158 +155,179 @@ export const HomePage = () => {
       />
 
       {/* ══════════════════════════════════════════════════════════
-          1. HERO — Two-column premium layout
+          1. HERO — Faithful reproduction of validated mockup
       ══════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden bg-[#0a0a08] pt-24 sm:pt-28 lg:pt-32 pb-16 sm:pb-20 lg:pb-28" data-testid="hero-section">
-        {/* Subtle grain texture */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23D4AF37\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
+      <section className="relative overflow-hidden bg-[#0a0a08] min-h-[calc(100vh-64px)]" data-testid="hero-section">
         {/* Gold gradient glow */}
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#C9A84C]/[0.04] rounded-full blur-[150px] translate-x-1/3 -translate-y-1/4" />
+        <div className="absolute top-0 right-0 w-[700px] h-[700px] bg-[#C9A84C]/[0.04] rounded-full blur-[150px] translate-x-1/3 -translate-y-1/4 pointer-events-none" />
+        <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-[#C9A84C]/[0.02] rounded-full blur-[120px] pointer-events-none" />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* ── LEFT COLUMN: Message ── */}
+        <div className="relative max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 lg:pt-16 pb-8 lg:pb-10 flex items-center min-h-[calc(100vh-64px)]">
+          <div className="grid lg:grid-cols-[55%_45%] gap-8 lg:gap-6 items-center w-full">
+            {/* ── LEFT COLUMN: Message — 55% ── */}
             <div className="text-left order-2 lg:order-1">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2.5 bg-[#C9A84C]/10 border border-[#C9A84C]/25 text-[#C9A84C] px-4 py-2 rounded-full mb-8" data-testid="pioneer-badge">
-                <Shield className="w-3.5 h-3.5 flex-shrink-0" />
-                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.18em]">Pionnier en France</span>
+              {/* Badge — with sub-text as in mockup */}
+              <div className="inline-flex items-center gap-3 bg-[#0a0a08] border border-[#C9A84C]/30 text-[#C9A84C] px-4 py-2.5 rounded-lg mb-6" data-testid="pioneer-badge">
+                <div className="w-7 h-7 rounded-md border border-[#C9A84C]/40 flex items-center justify-center flex-shrink-0">
+                  <Scale className="w-4 h-4 text-[#C9A84C]" />
+                </div>
+                <div className="leading-tight">
+                  <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.15em] block">Pionnier en France</span>
+                  <span className="text-[9px] sm:text-[10px] text-[#C9A84C]/50 block">Plateforme d'analyse & d'accompagnement en droits sante</span>
+                </div>
               </div>
 
-              {/* Main title */}
+              {/* Main title — large serif, specific gold words */}
               <h1
-                className="text-3xl sm:text-4xl lg:text-5xl xl:text-[3.4rem] font-semibold text-[#f5f0e8] leading-[1.15] mb-6"
+                className="text-[2rem] sm:text-[2.6rem] lg:text-[3rem] xl:text-[3.5rem] font-bold text-[#f5f0e8] leading-[1.12] mb-5"
                 style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
                 data-testid="hero-title"
               >
-                Vous n'etes plus{' '}<span className="text-[#C9A84C]">seul</span>{' '}face a vos droits, votre dossier ou vos recours
+                Vous n'etes plus seul<br className="hidden sm:block" /> face a{' '}
+                <span className="text-[#C9A84C]">votre dossier</span>,{' '}
+                <span className="text-[#C9A84C]">vos droits</span><br className="hidden sm:block" /> ou{' '}
+                <span className="text-[#C9A84C]">vos recours</span>.
               </h1>
 
-              {/* Subtitle — metier */}
-              <p className="text-sm sm:text-base text-[#f5f0e8]/50 leading-relaxed mb-6 max-w-xl" data-testid="hero-subtitle">
-                Conseil et accompagnement strategique en droits MDPH, accident du travail, maladie professionnelle, invalidite et litiges assurantiels.
+              {/* Subtitle — exact mockup text */}
+              <p className="text-sm sm:text-[15px] text-[#f5f0e8]/55 leading-relaxed mb-5 max-w-xl" data-testid="hero-subtitle">
+                Analysez votre situation, identifiez vos leviers, comprenez vos droits et accedez a un accompagnement strategique humain en cas de{' '}
+                <strong className="text-[#f5f0e8]/70">maladie professionnelle</strong>,{' '}
+                <strong className="text-[#f5f0e8]/70">accident du travail</strong>,{' '}
+                <strong className="text-[#f5f0e8]/70">MDPH</strong> ou{' '}
+                <strong className="text-[#f5f0e8]/70">litige assuranciel</strong>.
               </p>
 
-              {/* Promise */}
-              <p className="text-sm text-[#C9A84C]/70 leading-relaxed mb-8 max-w-lg italic" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                Une lecture experte, humaine et strategique de votre situation pour identifier vos leviers d'action.
-              </p>
-
-              {/* 3 key points */}
-              <div className="space-y-3 mb-10">
+              {/* 3 key points — circle icons with golden outline */}
+              <div className="space-y-2.5 mb-6">
                 {[
                   { icon: HeartHandshake, text: "Expertise nee d'un vecu concret" },
                   { icon: Crosshair, text: "Methode strategique & personnalisee" },
                   { icon: Brain, text: "Analyse IA + accompagnement humain" },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-[#C9A84C]/10 flex items-center justify-center flex-shrink-0">
-                      <item.icon className="w-4 h-4 text-[#C9A84C]" />
+                    <div className="w-8 h-8 rounded-full border border-[#C9A84C]/30 bg-[#C9A84C]/5 flex items-center justify-center flex-shrink-0">
+                      <item.icon className="w-3.5 h-3.5 text-[#C9A84C]" />
                     </div>
-                    <span className="text-[#f5f0e8]/70 text-sm font-medium">{item.text}</span>
+                    <span className="text-[#f5f0e8]/65 text-sm">{item.text}</span>
                   </div>
                 ))}
               </div>
 
-              {/* Social proof */}
-              {visitorCount > 0 && (
-                <div className="flex items-center gap-2.5 mb-8">
-                  <div className="flex -space-x-2">
-                    {[1,2,3,4].map(i => (
-                      <div key={i} className="w-7 h-7 rounded-full bg-[#C9A84C]/20 border-2 border-[#0a0a08] flex items-center justify-center">
-                        <Users className="w-3 h-3 text-[#C9A84C]/60" />
-                      </div>
-                    ))}
+              {/* Social proof ROW — horizontal: avatars + count + separator + response time */}
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6 mb-6">
+                {visitorCount > 0 && (
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex -space-x-1.5">
+                      {[1,2,3].map(i => (
+                        <div key={i} className="w-7 h-7 rounded-full bg-gradient-to-br from-[#C9A84C]/30 to-[#C9A84C]/10 border-2 border-[#0a0a08] flex items-center justify-center">
+                          <Users className="w-3 h-3 text-[#C9A84C]/60" />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="leading-tight">
+                      <span className="text-[#f5f0e8] text-sm font-bold">{visitorCount.toLocaleString('fr-FR')}+</span>
+                      <span className="text-[#f5f0e8]/30 text-xs block">personnes deja accompagnees</span>
+                    </div>
                   </div>
-                  <span className="text-xs text-[#f5f0e8]/40">
-                    <strong className="text-[#f5f0e8]/60">{visitorCount.toLocaleString('fr-FR')}+</strong> personnes nous ont fait confiance
-                  </span>
+                )}
+                <div className="h-6 w-px bg-[#f5f0e8]/10 hidden sm:block" />
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-[#C9A84C]/15 flex items-center justify-center">
+                    <Zap className="w-3 h-3 text-[#C9A84C]" />
+                  </div>
+                  <div className="leading-tight">
+                    <span className="text-[#f5f0e8]/70 text-xs font-semibold">Reponse sous 2h</span>
+                    <span className="text-[#f5f0e8]/25 text-[10px] block">Rapide & reactif</span>
+                  </div>
                 </div>
-              )}
+              </div>
 
-              {/* CTAs */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6">
+              {/* CTAs — 8px radius, not pill */}
+              <div className="flex flex-col sm:flex-row gap-3 mb-4">
                 <button
                   onClick={() => window.dispatchEvent(new Event('strategiia:open'))}
                   className="cursor-pointer"
                 >
                   <Button
                     size="lg"
-                    className="w-full sm:w-auto rounded-full px-8 py-6 gap-2.5 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-bold text-sm shadow-xl shadow-[#C9A84C]/20 transition-all hover:shadow-[#C9A84C]/35 hover:scale-[1.02]"
+                    className="w-full sm:w-auto rounded-lg px-7 py-5 gap-2 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-bold text-sm shadow-xl shadow-[#C9A84C]/20 transition-all hover:shadow-[#C9A84C]/35 hover:scale-[1.02]"
                     data-testid="hero-cta-primary"
                   >
-                    <Search className="w-4 h-4 flex-shrink-0" />
-                    Evaluer ma situation
+                    <Sparkles className="w-4 h-4 flex-shrink-0" />
+                    Lancer mon analyse
                   </Button>
                 </button>
                 <Link to="/contact">
                   <Button
                     variant="outline"
                     size="lg"
-                    className="w-full sm:w-auto rounded-full px-8 py-6 gap-2.5 border-[#f5f0e8]/15 text-[#f5f0e8]/80 hover:bg-[#f5f0e8]/5 hover:border-[#f5f0e8]/25 text-sm transition-all"
+                    className="w-full sm:w-auto rounded-lg px-7 py-5 gap-2 border-[#C9A84C]/30 text-[#f5f0e8]/80 hover:bg-[#C9A84C]/5 hover:border-[#C9A84C]/50 text-sm transition-all"
                     data-testid="hero-cta-secondary"
                   >
-                    <Phone className="w-4 h-4 flex-shrink-0" />
-                    Etre accompagne
+                    Etre accompagne maintenant
                   </Button>
                 </Link>
               </div>
 
-              {/* Reassurances under CTAs */}
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] sm:text-xs text-[#f5f0e8]/30">
-                <span className="flex items-center gap-1.5"><Clock className="w-3 h-3 text-[#C9A84C]/50" /> Reponse sous 2h</span>
-                <span className="flex items-center gap-1.5"><Lock className="w-3 h-3 text-[#C9A84C]/50" /> 100% confidentiel</span>
-                <span className="flex items-center gap-1.5"><Shield className="w-3 h-3 text-[#C9A84C]/50" /> Expertise reelle</span>
-              </div>
+              {/* Below CTAs text */}
+              <p className="text-xs text-[#f5f0e8]/30 leading-relaxed">
+                Deux parcours disponibles selon votre besoin :<br />
+                <span className="text-[#C9A84C]/50">analyse immediate par IA</span> ou <span className="text-[#C9A84C]/50">prise en charge humaine personnalisee</span>.
+              </p>
             </div>
 
-            {/* ── RIGHT COLUMN: Visual ── */}
+            {/* ── RIGHT COLUMN: Visual — 45% — CONTAINED ── */}
             <div className="relative order-1 lg:order-2 flex justify-center lg:justify-end">
-              <div className="relative w-full max-w-md lg:max-w-lg">
-                {/* Shield background element */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-10">
-                  <Shield className="w-[300px] h-[300px] text-[#C9A84C]" strokeWidth={0.5} />
+              <div className="relative w-full max-w-[420px] lg:max-w-none">
+                {/* Shield + S logo behind the image */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none">
+                  <Shield className="w-[260px] h-[260px] sm:w-[320px] sm:h-[320px] text-[#C9A84C] opacity-[0.07]" strokeWidth={0.5} />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                    <span className="text-[#C9A84C]/[0.12] text-[80px] sm:text-[100px] font-bold" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>S</span>
+                  </div>
                 </div>
 
-                {/* Hero image */}
-                <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl shadow-black/40 border border-[#C9A84C]/10">
+                {/* Hero image — NO rounded corners, NO border — sharp edges */}
+                <div className="relative z-10 overflow-hidden shadow-2xl shadow-black/50">
                   <img
                     src="https://images.pexels.com/photos/28446973/pexels-photo-28446973.jpeg?auto=compress&cs=tinysrgb&w=800"
                     alt="Expert en strategie sante"
-                    className="w-full h-[350px] sm:h-[420px] lg:h-[480px] object-cover object-top"
+                    className="w-full h-[300px] sm:h-[380px] lg:h-[440px] object-cover object-top"
                     loading="eager"
                   />
-                  {/* Gradient overlay bottom */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a08] via-transparent to-transparent opacity-60" />
+                  {/* Gradient fade bottom */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a08] via-transparent to-[#0a0a08]/20 opacity-50" />
                 </div>
 
-                {/* Floating cards */}
+                {/* Floating cards — positioned as in mockup */}
                 <FloatingCard
                   icon={Brain}
                   title="Analyse IA"
                   desc="Lecture intelligente de votre situation"
                   delay={0}
-                  className="hidden sm:flex -left-8 top-16 z-20"
+                  className="hidden sm:flex -left-12 lg:-left-16 top-8 z-20"
                 />
                 <FloatingCard
                   icon={FileText}
                   title="Documents"
                   desc="Etude approfondie de vos pieces"
                   delay={1.5}
-                  className="hidden sm:flex -right-6 top-1/3 z-20"
+                  className="hidden sm:flex -right-4 lg:-right-8 top-[35%] z-20"
                 />
                 <FloatingCard
                   icon={Compass}
                   title="Orientation"
                   desc="Strategie adaptee a votre dossier"
                   delay={3}
-                  className="hidden sm:flex -left-4 bottom-24 z-20"
+                  className="hidden sm:flex right-4 lg:right-0 bottom-6 z-20"
                 />
 
-                {/* Gold particles effect */}
-                <div className="absolute -top-4 -right-4 w-2 h-2 rounded-full bg-[#C9A84C]/40 animate-pulse" />
-                <div className="absolute top-1/4 -right-8 w-1.5 h-1.5 rounded-full bg-[#C9A84C]/30 animate-pulse" style={{ animationDelay: '1s' }} />
-                <div className="absolute bottom-1/3 -left-6 w-1 h-1 rounded-full bg-[#C9A84C]/25 animate-pulse" style={{ animationDelay: '2s' }} />
+                {/* Gold sparkles */}
+                <div className="absolute -top-3 right-12 w-2 h-2 rounded-full bg-[#C9A84C]/50 animate-pulse z-20" />
+                <div className="absolute top-1/4 -right-6 w-1.5 h-1.5 rounded-full bg-[#C9A84C]/35 animate-pulse z-20" style={{ animationDelay: '1s' }} />
+                <div className="absolute top-[60%] -left-4 w-1 h-1 rounded-full bg-[#C9A84C]/25 animate-pulse z-20" style={{ animationDelay: '2s' }} />
+                <div className="absolute bottom-12 -right-3 w-1.5 h-1.5 rounded-full bg-[#C9A84C]/30 animate-pulse z-20" style={{ animationDelay: '0.5s' }} />
               </div>
             </div>
           </div>
@@ -350,48 +371,57 @@ export const HomePage = () => {
       </div>
 
       {/* ══════════════════════════════════════════════════════════
-          2. POURQUOI CE SITE EXISTE
+          2. POURQUOI CE SITE EXISTE — Ivory background, rounded image
       ══════════════════════════════════════════════════════════ */}
-      <section className="relative py-16 sm:py-20 lg:py-28 overflow-hidden bg-[#0c0c0c]" data-testid="home-founder-quote">
-        <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23D4AF37\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
-
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-5 gap-10 lg:gap-16 items-center">
-            {/* Left: Visual */}
-            <div className="lg:col-span-2 flex justify-center">
+      <section className="relative py-16 sm:py-20 lg:py-24 overflow-hidden bg-[#F8F5EF]" data-testid="home-founder-quote">
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            {/* Left: Image with floating card */}
+            <div className="flex justify-center">
               <div className="relative">
-                <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-full bg-[#C9A84C]/[0.06] border border-[#C9A84C]/15 flex items-center justify-center">
-                  <Scale className="w-20 h-20 text-[#C9A84C]/30" strokeWidth={1} />
+                <div className="w-64 h-72 sm:w-72 sm:h-80 rounded-3xl overflow-hidden shadow-xl">
+                  <img
+                    src="https://images.pexels.com/photos/28446973/pexels-photo-28446973.jpeg?auto=compress&cs=tinysrgb&w=600"
+                    alt="Fondateur S.E.S"
+                    className="w-full h-full object-cover object-top"
+                  />
                 </div>
-                <div className="absolute -bottom-2 -right-2 w-12 h-12 rounded-full bg-[#C9A84C] flex items-center justify-center shadow-lg shadow-[#C9A84C]/20">
-                  <Shield className="w-6 h-6 text-[#0a0a08]" />
+                {/* Floating "Decision de justice" card */}
+                <div className="absolute -top-3 -right-6 sm:-right-10 bg-[#111] border border-[#C9A84C]/25 rounded-xl px-4 py-3 shadow-xl z-10">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-[#C9A84C]/15 flex items-center justify-center flex-shrink-0">
+                      <Scale className="w-4 h-4 text-[#C9A84C]" />
+                    </div>
+                    <div>
+                      <p className="text-white text-[11px] font-semibold leading-tight">Decision de justice</p>
+                      <p className="text-emerald-400 text-[10px]">reconnue favorable</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Right: Text */}
-            <div className="lg:col-span-3">
+            <div>
               <span className="text-[#C9A84C] text-xs font-medium uppercase tracking-[0.2em] mb-4 block">Pourquoi ce site existe</span>
               <h2
-                className="text-xl sm:text-2xl lg:text-3xl font-semibold text-[#f5f0e8] leading-snug mb-6"
+                className="text-xl sm:text-2xl lg:text-3xl font-bold leading-snug mb-6"
                 style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
               >
-                Ce service n'est pas ne d'une theorie.<br />
+                <span className="text-[#1a1a1a]">Ce service n'est pas ne d'une theorie.</span><br />
                 <span className="text-[#C9A84C]">Il est ne d'un combat reel.</span>
               </h2>
 
-              <div className="relative pl-6 border-l-2 border-[#C9A84C]/20 space-y-4">
-                <p className="text-[#f5f0e8]/60 text-sm leading-relaxed">
-                  Fort de mon experience personnelle et de mes succes obtenus face a de grands groupes d'assurance nationaux dans la reconnaissance de garanties PTIA et ITT, j'ai developpe Strategie & Expertise Sante pour accompagner toutes les personnes confrontees a ces demarches complexes.
-                </p>
-                <p className="text-[#f5f0e8]/60 text-sm leading-relaxed">
-                  Chaque dossier que nous traitons porte la marque de cette experience vecue. Nous ne sommes pas des theoriciens : nous sommes passes par la, et nous savons exactement ce dont vous avez besoin pour avancer.
-                </p>
-              </div>
+              <p className="text-[#1a1a1a]/60 text-sm leading-relaxed mb-4">
+                Strategie & Expertise Sante a ete fondee a partir d'un vecu concret du monde des maladies professionnelles, accidents du travail, invalidites et litiges administratifs.
+              </p>
+              <p className="text-[#1a1a1a]/60 text-sm leading-relaxed">
+                Ici, chaque analyse vise un objectif simple : vous aider a mieux comprendre votre situation, defendre vos droits et eviter de rester seul face a des demarches complexes.
+              </p>
 
-              <footer className="mt-6 flex items-center gap-3">
-                <div className="w-8 h-px bg-[#C9A84C]/30" />
-                <cite className="text-xs font-medium text-[#C9A84C]/60 not-italic tracking-widest uppercase" data-testid="home-founder-blockquote">Fondateur — S.E.S</cite>
+              <footer className="mt-6 flex items-center gap-3" data-testid="home-founder-blockquote">
+                <div className="w-8 h-px bg-[#C9A84C]/40" />
+                <cite className="text-xs font-medium text-[#C9A84C]/70 not-italic tracking-widest uppercase">Fondateur — S.E.S</cite>
               </footer>
             </div>
           </div>
@@ -401,45 +431,56 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           3. NOS DEUX INTELLIGENCES DE DOSSIER
       ══════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-20 lg:py-28 bg-[#111]" data-testid="solutions-section" ref={solutionsRef}>
+      <section className="py-16 sm:py-20 lg:py-24 bg-[#F8F5EF]" data-testid="solutions-section" ref={solutionsRef}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-14 reveal">
+          <div className="text-center max-w-2xl mx-auto mb-12 reveal">
             <span className="text-xs font-medium text-[#C9A84C] uppercase tracking-[0.2em]">Deux intelligences complementaires</span>
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold mt-3 mb-4 text-[#f5f0e8]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-              Quel service correspond a votre besoin ?
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mt-3 mb-4 text-[#1a1a1a]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+              Quel service est fait pour vous ?
             </h2>
-            <p className="text-sm text-[#f5f0e8]/40">
+            <p className="text-sm text-[#1a1a1a]/40">
               Deux parcours distincts, une meme exigence de qualite.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 lg:gap-8 stagger">
-            {/* Card 1 — StrategiIA */}
+            {/* Card 1 — StrategiIA — DARK CARD */}
             <div className="reveal" data-testid="solution-card-0">
               <Link to="/simulateur" className="group block h-full">
-                <div className="h-full bg-[#0a0a08] border border-[#C9A84C]/20 rounded-2xl p-8 sm:p-10 transition-all duration-300 hover:border-[#C9A84C]/40 hover:shadow-xl hover:shadow-[#C9A84C]/5 group-hover:-translate-y-1">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-14 h-14 rounded-xl bg-[#C9A84C]/10 flex items-center justify-center">
-                      <Brain className="w-7 h-7 text-[#C9A84C]" />
+                <div className="h-full bg-[#111] rounded-2xl p-7 sm:p-8 transition-all duration-300 hover:shadow-2xl hover:shadow-[#C9A84C]/5 group-hover:-translate-y-1">
+                  <div className="flex items-center gap-4 mb-5">
+                    <div className="w-12 h-12 rounded-xl bg-[#C9A84C]/10 flex items-center justify-center">
+                      <Brain className="w-6 h-6 text-[#C9A84C]" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-[#f5f0e8]">StrategiIA</h3>
-                      <p className="text-[#C9A84C] font-semibold text-sm">Pre-analyse gratuite</p>
+                      <h3 className="text-lg font-bold text-[#f5f0e8]">StrategiIA</h3>
+                      <p className="text-[#C9A84C] font-semibold text-xs">Pre-analyse gratuite</p>
                     </div>
                   </div>
 
-                  <p className="text-[#f5f0e8]/50 text-sm leading-relaxed mb-6">
-                    Votre premier eclairage strategique. Une analyse intelligente de votre situation pour comprendre vos droits et identifier vos leviers d'action.
+                  <p className="text-[#f5f0e8]/45 text-sm leading-relaxed mb-5">
+                    Votre premier eclairage strategique. Une analyse intelligente de votre situation pour comprendre vos droits et identifier vos leviers.
                   </p>
 
-                  <div className="space-y-2.5 mb-8">
-                    <p className="text-[#f5f0e8]/30 text-xs font-semibold uppercase tracking-wider mb-3">Ideal pour</p>
-                    {["Comprendre votre situation rapidement", "Identifier vos droits et recours", "Obtenir une premiere orientation strategique", "Preparer une demarche structuree"].map((t, i) => (
-                      <div key={i} className="flex items-start gap-2.5">
-                        <CheckCircle className="w-4 h-4 text-[#C9A84C] flex-shrink-0 mt-0.5" />
-                        <span className="text-[#f5f0e8]/60 text-sm">{t}</span>
-                      </div>
-                    ))}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                      <p className="text-[#C9A84C] text-[10px] font-bold uppercase tracking-wider mb-2.5">Ideal pour</p>
+                      {["Comprendre votre situation", "Identifier vos droits", "Obtenir une premiere orientation"].map((t, i) => (
+                        <div key={i} className="flex items-start gap-2 mb-2">
+                          <CheckCircle className="w-3 h-3 text-[#C9A84C]/60 flex-shrink-0 mt-0.5" />
+                          <span className="text-[#f5f0e8]/50 text-xs leading-tight">{t}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div>
+                      <p className="text-[#C9A84C] text-[10px] font-bold uppercase tracking-wider mb-2.5">Ce que vous recevez</p>
+                      {["Analyse strategique IA", "Orientation personnalisee", "Leviers d'action identifies"].map((t, i) => (
+                        <div key={i} className="flex items-start gap-2 mb-2">
+                          <CheckCircle className="w-3 h-3 text-[#C9A84C]/60 flex-shrink-0 mt-0.5" />
+                          <span className="text-[#f5f0e8]/50 text-xs leading-tight">{t}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   <span className="inline-flex items-center gap-2 text-[#C9A84C] text-sm font-medium group-hover:gap-3 transition-all">
@@ -449,37 +490,47 @@ export const HomePage = () => {
               </Link>
             </div>
 
-            {/* Card 2 — Dossier Express IA */}
+            {/* Card 2 — Dossier Express IA — IVORY CARD */}
             <div className="reveal" data-testid="solution-card-1">
               <Link to="/dossier-express" className="group block h-full">
-                <div className="h-full bg-[#F8F5EF] border border-[#C9A84C]/25 rounded-2xl p-8 sm:p-10 transition-all duration-300 hover:border-[#C9A84C]/50 hover:shadow-xl hover:shadow-[#C9A84C]/10 group-hover:-translate-y-1 relative overflow-hidden">
-                  {/* Urgent badge */}
+                <div className="h-full bg-white border border-[#C9A84C]/15 rounded-2xl p-7 sm:p-8 transition-all duration-300 hover:shadow-2xl hover:shadow-[#C9A84C]/10 group-hover:-translate-y-1 relative overflow-hidden">
                   <div className="absolute top-4 right-4">
-                    <span className="bg-red-600 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">Urgence</span>
+                    <span className="bg-red-600 text-white text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">Urgence</span>
                   </div>
 
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-14 h-14 rounded-xl bg-[#C9A84C]/15 flex items-center justify-center">
-                      <Zap className="w-7 h-7 text-[#C9A84C]" />
+                  <div className="flex items-center gap-4 mb-5">
+                    <div className="w-12 h-12 rounded-xl bg-[#C9A84C]/10 flex items-center justify-center">
+                      <Zap className="w-6 h-6 text-[#C9A84C]" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-[#1a1a1a]">Dossier Express IA</h3>
-                      <p className="text-[#C9A84C] font-semibold text-sm">97 EUR — Livre sous 2h</p>
+                      <h3 className="text-lg font-bold text-[#1a1a1a]">Dossier Express IA</h3>
+                      <p className="text-[#C9A84C] font-semibold text-xs">97 EUR — Livre sous 2h</p>
                     </div>
                   </div>
 
-                  <p className="text-[#1a1a1a]/60 text-sm leading-relaxed mb-6">
+                  <p className="text-[#1a1a1a]/50 text-sm leading-relaxed mb-5">
                     L'analyse documentaire complete de votre dossier. Un rapport structure, approfondi et exploitable pour vos demarches.
                   </p>
 
-                  <div className="space-y-2.5 mb-8">
-                    <p className="text-[#1a1a1a]/30 text-xs font-semibold uppercase tracking-wider mb-3">Ce que vous recevez</p>
-                    {["Rapport d'analyse detaille et structure", "Etude de vos documents medicaux et juridiques", "Identification des points forts et faiblesses", "Strategie d'action concrete et personnalisee"].map((t, i) => (
-                      <div key={i} className="flex items-start gap-2.5">
-                        <CheckCircle className="w-4 h-4 text-[#C9A84C] flex-shrink-0 mt-0.5" />
-                        <span className="text-[#1a1a1a]/70 text-sm">{t}</span>
-                      </div>
-                    ))}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                      <p className="text-[#C9A84C] text-[10px] font-bold uppercase tracking-wider mb-2.5">Ideal pour</p>
+                      {["Expertise medicale imminente", "Preparer votre strategie", "Analyser vos documents"].map((t, i) => (
+                        <div key={i} className="flex items-start gap-2 mb-2">
+                          <CheckCircle className="w-3 h-3 text-[#C9A84C]/60 flex-shrink-0 mt-0.5" />
+                          <span className="text-[#1a1a1a]/60 text-xs leading-tight">{t}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div>
+                      <p className="text-[#C9A84C] text-[10px] font-bold uppercase tracking-wider mb-2.5">Ce que vous recevez</p>
+                      {["Rapport d'analyse detaille", "Etude de vos documents", "Strategie d'action concrete"].map((t, i) => (
+                        <div key={i} className="flex items-start gap-2 mb-2">
+                          <CheckCircle className="w-3 h-3 text-[#C9A84C]/60 flex-shrink-0 mt-0.5" />
+                          <span className="text-[#1a1a1a]/60 text-xs leading-tight">{t}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   <span className="inline-flex items-center gap-2 text-[#C9A84C] text-sm font-medium group-hover:gap-3 transition-all">
@@ -490,10 +541,9 @@ export const HomePage = () => {
             </div>
           </div>
 
-          {/* Accompagnement complet CTA */}
           <div className="mt-8 text-center reveal">
             <Link to="/contact" data-testid="solution-card-2">
-              <Button variant="outline" className="rounded-full px-8 py-5 gap-2.5 border-[#C9A84C]/20 text-[#C9A84C] hover:bg-[#C9A84C]/5 hover:border-[#C9A84C]/40">
+              <Button className="rounded-lg px-8 py-5 gap-2.5 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-bold text-sm">
                 <Shield className="w-4 h-4" />
                 Accompagnement strategique complet — Sur devis
                 <ArrowRight className="w-4 h-4" />
