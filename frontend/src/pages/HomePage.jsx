@@ -140,7 +140,7 @@ export const HomePage = () => {
       <section className="relative bg-[#0a0a08]" data-testid="hero-section">
         {/* Fond premium — lueur dorée diffuse très discrète */}
         <div className="absolute top-1/2 right-0 w-[600px] h-[600px] -translate-y-1/2 translate-x-1/4 bg-[#C9A84C]/[0.03] rounded-full blur-[180px] pointer-events-none" />
-        <div className="relative max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-14">
+        <div className="relative max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-20 lg:pt-24 pb-10 sm:pb-12 lg:pb-14">
           <div className="grid lg:grid-cols-[55fr_45fr] gap-8 lg:gap-12 items-center">
 
             {/* ── COLONNE GAUCHE : Contenu ── */}
