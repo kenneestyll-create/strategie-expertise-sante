@@ -12,7 +12,7 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA i
 ## Homepage Premium Refonte (30/03/2026)
 
 ### Structure implementee (13 sections)
-1. **Hero** — Two-column premium (texte gauche 55% + photo/cartes flottantes droite 45%) — composition fermee (viewport height)
+1. **Hero** — Two-column propre (contenu gauche 55fr + visuel droite 45fr) — hauteur maitrisee par padding, image aspect 3:4 contenue, zero element flottant
 2. **Dossier Express strip** — Bande urgence rouge
 3. **Pourquoi ce site existe** — Narratif fondateur, fond ivoire #F8F5EF, image arrondie
 4. **Nos deux intelligences** — StrategiIA vs Dossier Express IA (cartes 2 colonnes: Ideal pour / Ce que vous recevez)
