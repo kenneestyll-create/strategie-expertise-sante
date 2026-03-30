@@ -272,6 +272,41 @@ export const HomePage = () => {
                     {/* Fondu bas — intégration dans le fond */}
                     <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#0a0a08] via-[#0a0a08]/60 to-transparent" />
                   </div>
+
+                  {/* ── 3 Blocs flottants sur l'image ── */}
+                  {/* Bloc Analyse IA — haut gauche */}
+                  <div className="absolute top-[12%] left-[4%] flex items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/85 backdrop-blur-sm rounded-lg px-2.5 py-2 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)]" data-testid="hero-bloc-analyse">
+                    <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
+                      <Brain className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-[#C9A84C]" />
+                    </div>
+                    <div>
+                      <span className="text-white font-bold text-[10px] sm:text-xs block leading-tight">Analyse IA</span>
+                      <span className="text-white/60 text-[8px] sm:text-[10px] block leading-tight">Lecture intelligente<br/>de votre situation</span>
+                    </div>
+                  </div>
+
+                  {/* Bloc Documents — droite centre */}
+                  <div className="absolute top-[45%] right-[3%] flex items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/85 backdrop-blur-sm rounded-lg px-2.5 py-2 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)]" data-testid="hero-bloc-documents">
+                    <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-[#C9A84C]" />
+                    </div>
+                    <div>
+                      <span className="text-white font-bold text-[10px] sm:text-xs block leading-tight">Documents</span>
+                      <span className="text-white/60 text-[8px] sm:text-[10px] block leading-tight">Étude approfondie<br/>de vos pièces</span>
+                    </div>
+                  </div>
+
+                  {/* Bloc Orientation — bas centre */}
+                  <div className="absolute bottom-[15%] left-1/2 -translate-x-1/2 flex items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/85 backdrop-blur-sm rounded-lg px-2.5 py-2 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)]" data-testid="hero-bloc-orientation">
+                    <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
+                      <Compass className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-[#C9A84C]" />
+                    </div>
+                    <div>
+                      <span className="text-white font-bold text-[10px] sm:text-xs block leading-tight">Orientation</span>
+                      <span className="text-white/60 text-[8px] sm:text-[10px] block leading-tight">Stratégie adaptée<br/>à votre dossier</span>
+                    </div>
+                  </div>
+
                   {/* Filet doré vertical — accent luxe */}
                   <div className="absolute top-4 bottom-4 -left-3 w-[2px] bg-gradient-to-b from-transparent via-[#C9A84C]/35 to-transparent" />
                   {/* Filet doré horizontal bas */}
