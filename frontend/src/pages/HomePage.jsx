@@ -161,7 +161,7 @@ export const HomePage = () => {
 
               {/* Titre — compacté pour above-the-fold */}
               <h1
-                className="text-[2rem] sm:text-[2.4rem] lg:text-[2.6rem] xl:text-[2.8rem] font-bold text-[#f5f0e8] leading-[1.10] mb-3"
+                className="text-[1.75rem] sm:text-[2rem] lg:text-[2.2rem] xl:text-[2.4rem] font-bold text-[#f5f0e8] leading-[1.10] mb-3"
                 style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
                 data-testid="hero-title"
               >
