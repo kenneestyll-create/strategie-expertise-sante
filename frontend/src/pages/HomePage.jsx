@@ -145,14 +145,17 @@ export const HomePage = () => {
 
             {/* ── COLONNE GAUCHE : Contenu ── */}
             <div className="order-2 lg:order-1">
-              {/* Badge — Sceau premium */}
-              <div className="inline-flex items-center gap-4 bg-[#C9A84C]/[0.05] border border-[#C9A84C]/25 text-[#C9A84C] px-5 py-3 rounded-[10px] mb-4 shadow-[0_2px_12px_-4px_rgba(201,168,76,0.08)]" data-testid="pioneer-badge">
-                <div className="w-9 h-9 rounded-lg border border-[#C9A84C]/30 bg-[#C9A84C]/[0.08] flex items-center justify-center flex-shrink-0">
-                  <Scale className="w-[18px] h-[18px] text-[#C9A84C]" />
+              {/* Badge — Reconstruit : structure simple et saine */}
+              <div
+                className="flex w-fit items-center gap-4 rounded-xl bg-[#161612] border border-[#C9A84C]/20 px-6 py-3.5 mb-4"
+                data-testid="pioneer-badge"
+              >
+                <div className="w-10 h-10 rounded-lg bg-[#C9A84C]/10 border border-[#C9A84C]/20 flex items-center justify-center flex-shrink-0">
+                  <Scale className="w-5 h-5 text-[#C9A84C]" />
                 </div>
-                <div className="leading-normal min-w-0">
-                  <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.14em] block text-[#C9A84C]">Pionnier en France</span>
-                  <span className="text-[10px] sm:text-[11px] text-[#C9A84C]/45 block mt-0.5">Plateforme d'analyse & d'accompagnement en droits sante</span>
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-widest text-[#C9A84C] block">Pionnier en France</span>
+                  <span className="text-[11px] text-[#C9A84C]/40 block mt-1">Plateforme d'analyse & d'accompagnement en droits sante</span>
                 </div>
               </div>
 
