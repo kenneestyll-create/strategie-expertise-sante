@@ -193,8 +193,8 @@ export const ChatBot = () => {
     <>
       {/* Mascot Floating Button — Premium */}
       {!isOpen && (
-        <div className="fixed flex items-end gap-3" style={{ zIndex: 'var(--z-chatbot)', bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))', right: '1rem' }} data-testid="chatbot-fab-wrapper">
-          {/* Robot Mascot Button */}
+        <div className="sm:fixed relative flex items-end gap-3 sm:z-[var(--z-chatbot)]" style={{ zIndex: 'var(--z-chatbot)', bottom: undefined, right: undefined }} data-testid="chatbot-fab-wrapper">
+          <div className="hidden sm:block" style={{ position: 'fixed', bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))', right: '1rem' }}>
           <button
             onClick={() => { setIsOpen(true); }}
             className="group relative w-11 h-11 rounded-xl bg-[#0a0a08] border-2 border-[#C9A84C]/40 shadow-lg shadow-[#C9A84C]/10 flex items-center justify-center transition-all duration-300 hover:border-[#C9A84C]/70 hover:shadow-[#C9A84C]/25 hover:scale-105"
@@ -205,6 +205,18 @@ export const ChatBot = () => {
             {/* Online indicator */}
             <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-[#0a0a08]" />
           </button>
+          </div>
+          <div className="sm:hidden fixed bottom-0 left-0 right-0 flex justify-center py-2 bg-[#0a0a08]/90 backdrop-blur-sm border-t border-[#C9A84C]/10" style={{ zIndex: 'var(--z-chatbot)' }}>
+          <button
+            onClick={() => { setIsOpen(true); }}
+            className="group relative w-11 h-11 rounded-xl bg-[#0a0a08] border-2 border-[#C9A84C]/40 shadow-lg shadow-[#C9A84C]/10 flex items-center justify-center transition-all duration-300 hover:border-[#C9A84C]/70 hover:shadow-[#C9A84C]/25 hover:scale-105"
+            data-testid="chatbot-button-mobile"
+            aria-label="Ouvrir l'assistant"
+          >
+            <StrateMascotIcon size={24} />
+            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-[#0a0a08]" />
+          </button>
+          </div>
         </div>
       )}
 
