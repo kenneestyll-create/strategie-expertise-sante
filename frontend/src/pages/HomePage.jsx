@@ -36,26 +36,6 @@ const CountUpNumber = ({ value, unit = '', duration = 1200, started }) => {
   return <>{display.toLocaleString('fr-FR')}{unit}</>;
 };
 
-/* ────────────────────────────────────────────
-   Floating card for hero section
-──────────────────────────────────────────── */
-const FloatingCard = ({ icon: Icon, title, desc, delay, className = '' }) => (
-  <div
-    className={`absolute bg-[#111]/90 backdrop-blur-md border border-[#C9A84C]/20 rounded-xl px-4 py-3 shadow-2xl ${className}`}
-    style={{ animation: `floatCard 4s ease-in-out ${delay}s infinite alternate` }}
-  >
-    <div className="flex items-center gap-3">
-      <div className="w-9 h-9 rounded-lg bg-[#C9A84C]/15 flex items-center justify-center flex-shrink-0">
-        <Icon className="w-4 h-4 text-[#C9A84C]" />
-      </div>
-      <div>
-        <p className="text-white text-xs font-semibold leading-tight">{title}</p>
-        <p className="text-white/40 text-[10px] leading-tight mt-0.5">{desc}</p>
-      </div>
-    </div>
-  </div>
-);
-
 export const HomePage = () => {
   const [visitorCount, setVisitorCount] = useState(0);
   const [dossierCount, setDossierCount] = useState(0);
@@ -155,19 +135,16 @@ export const HomePage = () => {
       />
 
       {/* ══════════════════════════════════════════════════════════
-          1. HERO — Faithful reproduction of validated mockup
+          1. HERO — Structure propre, stable, 2 colonnes
       ══════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden bg-[#0a0a08] min-h-[calc(100vh-64px)]" data-testid="hero-section">
-        {/* Gold gradient glow */}
-        <div className="absolute top-0 right-0 w-[700px] h-[700px] bg-[#C9A84C]/[0.04] rounded-full blur-[150px] translate-x-1/3 -translate-y-1/4 pointer-events-none" />
-        <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-[#C9A84C]/[0.02] rounded-full blur-[120px] pointer-events-none" />
+      <section className="bg-[#0a0a08]" data-testid="hero-section">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-16 lg:py-20">
+          <div className="grid lg:grid-cols-[55fr_45fr] gap-10 lg:gap-14 items-center">
 
-        <div className="relative max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 lg:pt-16 pb-8 lg:pb-10 flex items-center min-h-[calc(100vh-64px)]">
-          <div className="grid lg:grid-cols-[55%_45%] gap-8 lg:gap-6 items-center w-full">
-            {/* ── LEFT COLUMN: Message — 55% ── */}
-            <div className="text-left order-2 lg:order-1">
-              {/* Badge — with sub-text as in mockup */}
-              <div className="inline-flex items-center gap-3 bg-[#0a0a08] border border-[#C9A84C]/30 text-[#C9A84C] px-4 py-2.5 rounded-lg mb-6" data-testid="pioneer-badge">
+            {/* ── COLONNE GAUCHE : Contenu ── */}
+            <div className="order-2 lg:order-1">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-3 border border-[#C9A84C]/30 text-[#C9A84C] px-4 py-2.5 rounded-lg mb-6" data-testid="pioneer-badge">
                 <div className="w-7 h-7 rounded-md border border-[#C9A84C]/40 flex items-center justify-center flex-shrink-0">
                   <Scale className="w-4 h-4 text-[#C9A84C]" />
                 </div>
@@ -177,9 +154,9 @@ export const HomePage = () => {
                 </div>
               </div>
 
-              {/* Main title — large serif, specific gold words */}
+              {/* Titre */}
               <h1
-                className="text-[2rem] sm:text-[2.6rem] lg:text-[3rem] xl:text-[3.5rem] font-bold text-[#f5f0e8] leading-[1.12] mb-5"
+                className="text-[2rem] sm:text-[2.6rem] lg:text-[3rem] xl:text-[3.4rem] font-bold text-[#f5f0e8] leading-[1.12] mb-5"
                 style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
                 data-testid="hero-title"
               >
@@ -189,7 +166,7 @@ export const HomePage = () => {
                 <span className="text-[#C9A84C]">vos recours</span>.
               </h1>
 
-              {/* Subtitle — exact mockup text */}
+              {/* Sous-titre */}
               <p className="text-sm sm:text-[15px] text-[#f5f0e8]/55 leading-relaxed mb-5 max-w-xl" data-testid="hero-subtitle">
                 Analysez votre situation, identifiez vos leviers, comprenez vos droits et accedez a un accompagnement strategique humain en cas de{' '}
                 <strong className="text-[#f5f0e8]/70">maladie professionnelle</strong>,{' '}
@@ -198,7 +175,7 @@ export const HomePage = () => {
                 <strong className="text-[#f5f0e8]/70">litige assuranciel</strong>.
               </p>
 
-              {/* 3 key points — circle icons with golden outline */}
+              {/* 3 points cles */}
               <div className="space-y-2.5 mb-6">
                 {[
                   { icon: HeartHandshake, text: "Expertise nee d'un vecu concret" },
@@ -214,7 +191,7 @@ export const HomePage = () => {
                 ))}
               </div>
 
-              {/* Social proof ROW — horizontal: avatars + count + separator + response time */}
+              {/* Preuve sociale */}
               <div className="flex flex-wrap items-center gap-4 sm:gap-6 mb-6">
                 {visitorCount > 0 && (
                   <div className="flex items-center gap-2.5">
@@ -243,7 +220,7 @@ export const HomePage = () => {
                 </div>
               </div>
 
-              {/* CTAs — 8px radius, not pill */}
+              {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-3 mb-4">
                 <button
                   onClick={() => window.dispatchEvent(new Event('strategiia:open'))}
@@ -270,66 +247,27 @@ export const HomePage = () => {
                 </Link>
               </div>
 
-              {/* Below CTAs text */}
+              {/* Texte sous CTAs */}
               <p className="text-xs text-[#f5f0e8]/30 leading-relaxed">
                 Deux parcours disponibles selon votre besoin :<br />
                 <span className="text-[#C9A84C]/50">analyse immediate par IA</span> ou <span className="text-[#C9A84C]/50">prise en charge humaine personnalisee</span>.
               </p>
             </div>
 
-            {/* ── RIGHT COLUMN: Visual — 45% — CONTAINED ── */}
-            <div className="relative order-1 lg:order-2 flex justify-center lg:justify-end">
-              <div className="relative w-full max-w-[420px] lg:max-w-none">
-                {/* Shield + S logo behind the image */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none">
-                  <Shield className="w-[260px] h-[260px] sm:w-[320px] sm:h-[320px] text-[#C9A84C] opacity-[0.07]" strokeWidth={0.5} />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                    <span className="text-[#C9A84C]/[0.12] text-[80px] sm:text-[100px] font-bold" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>S</span>
-                  </div>
-                </div>
-
-                {/* Hero image — NO rounded corners, NO border — sharp edges */}
-                <div className="relative z-10 overflow-hidden shadow-2xl shadow-black/50">
+            {/* ── COLONNE DROITE : Visuel propre ── */}
+            <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
+              <div className="w-full max-w-[460px]">
+                <div className="overflow-hidden shadow-2xl shadow-black/40">
                   <img
                     src="https://images.pexels.com/photos/28446973/pexels-photo-28446973.jpeg?auto=compress&cs=tinysrgb&w=800"
                     alt="Expert en strategie sante"
-                    className="w-full h-[300px] sm:h-[380px] lg:h-[440px] object-cover object-top"
+                    className="w-full aspect-[3/4] object-cover object-top"
                     loading="eager"
                   />
-                  {/* Gradient fade bottom */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a08] via-transparent to-[#0a0a08]/20 opacity-50" />
                 </div>
-
-                {/* Floating cards — positioned as in mockup */}
-                <FloatingCard
-                  icon={Brain}
-                  title="Analyse IA"
-                  desc="Lecture intelligente de votre situation"
-                  delay={0}
-                  className="hidden sm:flex -left-12 lg:-left-16 top-8 z-20"
-                />
-                <FloatingCard
-                  icon={FileText}
-                  title="Documents"
-                  desc="Etude approfondie de vos pieces"
-                  delay={1.5}
-                  className="hidden sm:flex -right-4 lg:-right-8 top-[35%] z-20"
-                />
-                <FloatingCard
-                  icon={Compass}
-                  title="Orientation"
-                  desc="Strategie adaptee a votre dossier"
-                  delay={3}
-                  className="hidden sm:flex right-4 lg:right-0 bottom-6 z-20"
-                />
-
-                {/* Gold sparkles */}
-                <div className="absolute -top-3 right-12 w-2 h-2 rounded-full bg-[#C9A84C]/50 animate-pulse z-20" />
-                <div className="absolute top-1/4 -right-6 w-1.5 h-1.5 rounded-full bg-[#C9A84C]/35 animate-pulse z-20" style={{ animationDelay: '1s' }} />
-                <div className="absolute top-[60%] -left-4 w-1 h-1 rounded-full bg-[#C9A84C]/25 animate-pulse z-20" style={{ animationDelay: '2s' }} />
-                <div className="absolute bottom-12 -right-3 w-1.5 h-1.5 rounded-full bg-[#C9A84C]/30 animate-pulse z-20" style={{ animationDelay: '0.5s' }} />
               </div>
             </div>
+
           </div>
         </div>
       </section>
@@ -926,13 +864,6 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* Floating card animation */}
-      <style>{`
-        @keyframes floatCard {
-          0% { transform: translateY(0px); }
-          100% { transform: translateY(-8px); }
-        }
-      `}</style>
     </main>
   );
 };
