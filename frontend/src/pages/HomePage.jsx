@@ -145,14 +145,14 @@ export const HomePage = () => {
 
             {/* ── COLONNE GAUCHE : Contenu ── */}
             <div className="order-2 lg:order-1">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-3 border border-[#C9A84C]/30 text-[#C9A84C] px-4 py-2 rounded-lg mb-4" data-testid="pioneer-badge">
-                <div className="w-7 h-7 rounded-md border border-[#C9A84C]/40 flex items-center justify-center flex-shrink-0">
-                  <Scale className="w-4 h-4 text-[#C9A84C]" />
+              {/* Badge — Sceau premium */}
+              <div className="inline-flex items-center gap-4 bg-[#C9A84C]/[0.05] border border-[#C9A84C]/25 text-[#C9A84C] px-5 py-3 rounded-[10px] mb-4 shadow-[0_2px_12px_-4px_rgba(201,168,76,0.08)]" data-testid="pioneer-badge">
+                <div className="w-9 h-9 rounded-lg border border-[#C9A84C]/30 bg-[#C9A84C]/[0.08] flex items-center justify-center flex-shrink-0">
+                  <Scale className="w-[18px] h-[18px] text-[#C9A84C]" />
                 </div>
-                <div className="leading-tight">
-                  <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.15em] block">Pionnier en France</span>
-                  <span className="text-[9px] sm:text-[10px] text-[#C9A84C]/50 block">Plateforme d'analyse & d'accompagnement en droits sante</span>
+                <div className="leading-normal min-w-0">
+                  <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.14em] block text-[#C9A84C]">Pionnier en France</span>
+                  <span className="text-[10px] sm:text-[11px] text-[#C9A84C]/45 block mt-0.5">Plateforme d'analyse & d'accompagnement en droits sante</span>
                 </div>
               </div>
 
