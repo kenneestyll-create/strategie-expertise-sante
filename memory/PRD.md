@@ -22,16 +22,16 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA i
 ## Phase 2 Premium Home (30/03/2026)
 - H1 : leading-[1.18] plus respirant, tailles lg:2.1rem xl:2.3rem
 - Image droite : halo dore diffus, fondu haut+bas, filet dore horizontal bas, ombre profonde 70px, max-w 400px
-- CTA Urgent : "Reponse sous 2h" remplace par "Besoin urgent ?" CTA integre (event alerte-urgente:open → modal)
+- CTA Urgent : "Reponse sous 2h" remplace par "Besoin urgent ?" CTA integre (event alerte-urgente:open -> modal)
 - Mascotte : scroll-reveal > 300px (Hero reste centre absolu)
 - AlerteUrgente : bouton flottant scroll-reveal > 400px + ecoute event alerte-urgente:open
 - Tests : 100% PASS iteration 161 (6/6 corrections verifiees)
 
 ### Structure implementee (13 sections)
-1. **Hero** — Two-column propre (55fr/45fr) — V2 above-the-fold : H1 compact (2.8rem, leading 1.10), CTAs visibles sans scroll, image aspect 4:5 max-w 380px, ombre profonde, filet dore, fond dore diffus, bouton Urgence masque (scroll-reveal 400px)
+1. **Hero** — Two-column propre (55fr/45fr) — V2 above-the-fold
 2. **Dossier Express strip** — Bande urgence rouge
-3. **Pourquoi ce site existe** — Narratif fondateur, fond ivoire #F8F5EF, image arrondie
-4. **Nos deux intelligences** — StrategiIA vs Dossier Express IA (cartes 2 colonnes: Ideal pour / Ce que vous recevez)
+3. **Pourquoi ce site existe** — Narratif fondateur, fond ivoire #F8F5EF
+4. **Nos deux intelligences** — StrategiIA vs Dossier Express IA
 5. **Risques** — Ce que vous risquez sans accompagnement
 6. **Ecosysteme** — 8 services en grille
 7. **Methode S.E.S** — 5 etapes du processus
@@ -40,36 +40,31 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA i
 10. **Chiffres cles** — Contexte national (4 stats animees)
 11. **Confiance** — 4 piliers de credibilite
 12. **Temoignages** — 6 temoignages anonymises
-13. **CTA Final** — Signature emotionnelle "S.E.S est votre bouclier"
+13. **CTA Final** — Signature emotionnelle
 
 ### Direction artistique
 - Palette : #0a0a08 (fond), #111 (cartes), #C9A84C (or), #F8F5EF (ivoire)
 - Typographie : Playfair Display (titres), sans-serif (corps)
 - Theme : sombre, premium, luxe maitrise, or elegant
-- Hero image : bords nets (pas de rounded), pas de bordure
 
-### Tests Homepage : 100% PASS (iteration 156)
-- Tous les data-testid verifies
-- Tous les liens (CTAs, navigation, cartes) pointent vers les bonnes routes
-- APIs backend fonctionnelles (/api/conseils/today, /api/visitors/increment, /api/dossier-express/weekly-count)
-- Mascotte Strate fonctionne (widget + conseil du jour)
+### Tests Homepage : 100% PASS (iteration 156-162)
 
 ## Fonctionnalites implementees
 - Mascotte Strate : TTS francais robuste (speakFrench), widget desktop + mobile, rotation quotidienne des conseils
 - Admin Conseils Strate : CRUD complet, analytics, stats, highlight/priorite
-- Backend conseils : /api/conseils/* (today, view, click, conversion, admin/list, admin/create, admin/update, admin/delete, admin/stats, admin/analytics)
+- Backend conseils : /api/conseils/* (today, view, click, conversion, admin endpoints)
 - ChatBot : Orienteur ultra-court (3 questions max), prompt strict
-- PDF Premium Signature V2 : Footer uniforme, clause de confidentialite, phrase emotionnelle
-- DataConsentBox : Variantes adaptees (StrategiIA, Contact, DossierExpress)
+- PDF Premium Signature V2
+- DataConsentBox : Variantes adaptees
 - Document Scanner : Camera native mobile (pas d'auto-crop)
 
-## Corrections precedentes (29-30/03/2026)
-- DataConsentBox wording (informations au lieu de documents)
-- Robot assistant refonte (orienteur ultra-court)
-- Focus PDF page A propos (lazy-load IntersectionObserver)
-- Outline bleu "Outils" navbar
-- Email obligatoire Question urgente
-- PDF Premium Signature V2
+## Correction Orthographique ASCII (30/03/2026)
+- **Probleme** : Script de remplacement global avait corrompu les variables, cles DB, data-testid, noms de composants avec des accents
+- **Correction** : Tous les identifiants programmatiques restaures en ASCII, texte affiche conserve avec accents francais
+- **Fichiers corriges** : AlerteUrgente.jsx, AgendaPage.jsx, ContactPage.jsx, useAdminTheme.js, CalculatriceAAHPage.jsx, HomePage.jsx, AccidentTravailPage.jsx, ExpertiseMedicalePage.jsx, ProtectionJuridiquePage.jsx, AdminConseilsStrate.jsx, SimulateurPage.jsx, AdminDashboard.jsx, App.js, MentionsLegalesPage.jsx, PolitiqueConfidentialitePage.jsx, MedecinConseilPage.jsx, AvisPage.jsx
+- **Bug critique corrige** : AlerteUrgente envoyait "telephone" (accentue) au backend qui attendait "telephone" (ASCII) -> formulaire alerte urgente non fonctionnel
+- **Bug Admin corrige** : AdminDashboard lisait last_results.eligible (accentue) mais backend renvoyait "eligible" (ASCII)
+- **Tests** : 100% PASS iteration 162 (10/10 backend, 13/13 frontend)
 
 ## Etat des services
 - IA Anthropic (Emergent proxy) : OK
