@@ -140,14 +140,14 @@ export const HomePage = () => {
       <section className="relative bg-[#0a0a08]" data-testid="hero-section">
         {/* Fond premium — lueur dorée diffuse très discrète */}
         <div className="absolute top-1/2 right-0 w-[600px] h-[600px] -translate-y-1/2 translate-x-1/4 bg-[#C9A84C]/[0.03] rounded-full blur-[180px] pointer-events-none" />
-        <div className="relative max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-20 lg:pt-24 pb-10 sm:pb-12 lg:pb-14">
+        <div className="relative max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-20 lg:pt-[5.5rem] pb-8 sm:pb-10 lg:pb-10">
           <div className="grid lg:grid-cols-[55fr_45fr] gap-8 lg:gap-12 items-center">
 
             {/* ── COLONNE GAUCHE : Contenu ── */}
             <div className="order-2 lg:order-1">
               {/* Badge — Reconstruit : structure simple et saine */}
               <div
-                className="flex w-fit items-center gap-4 rounded-xl bg-[#161612] border border-[#C9A84C]/20 px-6 py-3.5 mb-4"
+                className="flex w-fit items-center gap-4 rounded-xl bg-[#161612] border border-[#C9A84C]/20 px-6 py-3.5 mb-3"
                 data-testid="pioneer-badge"
               >
                 <div className="w-10 h-10 rounded-lg bg-[#C9A84C]/10 border border-[#C9A84C]/20 flex items-center justify-center flex-shrink-0">
@@ -161,7 +161,7 @@ export const HomePage = () => {
 
               {/* Titre — compacté pour above-the-fold */}
               <h1
-                className="text-[1.75rem] sm:text-[2rem] lg:text-[2.2rem] xl:text-[2.4rem] font-bold text-[#f5f0e8] leading-[1.10] mb-3"
+                className="text-[1.75rem] sm:text-[2rem] lg:text-[2rem] xl:text-[2.2rem] font-bold text-[#f5f0e8] leading-[1.10] mb-2"
                 style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
                 data-testid="hero-title"
               >
@@ -172,7 +172,7 @@ export const HomePage = () => {
               </h1>
 
               {/* Sous-titre */}
-              <p className="text-sm sm:text-[15px] text-[#f5f0e8]/55 leading-relaxed mb-3 max-w-xl" data-testid="hero-subtitle">
+              <p className="text-sm sm:text-[15px] text-[#f5f0e8]/55 leading-relaxed mb-2 max-w-xl" data-testid="hero-subtitle">
                 Analysez votre situation, identifiez vos leviers, comprenez vos droits et accedez a un accompagnement strategique humain en cas de{' '}
                 <strong className="text-[#f5f0e8]/70">maladie professionnelle</strong>,{' '}
                 <strong className="text-[#f5f0e8]/70">accident du travail</strong>,{' '}
@@ -181,7 +181,7 @@ export const HomePage = () => {
               </p>
 
               {/* 3 points cles */}
-              <div className="space-y-2 mb-4">
+              <div className="space-y-1.5 mb-3">
                 {[
                   { icon: HeartHandshake, text: "Expertise nee d'un vecu concret" },
                   { icon: Crosshair, text: "Methode strategique & personnalisee" },
@@ -197,7 +197,7 @@ export const HomePage = () => {
               </div>
 
               {/* Preuve sociale */}
-              <div className="flex flex-wrap items-center gap-4 sm:gap-5 mb-4">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-5 mb-3">
                 {visitorCount > 0 && (
                   <div className="flex items-center gap-2.5">
                     <div className="flex -space-x-1.5">
