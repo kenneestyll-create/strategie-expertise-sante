@@ -12,7 +12,7 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA i
 ## Homepage Premium Refonte (30/03/2026)
 
 ### Structure implementee (13 sections)
-1. **Hero** — Two-column propre (contenu gauche 55fr + visuel droite 45fr) — V2 premium : ombre profonde image, fondu bas, filet dore vertical, lueur dorée fond, badge Urgence redesigne discret
+1. **Hero** — Two-column propre (55fr/45fr) — V2 above-the-fold : H1 compact (2.8rem, leading 1.10), CTAs visibles sans scroll, image aspect 4:5 max-w 380px, ombre profonde, filet dore, fond dore diffus, bouton Urgence masque (scroll-reveal 400px)
 2. **Dossier Express strip** — Bande urgence rouge
 3. **Pourquoi ce site existe** — Narratif fondateur, fond ivoire #F8F5EF, image arrondie
 4. **Nos deux intelligences** — StrategiIA vs Dossier Express IA (cartes 2 colonnes: Ideal pour / Ce que vous recevez)

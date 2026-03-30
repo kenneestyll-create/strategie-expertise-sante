@@ -221,19 +221,15 @@ export const HomePage = () => {
 
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-3 mb-2">
-                <button
+                <Button
+                  size="lg"
                   onClick={() => window.dispatchEvent(new Event('strategiia:open'))}
-                  className="cursor-pointer"
+                  className="w-full sm:w-auto rounded-lg px-7 py-5 gap-2 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-bold text-sm shadow-xl shadow-[#C9A84C]/20 transition-all hover:shadow-[#C9A84C]/35 hover:scale-[1.02] cursor-pointer"
+                  data-testid="hero-cta-primary"
                 >
-                  <Button
-                    size="lg"
-                    className="w-full sm:w-auto rounded-lg px-7 py-5 gap-2 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-bold text-sm shadow-xl shadow-[#C9A84C]/20 transition-all hover:shadow-[#C9A84C]/35 hover:scale-[1.02]"
-                    data-testid="hero-cta-primary"
-                  >
-                    <Sparkles className="w-4 h-4 flex-shrink-0" />
-                    Lancer mon analyse
-                  </Button>
-                </button>
+                  <Sparkles className="w-4 h-4 flex-shrink-0" />
+                  Lancer mon analyse
+                </Button>
                 <Link to="/contact">
                   <Button
                     variant="outline"
