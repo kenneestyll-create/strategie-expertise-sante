@@ -10,14 +10,22 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA i
 - **PDF** : fpdf2 (Premium Signature V2) | **Email** : Resend | **Paiements** : Stripe + PayPal
 
 ## Header Premium (30/03/2026)
+- Logo : h-11 (ancrage de marque renforce)
+- Hauteur : min-h 4.75rem desktop (plus statutaire)
+- Fond : bg/80 transparent au repos, bg/95 au scroll, bordure bottom doree au scroll
 - CTA : bouton outline dore statutaire (non agressif)
-- Navigation : separateurs verticaux entre groupes, tracking-wide, espacement genereux
+- Navigation : separateurs verticaux, tracking-wide, espacement genereux
 - Dropdowns : fond #111110, bordure doree subtile, ombre profonde
-- Dossier Express : icone Zap doree (au lieu de rouge)
-- Hauteur : min-h 4.25rem mobile / 4.5rem desktop
-- Scroll : bordure bottom doree apparait au scroll
-- Mobile : sous-menus avec accent border-left, CTA outline coherent
-- Tests : 100% PASS iteration 160 (15 verifications desktop + mobile)
+- Dossier Express : icone Zap doree
+- Tests : 100% PASS iteration 161 (29 tests desktop + mobile)
+
+## Phase 2 Premium Home (30/03/2026)
+- H1 : leading-[1.18] plus respirant, tailles lg:2.1rem xl:2.3rem
+- Image droite : halo dore diffus, fondu haut+bas, filet dore horizontal bas, ombre profonde 70px, max-w 400px
+- CTA Urgent : "Reponse sous 2h" remplace par "Besoin urgent ?" CTA integre (event alerte-urgente:open → modal)
+- Mascotte : scroll-reveal > 300px (Hero reste centre absolu)
+- AlerteUrgente : bouton flottant scroll-reveal > 400px + ecoute event alerte-urgente:open
+- Tests : 100% PASS iteration 161 (6/6 corrections verifiees)
 
 ### Structure implementee (13 sections)
 1. **Hero** — Two-column propre (55fr/45fr) — V2 above-the-fold : H1 compact (2.8rem, leading 1.10), CTAs visibles sans scroll, image aspect 4:5 max-w 380px, ombre profonde, filet dore, fond dore diffus, bouton Urgence masque (scroll-reveal 400px)
