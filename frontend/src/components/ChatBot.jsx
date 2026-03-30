@@ -197,7 +197,7 @@ export const ChatBot = () => {
           {/* Robot Mascot Button */}
           <button
             onClick={() => { setIsOpen(true); }}
-            className="group relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-[#0a0a08] border-2 border-[#C9A84C]/40 shadow-lg shadow-[#C9A84C]/10 flex items-center justify-center transition-all duration-300 hover:border-[#C9A84C]/70 hover:shadow-[#C9A84C]/25 hover:scale-105"
+            className="group relative w-11 h-11 rounded-xl bg-[#0a0a08] border-2 border-[#C9A84C]/40 shadow-lg shadow-[#C9A84C]/10 flex items-center justify-center transition-all duration-300 hover:border-[#C9A84C]/70 hover:shadow-[#C9A84C]/25 hover:scale-105"
             data-testid="chatbot-button"
             aria-label="Ouvrir l'assistant"
           >
