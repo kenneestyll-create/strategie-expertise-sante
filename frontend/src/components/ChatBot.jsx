@@ -193,7 +193,7 @@ export const ChatBot = () => {
     <>
       {/* Mascot Floating Button — Premium */}
       {!isOpen && (
-        <div className="fixed flex items-end gap-3" style={{ zIndex: 'var(--z-chatbot)', bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))', right: '1rem' }} data-testid="chatbot-fab-wrapper">
+        <div className="fixed flex items-end gap-3" style={{ zIndex: 'var(--z-chatbot)', bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))', right: '1rem' }} data-testid="chatbot-fab-wrapper">
           {/* Robot Mascot Button */}
           <button
             onClick={() => { setIsOpen(true); }}
