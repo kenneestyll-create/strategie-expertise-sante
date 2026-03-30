@@ -37,7 +37,7 @@ export const useOCR = () => {
       });
       workerRef.current = worker;
 
-      // Convertir File en blob URL pour eviter DataCloneError
+      // Convertir File en blob URL pour éviter DataCloneError
       objectUrl = URL.createObjectURL(file);
       const { data: { text, confidence } } = await worker.recognize(objectUrl);
       await worker.terminate();
@@ -88,7 +88,7 @@ export const useOCR = () => {
 
       let allText = '';
       for (let i = 0; i < imageFiles.length; i++) {
-        // Convertir File en blob URL pour eviter DataCloneError
+        // Convertir File en blob URL pour éviter DataCloneError
         const url = URL.createObjectURL(imageFiles[i]);
         objectUrls.push(url);
         const { data: { text } } = await worker.recognize(url);
@@ -187,7 +187,7 @@ function parseFields(text) {
   }
   if (amounts.size > 0) fields.montants = [...amounts];
 
-  // References / Dossier numbers
+  // Références / Dossier numbers
   const refPatterns = [
     /(?:N°|n°|Réf|réf|référence|dossier)\s*[:\s]?\s*([A-Z0-9][A-Z0-9\-\/]{3,20})/gi,
     /(?:CPAM|CRAMIF|MSA)\s*[:\s]?\s*([A-Z0-9\-\/]{4,20})/gi,
@@ -199,7 +199,7 @@ function parseFields(text) {
       refs.add(rm[1].trim());
     }
   }
-  if (refs.size > 0) fields.references = [...refs];
+  if (refs.size > 0) fields.référénces = [...refs];
 
   // Social Security Number (N° SS: 1 XX XX XX XXX XXX XX)
   const ssPattern = /[12]\s?\d{2}\s?\d{2}\s?\d{2}\s?\d{3}\s?\d{3}\s?\d{2}/g;

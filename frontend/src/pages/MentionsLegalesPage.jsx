@@ -3,14 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, Shield, Scale, AlertTriangle } from 'lucide-react';
 
-export const MentionsLegalesPage = () => {
+export const MentionsLégalesPage = () => {
   return (
     <main className="page-transition pt-20">
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-4xl mx-auto">
           <span className="text-sm font-medium text-accent uppercase tracking-wider">Informations légales</span>
-          <h1 className="text-4xl sm:text-5xl font-semibold mt-2 mb-6" data-testid="mentions-legales-title">
+          <h1 className="text-4xl sm:text-5xl font-semibold mt-2 mb-6" data-testid="mentions-légales-title">
             Mentions légales & CGU
           </h1>
           <p className="text-lg text-muted-foreground">
@@ -33,7 +33,7 @@ export const MentionsLegalesPage = () => {
                 <Scale className="w-4 h-4" />
                 CGU
               </TabsTrigger>
-              <TabsTrigger value="confidentialite" className="gap-2">
+              <TabsTrigger value="confidentialité" className="gap-2">
                 <Shield className="w-4 h-4" />
                 Confidentialité
               </TabsTrigger>
@@ -226,7 +226,7 @@ export const MentionsLegalesPage = () => {
             </TabsContent>
 
             {/* Politique de confidentialité */}
-            <TabsContent value="confidentialite" className="space-y-6">
+            <TabsContent value="confidentialité" className="space-y-6">
               <Card className="border-accent/30 bg-accent/5">
                 <CardContent className="p-6 flex items-start gap-4">
                   <Shield className="w-6 h-6 text-accent flex-shrink-0 mt-0.5" strokeWidth={1.5} />

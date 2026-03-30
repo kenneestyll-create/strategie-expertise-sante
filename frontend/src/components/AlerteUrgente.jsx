@@ -13,7 +13,7 @@ export const AlerteUrgente = () => {
   const [showButton, setShowButton] = useState(false);
   const [formule, setFormule] = useState('2h');
   const [nom, setNom] = useState('');
-  const [telephone, setTelephone] = useState('');
+  const [téléphone, setTéléphone] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -33,13 +33,13 @@ export const AlerteUrgente = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!nom.trim() || !telephone.trim() || !email.trim() || !email.includes('@')) {
+    if (!nom.trim() || !téléphone.trim() || !email.trim() || !email.includes('@')) {
       toast.error('Veuillez renseigner votre nom, téléphone et email');
       return;
     }
     setSending(true);
     try {
-      await axios.post(`${API}/alerte-urgente`, { nom, telephone, email, message, formule });
+      await axios.post(`${API}/alerte-urgente`, { nom, téléphone, email, message, formule });
       setSent(true);
       toast.success('Demande urgente envoyée ! Nous vous rappelons très vite.');
     } catch {
@@ -54,7 +54,7 @@ export const AlerteUrgente = () => {
     if (sent) {
       setSent(false);
       setNom('');
-      setTelephone('');
+      setTéléphone('');
       setEmail('');
       setMessage('');
       setFormule('2h');
@@ -179,8 +179,8 @@ export const AlerteUrgente = () => {
                   <Label htmlFor="alerte-tel" className="text-sm font-medium">Téléphone *</Label>
                   <Input
                     id="alerte-tel"
-                    value={telephone}
-                    onChange={e => setTelephone(e.target.value)}
+                    value={téléphone}
+                    onChange={e => setTéléphone(e.target.value)}
                     placeholder="06 12 34 56 78"
                     type="tel"
                     required

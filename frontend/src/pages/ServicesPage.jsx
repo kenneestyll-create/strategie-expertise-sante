@@ -201,7 +201,7 @@ export const ServicesPage = () => {
                 Régimes spéciaux
               </h2>
               <p className="text-primary-foreground/70 mb-6">
-                Au-delà du régime général, j'accompagne également les agents relevant de régimes 
+                Au-delà du régime général, j'accompagné également les agents relevant de régimes 
                 spéciaux, qui ont des spécificités propres en matière de reconnaissance des 
                 maladies professionnelles et d'accidents du travail.
               </p>
@@ -267,7 +267,7 @@ export const ServicesPage = () => {
       </section>
 
       {/* Médecin Conseil — Strategic CTA */}
-      <section className="section-padding bg-accent/5 border-y border-accent/10" data-testid="services-medecin-conseil">
+      <section className="section-padding bg-accent/5 border-y border-accent/10" data-testid="services-médecin-conseil">
         <div className="max-w-4xl mx-auto text-center">
           <Stethoscope className="w-10 h-10 text-accent mx-auto mb-4" />
           <h2 className="text-2xl sm:text-3xl font-semibold mb-4">
@@ -279,7 +279,7 @@ export const ServicesPage = () => {
             Ne laissez pas le hasard décider.
           </p>
           <Link to="/medecin-conseil">
-            <Button size="lg" className="rounded-full px-8 gap-2 bg-accent hover:bg-accent/90 text-accent-foreground" data-testid="services-medecin-conseil-cta">
+            <Button size="lg" className="rounded-full px-8 gap-2 bg-accent hover:bg-accent/90 text-accent-foreground" data-testid="services-médecin-conseil-cta">
               <Phone className="w-4 h-4" />
               Être accompagné dans le choix de mon médecin conseil
               <ArrowRight className="w-4 h-4" />

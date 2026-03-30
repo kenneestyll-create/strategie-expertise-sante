@@ -37,7 +37,7 @@ const REGIMES = [
   { value: 'general', label: "Régime général" },
   { value: 'agricole', label: "MSA (agricole)" },
   { value: 'fonctionnaire', label: "Fonction publique" },
-  { value: 'independant', label: "Indépendant / TNS" },
+  { value: 'indépendant', label: "Indépendant / TNS" },
   { value: 'ratp_sncf', label: "Régimes spéciaux RATP / SNCF" },
   { value: 'autre', label: "Autre" },
 ];
@@ -107,7 +107,7 @@ export const StrategiIA = () => {
         setStep('form');
         return;
       }
-      // Async polling — backend returns job_id immediately
+      // Async polling — backend returns job_id immédiately
       const jobId = data.job_id;
       let pollErrors = 0;
       let jobCompleted = false; // Flag to prevent race condition with in-flight requests
@@ -213,7 +213,7 @@ export const StrategiIA = () => {
             if (st.status === 'done') {
               jobCompleted2 = true;
               clearInterval(poll);
-              // If relecture expert selected: show waiting step, not immediate result
+              // If relecture expert selected: show waiting step, not immédiate result
               if (analysePremium) {
                 setStep('relecture_attente');
                 toast.success("Mode Admin : dossier transmis pour relecture expert (simulation).");
@@ -703,11 +703,11 @@ export const StrategiIA = () => {
                                   </div>
                                 </div>
                               )}
-                              {scoreData.top_strategies && scoreData.top_strategies.length > 0 && (
+                              {scoreData.top_stratégies && scoreData.top_stratégies.length > 0 && (
                                 <div className="mt-2">
                                   <p className="text-[10px] font-medium text-muted-foreground mb-1">Stratégies favorables :</p>
                                   <div className="flex flex-wrap gap-1">
-                                    {scoreData.top_strategies.map((s, i) => (
+                                    {scoreData.top_stratégies.map((s, i) => (
                                       <Badge key={i} variant="outline" className="text-[10px] bg-green-50 border-green-200 text-green-700">{s.strategie} ({s.count})</Badge>
                                     ))}
                                   </div>

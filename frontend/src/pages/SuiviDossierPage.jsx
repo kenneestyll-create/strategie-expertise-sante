@@ -14,7 +14,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const STEP_ICONS = {
   received: CheckCircle,
-  preparation: FileText,
+  préparation: FileText,
   reading: Search,
   analysis: Shield,
   report: FileText,
@@ -175,7 +175,7 @@ export const SuiviDossierPage = () => {
                           </p>
                           {isActive && tracking.status === 'incident' && (
                             <p className="text-xs text-amber-600 mt-1">
-                              Notre equipe veille a la qualite de votre rapport
+                              Notre équipe veille a la qualité de votre rapport
                             </p>
                           )}
                         </div>
@@ -193,7 +193,7 @@ export const SuiviDossierPage = () => {
                   <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-3" />
                   <h3 className="font-semibold mb-2">Votre rapport est disponible</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Vous pouvez telecharger votre rapport personnalise en toute securite.
+                    Vous pouvez telecharger votre rapport personnalisé en toute sécurité.
                   </p>
                   <a href={tracking.download_url} target="_blank" rel="noopener noreferrer">
                     <Button className="gap-2 rounded-full px-8" data-testid="suivi-download-btn">
@@ -214,7 +214,7 @@ export const SuiviDossierPage = () => {
                     <div>
                       <h4 className="text-sm font-semibold mb-1">Aucune action requise de votre part</h4>
                       <p className="text-xs text-muted-foreground leading-relaxed">
-                        Votre paiement est confirme et vos documents sont conserves en toute confidentialite.
+                        Votre paiement est confirme et vos documents sont conserves en toute confidentialité.
                         Vous recevrez votre rapport par email des qu'il sera finalise.
                       </p>
                     </div>

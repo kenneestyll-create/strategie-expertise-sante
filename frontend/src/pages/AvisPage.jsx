@@ -30,7 +30,7 @@ export const AvisPage = () => {
     nom: '',
     situation: '',
     note: 5,
-    temoignage: ''
+    témoignage: ''
   });
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export const AvisPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.nom || !formData.temoignage) {
+    if (!formData.nom || !formData.témoignage) {
       toast.error("Veuillez remplir tous les champs obligatoires");
       return;
     }
@@ -166,7 +166,7 @@ export const AvisPage = () => {
                     </div>
                     <Quote className="w-8 h-8 text-accent/20 mb-2" />
                     <p className="text-foreground mb-4 italic">
-                      "{item.temoignage}"
+                      "{item.témoignage}"
                     </p>
                     <div className="pt-4 border-t border-border">
                       <p className="font-semibold">{item.nom}</p>
@@ -202,7 +202,7 @@ export const AvisPage = () => {
                 onClick={() => {
                   setShowForm(false);
                   setSubmitted(false);
-                  setFormData({ nom: '', situation: '', note: 5, temoignage: '' });
+                  setFormData({ nom: '', situation: '', note: 5, témoignage: '' });
                 }}
               >
                 Fermer
@@ -250,15 +250,15 @@ export const AvisPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="temoignage">Votre témoignage *</Label>
+                  <Label htmlFor="témoignage">Votre témoignage *</Label>
                   <Textarea
-                    id="temoignage"
-                    value={formData.temoignage}
-                    onChange={(e) => setFormData(prev => ({ ...prev, temoignage: e.target.value }))}
+                    id="témoignage"
+                    value={formData.témoignage}
+                    onChange={(e) => setFormData(prev => ({ ...prev, témoignage: e.target.value }))}
                     placeholder="Partagez votre expérience..."
                     rows={4}
                     required
-                    data-testid="avis-input-temoignage"
+                    data-testid="avis-input-témoignage"
                   />
                 </div>
 

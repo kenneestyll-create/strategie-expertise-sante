@@ -124,7 +124,7 @@ const LoginForm = ({ onLogin }) => {
             </div>
             {mode === 'register' && (
               <>
-                <div className="p-3 rounded-lg bg-accent/5 border border-accent/20 space-y-2" data-testid="notification-preferences">
+                <div className="p-3 rounded-lg bg-accent/5 border border-accent/20 space-y-2" data-testid="notification-préférénces">
                   <p className="text-sm font-medium flex items-center gap-2"><Bell className="w-4 h-4 text-accent" />Préférences de notifications</p>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={form.notifications_email} onChange={e => setForm(f => ({ ...f, notifications_email: e.target.checked }))} className="accent-accent" data-testid="notif-email-checkbox" />

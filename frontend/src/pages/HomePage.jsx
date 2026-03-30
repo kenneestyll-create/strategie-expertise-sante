@@ -44,7 +44,7 @@ export const HomePage = () => {
 
   const chiffresRef = useRevealChildren();
   const risquesRef = useRevealChildren();
-  const methodeRef = useRevealChildren();
+  const méthodeRef = useRevealChildren();
   const solutionsRef = useRevealChildren();
   const confianceRef = useRevealChildren();
   const ctaRef = useReveal();
@@ -78,48 +78,48 @@ export const HomePage = () => {
 
   /* ── Data arrays (unchanged business logic) ── */
   const risques = [
-    { icon: CircleSlash, text: "Sous-evaluation de votre taux d'IPP" },
+    { icon: CircleSlash, text: "Sous-évaluation de votre taux d'IPP" },
     { icon: ShieldAlert, text: "Mauvaise reconnaissance de l'incidence professionnelle" },
-    { icon: ScanSearch, text: "Expertise medicale defavorable" },
-    { icon: AlertTriangle, text: "Perte financiere importante et irreversible" },
+    { icon: ScanSearch, text: "Expertise médicale defavorable" },
+    { icon: AlertTriangle, text: "Perte financière importante et irreversible" },
   ];
 
-  const methodeSES = [
-    { num: "01", icon: Crosshair, title: "Analyse strategique", desc: "Etude approfondie de votre situation medicale, administrative et financiere." },
+  const méthodeSES = [
+    { num: "01", icon: Crosshair, title: "Analyse stratégique", desc: "Étude approfondie de votre situation médicale, administrative et financière." },
     { num: "02", icon: ShieldAlert, title: "Identification des risques", desc: "Reperage des failles, incoherences et points de vigilance." },
     { num: "03", icon: Compass, title: "Orientation experte", desc: "Mise en relation avec les experts les plus adaptes a votre pathologie." },
-    { num: "04", icon: Focus, title: "Optimisation de l'expertise", desc: "Preparation strategique pour maximiser la reconnaissance." },
-    { num: "05", icon: RefreshCcw, title: "Suivi et ajustement", desc: "Accompagnement continu et adaptation de la strategie." },
+    { num: "04", icon: Focus, title: "Optimisation de l'expertise", desc: "Préparation stratégique pour maximiser la reconnaissance." },
+    { num: "05", icon: RefreshCcw, title: "Suivi et ajustement", desc: "Accompagnement continu et adaptation de la stratégie." },
   ];
 
-  const chiffresCles = [
+  const chiffresClés = [
     { icon: HardHat, value: 700000, unit: '', prefix: "Plus de", suffix: "accidents du travail par an en France", source: "CNAM", lien: "https://assurance-maladie.ameli.fr" },
-    { icon: Activity, value: 50000, unit: '', prefix: "Environ", suffix: "maladies professionnelles reconnues chaque annee", source: "CNAM", lien: "https://assurance-maladie.ameli.fr" },
+    { icon: Activity, value: 50000, unit: '', prefix: "Environ", suffix: "maladies professionnelles reconnues chaque année", source: "CNAM", lien: "https://assurance-maladie.ameli.fr" },
     { icon: Accessibility, value: 12, unit: ' millions', prefix: "Pres de", suffix: "de personnes en situation de handicap", source: "INSEE", lien: "https://www.insee.fr" },
-    { icon: ClipboardList, value: 300000, unit: '', prefix: "Plus de", suffix: "nouvelles demandes MDPH chaque annee", source: "CNSA", lien: "https://www.cnsa.fr" },
+    { icon: ClipboardList, value: 300000, unit: '', prefix: "Plus de", suffix: "nouvelles demandes MDPH chaque année", source: "CNSA", lien: "https://www.cnsa.fr" },
   ];
 
   const confiance = [
-    { icon: HeartHandshake, title: "Expertise terrain reelle", desc: "Nee d'une experience personnelle face aux memes epreuves que les votres." },
-    { icon: Stethoscope, title: "Maitrise des enjeux medicaux", desc: "Tableaux de maladies professionnelles, baremes et procedures." },
-    { icon: Award, title: "Approche strategique unique", desc: "Chaque dossier est traite comme un cas a part, avec une strategie sur mesure." },
-    { icon: TrendingUp, title: "Vision orientee resultats", desc: "Obtenir la reconnaissance et l'indemnisation que vous meritez." },
+    { icon: HeartHandshake, title: "Expertise terrain réelle", desc: "Nee d'une expérience personnelle face aux mêmes épreuves que les votres." },
+    { icon: Stethoscope, title: "Maitrise des enjeux médicaux", desc: "Tableaux de maladies professionnelles, baremes et procedures." },
+    { icon: Award, title: "Approche stratégique unique", desc: "Chaque dossier est traité comme un cas à part, avec une stratégie sur mesure." },
+    { icon: TrendingUp, title: "Vision orientee résultats", desc: "Obtenir la reconnaissance et l'indemnisation que vous méritéz." },
   ];
 
-  const temoignages = [
-    { initials: "M.L.", age: "52 ans", badge: "AT", text: "Apres 18 mois de refus par la CPAM, mon accident du travail a enfin ete reconnu. Sans cet accompagnement, j'aurais abandonne les demarches.", result: "AT reconnue — Rente obtenue" },
-    { initials: "P.D.", age: "45 ans", badge: "PTIA", badgeGold: true, text: "Mon assureur refusait de reconnaitre ma PTIA malgre l'avis de trois medecins. Grace a une strategie methodique, la garantie a ete activee apres 8 mois de recours.", result: "Garantie PTIA activee" },
+  const témoignages = [
+    { initials: "M.L.", age: "52 ans", badge: "AT", text: "Apres 18 mois de refus par la CPAM, mon accident du travail a enfin ete reconnu. Sans cet accompagnement, j'aurais abandonne les démarches.", result: "AT reconnue — Rente obtenue" },
+    { initials: "P.D.", age: "45 ans", badge: "PTIA", badgeGold: true, text: "Mon assureur refusait de reconnaître ma PTIA malgre l'avis de trois médecins. Grâce à une stratégie méthodique, la garantie a été activée après 8 mois de recours.", result: "Garantie PTIA activée" },
     { initials: "S.B.", age: "38 ans", badge: "MP", text: "Ma maladie professionnelle n'etait pas dans les tableaux. L'accompagnement m'a permis de constituer un dossier solide — reconnaissance obtenue au premier passage.", result: "MP hors tableau reconnue" },
-    { initials: "C.R.", age: "61 ans", badge: "IPP", text: "Mon taux d'IPP avait ete evalue a 5% alors que mes sequelles sont bien plus importantes. Apres contestation, le taux a ete reevalue a 23%.", result: "IPP reevaluee : 5% → 23%" },
-    { initials: "A.M.", age: "34 ans", badge: "MDPH", text: "Mes demandes MDPH etaient systematiquement refusees. Grace a un dossier structure et des arguments adaptes, j'ai obtenu l'AAH en moins de 4 mois.", result: "AAH obtenue en 4 mois" },
-    { initials: "J.T.", age: "48 ans", badge: "ITT", badgeGold: true, text: "Mon assurance refusait les indemnites ITT en invoquant une clause floue. L'analyse du contrat a permis de debloquer 14 mois d'arrieres.", result: "ITT versee — Arrieres recuperes" },
+    { initials: "C.R.", age: "61 ans", badge: "IPP", text: "Mon taux d'IPP avait ete évalué a 5% alors que mes séquelles sont bien plus importantes. Apres contestation, le taux a été réévalué a 23%.", result: "IPP réévaluée : 5% → 23%" },
+    { initials: "A.M.", age: "34 ans", badge: "MDPH", text: "Mes demandes MDPH etaient systematiquement refusees. Grâce à un dossier structure et des arguments adaptes, j'ai obtenu l'AAH en moins de 4 mois.", result: "AAH obtenue en 4 mois" },
+    { initials: "J.T.", age: "48 ans", badge: "ITT", badgeGold: true, text: "Mon assurance refusait les indemnites ITT en invoquant une clause floue. L'analyse du contrat a permis de debloquer 14 mois d'arrieres.", result: "ITT versee — Arrieres récupéres" },
   ];
 
-  const ecosysteme = [
+  const écosystème = [
     { icon: Brain, title: "StrategiIA", desc: "Analyse intelligente de votre situation", href: "/simulateur" },
     { icon: Zap, title: "Dossier Express IA", desc: "Rapport d'analyse complet sous 2h", href: "/dossier-express" },
-    { icon: Users, title: "Accompagnement humain", desc: "Suivi personnalise par un expert", href: "/contact" },
-    { icon: Stethoscope, title: "Medecin conseil", desc: "Orientation vers le bon specialiste", href: "/medecin-conseil" },
+    { icon: Users, title: "Accompagnement humain", desc: "Suivi personnalisé par un expert", href: "/contact" },
+    { icon: Stethoscope, title: "Médecin conseil", desc: "Orientation vers le bon spécialiste", href: "/medecin-conseil" },
     { icon: Calculator, title: "Calculatrices IPP & AAH", desc: "Estimez vos droits en quelques clics", href: "/calculatrice-ipp" },
     { icon: BookOpen, title: "Ressources & guides", desc: "Documentation experte gratuite", href: "/ressources" },
     { icon: ScanSearch, title: "Scanner de documents", desc: "Numerisez vos pieces facilement", href: "/dossier-express" },
@@ -130,7 +130,7 @@ export const HomePage = () => {
     <main className="page-transition">
       <SEO
         title="Accueil"
-        description="Strategie & Expertise Sante : accompagnement expert en maladie professionnelle, accident du travail, MDPH et protection juridique."
+        description="Stratégie & Expertise Santé : accompagnement expert en maladie professionnelle, accident du travail, MDPH et protection juridique."
         path="/"
       />
 
@@ -155,7 +155,7 @@ export const HomePage = () => {
                 </div>
                 <div>
                   <span className="text-xs font-bold uppercase tracking-widest text-[#C9A84C] block">Pionnier en France</span>
-                  <span className="text-[11px] text-[#C9A84C]/40 block mt-1">Plateforme d'analyse & d'accompagnement en droits sante</span>
+                  <span className="text-[11px] text-[#C9A84C]/40 block mt-1">Plateforme d'analyse & d'accompagnement en droits santé</span>
                 </div>
               </div>
 
@@ -165,7 +165,7 @@ export const HomePage = () => {
                 style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
                 data-testid="hero-title"
               >
-                Vous n'etes plus seul<br className="hidden sm:block" /> face a{' '}
+                Vous n'êtes plus seul<br className="hidden sm:block" /> face à{' '}
                 <span className="text-[#C9A84C]">votre dossier</span>,{' '}
                 <span className="text-[#C9A84C]">vos droits</span><br className="hidden sm:block" /> ou{' '}
                 <span className="text-[#C9A84C]">vos recours</span>.
@@ -173,18 +173,18 @@ export const HomePage = () => {
 
               {/* Sous-titre */}
               <p className="text-sm sm:text-[15px] text-[#f5f0e8]/55 leading-relaxed mb-2 max-w-xl" data-testid="hero-subtitle">
-                Analysez votre situation, identifiez vos leviers, comprenez vos droits et accedez a un accompagnement strategique humain en cas de{' '}
+                Analysez votre situation, identifiez vos leviers, comprenez vos droits et accédez a un accompagnement stratégique humain en cas de{' '}
                 <strong className="text-[#f5f0e8]/70">maladie professionnelle</strong>,{' '}
                 <strong className="text-[#f5f0e8]/70">accident du travail</strong>,{' '}
                 <strong className="text-[#f5f0e8]/70">MDPH</strong> ou{' '}
                 <strong className="text-[#f5f0e8]/70">litige assuranciel</strong>.
               </p>
 
-              {/* 3 points cles */}
+              {/* 3 points clés */}
               <div className="space-y-1.5 mb-3">
                 {[
-                  { icon: HeartHandshake, text: "Expertise nee d'un vecu concret" },
-                  { icon: Crosshair, text: "Methode strategique & personnalisee" },
+                  { icon: HeartHandshake, text: "Expertise née d'un vécu concret" },
+                  { icon: Crosshair, text: "Méthode stratégique & personnalisée" },
                   { icon: Brain, text: "Analyse IA + accompagnement humain" },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3">
@@ -209,7 +209,7 @@ export const HomePage = () => {
                     </div>
                     <div className="leading-tight">
                       <span className="text-[#f5f0e8] text-sm font-bold">{visitorCount.toLocaleString('fr-FR')}+</span>
-                      <span className="text-[#f5f0e8]/30 text-xs block">personnes accompagnees</span>
+                      <span className="text-[#f5f0e8]/30 text-xs block">personnes accompagnées</span>
                     </div>
                   </div>
                 )}
@@ -242,14 +242,14 @@ export const HomePage = () => {
                     className="w-full sm:w-auto rounded-lg px-7 py-5 gap-2 border-[#C9A84C]/30 text-[#f5f0e8]/80 hover:bg-[#C9A84C]/5 hover:border-[#C9A84C]/50 text-sm transition-all"
                     data-testid="hero-cta-secondary"
                   >
-                    Etre accompagne maintenant
+                    Être accompagné maintenant
                   </Button>
                 </Link>
               </div>
 
               {/* Texte sous CTAs */}
               <p className="text-xs text-[#f5f0e8]/30 leading-relaxed">
-                <span className="text-[#C9A84C]/50">Analyse immediate par IA</span> ou <span className="text-[#C9A84C]/50">prise en charge humaine personnalisee</span>.
+                <span className="text-[#C9A84C]/50">Analyse immédiate par IA</span> ou <span className="text-[#C9A84C]/50">prise en charge humaine personnalisée</span>.
               </p>
             </div>
 
@@ -263,7 +263,7 @@ export const HomePage = () => {
                   <div className="overflow-hidden shadow-[0_30px_70px_-15px_rgba(0,0,0,0.7)]">
                     <img
                       src="https://images.pexels.com/photos/28446973/pexels-photo-28446973.jpeg?auto=compress&cs=tinysrgb&w=800"
-                      alt="Expert en strategie sante"
+                      alt="Expert en stratégie santé"
                       className="w-full aspect-[4/5] object-cover object-top"
                       loading="eager"
                     />
@@ -363,10 +363,10 @@ export const HomePage = () => {
               </h2>
 
               <p className="text-[#1a1a1a]/60 text-sm leading-relaxed mb-4">
-                Strategie & Expertise Sante a ete fondee a partir d'un vecu concret du monde des maladies professionnelles, accidents du travail, invalidites et litiges administratifs.
+                Stratégie & Expertise Santé a été fondée à partir d'un vécu concret du monde des maladies professionnelles, accidents du travail, invalidités et litiges administratifs.
               </p>
               <p className="text-[#1a1a1a]/60 text-sm leading-relaxed">
-                Ici, chaque analyse vise un objectif simple : vous aider a mieux comprendre votre situation, defendre vos droits et eviter de rester seul face a des demarches complexes.
+                Ici, chaque analyse vise un objectif simple : vous aider à mieux comprendre votre situation, défendre vos droits et éviter de rester seul face à des démarches complexes.
               </p>
 
               <footer className="mt-6 flex items-center gap-3" data-testid="home-founder-blockquote">
@@ -384,12 +384,12 @@ export const HomePage = () => {
       <section className="py-16 sm:py-20 lg:py-24 bg-[#F8F5EF]" data-testid="solutions-section" ref={solutionsRef}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-12 reveal">
-            <span className="text-xs font-medium text-[#C9A84C] uppercase tracking-[0.2em]">Deux intelligences complementaires</span>
+            <span className="text-xs font-medium text-[#C9A84C] uppercase tracking-[0.2em]">Deux intelligences complémentaires</span>
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mt-3 mb-4 text-[#1a1a1a]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
               Quel service est fait pour vous ?
             </h2>
             <p className="text-sm text-[#1a1a1a]/40">
-              Deux parcours distincts, une meme exigence de qualite.
+              Deux parcours distincts, une même exigence de qualité.
             </p>
           </div>
 
@@ -409,13 +409,13 @@ export const HomePage = () => {
                   </div>
 
                   <p className="text-[#f5f0e8]/45 text-sm leading-relaxed mb-5">
-                    Votre premier eclairage strategique. Une analyse intelligente de votre situation pour comprendre vos droits et identifier vos leviers.
+                    Votre premier éclairage stratégique. Une analyse intelligente de votre situation pour comprendre vos droits et identifier vos leviers.
                   </p>
 
                   <div className="grid grid-cols-2 gap-4 mb-6">
                     <div>
                       <p className="text-[#C9A84C] text-[10px] font-bold uppercase tracking-wider mb-2.5">Ideal pour</p>
-                      {["Comprendre votre situation", "Identifier vos droits", "Obtenir une premiere orientation"].map((t, i) => (
+                      {["Comprendre votre situation", "Identifier vos droits", "Obtenir une première orientation"].map((t, i) => (
                         <div key={i} className="flex items-start gap-2 mb-2">
                           <CheckCircle className="w-3 h-3 text-[#C9A84C]/60 flex-shrink-0 mt-0.5" />
                           <span className="text-[#f5f0e8]/50 text-xs leading-tight">{t}</span>
@@ -424,7 +424,7 @@ export const HomePage = () => {
                     </div>
                     <div>
                       <p className="text-[#C9A84C] text-[10px] font-bold uppercase tracking-wider mb-2.5">Ce que vous recevez</p>
-                      {["Analyse strategique IA", "Orientation personnalisee", "Leviers d'action identifies"].map((t, i) => (
+                      {["Analyse stratégique IA", "Orientation personnalisée", "Leviers d'action identifiés"].map((t, i) => (
                         <div key={i} className="flex items-start gap-2 mb-2">
                           <CheckCircle className="w-3 h-3 text-[#C9A84C]/60 flex-shrink-0 mt-0.5" />
                           <span className="text-[#f5f0e8]/50 text-xs leading-tight">{t}</span>
@@ -459,13 +459,13 @@ export const HomePage = () => {
                   </div>
 
                   <p className="text-[#1a1a1a]/50 text-sm leading-relaxed mb-5">
-                    L'analyse documentaire complete de votre dossier. Un rapport structure, approfondi et exploitable pour vos demarches.
+                    L'analyse documentaire complete de votre dossier. Un rapport structure, approfondi et exploitable pour vos démarches.
                   </p>
 
                   <div className="grid grid-cols-2 gap-4 mb-6">
                     <div>
                       <p className="text-[#C9A84C] text-[10px] font-bold uppercase tracking-wider mb-2.5">Ideal pour</p>
-                      {["Expertise medicale imminente", "Preparer votre strategie", "Analyser vos documents"].map((t, i) => (
+                      {["Expertise médicale imminente", "Preparer votre stratégie", "Analyser vos documents"].map((t, i) => (
                         <div key={i} className="flex items-start gap-2 mb-2">
                           <CheckCircle className="w-3 h-3 text-[#C9A84C]/60 flex-shrink-0 mt-0.5" />
                           <span className="text-[#1a1a1a]/60 text-xs leading-tight">{t}</span>
@@ -474,7 +474,7 @@ export const HomePage = () => {
                     </div>
                     <div>
                       <p className="text-[#C9A84C] text-[10px] font-bold uppercase tracking-wider mb-2.5">Ce que vous recevez</p>
-                      {["Rapport d'analyse detaille", "Etude de vos documents", "Strategie d'action concrete"].map((t, i) => (
+                      {["Rapport d'analyse détaillé", "Étude de vos documents", "Stratégie d'action concrete"].map((t, i) => (
                         <div key={i} className="flex items-start gap-2 mb-2">
                           <CheckCircle className="w-3 h-3 text-[#C9A84C]/60 flex-shrink-0 mt-0.5" />
                           <span className="text-[#1a1a1a]/60 text-xs leading-tight">{t}</span>
@@ -495,7 +495,7 @@ export const HomePage = () => {
             <Link to="/contact" data-testid="solution-card-2">
               <Button className="rounded-lg px-8 py-5 gap-2.5 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-bold text-sm">
                 <Shield className="w-4 h-4" />
-                Accompagnement strategique complet — Sur devis
+                Accompagnement stratégique complet — Sur devis
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
@@ -532,7 +532,7 @@ export const HomePage = () => {
             </p>
             <Link to="/contact">
               <Button className="rounded-full px-7 gap-2 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-bold text-sm" data-testid="risques-cta">
-                <Phone className="w-4 h-4" /> Etre accompagne <ArrowRight className="w-4 h-4" />
+                <Phone className="w-4 h-4" /> Être accompagné <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
           </div>
@@ -542,21 +542,21 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           5. ECOSYSTEME DE SERVICES
       ══════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-20 lg:py-28 bg-[#111]" data-testid="methode-section" ref={methodeRef}>
+      <section className="py-16 sm:py-20 lg:py-28 bg-[#111]" data-testid="méthode-section" ref={méthodeRef}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14 reveal">
-            <span className="text-xs font-medium text-[#C9A84C] uppercase tracking-[0.2em]">Ecosysteme complet</span>
+            <span className="text-xs font-medium text-[#C9A84C] uppercase tracking-[0.2em]">Écosystème complet</span>
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold mt-3 mb-4 text-[#f5f0e8]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
               Bien plus qu'un outil IA
             </h2>
             <p className="text-sm text-[#f5f0e8]/40">
-              Un ecosysteme complet d'accompagnement, de l'analyse initiale au suivi personnalise.
+              Un écosystème complet d'accompagnement, de l'analyse initiale au suivi personnalisé.
             </p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 stagger">
-            {ecosysteme.map((s, i) => (
-              <Link key={i} to={s.href} className="group reveal" data-testid={`methode-step-${i}`}>
+            {écosystème.map((s, i) => (
+              <Link key={i} to={s.href} className="group reveal" data-testid={`méthode-step-${i}`}>
                 <div className="h-full bg-[#0a0a08] rounded-xl p-5 sm:p-6 border border-white/5 hover:border-[#C9A84C]/20 transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
                   <div className="w-10 h-10 rounded-lg bg-[#C9A84C]/10 flex items-center justify-center mb-4">
                     <s.icon className="w-5 h-5 text-[#C9A84C]" />
@@ -578,15 +578,15 @@ export const HomePage = () => {
           <div className="text-center max-w-2xl mx-auto mb-14">
             <span className="text-xs font-medium text-[#C9A84C] uppercase tracking-[0.2em]">Notre approche</span>
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold mt-3 mb-4 text-[#f5f0e8]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-              La Methode <span className="text-[#C9A84C]">S.E.S</span>
+              La Méthode <span className="text-[#C9A84C]">S.E.S</span>
             </h2>
             <p className="text-sm text-[#f5f0e8]/40">
-              Une methodologie structuree et eprouvee pour defendre efficacement vos interets.
+              Une méthodologie structurée et éprouvée pour défendre efficacement vos intérêts.
             </p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5">
-            {methodeSES.map((m, i) => (
+            {méthodeSES.map((m, i) => (
               <div key={i} className="relative group">
                 <div className="h-full bg-[#111] rounded-xl p-5 border border-white/5 hover:border-[#C9A84C]/15 transition-all duration-300 group-hover:-translate-y-0.5">
                   <div className="flex items-center gap-3 mb-3">
@@ -607,30 +607,30 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           7. MEDECIN CONSEIL
       ══════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-20 bg-[#111] border-b border-white/5" data-testid="medecin-conseil-home-section">
+      <section className="py-16 sm:py-20 bg-[#111] border-b border-white/5" data-testid="médecin-conseil-home-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             <div className="min-w-0">
-              <span className="text-xs font-medium text-[#C9A84C] uppercase tracking-[0.2em]">Orientation strategique</span>
-              <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold mt-3 mb-4 text-[#f5f0e8]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }} data-testid="home-medecin-conseil-title">
-                Le choix du medecin conseil : un enjeu financier majeur
+              <span className="text-xs font-medium text-[#C9A84C] uppercase tracking-[0.2em]">Orientation stratégique</span>
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold mt-3 mb-4 text-[#f5f0e8]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }} data-testid="home-médecin-conseil-title">
+                Le choix du médecin conseil : un enjeu financier majeur
               </h2>
               <p className="text-[#f5f0e8]/50 text-sm leading-relaxed mb-4">
-                Un medecin conseil mal choisi peut entrainer une sous-evaluation de vos sequelles et une perte d'indemnisation de plusieurs dizaines de milliers d'euros.
+                Un médecin conseil mal choisi peut entraîner une sous-évaluation de vos séquelles et une perte d'indemnisation de plusieurs dizaines de milliers d'euros.
               </p>
               <p className="text-[#f5f0e8]/50 text-sm leading-relaxed mb-6">
-                Nous vous orientons vers le professionnel le plus adapte a votre pathologie et a votre strategie juridique.
+                Nous vous orientons vers le professionnel le plus adapte a votre pathologie et a votre stratégie juridique.
               </p>
               <Link to="/medecin-conseil">
-                <Button className="rounded-full px-6 py-5 gap-2 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-bold text-sm" data-testid="home-medecin-conseil-cta">
-                  <Stethoscope className="w-4 h-4" /> Choisir mon medecin conseil <ArrowRight className="w-4 h-4" />
+                <Button className="rounded-full px-6 py-5 gap-2 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-bold text-sm" data-testid="home-médecin-conseil-cta">
+                  <Stethoscope className="w-4 h-4" /> Choisir mon médecin conseil <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
             </div>
             <div className="grid grid-cols-2 gap-4 min-w-0">
               <div className="bg-[#0a0a08] border border-white/5 p-5 rounded-xl">
                 <p className="text-2xl sm:text-3xl font-bold text-[#C9A84C] mb-1">800 - 3 000 EUR</p>
-                <p className="text-xs text-[#f5f0e8]/35">Cout moyen d'un medecin conseil</p>
+                <p className="text-xs text-[#f5f0e8]/35">Coût moyen d'un médecin conseil</p>
               </div>
               <div className="bg-[#0a0a08] border border-white/5 p-5 rounded-xl">
                 <p className="text-2xl sm:text-3xl font-bold text-[#C9A84C] mb-1">x10</p>
@@ -642,7 +642,7 @@ export const HomePage = () => {
                   <p className="font-semibold text-sm text-[#f5f0e8]">Risque d'un mauvais choix</p>
                 </div>
                 <p className="text-xs text-[#f5f0e8]/40 leading-relaxed">
-                  Un taux d'IPP sous-evalue de quelques points peut representer une perte de plusieurs dizaines de milliers d'euros sur votre indemnisation finale.
+                  Un taux d'IPP sous-évalué de quelques points peut représenter une perte de plusieurs dizaines de milliers d'euros sur votre indemnisation finale.
                 </p>
               </div>
             </div>
@@ -661,15 +661,15 @@ export const HomePage = () => {
               Vos documents sont entre de bonnes mains
             </h2>
             <p className="text-sm text-[#f5f0e8]/40 max-w-2xl mx-auto">
-              Nous comprenons la nature sensible de vos documents medicaux et administratifs. La confidentialite et la securite de vos donnees sont au coeur de nos engagements.
+              Nous comprenons la nature sensible de vos documents médicaux et administratifs. La confidentialité et la sécurité de vos données sont au coeur de nos engagements.
             </p>
           </div>
 
           <div className="grid sm:grid-cols-3 gap-5">
             {[
-              { icon: Shield, title: "Confidentialite totale", desc: "Vos dossiers ne sont jamais partages avec des tiers. Traitement strictement confidentiel." },
-              { icon: Lock, title: "Securite des donnees", desc: "Vos documents sont traites de maniere securisee et supprimes apres analyse si vous le souhaitez." },
-              { icon: Eye, title: "Transparence", desc: "Vous restez maitre de vos informations a chaque etape. Aucune utilisation commerciale de vos donnees." },
+              { icon: Shield, title: "Confidentialité totale", desc: "Vos dossiers ne sont jamais partages avec des tiers. Traitement strictement confidentiel." },
+              { icon: Lock, title: "Sécurité des données", desc: "Vos documents sont traites de maniere securisee et supprimes après analyse si vous le souhaitez." },
+              { icon: Eye, title: "Transparence", desc: "Vous restez maitre de vos informations a chaque étape. Aucune utilisation commerciale de vos données." },
             ].map((item, i) => (
               <div key={i} className="bg-[#111] border border-white/5 rounded-xl p-6 text-center hover:border-[#C9A84C]/15 transition-all">
                 <div className="w-11 h-11 rounded-xl bg-[#C9A84C]/10 flex items-center justify-center mx-auto mb-4">
@@ -694,12 +694,12 @@ export const HomePage = () => {
               Le defi en chiffres
             </h2>
             <p className="text-sm text-[#f5f0e8]/40">
-              Des millions de personnes sont concernees chaque annee en France.
+              Des millions de personnes sont concernées chaque année en France.
             </p>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 stagger" ref={countSectionRef}>
-            {chiffresCles.map((item, index) => (
+            {chiffresClés.map((item, index) => (
               <div key={index} className="reveal" data-testid={`chiffre-bloc-${index}`}>
                 <div className="h-full bg-[#0a0a08] border border-white/5 rounded-xl p-5 sm:p-6 flex flex-col items-center text-center transition-all hover:border-[#C9A84C]/10">
                   <div className="w-10 h-10 rounded-lg bg-[#C9A84C]/10 flex items-center justify-center mb-4">
@@ -759,11 +759,11 @@ export const HomePage = () => {
               Des parcours transformes
             </h2>
             <p className="text-[#f5f0e8]/30 mt-3 max-w-xl mx-auto text-sm">
-              Temoignages anonymises de personnes accompagnees par Strategie & Expertise Sante.
+              Témoignages anonymisés de personnes accompagnées par Stratégie & Expertise Santé.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-            {temoignages.map((t, i) => (
+            {témoignages.map((t, i) => (
               <div
                 key={i}
                 className={`p-5 rounded-xl border ${t.badgeGold ? 'border-[#C9A84C]/20 bg-[#C9A84C]/[0.03]' : 'border-white/5 bg-white/[0.01]'} hover:border-[#C9A84C]/15 transition-all`}
@@ -792,7 +792,7 @@ export const HomePage = () => {
             ))}
           </div>
           <p className="text-center text-[#f5f0e8]/15 text-[10px] mt-6">
-            * Prenoms et details modifies pour preserver l'anonymat. Resultats reels obtenus pour nos clients.
+            * Prenoms et details modifies pour preserver l'anonymat. Résultats reels obtenus pour nos clients.
           </p>
         </div>
       </section>
@@ -806,12 +806,12 @@ export const HomePage = () => {
             <Scale className="w-4 h-4 text-amber-500/50 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
             <div className="text-xs text-[#f5f0e8]/25 leading-relaxed space-y-1.5">
               <p>
-                <strong className="text-[#f5f0e8]/40">Information importante :</strong> Strategie & Expertise Sante propose un accompagnement strategique et une analyse documentaire.
-                Ce service ne constitue pas une expertise medicale officielle ni une expertise judiciaire.
+                <strong className="text-[#f5f0e8]/40">Information importante :</strong> Stratégie & Expertise Santé propose un accompagnement stratégique et une analyse documentaire.
+                Ce service ne constitue pas une expertise médicale officielle ni une expertise judiciaire.
               </p>
               <p>
                 Les services proposes ne constituent pas un conseil juridique ni un avis medical.
-                Pour toute decision juridique ou medicale, consultez un professionnel qualifie.
+                Pour toute decision juridique ou médicale, consultez un professionnel qualifie.
               </p>
             </div>
           </div>
@@ -832,11 +832,11 @@ export const HomePage = () => {
             className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-[#f5f0e8] mb-6 leading-snug"
             style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
           >
-            Votre situation merite une strategie claire, humaine et rigoureuse.
+            Votre situation mérité une stratégie claire, humaine et rigoureuse.
           </h2>
 
           <p className="text-[#f5f0e8]/45 text-sm sm:text-base mb-10 max-w-2xl mx-auto leading-relaxed">
-            Chaque situation est unique. Contactez-nous pour une premiere consultation gratuite de 10 minutes et sans engagement. Ensemble, nous verrons comment vous accompagner.
+            Chaque situation est unique. Contactez-nous pour une première consultation gratuite de 10 minutes et sans engagement. Ensemble, nous verrons comment vous accompagner.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -867,7 +867,7 @@ export const HomePage = () => {
               className="text-[#f5f0e8]/60 text-base italic mb-2"
               style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
             >
-              Vous n'etes plus seul face a votre combat.
+              Vous n'êtes plus seul face à votre combat.
             </p>
             <p className="text-[#C9A84C] text-lg font-bold tracking-wide">
               Dorenavant, S.E.S est votre bouclier.

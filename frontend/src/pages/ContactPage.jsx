@@ -50,8 +50,8 @@ export const ContactPage = () => {
 
   const accompagnementTypes = [
     { value: "analyse_dossier", label: "Analyse de dossier" },
-    { value: "preparation_expertise", label: "Préparation à une expertise" },
-    { value: "strategie_atmp", label: "Stratégie AT/MP" },
+    { value: "préparation_expertise", label: "Préparation à une expertise" },
+    { value: "stratégie_atmp", label: "Stratégie AT/MP" },
     { value: "accompagnement_assurance", label: "Accompagnement assurantiel" },
     { value: "autre", label: "Autre / Je ne sais pas" }
   ];
@@ -255,15 +255,15 @@ export const ContactPage = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="telephone">Téléphone</Label>
+                        <Label htmlFor="téléphone">Téléphone</Label>
                         <Input
-                          id="telephone"
-                          name="telephone"
+                          id="téléphone"
+                          name="téléphone"
                           type="tel"
                           value={formData.telephone}
                           onChange={handleInputChange}
                           placeholder="06 00 00 00 00"
-                          data-testid="input-telephone"
+                          data-testid="input-téléphone"
                         />
                       </div>
                     </div>

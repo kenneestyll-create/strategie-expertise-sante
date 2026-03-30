@@ -219,9 +219,9 @@ export const DossierExpressPage = () => {
           clearInterval(interval);
           const errorMsg = res.data.error || "Une erreur est survenue lors de l'analyse.";
           if (errorMsg.toLowerCase().includes('budget')) {
-            toast.error("Le service d'analyse necessite un traitement complementaire. Notre equipe a ete notifiee. Vous serez contacte par email.", { duration: 10000 });
+            toast.error("Le service d'analyse nécessite un traitement complémentaire. Notre équipe a été notifiee. Vous serez contacte par email.", { duration: 10000 });
           } else {
-            toast.error("Votre dossier est bien pris en charge. Un traitement complementaire est en cours.", { duration: 8000 });
+            toast.error("Votre dossier est bien pris en charge. Un traitement complémentaire est en cours.", { duration: 8000 });
           }
           setStep('error');
         }
@@ -802,8 +802,8 @@ export const DossierExpressPage = () => {
               </div>
               <h2 className="text-2xl font-bold mb-3" data-testid="incident-title">Votre dossier est bien pris en charge</h2>
               <p className="text-muted-foreground mb-6 text-sm leading-relaxed max-w-md mx-auto">
-                Un traitement complementaire est en cours afin de vous garantir la meilleure qualite d'analyse possible.
-                Notre equipe a ete automatiquement informee et reviendra vers vous dans les meilleurs delais.
+                Un traitement complémentaire est en cours afin de vous garantir la meilleure qualité d'analyse possible.
+                Notre équipe a été automatiquement informee et reviendra vers vous dans les meilleurs delais.
               </p>
               <Card className="text-left mb-8 border-amber-200/60 bg-amber-50/30">
                 <CardContent className="p-5">
@@ -814,9 +814,9 @@ export const DossierExpressPage = () => {
                       <ul className="space-y-2">
                         {[
                           "Votre paiement est bien confirme et securise",
-                          "Vos documents sont conserves en toute confidentialite",
+                          "Vos documents sont conserves en toute confidentialité",
                           "Vous recevrez votre rapport par email des qu'il sera finalise",
-                          "En cas de besoin, notre equipe vous contactera directement"
+                          "En cas de besoin, notre équipe vous contactera directement"
                         ].map((item, i) => (
                           <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
                             <CheckCircle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
@@ -1097,8 +1097,8 @@ export const DossierExpressPage = () => {
             </div>
             <h2 className="text-2xl font-bold mb-3" data-testid="error-title">Votre dossier est bien pris en charge</h2>
             <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
-              Un traitement complementaire est en cours afin de vous garantir la meilleure qualite d'analyse.
-              Notre equipe a ete automatiquement informee et reviendra vers vous a <strong className="text-foreground">{form.email || pollStatus?.email}</strong>.
+              Un traitement complémentaire est en cours afin de vous garantir la meilleure qualité d'analyse.
+              Notre équipe a été automatiquement informee et reviendra vers vous a <strong className="text-foreground">{form.email || pollStatus?.email}</strong>.
             </p>
             <Card className="text-left mb-8 border-amber-200/60 bg-amber-50/30">
               <CardContent className="p-5">
@@ -1109,8 +1109,8 @@ export const DossierExpressPage = () => {
                 <ul className="space-y-2.5">
                   {[
                     "Votre paiement est confirme et securise",
-                    "Vos documents sont conserves en toute confidentialite",
-                    "Notre equipe technique finalise votre rapport",
+                    "Vos documents sont conserves en toute confidentialité",
+                    "Notre équipe technique finalise votre rapport",
                     "Vous recevrez votre analyse par email des que possible"
                   ].map((item, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">

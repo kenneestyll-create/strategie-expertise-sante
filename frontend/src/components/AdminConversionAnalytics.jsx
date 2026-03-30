@@ -22,7 +22,7 @@ const SOURCE_LABELS = {
 const PRESTATION_LABELS = {
   accompagnement_mp: 'Accompagnement MP',
   protection_juridique: 'Protection juridique',
-  expertise_medicale: 'Expertise medicale',
+  expertise_médicale: 'Expertise médicale',
   dossier_complet: 'Dossier complet',
   consultation: 'Consultation',
   autre: 'Autre',
@@ -59,7 +59,7 @@ export const AdminConversionAnalytics = ({ axiosConfig }) => {
     return (
       <Card>
         <CardContent className="py-8 text-center text-muted-foreground text-sm">
-          Chargement des donnees de conversion...
+          Chargement des données de conversion...
         </CardContent>
       </Card>
     );
@@ -134,7 +134,7 @@ export const AdminConversionAnalytics = ({ axiosConfig }) => {
           <CardContent className="py-3 px-4">
             <div className="flex items-center gap-2 mb-1">
               <ArrowRight className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Revenus generes</span>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Revenus générés</span>
             </div>
             <p className="text-2xl font-bold text-emerald-600" data-testid="conv-total-revenue">{formatEuro(totals.revenue)}</p>
           </CardContent>
@@ -245,7 +245,7 @@ export const AdminConversionAnalytics = ({ axiosConfig }) => {
       {channels.length === 0 && (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground text-sm">
-            Aucune visite trackee sur cette periode. Les donnees apparaitront lorsque des visiteurs arriveront sur /contact via un lien tracke (QR code, email, PDF).
+            Aucune visite trackee sur cette periode. Les données apparaitront lorsque des visiteurs arriveront sur /contact via un lien tracke (QR code, email, PDF).
           </CardContent>
         </Card>
       )}

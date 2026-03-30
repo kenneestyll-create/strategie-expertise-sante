@@ -14,7 +14,7 @@ import {
   Phone
 } from 'lucide-react';
 
-export const ExpertiseMedicalePage = () => {
+export const ExpertiseMédicalePage = () => {
   const contexts = [
     "Accident du travail",
     "Maladie professionnelle",
@@ -31,7 +31,7 @@ export const ExpertiseMedicalePage = () => {
     "Attribution d'une aide tierce personne"
   ];
 
-  const etapes = [
+  const étapes = [
     { icon: FileText, text: "Étude du dossier médical" },
     { icon: UserCheck, text: "Entretien avec la personne concernée" },
     { icon: Stethoscope, text: "Examen clinique" },
@@ -149,17 +149,17 @@ export const ExpertiseMedicalePage = () => {
               {/* Timeline line */}
               <div className="absolute left-6 top-0 bottom-0 w-px bg-border" />
 
-              {etapes.map((etape, index) => (
+              {étapes.map((étape, index) => (
                 <div 
                   key={index} 
                   className="relative flex items-start gap-6 pb-8 last:pb-0"
                   data-testid={`etape-${index}`}
                 >
                   <div className="relative z-10 w-12 h-12 bg-background border-2 border-accent rounded-full flex items-center justify-center flex-shrink-0">
-                    <etape.icon className="w-5 h-5 text-accent" strokeWidth={1.5} />
+                    <étape.icon className="w-5 h-5 text-accent" strokeWidth={1.5} />
                   </div>
                   <div className="pt-3">
-                    <p className="font-medium text-lg">{etape.text}</p>
+                    <p className="font-medium text-lg">{étape.text}</p>
                   </div>
                 </div>
               ))}
@@ -173,7 +173,7 @@ export const ExpertiseMedicalePage = () => {
       </section>
 
       {/* Médecin Conseil — Strategic Link */}
-      <section className="section-padding bg-accent/5 border-y border-accent/10" data-testid="expertise-medecin-conseil">
+      <section className="section-padding bg-accent/5 border-y border-accent/10" data-testid="expertise-médecin-conseil">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col md:flex-row items-center gap-8">
             <div className="flex-1">
@@ -192,7 +192,7 @@ export const ExpertiseMedicalePage = () => {
             </div>
             <div className="flex-shrink-0">
               <Link to="/medecin-conseil">
-                <Button size="lg" className="rounded-full gap-2 bg-accent hover:bg-accent/90 text-accent-foreground" data-testid="expertise-medecin-conseil-cta">
+                <Button size="lg" className="rounded-full gap-2 bg-accent hover:bg-accent/90 text-accent-foreground" data-testid="expertise-médecin-conseil-cta">
                   <Phone className="w-4 h-4" />
                   En savoir plus
                   <ArrowRight className="w-4 h-4" />

@@ -21,13 +21,13 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const trackClick = (action) => {
   axios.post(`${API}/tracking/event`, {
-    page: 'medecin-conseil',
+    page: 'médecin-conseil',
     action,
     timestamp: new Date().toISOString()
   }).catch(() => {});
 };
 
-export default function MedecinConseilPage() {
+export default function MédecinConseilPage() {
   useEffect(() => {
     trackClick('page-view');
   }, []);
@@ -65,7 +65,7 @@ export default function MedecinConseilPage() {
         <div className="max-w-7xl mx-auto">
           <div className="max-w-3xl">
             <span className="text-sm font-medium text-accent uppercase tracking-wider">Expertise stratégique</span>
-            <h1 className="text-4xl sm:text-5xl font-semibold mt-2 mb-6" data-testid="medecin-conseil-title">
+            <h1 className="text-4xl sm:text-5xl font-semibold mt-2 mb-6" data-testid="médecin-conseil-title">
               Choisir le bon médecin conseil : un enjeu déterminant pour votre indemnisation
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
@@ -79,7 +79,7 @@ export default function MedecinConseilPage() {
               considérable sur l'issue de votre dossier.
             </p>
             <div className="mt-8">
-              <Button asChild size="lg" className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-6 sm:px-8 text-sm sm:text-base" data-testid="medecin-conseil-hero-cta" onClick={() => trackClick('hero-cta-click')}>
+              <Button asChild size="lg" className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-6 sm:px-8 text-sm sm:text-base" data-testid="médecin-conseil-hero-cta" onClick={() => trackClick('hero-cta-click')}>
                 <Link to="/contact">
                   <Phone className="w-4 h-4 flex-shrink-0" />
                   <span className="sm:hidden">Être accompagné</span>
@@ -92,7 +92,7 @@ export default function MedecinConseilPage() {
       </section>
 
       {/* ── ENJEUX ── */}
-      <section className="section-padding" data-testid="medecin-conseil-enjeux">
+      <section className="section-padding" data-testid="médecin-conseil-enjeux">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Pourquoi ce choix est-il si déterminant ?</h2>
           <p className="text-muted-foreground mb-10 max-w-2xl">
@@ -115,7 +115,7 @@ export default function MedecinConseilPage() {
       </section>
 
       {/* ── PROBLÉMATIQUE ── */}
-      <section className="section-padding bg-secondary" data-testid="medecin-conseil-problematique">
+      <section className="section-padding bg-secondary" data-testid="médecin-conseil-problematique">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-start">
             <div>
@@ -158,7 +158,7 @@ export default function MedecinConseilPage() {
       </section>
 
       {/* ── POSITIONNEMENT EXPERT ── */}
-      <section className="section-padding" data-testid="medecin-conseil-positionnement">
+      <section className="section-padding" data-testid="médecin-conseil-positionnement">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-3xl mx-auto text-center mb-12">
             <Stethoscope className="w-10 h-10 text-accent mx-auto mb-4" />
@@ -201,7 +201,7 @@ export default function MedecinConseilPage() {
       </section>
 
       {/* ── COÛT ── */}
-      <section className="section-padding bg-secondary" data-testid="medecin-conseil-cout">
+      <section className="section-padding bg-secondary" data-testid="médecin-conseil-cout">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-3xl mx-auto">
             <CircleDollarSign className="w-10 h-10 text-accent mb-4" />
@@ -240,7 +240,7 @@ export default function MedecinConseilPage() {
       </section>
 
       {/* ── NOTRE APPROCHE ── */}
-      <section className="section-padding" data-testid="medecin-conseil-approche">
+      <section className="section-padding" data-testid="médecin-conseil-approche">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Notre approche en 4 étapes</h2>
           <p className="text-muted-foreground mb-10 max-w-2xl">
@@ -262,7 +262,7 @@ export default function MedecinConseilPage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="section-padding bg-accent/5 border-y border-accent/10" data-testid="medecin-conseil-cta">
+      <section className="section-padding bg-accent/5 border-y border-accent/10" data-testid="médecin-conseil-cta">
         <div className="max-w-7xl mx-auto text-center">
           <FileSearch className="w-10 h-10 text-accent mx-auto mb-4" />
           <h2 className="text-2xl sm:text-3xl font-semibold mb-4">
@@ -274,14 +274,14 @@ export default function MedecinConseilPage() {
             Cette étape préalable peut faire toute la différence.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 text-sm sm:text-base" data-testid="medecin-conseil-cta-accompagnement" onClick={() => trackClick('cta-accompagnement-click')}>
+            <Button asChild size="lg" className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 text-sm sm:text-base" data-testid="médecin-conseil-cta-accompagnement" onClick={() => trackClick('cta-accompagnement-click')}>
               <Link to="/contact">
                 <Phone className="w-4 h-4 flex-shrink-0" />
                 <span className="sm:hidden">Être accompagné</span>
                 <span className="hidden sm:inline">Être accompagné dans le choix de mon médecin conseil</span>
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="gap-2" data-testid="medecin-conseil-cta-analyse" onClick={() => trackClick('cta-analyse-click')}>
+            <Button asChild variant="outline" size="lg" className="gap-2" data-testid="médecin-conseil-cta-analyse" onClick={() => trackClick('cta-analyse-click')}>
               <Link to="/simulateur">
                 Obtenir ma pré-analyse gratuite <ArrowRight className="w-4 h-4" />
               </Link>

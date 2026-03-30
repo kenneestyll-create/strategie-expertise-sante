@@ -371,7 +371,7 @@ export const AdminDashboard = () => {
         axios.get(`${API}/admin/clients`, axiosConfig).catch(() => ({ data: [] })),
         axios.get(`${API}/admin/alertes-urgentes`, axiosConfig).catch(() => ({ data: { items: [], total: 0, non_traite: 0 } })),
         axios.get(`${API}/admin/strategiia/stats`, axiosConfig).catch(() => ({ data: { total_analyses: 0, premium: 0, total_cases: 0, recent: [] } })),
-        axios.get(`${API}/admin/cas-anonymises`, axiosConfig).catch(() => ({ data: { items: [], total: 0 } })),
+        axios.get(`${API}/admin/cas-anonymisés`, axiosConfig).catch(() => ({ data: { items: [], total: 0 } })),
         axios.get(`${API}/admin/premium-analyses`, axiosConfig).catch(() => ({ data: { items: [], stats: { total: 0, en_attente: 0, en_cours: 0, termine: 0 } } })),
         axios.get(`${API}/admin/analytics?period=30d`, axiosConfig).catch(() => ({ data: null }))
       ]);
@@ -396,7 +396,7 @@ export const AdminDashboard = () => {
       axios.get(`${API}/admin/documents`, axiosConfig).then(r => setAdminDocs(r.data)).catch(() => {});
       axios.get(`${API}/admin/email/status`, axiosConfig).then(r => setEmailStatus(r.data)).catch(() => {});
       axios.get(`${API}/admin/completeness-notifications`, axiosConfig).then(r => setCompletenessNotifs(r.data)).catch(() => {});
-      axios.get(`${API}/admin/relance-inactivite/history`, axiosConfig).then(r => setInactivityReminders(r.data)).catch(() => {});
+      axios.get(`${API}/admin/relance-inactivité/history`, axiosConfig).then(r => setInactivityReminders(r.data)).catch(() => {});
       axios.get(`${API}/admin/reminder-cron/status`, axiosConfig).then(r => setCronStatus(r.data)).catch(() => {});
       axios.get(`${API}/admin/engagement-kpis`, axiosConfig).then(r => setEngagementKpis(r.data)).catch(() => {});
       axios.get(`${API}/admin/kpi-alerts/check`, axiosConfig).then(r => setKpiAlerts(r.data)).catch(() => {});
@@ -695,7 +695,7 @@ export const AdminDashboard = () => {
               <TabsTrigger value="alertes" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all relative" data-testid="tab-alertes">
                 <Zap className="w-3.5 h-3.5" />
                 Alertes
-                {urgentAlerts.non_traite > 0 && (
+                {urgentAlerts.non_traité > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-background">{urgentAlerts.non_traite}</span>
                 )}
               </TabsTrigger>
@@ -1040,7 +1040,7 @@ export const AdminDashboard = () => {
                               {renderStars(item.note)}
                             </div>
                             <p className="text-sm text-muted-foreground line-clamp-2">
-                              "{item.temoignage}"
+                              "{item.témoignage}"
                             </p>
                             <p className="text-xs text-muted-foreground mt-2">
                               {formatDate(item.created_at)}
@@ -1475,7 +1475,7 @@ export const AdminDashboard = () => {
                 ) : (
                   <div className="space-y-3">
                     {urgentAlerts.items?.map((alert) => (
-                      <div key={alert.id} className={`p-4 rounded-lg border ${alert.traite ? 'bg-muted/30 border-border' : 'bg-red-50 border-red-200'}`} data-testid={`alert-item-${alert.id}`}>
+                      <div key={alert.id} className={`p-4 rounded-lg border ${alert.traité ? 'bg-muted/30 border-border' : 'bg-red-50 border-red-200'}`} data-testid={`alert-item-${alert.id}`}>
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1 space-y-1">
                             <div className="flex items-center gap-2 flex-wrap">
@@ -1483,7 +1483,7 @@ export const AdminDashboard = () => {
                               <Badge variant={alert.formule === '30min' ? 'destructive' : 'secondary'}>
                                 {alert.formule === '30min' ? '30min — 80€' : '2h — 50€'}
                               </Badge>
-                              {alert.traite ? (
+                              {alert.traité ? (
                                 <Badge variant="outline" className="text-green-600 border-green-300">Traité</Badge>
                               ) : (
                                 <Badge variant="destructive">Nouveau</Badge>
@@ -1496,7 +1496,7 @@ export const AdminDashboard = () => {
                             {alert.message && <p className="text-sm mt-1">{alert.message}</p>}
                             <p className="text-xs text-muted-foreground">{new Date(alert.created_at).toLocaleString('fr-FR')}</p>
                           </div>
-                          {!alert.traite && (
+                          {!alert.traité && (
                             <Button
                               size="sm"
                               variant="outline"
@@ -1561,7 +1561,7 @@ export const AdminDashboard = () => {
                               cases = Array.isArray(parsed) ? parsed : parsed.cases || [];
                             }
                             if (cases.length === 0) { toast.error('Aucun cas trouvé dans le fichier'); return; }
-                            const res = await axios.post(`${API}/admin/cas-anonymises/import`, { cases }, axiosConfig);
+                            const res = await axios.post(`${API}/admin/cas-anonymisés/import`, { cases }, axiosConfig);
                             toast.success(`${res.data.imported} cas importés`);
                             fetchData();
                           } catch (err) { toast.error('Erreur lors de l\'import'); }
@@ -1588,10 +1588,10 @@ export const AdminDashboard = () => {
                       {['Général','MSA','Fonction publique','Indépendant','Autre'].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                     </SelectContent>
                   </Select>
-                  <Input placeholder="Durée (ex: 18 mois)" value={newCas.duree} onChange={e => setNewCas(p => ({...p, duree: e.target.value}))} data-testid="cas-duree-input" />
-                  <Input placeholder="Stratégie utilisée" value={newCas.strategie} onChange={e => setNewCas(p => ({...p, strategie: e.target.value}))} data-testid="cas-strategie-input" />
+                  <Input placeholder="Durée (ex: 18 mois)" value={newCas.duree} onChange={e => setNewCas(p => ({...p, duree: e.target.value}))} data-testid="cas-durée-input" />
+                  <Input placeholder="Stratégie utilisée" value={newCas.strategie} onChange={e => setNewCas(p => ({...p, strategie: e.target.value}))} data-testid="cas-stratégie-input" />
                   <Select value={newCas.resultat} onValueChange={v => setNewCas(p => ({...p, resultat: v}))}>
-                    <SelectTrigger data-testid="cas-resultat-select"><SelectValue placeholder="Résultat obtenu" /></SelectTrigger>
+                    <SelectTrigger data-testid="cas-résultat-select"><SelectValue placeholder="Résultat obtenu" /></SelectTrigger>
                     <SelectContent>
                       {['Favorable','Partiellement favorable','Défavorable','En cours'].map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                     </SelectContent>
@@ -1603,7 +1603,7 @@ export const AdminDashboard = () => {
                   onClick={async () => {
                     if (!newCas.type_dossier || !newCas.resultat) { toast.error('Type et résultat requis'); return; }
                     try {
-                      await axios.post(`${API}/admin/cas-anonymises`, newCas, axiosConfig);
+                      await axios.post(`${API}/admin/cas-anonymisés`, newCas, axiosConfig);
                       toast.success('Cas ajouté');
                       setNewCas({ type_dossier: '', regime: '', duree: '', strategie: '', resultat: '', score_pertinence: 0, notes: '' });
                       fetchData();
@@ -1670,7 +1670,7 @@ export const AdminDashboard = () => {
                             ><Pencil className="w-3 h-3" /></Button>
                             <Button size="sm" variant="ghost" className="text-destructive h-7 w-7 p-0"
                               onClick={async () => {
-                                try { await axios.delete(`${API}/admin/cas-anonymises/${c.id}`, axiosConfig); toast.success('Cas supprimé'); fetchData(); }
+                                try { await axios.delete(`${API}/admin/cas-anonymisés/${c.id}`, axiosConfig); toast.success('Cas supprimé'); fetchData(); }
                                 catch { toast.error('Erreur'); }
                               }}
                               data-testid={`cas-delete-${c.id}`}
@@ -1717,7 +1717,7 @@ export const AdminDashboard = () => {
                     <Button className="w-full gap-2 rounded-lg" data-testid="cas-edit-save"
                       onClick={async () => {
                         try {
-                          await axios.patch(`${API}/admin/cas-anonymises/${editCas.id}`, editCas, axiosConfig);
+                          await axios.patch(`${API}/admin/cas-anonymisés/${editCas.id}`, editCas, axiosConfig);
                           toast.success('Cas mis à jour');
                           setEditCas(null);
                           fetchData();
@@ -1802,7 +1802,7 @@ export const AdminDashboard = () => {
                   {[
                     { label: "Aujourd'hui", value: monitoring.kpis.orders_today, icon: Zap, color: 'text-blue-600', bg: 'bg-blue-50' },
                     { label: "7 jours", value: monitoring.kpis.orders_7_days, icon: BarChart3, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-                    { label: "Taux reussite", value: `${monitoring.kpis.success_rate_7_days}%`, icon: TrendingUp, color: monitoring.kpis.success_rate_7_days >= 80 ? 'text-green-600' : 'text-amber-600', bg: monitoring.kpis.success_rate_7_days >= 80 ? 'bg-green-50' : 'bg-amber-50' },
+                    { label: "Taux réussite", value: `${monitoring.kpis.success_rate_7_days}%`, icon: TrendingUp, color: monitoring.kpis.success_rate_7_days >= 80 ? 'text-green-600' : 'text-amber-600', bg: monitoring.kpis.success_rate_7_days >= 80 ? 'bg-green-50' : 'bg-amber-50' },
                     { label: "Incidents J", value: monitoring.kpis.incidents_today, icon: AlertTriangle, color: monitoring.kpis.incidents_today > 0 ? 'text-red-600' : 'text-foreground/40', bg: monitoring.kpis.incidents_today > 0 ? 'bg-red-50' : 'bg-muted/40' },
                     { label: "Delai moyen", value: `${monitoring.kpis.avg_delivery_minutes}m`, icon: Clock, color: 'text-teal-600', bg: 'bg-teal-50' },
                     { label: "En attente", value: monitoring.kpis.pending_count, icon: Loader2, color: monitoring.kpis.pending_count > 0 ? 'text-amber-600' : 'text-foreground/40', bg: monitoring.kpis.pending_count > 0 ? 'bg-amber-50' : 'bg-muted/40' },
@@ -1830,7 +1830,7 @@ export const AdminDashboard = () => {
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                       <Shield className="w-3.5 h-3.5" />
-                      Etat des services
+                      État des services
                     </h3>
                     <Badge variant="outline" className={`text-[10px] ${servicesStatus.critical_services_ok ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>
                       {servicesStatus.all_services_ok ? 'Tous operationnels' : servicesStatus.critical_services_ok ? 'Services critiques OK' : 'Attention requise'}
@@ -2010,7 +2010,7 @@ export const AdminDashboard = () => {
                     }).slice(0, 30).map(d => {
                       const DELIVERY_CONFIG = {
                         livre_client: { label: 'Livre au client', cls: 'bg-green-100 text-green-700 border-green-200' },
-                        genere_sans_email: { label: 'Genere (email echoue)', cls: 'bg-amber-100 text-amber-700 border-amber-200' },
+                        généré_sans_email: { label: 'Généré (email echoue)', cls: 'bg-amber-100 text-amber-700 border-amber-200' },
                         en_attente_traitement: { label: 'En attente', cls: 'bg-blue-100 text-blue-700 border-blue-200' },
                         incident_technique: { label: 'Incident technique', cls: 'bg-red-100 text-red-700 border-red-200' },
                       };
@@ -2655,7 +2655,7 @@ export const AdminDashboard = () => {
                       <p className="text-xs text-muted-foreground">Pour envoyer des emails depuis votre propre domaine (au lieu de onboarding@resend.dev), suivez ces étapes :</p>
                       <ol className="text-xs text-muted-foreground space-y-1 list-decimal ml-4">
                         <li>Connectez-vous sur <a href="https://resend.com/domains" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">resend.com/domains</a></li>
-                        <li>Ajoutez votre domaine (ex: accompagn-sante.fr)</li>
+                        <li>Ajoutez votre domaine (ex: accompagn-santé.fr)</li>
                         <li>Ajoutez les enregistrements DNS (SPF, DKIM, DMARC) fournis par Resend</li>
                         <li>Attendez la vérification (quelques minutes à 24h)</li>
                         <li>Mettez à jour SENDER_EMAIL dans la configuration backend</li>
@@ -2664,7 +2664,7 @@ export const AdminDashboard = () => {
                     <Button size="sm" variant="outline" className="gap-2"
                       onClick={async () => {
                         try {
-                          const res = await axios.post(`${API}/admin/email/test`, { email: emailStatus.notification_email || 'admin@accompagn-sante.fr' }, axiosConfig);
+                          const res = await axios.post(`${API}/admin/email/test`, { email: emailStatus.notification_email || 'admin@accompagn-santé.fr' }, axiosConfig);
                           if (res.data.success) toast.success('Email test envoyé');
                           else toast.error(res.data.message);
                         } catch { toast.error('Erreur envoi test'); }
@@ -3022,9 +3022,9 @@ export const AdminDashboard = () => {
                         setRunningReminders(true);
                         setLastReminderResults(null);
                         try {
-                          const r = await axios.post(`${API}/admin/relance-inactivite/run`, {}, { headers: { Authorization: `Bearer ${adminToken}` } });
+                          const r = await axios.post(`${API}/admin/relance-inactivité/run`, {}, { headers: { Authorization: `Bearer ${adminToken}` } });
                           setLastReminderResults(r.data.results);
-                          const h = await axios.get(`${API}/admin/relance-inactivite/history`, { headers: { Authorization: `Bearer ${adminToken}` } });
+                          const h = await axios.get(`${API}/admin/relance-inactivité/history`, { headers: { Authorization: `Bearer ${adminToken}` } });
                           setInactivityReminders(h.data);
                         } catch {}
                         setRunningReminders(false);
@@ -3047,7 +3047,7 @@ export const AdminDashboard = () => {
                     {cronStatus.last_results && (
                       <div className="flex gap-3">
                         <span>Scannés: <strong>{cronStatus.last_results.scanned}</strong></span>
-                        <span>Éligibles: <strong>{cronStatus.last_results.eligible}</strong></span>
+                        <span>Éligibles: <strong>{cronStatus.last_results.éligible}</strong></span>
                         <span className="text-green-700">Envoyés: <strong>{cronStatus.last_results.sent}</strong></span>
                         <span className="text-red-600">Échoués: <strong>{cronStatus.last_results.failed}</strong></span>
                       </div>
@@ -3059,7 +3059,7 @@ export const AdminDashboard = () => {
                     <p className="font-medium text-blue-800 mb-1">Résultat du scan</p>
                     <div className="grid grid-cols-3 md:grid-cols-6 gap-2 text-xs">
                       <span>Scannés: <strong>{lastReminderResults.scanned}</strong></span>
-                      <span>Éligibles: <strong>{lastReminderResults.eligible}</strong></span>
+                      <span>Éligibles: <strong>{lastReminderResults.éligible}</strong></span>
                       <span className="text-green-700">Envoyés: <strong>{lastReminderResults.sent}</strong></span>
                       <span className="text-red-600">Échoués: <strong>{lastReminderResults.failed}</strong></span>
                       <span className="text-gray-500">Non envoyés: <strong>{lastReminderResults.skipped}</strong></span>
@@ -3141,7 +3141,7 @@ export const AdminDashboard = () => {
                               <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px]"
                                 onClick={async () => {
                                   try {
-                                    await axios.post(`${API}/admin/relance-inactivite/toggle-pause`, { client_id: r.client_id, paused: true }, { headers: { Authorization: `Bearer ${adminToken}` } });
+                                    await axios.post(`${API}/admin/relance-inactivité/toggle-pause`, { client_id: r.client_id, paused: true }, { headers: { Authorization: `Bearer ${adminToken}` } });
                                     toast.success('Relances pausées pour ce client');
                                   } catch { toast.error('Erreur'); }
                                 }}
@@ -3477,7 +3477,7 @@ export const AdminDashboard = () => {
                           <SelectContent>
                             <SelectItem value="accompagnement_mp">Accompagnement MP</SelectItem>
                             <SelectItem value="protection_juridique">Protection juridique</SelectItem>
-                            <SelectItem value="expertise_medicale">Expertise medicale</SelectItem>
+                            <SelectItem value="expertise_médicale">Expertise médicale</SelectItem>
                             <SelectItem value="dossier_complet">Dossier complet</SelectItem>
                             <SelectItem value="consultation">Consultation</SelectItem>
                             <SelectItem value="autre">Autre</SelectItem>
@@ -3583,7 +3583,7 @@ export const AdminDashboard = () => {
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Témoignage</p>
                   <div className="bg-muted/30 p-4 rounded-lg">
-                    <p className="whitespace-pre-wrap italic">"{selectedAvis.temoignage}"</p>
+                    <p className="whitespace-pre-wrap italic">"{selectedAvis.témoignage}"</p>
                   </div>
                 </div>
 

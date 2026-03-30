@@ -9,8 +9,8 @@ const searchClient = algoliasearch(
 const INDEX_NAME = process.env.REACT_APP_ALGOLIA_INDEX_NAME;
 
 const SUGGESTIONS = [
-  "Comment preparer une expertise medicale ?",
-  "Quels sont mes droits apres un accident du travail ?",
+  "Comment preparer une expertise médicale ?",
+  "Quels sont mes droits après un accident du travail ?",
   "Comment contester un taux d'IPP ?",
   "Qu'est-ce que la PGPF ?",
   "Comment faire un dossier MDPH ?",

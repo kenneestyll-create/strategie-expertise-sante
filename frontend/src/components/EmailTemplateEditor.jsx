@@ -379,8 +379,8 @@ export const EmailTemplateEditor = ({ token }) => {
         </div>
       </div>
 
-      {/* Variables reference card */}
-      <Card className="border-dashed" data-testid="variables-reference-card">
+      {/* Variables référence card */}
+      <Card className="border-dashed" data-testid="variables-référénce-card">
         <CardContent className="py-3 px-4">
           <div className="flex items-center gap-2 mb-2">
             <Code className="w-4 h-4 text-violet-500" />

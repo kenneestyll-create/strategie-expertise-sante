@@ -236,12 +236,12 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
           </div>
           <div className="text-center">
             <h2 className="text-white text-lg font-semibold mb-1" data-testid="scanner-title">CamScanner</h2>
-            <p className="text-white/50 text-sm">Appareil photo natif — qualite maximale</p>
+            <p className="text-white/50 text-sm">Appareil photo natif — qualité maximale</p>
           </div>
           <div className="w-full max-w-xs space-y-2.5">
             {[
-              { icon: Smartphone, text: 'Tenez le telephone bien droit', color: 'text-blue-400' },
-              { icon: Maximize2, text: 'Tout le document doit etre visible', color: 'text-emerald-400' },
+              { icon: Smartphone, text: 'Tenez le téléphone bien droit', color: 'text-blue-400' },
+              { icon: Maximize2, text: 'Tout le document doit être visible', color: 'text-emerald-400' },
               { icon: Sun, text: 'Bonne luminosite, evitez les ombres', color: 'text-amber-400' },
               { icon: ZapOff, text: 'Evitez les reflets et le flash', color: 'text-purple-400' },
             ].map((tip, i) => (
@@ -420,7 +420,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
       {phase === 'finalizing' && (
         <div className="flex-1 flex flex-col items-center justify-center gap-4 px-6">
           <Loader2 className="w-14 h-14 text-emerald-400 animate-spin" />
-          <p className="text-white text-base font-medium">Preparation du document...</p>
+          <p className="text-white text-base font-medium">Préparation du document...</p>
         </div>
       )}
 

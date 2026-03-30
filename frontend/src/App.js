@@ -87,7 +87,7 @@ const webSiteSchema = {
 const HomePage = lazy(() => import("@/pages/HomePage").then(m => ({ default: m.HomePage })));
 const AboutPage = lazy(() => import("@/pages/AboutPage").then(m => ({ default: m.AboutPage })));
 const ServicesPage = lazy(() => import("@/pages/ServicesPage").then(m => ({ default: m.ServicesPage })));
-const ExpertiseMedicalePage = lazy(() => import("@/pages/ExpertiseMedicalePage").then(m => ({ default: m.ExpertiseMedicalePage })));
+const ExpertiseMédicalePage = lazy(() => import("@/pages/ExpertiseMedicalePage").then(m => ({ default: m.ExpertiseMédicalePage })));
 const AccidentTravailPage = lazy(() => import("@/pages/AccidentTravailPage").then(m => ({ default: m.AccidentTravailPage })));
 const MDPHPage = lazy(() => import("@/pages/MDPHPage").then(m => ({ default: m.MDPHPage })));
 const SeminairesPage = lazy(() => import("@/pages/SeminairesPage").then(m => ({ default: m.SeminairesPage })));
@@ -98,8 +98,8 @@ const PartenairesPage = lazy(() => import("@/pages/PartenairesPage").then(m => (
 const AvisPage = lazy(() => import("@/pages/AvisPage").then(m => ({ default: m.AvisPage })));
 const ResourcesPage = lazy(() => import("@/pages/ResourcesPage").then(m => ({ default: m.ResourcesPage })));
 const ContactPage = lazy(() => import("@/pages/ContactPage").then(m => ({ default: m.ContactPage })));
-const MentionsLegalesPage = lazy(() => import("@/pages/MentionsLegalesPage").then(m => ({ default: m.MentionsLegalesPage })));
-const PolitiqueConfidentialitePage = lazy(() => import("@/pages/PolitiqueConfidentialitePage"));
+const MentionsLégalesPage = lazy(() => import("@/pages/MentionsLegalesPage").then(m => ({ default: m.MentionsLégalesPage })));
+const PolitiqueConfidentialitéPage = lazy(() => import("@/pages/PolitiqueConfidentialitePage"));
 const AdminLoginPage = lazy(() => import("@/pages/AdminLoginPage").then(m => ({ default: m.AdminLoginPage })));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
 const ReferralPage = lazy(() => import("@/pages/ReferralPage").then(m => ({ default: m.ReferralPage })));
@@ -116,7 +116,7 @@ const ForumLoginPage = lazy(() => import("@/pages/ForumLoginPage").then(m => ({ 
 const ForumCategoryPage = lazy(() => import("@/pages/ForumCategoryPage").then(m => ({ default: m.ForumCategoryPage })));
 const ForumTopicPage = lazy(() => import("@/pages/ForumTopicPage").then(m => ({ default: m.ForumTopicPage })));
 const ForumNewTopicPage = lazy(() => import("@/pages/ForumNewTopicPage").then(m => ({ default: m.ForumNewTopicPage })));
-const MedecinConseilPage = lazy(() => import("@/pages/MedecinConseilPage"));
+const MédecinConseilPage = lazy(() => import("@/pages/MedecinConseilPage"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -151,7 +151,7 @@ function App() {
                   <Route path="/" element={<><Header /><HomePage /><Footer /></>} />
                   <Route path="/a-propos" element={<><Header /><AboutPage /><Footer /></>} />
                   <Route path="/accompagnements" element={<><Header /><ServicesPage /><Footer /></>} />
-                  <Route path="/expertise-medicale" element={<><Header /><ExpertiseMedicalePage /><Footer /></>} />
+                  <Route path="/expertise-medicale" element={<><Header /><ExpertiseMédicalePage /><Footer /></>} />
                   <Route path="/accident-travail-maladie-professionnelle" element={<><Header /><AccidentTravailPage /><Footer /></>} />
                   <Route path="/mdph" element={<><Header /><MDPHPage /><Footer /></>} />
                   <Route path="/seminaires" element={<><Header /><SeminairesPage /><Footer /></>} />
@@ -162,8 +162,8 @@ function App() {
                   <Route path="/avis" element={<><Header /><AvisPage /><Footer /></>} />
                   <Route path="/ressources" element={<><Header /><ResourcesPage /><Footer /></>} />
                   <Route path="/contact" element={<><Header /><ContactPage /><Footer /></>} />
-                  <Route path="/mentions-legales" element={<><Header /><MentionsLegalesPage /><Footer /></>} />
-                  <Route path="/politique-confidentialite" element={<><Header /><PolitiqueConfidentialitePage /><Footer /></>} />
+                  <Route path="/mentions-legales" element={<><Header /><MentionsLégalesPage /><Footer /></>} />
+                  <Route path="/politique-confidentialite" element={<><Header /><PolitiqueConfidentialitéPage /><Footer /></>} />
                   <Route path="/parrainage" element={<><Header /><ReferralPage /><Footer /></>} />
                   <Route path="/agenda" element={<><Header /><AgendaPage /><Footer /></>} />
                   <Route path="/simulateur" element={<><Header /><SimulateurPage /><Footer /></>} />
@@ -179,7 +179,7 @@ function App() {
                   <Route path="/forum/sujet/:topicId" element={<><Header /><ForumTopicPage /><Footer /></>} />
                   <Route path="/forum/nouveau" element={<><Header /><ForumNewTopicPage /><Footer /></>} />
                   <Route path="/forum/tous" element={<><Header /><ForumCategoryPage /><Footer /></>} />
-                  <Route path="/medecin-conseil" element={<><Header /><MedecinConseilPage /><Footer /></>} />
+                  <Route path="/medecin-conseil" element={<><Header /><MédecinConseilPage /><Footer /></>} />
                   <Route path="/admin/login" element={<AdminLoginPage />} />
                   <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
                 </Routes>

@@ -2,7 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
 import { Shield, Lock, Eye, Trash2, Mail, Server, FileText, Users, Cpu, Clock } from 'lucide-react';
 
-export const PolitiqueConfidentialitePage = () => {
+export const PolitiqueConfidentialitéPage = () => {
   const sections = [
     {
       icon: Users, title: "1. Responsable du traitement",
@@ -100,7 +100,7 @@ export const PolitiqueConfidentialitePage = () => {
         "Fichiers originaux non conservés après extraction du texte",
         "Accès administrateur limité et tracé"
       ],
-      footer: "En cas de violation de données, vous serez informé conformément aux obligations du RGPD (articles 33 et 34)."
+      footer: "En cas de violation de données, vous serez informé conformément aux obligations du RGPD (articlés 33 et 34)."
     },
     {
       icon: Mail, title: "11. Contact",
@@ -158,4 +158,4 @@ export const PolitiqueConfidentialitePage = () => {
   );
 };
 
-export default PolitiqueConfidentialitePage;
+export default PolitiqueConfidentialitéPage;

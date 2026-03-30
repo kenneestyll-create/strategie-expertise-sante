@@ -46,7 +46,7 @@ export const MDPHPage = () => {
               MDPH : comprendre vos droits et vos démarches
             </h1>
             <p className="text-lg text-muted-foreground">
-              La MDPH (Maison Départementale des Personnes Handicapées) accompagne les personnes 
+              La MDPH (Maison Départementale des Personnes Handicapées) accompagné les personnes 
               en situation de handicap dans leurs démarches administratives et l'accès à leurs droits.
             </p>
           </div>

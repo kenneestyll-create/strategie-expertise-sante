@@ -114,7 +114,7 @@ const validateFile = (file) => {
     return { valid: false, error: `Fichier trop volumineux (${formatSize(file.size)}). Taille maximale : 50 Mo. Veuillez reduire la taille du fichier ou le compresser.` };
   }
   if (file.size < 100) {
-    return { valid: false, error: 'Ce document semble illisible ou corrompu. Merci de le scanner a nouveau en haute qualite.' };
+    return { valid: false, error: 'Ce document semble illisible ou corrompu. Merci de le scanner a nouveau en haute qualité.' };
   }
   return { valid: true };
 };

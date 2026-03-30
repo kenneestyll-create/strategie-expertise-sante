@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 export const AccidentTravailPage = () => {
-  const etapesAT = [
+  const étapesAT = [
     "Déclaration de l'accident",
     "Suivi médical",
     "Expertise médicale",
@@ -22,7 +22,7 @@ export const AccidentTravailPage = () => {
     "Évaluation du taux d'incapacité permanente"
   ];
 
-  const etapesMP = [
+  const étapesMP = [
     "Un dossier médical solide",
     "Des expertises médicales",
     "Des échanges avec les organismes sociaux"
@@ -78,7 +78,7 @@ export const AccidentTravailPage = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {etapesAT.map((etape, index) => (
+                    {étapesAT.map((étape, index) => (
                       <div key={index} className="flex items-start gap-3" data-testid={`etape-at-${index}`}>
                         <div className="w-6 h-6 bg-muted rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                           <span className="text-xs font-medium text-muted-foreground">{index + 1}</span>
@@ -138,7 +138,7 @@ export const AccidentTravailPage = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {etapesMP.map((etape, index) => (
+                    {étapesMP.map((étape, index) => (
                       <div key={index} className="flex items-start gap-3" data-testid={`etape-mp-${index}`}>
                         <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" strokeWidth={1.5} />
                         <span>{etape}</span>
@@ -196,7 +196,7 @@ export const AccidentTravailPage = () => {
             <div className="bg-primary-foreground/10 rounded-xl p-6" data-testid="atmp-ip-card">
               <h3 className="text-lg font-semibold text-primary-foreground mb-3">Incidence Professionnelle (IP)</h3>
               <p className="text-sm text-primary-foreground/70 mb-4">
-                Vos sequelles impactent votre carriere ? Vous avez peut-etre droit a une indemnisation complementaire au titre de l'incidence professionnelle : penibilite accrue, devalorisation, reconversion...
+                Vos séquelles impactent votre carrière ? Vous avez peut-etre droit a une indemnisation complémentaire au titre de l'incidence professionnelle : pénibilité accrue, devalorisation, reconversion...
               </p>
               <Link to="/ressources" className="text-sm text-accent hover:underline font-medium">
                 En savoir plus sur l'IP →
@@ -205,7 +205,7 @@ export const AccidentTravailPage = () => {
             <div className="bg-primary-foreground/10 rounded-xl p-6" data-testid="atmp-pgpf-card">
               <h3 className="text-lg font-semibold text-primary-foreground mb-3">Perte de Gains Futurs (PGPF)</h3>
               <p className="text-sm text-primary-foreground/70 mb-4">
-                Votre accident ou maladie reduit durablement vos revenus ? La PGPF compense cette perte definitive par capitalisation. Decouvrez la methode de calcul et les justificatifs.
+                Votre accident ou maladie reduit durablement vos revenus ? La PGPF compense cette perte definitive par capitalisation. Decouvrez la méthode de calcul et les justificatifs.
               </p>
               <Link to="/ressources" className="text-sm text-accent hover:underline font-medium">
                 En savoir plus sur la PGPF →

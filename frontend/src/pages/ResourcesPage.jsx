@@ -607,42 +607,42 @@ export const ResourcesPage = () => {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <p className="text-sm text-foreground/80 leading-relaxed">
-                      L'<strong>incidence professionnelle</strong> (IP) est un poste de prejudice qui vise a indemniser les consequences d'un accident ou d'une maladie professionnelle sur la vie professionnelle de la victime, au-dela de la simple perte de revenus. Elle couvre l'ensemble des repercussions negatives sur la carriere, les conditions de travail et les perspectives d'evolution professionnelle.
+                      L'<strong>incidence professionnelle</strong> (IP) est un poste de prejudice qui vise a indemnisér les consequences d'un accident ou d'une maladie professionnelle sur la vie professionnelle de la victime, au-dela de la simple perte de revenus. Elle couvre l'ensemble des repercussions negatives sur la carrière, les conditions de travail et les perspectives d'evolution professionnelle.
                     </p>
                     <p className="text-sm text-foreground/80 leading-relaxed">
-                      Contrairement a l'<strong>Incapacite Permanente Partielle (IPP)</strong> qui mesure le deficit fonctionnel, l'incidence professionnelle evalue specifiquement l'impact de ce deficit sur l'activite professionnelle de la victime. C'est un poste de prejudice complementaire, reconnu par la jurisprudence et les baremes d'indemnisation.
+                      Contrairement a l'<strong>Incapacité Permanente Partielle (IPP)</strong> qui mesure le deficit fonctionnel, l'incidence professionnelle évalué specifiquement l'impact de ce deficit sur l'activité professionnelle de la victime. C'est un poste de prejudice complémentaire, reconnu par la jurisprudence et les baremes d'indemnisation.
                     </p>
                   </CardContent>
                 </Card>
 
-                {/* Criteres */}
+                {/* Critères */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base">
-                      <Scale className="w-5 h-5 text-accent" /> Criteres retenus par les juridictions et assureurs
+                      <Scale className="w-5 h-5 text-accent" /> Critères retenus par les juridictions et assureurs
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid gap-4 sm:grid-cols-2">
                       {[
                         {
-                          title: "Penibilite accrue",
-                          desc: "La victime peut continuer a travailler mais dans des conditions plus penibles : efforts supplementaires, fatigue accrue, douleurs lors de certaines taches, amenagements necessaires du poste.",
+                          title: "Pénibilité accrue",
+                          desc: "La victime peut continuer a travailler mais dans des conditions plus penibles : efforts supplementaires, fatigue accrue, douleurs lors de certaines taches, aménagéments nécessaires du poste.",
                           color: "bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-400"
                         },
                         {
                           title: "Devalorisation sur le marche du travail",
-                          desc: "Le handicap ou les sequelles reduisent l'employabilite de la victime : difficulte a retrouver un emploi equivalent, discrimination a l'embauche, postes accessibles moins nombreux.",
+                          desc: "Le handicap ou les séquelles reduisent l'employabilite de la victime : difficulté a retrouver un emploi equivalent, discrimination a l'embauche, postes accessibles moins nombreux.",
                           color: "bg-orange-500/10 border-orange-500/20 text-orange-700 dark:text-orange-400"
                         },
                         {
-                          title: "Perte d'opportunites professionnelles",
-                          desc: "La victime ne peut plus acceder a des promotions, formations qualifiantes, missions specifiques ou evolutions de carriere auxquelles elle aurait pu pretendre sans le dommage.",
+                          title: "Perte d'opportunités professionnelles",
+                          desc: "La victime ne peut plus acceder a des promotions, formations qualifiantes, missions specifiques ou evolutions de carrière auxquelles elle aurait pu pretendre sans le dommage.",
                           color: "bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-400"
                         },
                         {
                           title: "Necessite de reconversion",
-                          desc: "L'impossibilite de poursuivre dans le meme metier impose une reconversion professionnelle, souvent vers un emploi moins qualifie ou moins remunere.",
+                          desc: "L'impossibilité de poursuivre dans le même metier impose une reconversion professionnelle, souvent vers un emploi moins qualifie ou moins rémunéré.",
                           color: "bg-blue-500/10 border-blue-500/20 text-blue-700 dark:text-blue-400"
                         }
                       ].map((item, i) => (
@@ -659,16 +659,16 @@ export const ResourcesPage = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base">
-                      <FileText className="w-5 h-5 text-accent" /> Justificatifs necessaires
+                      <FileText className="w-5 h-5 text-accent" /> Justificatifs nécessaires
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid gap-3 sm:grid-cols-2">
                       {[
-                        { title: "Rapports medicaux", items: ["Certificats medicaux detaillant les sequelles", "Rapport d'expertise medicale avec taux d'IPP", "Bilan fonctionnel et limitations identifiees", "Avis du medecin du travail sur l'aptitude"] },
-                        { title: "Expertises", items: ["Expertise medicale judiciaire ou amiable", "Expertise ergonomique du poste de travail", "Evaluation par un medecin conseil specialise", "Bilan de competences post-accident"] },
-                        { title: "Attestations employeur", items: ["Attestation de l'employeur sur les restrictions", "Fiche de poste avant/apres l'accident", "Historique des amenagements demandes", "Attestation de collegues (temoignages)"] },
-                        { title: "Elements de carriere", items: ["CV et parcours professionnel complet", "Bulletins de salaire (evolution sur 3-5 ans)", "Entretiens annuels d'evaluation", "Projections de carriere (promotions prevues)"] }
+                        { title: "Rapports médicaux", items: ["Certificats médicaux detaillant les séquelles", "Rapport d'expertise médicale avec taux d'IPP", "Bilan fonctionnel et limitations identifiees", "Avis du médecin du travail sur l'aptitude"] },
+                        { title: "Expertises", items: ["Expertise médicale judiciaire ou amiable", "Expertise ergonomique du poste de travail", "Évaluation par un médecin conseil specialise", "Bilan de competences post-accident"] },
+                        { title: "Attestations employeur", items: ["Attestation de l'employeur sur les restrictions", "Fiche de poste avant/apres l'accident", "Historique des aménagéments demandes", "Attestation de collegues (témoignages)"] },
+                        { title: "Elements de carrière", items: ["CV et parcours professionnel complet", "Bulletins de salaire (evolution sur 3-5 ans)", "Entretiens annuels d'évaluation", "Projections de carrière (promotions prevues)"] }
                       ].map((group, i) => (
                         <div key={i} className="p-4 rounded-xl bg-muted/50 border border-border/50">
                           <h4 className="font-semibold text-sm mb-3 text-accent">{group.title}</h4>
@@ -698,24 +698,24 @@ export const ResourcesPage = () => {
                         {
                           profil: "Ouvrier du batiment — 45 ans",
                           situation: "TMS epaule, IPP 15%. Ne peut plus porter de charges lourdes. Reclasse comme magasinier avec perte de primes.",
-                          ip: "Penibilite accrue + devalorisation",
+                          ip: "Pénibilité accrue + devalorisation",
                           indemnisation: "15 000 a 25 000 EUR"
                         },
                         {
                           profil: "Infirmiere — 38 ans",
-                          situation: "Lombalgie chronique post-AT, IPP 20%. Reconversion vers un poste administratif hospitalier moins remunere.",
-                          ip: "Reconversion + perte d'opportunites",
+                          situation: "Lombalgie chronique post-AT, IPP 20%. Reconversion vers un poste administratif hospitalier moins rémunéré.",
+                          ip: "Reconversion + perte d'opportunités",
                           indemnisation: "30 000 a 50 000 EUR"
                         },
                         {
                           profil: "Cadre commercial — 52 ans",
-                          situation: "Syndrome du canal carpien bilateral (MP), IPP 12%. Difficulte a utiliser un clavier. Retraite anticipee forcee.",
-                          ip: "Devalorisation + perte de fin de carriere",
+                          situation: "Syndrome du canal carpien bilateral (MP), IPP 12%. Difficulté a utiliser un clavier. Retraité anticipee forcee.",
+                          ip: "Devalorisation + perte de fin de carrière",
                           indemnisation: "40 000 a 80 000 EUR"
                         },
                         {
                           profil: "Technicien agricole — 35 ans",
-                          situation: "Exposition pesticides, IPP 25%. Ne peut plus travailler en milieu agricole. Reconversion necessaire.",
+                          situation: "Exposition pesticides, IPP 25%. Ne peut plus travailler en milieu agricole. Reconversion nécessaire.",
                           ip: "Reconversion totale + devalorisation",
                           indemnisation: "50 000 a 100 000 EUR"
                         }
@@ -737,7 +737,7 @@ export const ResourcesPage = () => {
                 <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20" data-testid="ip-disclaimer">
                   <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                   <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
-                    <strong>Avertissement :</strong> Ces informations sont fournies a titre indicatif et ne constituent pas un conseil juridique. Les montants d'indemnisation dependent de chaque situation individuelle et de l'appreciation des juges. Consultez un professionnel du droit pour une evaluation personnalisee de votre dossier.
+                    <strong>Avertissement :</strong> Ces informations sont fournies a titre indicatif et ne constituent pas un conseil juridique. Les montants d'indemnisation dependent de chaque situation individuelle et de l'appreciation des juges. Consultez un professionnel du droit pour une évaluation personnalisée de votre dossier.
                   </p>
                 </div>
 
@@ -769,10 +769,10 @@ export const ResourcesPage = () => {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <p className="text-sm text-foreground/80 leading-relaxed">
-                      La <strong>Perte de Gains Professionnels Futurs</strong> (PGPF) est un poste de prejudice qui compense la reduction definitive des revenus professionnels de la victime apres la consolidation de ses blessures. Elle represente la difference entre ce que la victime aurait gagne sans l'accident et ce qu'elle gagnera effectivement avec ses sequelles.
+                      La <strong>Perte de Gains Professionnels Futurs</strong> (PGPF) est un poste de prejudice qui compense la reduction definitive des revenus professionnels de la victime après la consolidation de ses blessures. Elle represente la différence entre ce que la victime aurait gagne sans l'accident et ce qu'elle gagnera effectivement avec ses séquelles.
                     </p>
                     <p className="text-sm text-foreground/80 leading-relaxed">
-                      La PGPF fait partie de la <strong>nomenclature Dintilhac</strong>, reference en matiere d'indemnisation du prejudice corporel en France. Elle se distingue nettement des autres postes de prejudice economique.
+                      La PGPF fait partie de la <strong>nomenclature Dintilhac</strong>, référence en matière d'indemnisation du prejudice corporel en France. Elle se distingue nettement des autres postes de prejudice economique.
                     </p>
                   </CardContent>
                 </Card>
@@ -791,16 +791,16 @@ export const ResourcesPage = () => {
                         <ul className="space-y-1.5 text-xs text-foreground/70">
                           <li className="flex items-start gap-2"><ChevronRight className="w-3 h-3 mt-0.5 text-blue-500 flex-shrink-0" /> Couvre la periode entre l'accident et la consolidation</li>
                           <li className="flex items-start gap-2"><ChevronRight className="w-3 h-3 mt-0.5 text-blue-500 flex-shrink-0" /> Indemnise les pertes de revenus pendant l'arret de travail</li>
-                          <li className="flex items-start gap-2"><ChevronRight className="w-3 h-3 mt-0.5 text-blue-500 flex-shrink-0" /> Calcul : difference entre salaire habituel et indemnites journalieres percues</li>
+                          <li className="flex items-start gap-2"><ChevronRight className="w-3 h-3 mt-0.5 text-blue-500 flex-shrink-0" /> Calcul : différence entre salaire habituel et indemnites journalieres percues</li>
                           <li className="flex items-start gap-2"><ChevronRight className="w-3 h-3 mt-0.5 text-blue-500 flex-shrink-0" /> Periode limitee et quantifiable retrospectivement</li>
                         </ul>
                       </div>
                       <div className="p-4 rounded-xl bg-accent/10 border border-accent/20">
                         <h4 className="font-semibold text-sm mb-2 text-accent">Perte de Gains Professionnels Futurs (PGPF)</h4>
                         <ul className="space-y-1.5 text-xs text-foreground/70">
-                          <li className="flex items-start gap-2"><ChevronRight className="w-3 h-3 mt-0.5 text-accent flex-shrink-0" /> Couvre toute la periode apres consolidation jusqu'a la retraite</li>
-                          <li className="flex items-start gap-2"><ChevronRight className="w-3 h-3 mt-0.5 text-accent flex-shrink-0" /> Indemnise la perte de capacite de gain definitive</li>
-                          <li className="flex items-start gap-2"><ChevronRight className="w-3 h-3 mt-0.5 text-accent flex-shrink-0" /> Calcul : projection de carriere avec capitalisation (bareme de capitalisation)</li>
+                          <li className="flex items-start gap-2"><ChevronRight className="w-3 h-3 mt-0.5 text-accent flex-shrink-0" /> Couvre toute la periode après consolidation jusqu'a la retraite</li>
+                          <li className="flex items-start gap-2"><ChevronRight className="w-3 h-3 mt-0.5 text-accent flex-shrink-0" /> Indemnise la perte de capacité de gain definitive</li>
+                          <li className="flex items-start gap-2"><ChevronRight className="w-3 h-3 mt-0.5 text-accent flex-shrink-0" /> Calcul : projection de carrière avec capitalisation (bareme de capitalisation)</li>
                           <li className="flex items-start gap-2"><ChevronRight className="w-3 h-3 mt-0.5 text-accent flex-shrink-0" /> Prend en compte l'evolution salariale previsible</li>
                         </ul>
                       </div>
@@ -808,21 +808,21 @@ export const ResourcesPage = () => {
                   </CardContent>
                 </Card>
 
-                {/* Methode de calcul */}
+                {/* Méthode de calcul */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base">
-                      <Activity className="w-5 h-5 text-accent" /> Methode de calcul en France
+                      <Activity className="w-5 h-5 text-accent" /> Méthode de calcul en France
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <p className="text-sm text-foreground/80 leading-relaxed">
-                      Le calcul de la PGPF repose sur une methodologie precise, validee par la jurisprudence francaise :
+                      Le calcul de la PGPF repose sur une méthodologie précise, validee par la jurisprudence francaise :
                     </p>
                     <div className="space-y-3">
                       {[
                         {
-                          etape: "1. Projection de carriere",
+                          etape: "1. Projection de carrière",
                           desc: "Reconstitution du parcours professionnel hypothetique sans l'accident : evolution de poste, augmentations prevues, promotions probables, anciennete.",
                         },
                         {
@@ -831,11 +831,11 @@ export const ResourcesPage = () => {
                         },
                         {
                           etape: "3. Impact du handicap sur les revenus",
-                          desc: "Evaluation de la reduction de revenus causee par les sequelles : temps partiel impose, poste moins remunere, impossibilite de travailler.",
+                          desc: "Évaluation de la reduction de revenus causee par les séquelles : temps partiel impose, poste moins rémunéré, impossibilité de travailler.",
                         },
                         {
                           etape: "4. Capitalisation",
-                          desc: "Application d'un bareme de capitalisation (Gazette du Palais) pour convertir la perte annuelle en un capital unique, en fonction de l'age de la victime et de l'esperance de vie.",
+                          desc: "Application d'un bareme de capitalisation (Gazette du Palais) pour convertir la perte annuelle en un capital unique, en fonction de l'age de la victime et de l'espérance de vie.",
                         }
                       ].map((step, i) => (
                         <div key={i} className="flex gap-3 p-3 rounded-lg bg-muted/50 border border-border/30">
@@ -851,7 +851,7 @@ export const ResourcesPage = () => {
                     </div>
                     <div className="p-4 rounded-xl bg-muted/80 border border-border/50">
                       <p className="text-xs text-foreground/70 leading-relaxed">
-                        <strong>Formule simplifiee :</strong> PGPF = (Salaire annuel sans accident - Salaire annuel avec sequelles) x Euro de rente (bareme de capitalisation selon l'age)
+                        <strong>Formule simplifiee :</strong> PGPF = (Salaire annuel sans accident - Salaire annuel avec séquelles) x Euro de rente (bareme de capitalisation selon l'age)
                       </p>
                     </div>
                   </CardContent>
@@ -861,7 +861,7 @@ export const ResourcesPage = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base">
-                      <FileText className="w-5 h-5 text-accent" /> Justificatifs necessaires
+                      <FileText className="w-5 h-5 text-accent" /> Justificatifs nécessaires
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -869,8 +869,8 @@ export const ResourcesPage = () => {
                       {[
                         { title: "Bulletins de salaire", items: ["12 a 36 derniers bulletins avant l'accident", "Bulletins post-consolidation (si reprise)", "Primes, heures supplementaires, avantages en nature", "Attestations de paiement des indemnites percues"] },
                         { title: "Contrats de travail", items: ["Contrat en vigueur au moment de l'accident", "Avenants et promotions obtenues", "Convention collective applicable", "Grille salariale de l'entreprise / du secteur"] },
-                        { title: "Evolution professionnelle previsible", items: ["Entretiens professionnels et plan de carriere", "Formations prevues ou en cours", "Promesses d'embauche ou de promotion", "Statistiques sectorielles d'evolution salariale"] },
-                        { title: "Expertises economiques et medicales", items: ["Expertise medicale avec taux d'IPP", "Expertise economique (calcul de perte par actuaire)", "Avis du medecin du travail sur les restrictions", "Bilan de competences ou d'orientation professionnelle"] }
+                        { title: "Evolution professionnelle previsible", items: ["Entretiens professionnels et plan de carrière", "Formations prevues ou en cours", "Promesses d'embauche ou de promotion", "Statistiques sectorielles d'evolution salariale"] },
+                        { title: "Expertises economiques et médicales", items: ["Expertise médicale avec taux d'IPP", "Expertise economique (calcul de perte par actuaire)", "Avis du médecin du travail sur les restrictions", "Bilan de competences ou d'orientation professionnelle"] }
                       ].map((group, i) => (
                         <div key={i} className="p-4 rounded-xl bg-muted/50 border border-border/50">
                           <h4 className="font-semibold text-sm mb-3 text-accent">{group.title}</h4>
@@ -905,13 +905,13 @@ export const ResourcesPage = () => {
                         },
                         {
                           profil: "Fonctionnaire — Enseignant, 35 ans",
-                          situation: "Salaire net : 2 500 EUR/mois. Maladie professionnelle, mise en retraite pour invalidite. Pension : 1 400 EUR/mois. Perte annuelle : 13 200 EUR.",
+                          situation: "Salaire net : 2 500 EUR/mois. Maladie professionnelle, mise en retraité pour invalidité. Pension : 1 400 EUR/mois. Perte annuelle : 13 200 EUR.",
                           calcul: "13 200 EUR x 22,1 (euro de rente, homme 35 ans) = 291 720 EUR capitalises",
                           indemnisation: "environ 290 000 EUR"
                         },
                         {
-                          profil: "Independant — Artisan plombier, 48 ans",
-                          situation: "Revenu moyen : 3 500 EUR/mois. TMS invalidant, ne peut plus exercer. Revenu apres reconversion : 1 800 EUR/mois. Perte annuelle : 20 400 EUR.",
+                          profil: "Indépendant — Artisan plombier, 48 ans",
+                          situation: "Revenu moyen : 3 500 EUR/mois. TMS invalidant, ne peut plus exercer. Revenu après reconversion : 1 800 EUR/mois. Perte annuelle : 20 400 EUR.",
                           calcul: "20 400 EUR x 15,8 (euro de rente, homme 48 ans) = 322 320 EUR capitalises",
                           indemnisation: "environ 320 000 EUR"
                         }
@@ -933,7 +933,7 @@ export const ResourcesPage = () => {
                 <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20" data-testid="pgpf-disclaimer">
                   <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                   <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
-                    <strong>Avertissement :</strong> Ces informations sont fournies a titre indicatif et ne constituent pas un conseil juridique. Les montants d'indemnisation dependent de chaque situation individuelle, des baremes de capitalisation en vigueur et de l'appreciation des juges. Consultez un professionnel du droit pour une evaluation personnalisee de votre dossier.
+                    <strong>Avertissement :</strong> Ces informations sont fournies a titre indicatif et ne constituent pas un conseil juridique. Les montants d'indemnisation dependent de chaque situation individuelle, des baremes de capitalisation en vigueur et de l'appreciation des juges. Consultez un professionnel du droit pour une évaluation personnalisée de votre dossier.
                   </p>
                 </div>
 
@@ -1050,13 +1050,13 @@ export const ResourcesPage = () => {
                           content: "Financement d'équipements : fauteuil roulant, prothèses auditives, appareils de verticalisation, aides à la communication, matériel informatique adapté, etc. La PCH prend en charge jusqu'à 75% du coût avec un plafond triennal."
                         },
                         {
-                          id: "amenagement-logement",
+                          id: "aménagément-logement",
                           title: "Aménagement du logement",
                           condition: "Nécessité d'adapter le domicile au handicap",
                           content: "Travaux d'accessibilité : rampe d'accès, douche à l'italienne, monte-escalier, élargissement de portes, domotique. Prise en charge jusqu'à 10 000 € sur 10 ans (ou 50% du coût au-delà)."
                         },
                         {
-                          id: "amenagement-vehicule",
+                          id: "aménagément-vehicule",
                           title: "Aménagement du véhicule",
                           condition: "Nécessité d'adapter le véhicule ou surcoût de transport",
                           content: "Adaptation du poste de conduite, boîte automatique, rampe d'accès. Prise en charge jusqu'à 5 000 € sur 5 ans. Surcoûts de transport : 200 €/mois (ou 12 000 € sur 5 ans)."
@@ -1185,7 +1185,7 @@ export const ResourcesPage = () => {
                     {getFaqsByCategory(c).map((faq, i) => (
                       <AccordionItem key={faq.id} value={faq.id} className="border-border" data-testid={`faq-item-${i}`}>
                         <AccordionTrigger className="text-left hover:no-underline hover:text-accent">{faq.question}</AccordionTrigger>
-                        <AccordionContent className="text-muted-foreground">{faq.reponse}</AccordionContent>
+                        <AccordionContent className="text-muted-foreground">{faq.réponse}</AccordionContent>
                       </AccordionItem>
                     ))}
                     {getFaqsByCategory(c).length === 0 && <p className="text-muted-foreground text-center py-8">Aucune question dans cette catégorie.</p>}

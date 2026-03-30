@@ -45,7 +45,7 @@ export const OcrFieldsPreview = ({ ocrResult, onApplyFields, onDismiss, classNam
 
   const { fields, confidence, source } = ocrResult;
   const hasFields = Object.keys(fields).length > 0 && (
-    fields.dates?.length || fields.montants?.length || fields.references?.length ||
+    fields.dates?.length || fields.montants?.length || fields.référénces?.length ||
     fields.noms?.length || fields.taux_ipp?.length || fields.type_dossier_detected?.length || 
     fields.numero_ss || fields.organisme || fields.resume || fields.recommandations?.length
   );
@@ -97,8 +97,8 @@ export const OcrFieldsPreview = ({ ocrResult, onApplyFields, onDismiss, classNam
             {fields.montants?.length > 0 && (
               <FieldRow icon={DollarSign} label="Montants" values={fields.montants} color="text-emerald-600" />
             )}
-            {fields.references?.length > 0 && (
-              <FieldRow icon={Hash} label="Références / N° dossier" values={fields.references} color="text-purple-600" />
+            {fields.référénces?.length > 0 && (
+              <FieldRow icon={Hash} label="Références / N° dossier" values={fields.référénces} color="text-purple-600" />
             )}
             {fields.numero_ss && (
               <FieldRow icon={FileText} label="N° Sécurité Sociale" values={[fields.numero_ss]} color="text-orange-600" />

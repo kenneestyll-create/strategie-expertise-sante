@@ -16,7 +16,7 @@ const CoverContent = ({ reportType = "StrategiIA", large = false }) => {
       {/* Watermark */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ transform: 'rotate(-40deg)' }}>
         <span className={`${large ? 'text-3xl' : 'text-[10px]'} font-bold text-white/[0.06] whitespace-nowrap tracking-wider`}>
-          Strategie & Expertise Sante
+          Stratégie & Expertise Santé
         </span>
       </div>
 
@@ -33,7 +33,7 @@ const CoverContent = ({ reportType = "StrategiIA", large = false }) => {
           </svg>
         </div>
         <div>
-          <p className={`${titleSize} font-bold text-white tracking-wide`}>Strategie & Expertise Sante</p>
+          <p className={`${titleSize} font-bold text-white tracking-wide`}>Stratégie & Expertise Santé</p>
           <p className={`${infoSize} text-white/50 mt-0.5`}>strategie-expertise-sante.fr</p>
         </div>
 
@@ -46,7 +46,7 @@ const CoverContent = ({ reportType = "StrategiIA", large = false }) => {
       {/* Info box */}
       <div className={`bg-white/[0.07] rounded ${large ? 'p-4 mt-6 mx-6' : 'p-1 mt-2 mx-1'} ${gap} flex flex-col`}>
         {[
-          ['Numero du rapport', 'SES-2026-48721'],
+          ['Numéro du rapport', 'SES-2026-48721'],
           ['Date de generation', '15/03/2026'],
           ['Client / Dossier', 'Apercu — Exemple'],
         ].map(([label, val]) => (
@@ -62,7 +62,7 @@ const CoverContent = ({ reportType = "StrategiIA", large = false }) => {
         Document confidentiel
       </div>
       <div className={`text-center ${smallSize} text-white/20`}>
-        &copy; 2026 Strategie & Expertise Sante
+        &copy; 2026 Stratégie & Expertise Santé
       </div>
     </div>
   );

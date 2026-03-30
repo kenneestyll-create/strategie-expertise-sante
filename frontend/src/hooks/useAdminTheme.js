@@ -3,10 +3,10 @@ import { useState, useEffect, useCallback } from 'react';
 const STORAGE_KEY = 'ses-admin-theme';
 
 export function useAdminTheme() {
-  const getSystemPreference = () =>
+  const getSystemPréférénce = () =>
     window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 
-  const [preference, setPreference] = useState(() => {
+  const [préférénce, setPréférénce] = useState(() => {
     try {
       return localStorage.getItem(STORAGE_KEY) || 'system';
     } catch {
@@ -14,7 +14,7 @@ export function useAdminTheme() {
     }
   });
 
-  const resolved = preference === 'system' ? getSystemPreference() : preference;
+  const resolved = préférénce === 'system' ? getSystemPréférénce() : préférénce;
   const isDark = resolved === 'dark';
 
   // Sync body class for portals (dialogs, popovers, selects)
@@ -29,15 +29,15 @@ export function useAdminTheme() {
 
   useEffect(() => {
     const mq = window.matchMedia?.('(prefers-color-scheme: dark)');
-    if (!mq || preference !== 'system') return;
-    const handler = () => setPreference(p => p === 'system' ? 'system' : p);
+    if (!mq || préférénce !== 'system') return;
+    const handler = () => setPréférénce(p => p === 'system' ? 'system' : p);
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
-  }, [preference]);
+  }, [préférénce]);
 
   const toggle = useCallback(() => {
-    setPreference(prev => {
-      const next = (prev === 'system' ? getSystemPreference() : prev) === 'dark' ? 'light' : 'dark';
+    setPréférénce(prev => {
+      const next = (prev === 'system' ? getSystemPréférénce() : prev) === 'dark' ? 'light' : 'dark';
       try { localStorage.setItem(STORAGE_KEY, next); } catch {}
       return next;
     });
@@ -45,8 +45,8 @@ export function useAdminTheme() {
 
   const reset = useCallback(() => {
     try { localStorage.removeItem(STORAGE_KEY); } catch {}
-    setPreference('system');
+    setPréférénce('system');
   }, []);
 
-  return { isDark, preference, toggle, reset };
+  return { isDark, préférénce, toggle, reset };
 }

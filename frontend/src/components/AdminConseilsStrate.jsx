@@ -17,7 +17,7 @@ import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const CATEGORIES = ["droits", "expertise", "indemnisation", "emploi", "demarches", "strategie", "actualite"];
+const CATEGORIES = ["droits", "expertise", "indemnisation", "emploi", "démarches", "stratégie", "actualite"];
 const LINK_OPTIONS = [
   { value: "/calculatrice-ipp", label: "Calculatrice IPP" },
   { value: "/dossier-express", label: "Dossier Express IA" },
@@ -37,7 +37,7 @@ const catColors = {
   expertise: 'bg-purple-500/20 text-purple-400',
   indemnisation: 'bg-amber-500/20 text-amber-400',
   emploi: 'bg-green-500/20 text-green-400',
-  demarches: 'bg-cyan-500/20 text-cyan-400',
+  démarches: 'bg-cyan-500/20 text-cyan-400',
   strategie: 'bg-rose-500/20 text-rose-400',
   actualite: 'bg-orange-500/20 text-orange-400',
 };
@@ -207,7 +207,7 @@ const AnalyticsSection = ({ axiosConfig }) => {
                   </tr>
                 ))}
                 {topConseils.length === 0 && (
-                  <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">Pas encore de donnees</td></tr>
+                  <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">Pas encore de données</td></tr>
                 )}
               </tbody>
             </table>

@@ -224,7 +224,7 @@ export const ReferralPage = () => {
                 Aidez vos proches à bénéficier d'un accompagnement de qualité à moindre coût.
               </p>
             </div>
-            <div className="bg-background p-6 rounded-xl border border-border" data-testid="advantage-referee">
+            <div className="bg-background p-6 rounded-xl border border-border" data-testid="advantage-référée">
               <Percent className="w-8 h-8 text-accent mb-3" strokeWidth={1.5} />
               <h3 className="font-semibold mb-2">Pour le filleul</h3>
               <p className="text-sm text-muted-foreground">

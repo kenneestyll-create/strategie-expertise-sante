@@ -165,7 +165,7 @@ const DesktopWidget = ({ conseil, isOpen, setIsOpen, isSpeaking, speak, close })
       </div>
     )}
 
-    {/* Mascotte + bulle pulsante */}
+    {/* Mascotte + bulle pulsanté */}
     <div className="flex items-end gap-2">
       {!isOpen && (
         <button

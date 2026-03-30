@@ -36,11 +36,11 @@ const PLAFOND_COUPLE = 21_098;
 // Majoration par enfant à charge
 const MAJORATION_ENFANT = 5828;
 
-const calculateAAH = (tauxInvalidite, situationFamiliale, revenus, enfants) => {
+const calculateAAH = (tauxInvalidité, situationFamiliale, revenus, enfants) => {
   // Éligibilité : taux >= 80% ou entre 50 et 79% avec restriction substantielle
-  if (tauxInvalidite < 50) {
+  if (tauxInvalidité < 50) {
     return {
-      eligible: false,
+      éligible: false,
       montant: 0,
       message: "Le taux d'invalidité minimum pour bénéficier de l'AAH est de 50%.",
       detail: "L'AAH est attribuée aux personnes ayant un taux d'incapacité d'au moins 80%, ou entre 50% et 79% avec une restriction substantielle et durable d'accès à l'emploi reconnue par la CDAPH."
@@ -53,7 +53,7 @@ const calculateAAH = (tauxInvalidite, situationFamiliale, revenus, enfants) => {
 
   if (revenusAnnuels >= plafond) {
     return {
-      eligible: false,
+      éligible: false,
       montant: 0,
       message: "Vos revenus dépassent le plafond de ressources.",
       detail: `Plafond annuel pour votre situation : ${plafond.toLocaleString('fr-FR')} € (soit ${Math.round(plafond / 12).toLocaleString('fr-FR')} €/mois). Vos revenus annuels déclarés : ${revenusAnnuels.toLocaleString('fr-FR')} €.`,
@@ -73,10 +73,10 @@ const calculateAAH = (tauxInvalidite, situationFamiliale, revenus, enfants) => {
 
   montantMensuel = Math.round(montantMensuel * 100) / 100;
 
-  const isTauxPlein = tauxInvalidite >= 80;
+  const isTauxPlein = tauxInvalidité >= 80;
 
   return {
-    eligible: true,
+    éligible: true,
     montant: montantMensuel,
     montantAnnuel: Math.round(montantMensuel * 12 * 100) / 100,
     message: `Estimation de votre AAH mensuelle`,
@@ -90,7 +90,7 @@ const calculateAAH = (tauxInvalidite, situationFamiliale, revenus, enfants) => {
 
 export const CalculatriceAAHPage = () => {
   const [searchParams] = useSearchParams();
-  const [tauxInvalidite, setTauxInvalidite] = useState(80);
+  const [tauxInvalidité, setTauxInvalidité] = useState(80);
   const [situationFamiliale, setSituationFamiliale] = useState('seul');
   const [revenus, setRevenus] = useState(0);
   const [enfants, setEnfants] = useState(0);
@@ -111,7 +111,7 @@ export const CalculatriceAAHPage = () => {
       const r = parseInt(searchParams.get('r') || '0', 10);
       const e = parseInt(searchParams.get('e') || '0', 10);
       if (parsedT >= 0 && parsedT <= 100) {
-        setTauxInvalidite(parsedT);
+        setTauxInvalidité(parsedT);
         setSituationFamiliale(sf);
         setRevenus(r);
         setEnfants(e);
@@ -123,7 +123,7 @@ export const CalculatriceAAHPage = () => {
   }, [searchParams]);
 
   const handleCalculate = () => {
-    const res = calculateAAH(tauxInvalidite, situationFamiliale, revenus, enfants);
+    const res = calculateAAH(tauxInvalidité, situationFamiliale, revenus, enfants);
     setResult(res);
     setCalculated(true);
     axios.post(`${API}/calculator/track`, { type: 'aah' }).then(() => {
@@ -133,14 +133,14 @@ export const CalculatriceAAHPage = () => {
 
   const getShareUrl = () => {
     const base = `${window.location.origin}/calculatrice-aah`;
-    const params = new URLSearchParams({ t: tauxInvalidite, sf: situationFamiliale, r: revenus, e: enfants });
+    const params = new URLSearchParams({ t: tauxInvalidité, sf: situationFamiliale, r: revenus, e: enfants });
     return `${base}?${params.toString()}`;
   };
 
   const getShareText = () => {
     if (!result) return '';
-    if (result.eligible) {
-      return `Calculatrice AAH - Taux ${tauxInvalidite}% : AAH estimée à ${result.montant.toLocaleString('fr-FR')} €/mois. Estimez la vôtre :`;
+    if (result.éligible) {
+      return `Calculatrice AAH - Taux ${tauxInvalidité}% : AAH estimée à ${result.montant.toLocaleString('fr-FR')} €/mois. Estimez la vôtre :`;
     }
     return `Calculatrice AAH - Vérifiez votre éligibilité à l'AAH :`;
   };
@@ -212,11 +212,11 @@ export const CalculatriceAAHPage = () => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <Label className="text-base font-medium">Taux d'invalidité</Label>
-                  <span className="text-2xl font-bold text-accent" data-testid="aah-taux-display">{tauxInvalidite}%</span>
+                  <span className="text-2xl font-bold text-accent" data-testid="aah-taux-display">{tauxInvalidité}%</span>
                 </div>
                 <Slider
-                  value={[tauxInvalidite]}
-                  onValueChange={(v) => { setTauxInvalidite(v[0]); setCalculated(false); }}
+                  value={[tauxInvalidité]}
+                  onValueChange={(v) => { setTauxInvalidité(v[0]); setCalculated(false); }}
                   min={0}
                   max={100}
                   step={1}
@@ -224,8 +224,8 @@ export const CalculatriceAAHPage = () => {
                 />
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>0%</span>
-                  <span className={tauxInvalidite >= 50 && tauxInvalidite < 80 ? 'text-amber-600 font-medium' : ''}>50% (seuil AAH)</span>
-                  <span className={tauxInvalidite >= 80 ? 'text-green-600 font-medium' : ''}>80% (taux plein)</span>
+                  <span className={tauxInvalidité >= 50 && tauxInvalidité < 80 ? 'text-amber-600 font-medium' : ''}>50% (seuil AAH)</span>
+                  <span className={tauxInvalidité >= 80 ? 'text-green-600 font-medium' : ''}>80% (taux plein)</span>
                   <span>100%</span>
                 </div>
               </div>
@@ -298,13 +298,13 @@ export const CalculatriceAAHPage = () => {
 
               {/* Results */}
               {calculated && result && (
-                <div className={`mt-6 p-6 rounded-xl border space-y-4 ${result.eligible ? 'bg-green-50 border-green-200' : 'bg-muted/30 border-border'}`} data-testid="aah-result">
+                <div className={`mt-6 p-6 rounded-xl border space-y-4 ${result.éligible ? 'bg-green-50 border-green-200' : 'bg-muted/30 border-border'}`} data-testid="aah-result">
                   <div className="flex items-center gap-2 text-sm font-medium">
                     <Info className="w-4 h-4 text-muted-foreground" />
                     <span>{result.message}</span>
                   </div>
 
-                  {result.eligible ? (
+                  {result.éligible ? (
                     <>
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="text-center p-4 bg-background rounded-lg">
@@ -325,7 +325,7 @@ export const CalculatriceAAHPage = () => {
 
                       <div className="text-xs text-muted-foreground bg-background p-3 rounded-lg">
                         <p className="font-medium mb-1">Détail :</p>
-                        <p>Taux d'invalidité : {tauxInvalidite}% {result.isTauxPlein ? '(taux plein ≥ 80%)' : '(50-79%, sous conditions)'}</p>
+                        <p>Taux d'invalidité : {tauxInvalidité}% {result.isTauxPlein ? '(taux plein ≥ 80%)' : '(50-79%, sous conditions)'}</p>
                         <p>Plafond de ressources annuel : {result.plafond?.toLocaleString('fr-FR')} € ({situationFamiliale === 'couple' ? 'couple' : 'personne seule'}{enfants > 0 ? ` + ${enfants} enfant${enfants > 1 ? 's' : ''}` : ''})</p>
                         <p>Revenus déclarés : {(revenus * 12).toLocaleString('fr-FR')} €/an</p>
                         <p>AAH max : {AAH_MAX} €/mois</p>
@@ -419,7 +419,7 @@ export const CalculatriceAAHPage = () => {
             </h2>
             <p className="text-primary-foreground/70 mb-6 max-w-lg mx-auto">
               La constitution d'un dossier MDPH est déterminante pour l'obtention de l'AAH.
-              Je vous accompagne dans cette démarche cruciale.
+              Je vous accompagné dans cette démarche cruciale.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link to="/agenda">
