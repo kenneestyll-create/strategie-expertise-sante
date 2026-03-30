@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +10,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export const AlerteUrgente = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showButton, setShowButton] = useState(false);
   const [formule, setFormule] = useState('2h');
   const [nom, setNom] = useState('');
   const [telephone, setTelephone] = useState('');
@@ -17,6 +18,12 @@ export const AlerteUrgente = () => {
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShowButton(window.scrollY > 400);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,8 +57,8 @@ export const AlerteUrgente = () => {
 
   return (
     <>
-      {/* Floating Button — Urgence bottom-left — Discret & premium */}
-      {!isOpen && (
+      {/* Floating Button — Urgence — Apparait uniquement après scroll */}
+      {!isOpen && showButton && (
         <button
           onClick={() => setIsOpen(true)}
           className="fixed flex items-center gap-2 px-3.5 py-2 rounded-lg shadow-lg text-xs font-medium transition-all hover:scale-105 border border-[#C9A84C]/20 bg-[#111]/95 backdrop-blur-sm text-[#f5f0e8]/70 hover:text-[#f5f0e8] hover:border-[#C9A84C]/40"

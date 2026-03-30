@@ -140,13 +140,13 @@ export const HomePage = () => {
       <section className="relative bg-[#0a0a08]" data-testid="hero-section">
         {/* Fond premium — lueur dorée diffuse très discrète */}
         <div className="absolute top-1/2 right-0 w-[600px] h-[600px] -translate-y-1/2 translate-x-1/4 bg-[#C9A84C]/[0.03] rounded-full blur-[180px] pointer-events-none" />
-        <div className="relative max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-16 lg:py-20">
-          <div className="grid lg:grid-cols-[55fr_45fr] gap-10 lg:gap-14 items-center">
+        <div className="relative max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-14">
+          <div className="grid lg:grid-cols-[55fr_45fr] gap-8 lg:gap-12 items-center">
 
             {/* ── COLONNE GAUCHE : Contenu ── */}
             <div className="order-2 lg:order-1">
               {/* Badge */}
-              <div className="inline-flex items-center gap-3 border border-[#C9A84C]/30 text-[#C9A84C] px-4 py-2.5 rounded-lg mb-6" data-testid="pioneer-badge">
+              <div className="inline-flex items-center gap-3 border border-[#C9A84C]/30 text-[#C9A84C] px-4 py-2 rounded-lg mb-4" data-testid="pioneer-badge">
                 <div className="w-7 h-7 rounded-md border border-[#C9A84C]/40 flex items-center justify-center flex-shrink-0">
                   <Scale className="w-4 h-4 text-[#C9A84C]" />
                 </div>
@@ -156,9 +156,9 @@ export const HomePage = () => {
                 </div>
               </div>
 
-              {/* Titre */}
+              {/* Titre — compacté pour above-the-fold */}
               <h1
-                className="text-[2rem] sm:text-[2.6rem] lg:text-[3rem] xl:text-[3.4rem] font-bold text-[#f5f0e8] leading-[1.12] mb-5"
+                className="text-[2rem] sm:text-[2.4rem] lg:text-[2.6rem] xl:text-[2.8rem] font-bold text-[#f5f0e8] leading-[1.10] mb-3"
                 style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
                 data-testid="hero-title"
               >
@@ -169,7 +169,7 @@ export const HomePage = () => {
               </h1>
 
               {/* Sous-titre */}
-              <p className="text-sm sm:text-[15px] text-[#f5f0e8]/55 leading-relaxed mb-5 max-w-xl" data-testid="hero-subtitle">
+              <p className="text-sm sm:text-[15px] text-[#f5f0e8]/55 leading-relaxed mb-3 max-w-xl" data-testid="hero-subtitle">
                 Analysez votre situation, identifiez vos leviers, comprenez vos droits et accedez a un accompagnement strategique humain en cas de{' '}
                 <strong className="text-[#f5f0e8]/70">maladie professionnelle</strong>,{' '}
                 <strong className="text-[#f5f0e8]/70">accident du travail</strong>,{' '}
@@ -178,14 +178,14 @@ export const HomePage = () => {
               </p>
 
               {/* 3 points cles */}
-              <div className="space-y-2.5 mb-6">
+              <div className="space-y-2 mb-4">
                 {[
                   { icon: HeartHandshake, text: "Expertise nee d'un vecu concret" },
                   { icon: Crosshair, text: "Methode strategique & personnalisee" },
                   { icon: Brain, text: "Analyse IA + accompagnement humain" },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full border border-[#C9A84C]/30 bg-[#C9A84C]/5 flex items-center justify-center flex-shrink-0">
+                    <div className="w-7 h-7 rounded-full border border-[#C9A84C]/30 bg-[#C9A84C]/5 flex items-center justify-center flex-shrink-0">
                       <item.icon className="w-3.5 h-3.5 text-[#C9A84C]" />
                     </div>
                     <span className="text-[#f5f0e8]/65 text-sm">{item.text}</span>
@@ -194,36 +194,33 @@ export const HomePage = () => {
               </div>
 
               {/* Preuve sociale */}
-              <div className="flex flex-wrap items-center gap-4 sm:gap-6 mb-6">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-5 mb-4">
                 {visitorCount > 0 && (
                   <div className="flex items-center gap-2.5">
                     <div className="flex -space-x-1.5">
                       {[1,2,3].map(i => (
-                        <div key={i} className="w-7 h-7 rounded-full bg-gradient-to-br from-[#C9A84C]/30 to-[#C9A84C]/10 border-2 border-[#0a0a08] flex items-center justify-center">
-                          <Users className="w-3 h-3 text-[#C9A84C]/60" />
+                        <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-br from-[#C9A84C]/30 to-[#C9A84C]/10 border-2 border-[#0a0a08] flex items-center justify-center">
+                          <Users className="w-2.5 h-2.5 text-[#C9A84C]/60" />
                         </div>
                       ))}
                     </div>
                     <div className="leading-tight">
                       <span className="text-[#f5f0e8] text-sm font-bold">{visitorCount.toLocaleString('fr-FR')}+</span>
-                      <span className="text-[#f5f0e8]/30 text-xs block">personnes deja accompagnees</span>
+                      <span className="text-[#f5f0e8]/30 text-xs block">personnes accompagnees</span>
                     </div>
                   </div>
                 )}
-                <div className="h-6 w-px bg-[#f5f0e8]/10 hidden sm:block" />
+                <div className="h-5 w-px bg-[#f5f0e8]/10 hidden sm:block" />
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-[#C9A84C]/15 flex items-center justify-center">
-                    <Zap className="w-3 h-3 text-[#C9A84C]" />
+                  <div className="w-5 h-5 rounded-full bg-[#C9A84C]/15 flex items-center justify-center">
+                    <Zap className="w-2.5 h-2.5 text-[#C9A84C]" />
                   </div>
-                  <div className="leading-tight">
-                    <span className="text-[#f5f0e8]/70 text-xs font-semibold">Reponse sous 2h</span>
-                    <span className="text-[#f5f0e8]/25 text-[10px] block">Rapide & reactif</span>
-                  </div>
+                  <span className="text-[#f5f0e8]/60 text-xs font-medium">Reponse sous 2h</span>
                 </div>
               </div>
 
               {/* CTAs */}
-              <div className="flex flex-col sm:flex-row gap-3 mb-4">
+              <div className="flex flex-col sm:flex-row gap-3 mb-2">
                 <button
                   onClick={() => window.dispatchEvent(new Event('strategiia:open'))}
                   className="cursor-pointer"
@@ -251,25 +248,24 @@ export const HomePage = () => {
 
               {/* Texte sous CTAs */}
               <p className="text-xs text-[#f5f0e8]/30 leading-relaxed">
-                Deux parcours disponibles selon votre besoin :<br />
-                <span className="text-[#C9A84C]/50">analyse immediate par IA</span> ou <span className="text-[#C9A84C]/50">prise en charge humaine personnalisee</span>.
+                <span className="text-[#C9A84C]/50">Analyse immediate par IA</span> ou <span className="text-[#C9A84C]/50">prise en charge humaine personnalisee</span>.
               </p>
             </div>
 
-            {/* ── COLONNE DROITE : Visuel premium ── */}
+            {/* ── COLONNE DROITE : Visuel premium — contenu ── */}
             <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
-              <div className="w-full max-w-[460px]">
+              <div className="w-full max-w-[380px]">
                 {/* Cadre image — ombre profonde + filet doré gauche */}
                 <div className="relative">
                   <div className="overflow-hidden shadow-[0_25px_60px_-12px_rgba(0,0,0,0.7)]">
                     <img
                       src="https://images.pexels.com/photos/28446973/pexels-photo-28446973.jpeg?auto=compress&cs=tinysrgb&w=800"
                       alt="Expert en strategie sante"
-                      className="w-full aspect-[3/4] object-cover object-top"
+                      className="w-full aspect-[4/5] object-cover object-top"
                       loading="eager"
                     />
                     {/* Fondu bas — intégration dans le fond */}
-                    <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#0a0a08] to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#0a0a08] to-transparent" />
                   </div>
                   {/* Filet doré vertical — accent luxe discret */}
                   <div className="absolute top-6 bottom-6 -left-3 w-[2px] bg-gradient-to-b from-transparent via-[#C9A84C]/40 to-transparent" />
