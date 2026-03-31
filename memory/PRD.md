@@ -49,6 +49,12 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA i
 
 ### Tests Homepage : 100% PASS (iteration 156-162)
 
+## Correction Blocs Fondateur Desktop (31/03/2026)
+- **Probleme** : Les 3 blocs CTA (Analyse IA, Documents, Orientation) sur la photo du fondateur etaient dupliques et inutiles sur desktop
+- **Correction** : Ajout de `lg:hidden` aux 3 blocs dans la section "Pourquoi ce site existe" pour les masquer sur desktop uniquement
+- **Fichier modifie** : HomePage.jsx (lignes 393, 403, 413)
+- **Mobile** : Blocs conserves et visibles
+
 ## Fonctionnalites implementees
 - Mascotte Strate : TTS francais robuste (speakFrench), widget desktop + mobile, rotation quotidienne des conseils
 - Admin Conseils Strate : CRUD complet, analytics, stats, highlight/priorite
