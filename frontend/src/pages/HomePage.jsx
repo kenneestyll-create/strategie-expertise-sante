@@ -295,7 +295,7 @@ export const HomePage = () => {
 
                   {/* ── 3 Blocs flottants sur l'image ── */}
                   {/* Bloc Analyse IA — haut gauche */}
-                  <button onClick={() => window.dispatchEvent(new Event('strategiia:open'))} className="hidden lg:flex absolute top-[12%] left-[2%] sm:left-[-8%] items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/85 backdrop-blur-sm rounded-lg px-2.5 py-2 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)] cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_25px_rgba(201,168,76,0.2)] transition-all" data-testid="hero-bloc-analyse">
+                  <button onClick={() => window.dispatchEvent(new Event('strategiia:open'))} className="flex absolute z-20 top-[8%] right-[3%] lg:top-[12%] lg:left-[-8%] lg:right-auto items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/90 backdrop-blur-sm rounded-lg px-2 py-1.5 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)] cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_25px_rgba(201,168,76,0.2)] transition-all" data-testid="hero-bloc-analyse">
                     <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
                       <Brain className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-[#C9A84C]" />
                     </div>
@@ -306,7 +306,7 @@ export const HomePage = () => {
                   </button>
 
                   {/* Bloc Documents — droite centre */}
-                  <Link to="/dossier-express?step=form" className="hidden lg:flex absolute top-[25%] right-[2%] sm:right-[-5%] items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/85 backdrop-blur-sm rounded-lg px-2.5 py-2 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)] cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_25px_rgba(201,168,76,0.2)] transition-all" data-testid="hero-bloc-documents">
+                  <Link to="/dossier-express?step=form" className="flex absolute z-20 top-[30%] right-[3%] lg:top-[25%] lg:right-[-5%] items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/90 backdrop-blur-sm rounded-lg px-2 py-1.5 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)] cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_25px_rgba(201,168,76,0.2)] transition-all" data-testid="hero-bloc-documents">
                     <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
                       <FileText className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-[#C9A84C]" />
                     </div>
@@ -317,7 +317,7 @@ export const HomePage = () => {
                   </Link>
 
                   {/* Bloc Orientation — bas centre */}
-                  <Link to="/simulateur" className="hidden lg:flex absolute bottom-[38%] left-1/2 -translate-x-1/2 items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/85 backdrop-blur-sm rounded-lg px-2.5 py-2 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)] cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_25px_rgba(201,168,76,0.2)] transition-all" data-testid="hero-bloc-orientation">
+                  <Link to="/simulateur" className="flex absolute z-20 top-[52%] right-[3%] lg:top-auto lg:right-auto lg:bottom-[38%] lg:left-1/2 lg:-translate-x-1/2 items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/90 backdrop-blur-sm rounded-lg px-2 py-1.5 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)] cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_25px_rgba(201,168,76,0.2)] transition-all" data-testid="hero-bloc-orientation">
                     <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
                       <Compass className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-[#C9A84C]" />
                     </div>
@@ -390,7 +390,7 @@ export const HomePage = () => {
                   />
                 </div>
                 {/* Floating "Decision de justice" card */}
-                <div className="absolute -top-3 -right-6 sm:-right-10 bg-[#111] border border-[#C9A84C]/25 rounded-xl px-4 py-3 shadow-xl z-10">
+                <div className="hidden sm:block absolute -top-3 -right-6 sm:-right-10 bg-[#111] border border-[#C9A84C]/25 rounded-xl px-4 py-3 shadow-xl z-10">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-lg bg-[#C9A84C]/15 flex items-center justify-center flex-shrink-0">
                       <Scale className="w-4 h-4 text-[#C9A84C]" />
