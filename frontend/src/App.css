@@ -43,39 +43,11 @@
   0% { content: '0%'; }
 }
 
-/* ═══ MOBILE TEXT — anti-troncature global ═══ */
+/* ═══ MOBILE — overflow clip global (sections) ═══ */
 @media (max-width: 768px) {
-  /* Texte : retour à la ligne forcé */
-  p, span, h1, h2, h3, h4, li, blockquote, a,
-  [class*="card"] p,
-  [class*="section"] p {
-    white-space: normal !important;
-    word-break: break-word;
-    overflow-wrap: break-word;
-  }
-
-  /* Cartes : largeur 100%, hauteur auto */
-  [class*="CardContent"],
-  [class*="rounded-xl"],
-  [class*="rounded-2xl"] {
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-
-  /* Sections : pas de débordement horizontal */
-  .section-padding,
   section {
+    overflow-x: clip;
     max-width: 100%;
-    overflow-x: hidden;
-  }
-
-  /* Padding confortable sur les cartes compactes */
-  [data-testid*="risque-"],
-  [data-testid*="methode-step-"],
-  [data-testid*="confiance-"],
-  [data-testid*="chiffre-bloc-"],
-  [data-testid*="testimonial-"] {
-    padding: 16px;
   }
 }
 

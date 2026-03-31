@@ -358,7 +358,7 @@ export const TarifsPage = () => {
       </section>
 
       {/* ==================== ÉTAPE 4 : Pass Urgent ==================== */}
-      <section className="section-padding relative overflow-hidden pt-10" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>
+      <section className="section-padding relative overflow-clip pt-10" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>
         <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(circle at 25% 50%, white 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex items-center gap-3 mb-8">

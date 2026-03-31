@@ -52,14 +52,35 @@ body {
     -moz-osx-font-smoothing: grayscale;
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    overflow-x: hidden;
+    overflow-x: clip;
     max-width: 100%;
     width: 100%;
 }
 
-#root, main {
-    overflow-x: hidden;
+/* ═══ Chaîne de confinement responsive — Défense en profondeur ═══ */
+#root {
+    overflow-x: clip;
     max-width: 100%;
+    width: 100%;
+}
+
+.App {
+    overflow-x: clip;
+    max-width: 100%;
+    width: 100%;
+}
+
+main {
+    overflow-x: clip;
+    max-width: 100%;
+    width: 100%;
+    contain: paint;
+}
+
+/* Empêcher le swipe horizontal tactile */
+html, body {
+    touch-action: pan-y pinch-zoom;
+    overscroll-behavior-x: none;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -94,10 +115,13 @@ h1, h2, h3, h4, h5, h6 {
 /* Scroll — auto for route changes, smooth only for anchor links */
 html {
     scroll-behavior: auto;
-    overflow-x: hidden;
-    overflow-y: scroll;
+    overflow-x: clip;
+    overflow-y: auto;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+}
+@media (min-width: 768px) {
+    html { overflow-y: scroll; }
 }
 
 /* ═══════════════════════════════════════════════════
