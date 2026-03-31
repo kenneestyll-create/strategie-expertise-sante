@@ -151,7 +151,7 @@ export const HomePage = () => {
           <div className="grid lg:grid-cols-[55fr_45fr] gap-8 lg:gap-12 items-center">
 
             {/* ── COLONNE GAUCHE : Contenu ── */}
-            <div className="order-2 lg:order-1">
+            <div className="relative z-10">
               {/* Badge — Reconstruit : structure simple et saine */}
               <div
                 className="flex w-fit items-center gap-4 rounded-xl bg-[#161612] border border-[#C9A84C]/20 px-4 py-2.5 sm:px-6 sm:py-3.5 mb-1"
@@ -272,28 +272,30 @@ export const HomePage = () => {
             </div>
 
             {/* ── COLONNE DROITE : Visuel signature ── */}
-            <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
-              <div className="w-full max-w-[400px] relative">
+            <div className="absolute inset-0 lg:relative lg:order-2 lg:flex lg:justify-center lg:justify-end">
+              <div className="w-full h-full lg:max-w-[400px] relative">
                 {/* Halo doré subtil derrière l'image */}
-                <div className="absolute -inset-8 bg-[#C9A84C]/[0.03] rounded-full blur-[60px] pointer-events-none" />
+                <div className="absolute -inset-8 bg-[#C9A84C]/[0.03] rounded-full blur-[60px] pointer-events-none hidden lg:block" />
                 {/* Cadre image — ombre profonde + filet doré gauche */}
                 <div className="relative">
-                  <div className="overflow-hidden shadow-[0_30px_70px_-15px_rgba(0,0,0,0.7)]">
+                  <div className="overflow-hidden shadow-[0_30px_70px_-15px_rgba(0,0,0,0.7)] h-full lg:h-auto">
                     <img
                       src="https://images.pexels.com/photos/28446973/pexels-photo-28446973.jpeg?auto=compress&cs=tinysrgb&w=800"
                       alt="Expert en stratégie santé"
-                      className="w-full aspect-[4/5] object-cover object-top"
+                      className="w-full h-full lg:aspect-[4/5] object-cover object-top"
                       loading="eager"
                     />
                     {/* Fondu haut — intégration douce */}
                     <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-[#0a0a08]/40 to-transparent" />
                     {/* Fondu bas — intégration dans le fond */}
                     <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#0a0a08] via-[#0a0a08]/60 to-transparent" />
+                    {/* Overlay sombre mobile — lisibilité du texte */}
+                    <div className="absolute inset-0 bg-[#0a0a08]/70 lg:hidden" />
                   </div>
 
                   {/* ── 3 Blocs flottants sur l'image ── */}
                   {/* Bloc Analyse IA — haut gauche */}
-                  <button onClick={() => window.dispatchEvent(new Event('strategiia:open'))} className="absolute top-[12%] left-[2%] sm:left-[-8%] flex items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/85 backdrop-blur-sm rounded-lg px-2.5 py-2 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)] cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_25px_rgba(201,168,76,0.2)] transition-all" data-testid="hero-bloc-analyse">
+                  <button onClick={() => window.dispatchEvent(new Event('strategiia:open'))} className="hidden lg:flex absolute top-[12%] left-[2%] sm:left-[-8%] items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/85 backdrop-blur-sm rounded-lg px-2.5 py-2 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)] cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_25px_rgba(201,168,76,0.2)] transition-all" data-testid="hero-bloc-analyse">
                     <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
                       <Brain className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-[#C9A84C]" />
                     </div>
@@ -304,7 +306,7 @@ export const HomePage = () => {
                   </button>
 
                   {/* Bloc Documents — droite centre */}
-                  <Link to="/dossier-express?step=form" className="absolute top-[25%] right-[2%] sm:right-[-5%] flex items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/85 backdrop-blur-sm rounded-lg px-2.5 py-2 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)] cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_25px_rgba(201,168,76,0.2)] transition-all" data-testid="hero-bloc-documents">
+                  <Link to="/dossier-express?step=form" className="hidden lg:flex absolute top-[25%] right-[2%] sm:right-[-5%] items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/85 backdrop-blur-sm rounded-lg px-2.5 py-2 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)] cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_25px_rgba(201,168,76,0.2)] transition-all" data-testid="hero-bloc-documents">
                     <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
                       <FileText className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-[#C9A84C]" />
                     </div>
@@ -315,7 +317,7 @@ export const HomePage = () => {
                   </Link>
 
                   {/* Bloc Orientation — bas centre */}
-                  <Link to="/simulateur" className="absolute bottom-[38%] left-1/2 -translate-x-1/2 flex items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/85 backdrop-blur-sm rounded-lg px-2.5 py-2 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)] cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_25px_rgba(201,168,76,0.2)] transition-all" data-testid="hero-bloc-orientation">
+                  <Link to="/simulateur" className="hidden lg:flex absolute bottom-[38%] left-1/2 -translate-x-1/2 items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/85 backdrop-blur-sm rounded-lg px-2.5 py-2 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)] cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_25px_rgba(201,168,76,0.2)] transition-all" data-testid="hero-bloc-orientation">
                     <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
                       <Compass className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-[#C9A84C]" />
                     </div>
@@ -324,9 +326,9 @@ export const HomePage = () => {
                       <span className="text-white/60 text-[8px] sm:text-[10px] block leading-tight">Stratégie adaptée<br/>à votre dossier</span>
                     </div>
                   </Link>
-                  <div className="absolute top-4 bottom-4 -left-3 w-[2px] bg-gradient-to-b from-transparent via-[#C9A84C]/35 to-transparent" />
+                  <div className="absolute top-4 bottom-4 -left-3 w-[2px] bg-gradient-to-b from-transparent via-[#C9A84C]/35 to-transparent hidden lg:block" />
                   {/* Filet doré horizontal bas */}
-                  <div className="absolute -bottom-2 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-[#C9A84C]/20 to-transparent" />
+                  <div className="absolute -bottom-2 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-[#C9A84C]/20 to-transparent hidden lg:block" />
                 </div>
               </div>
             </div>
