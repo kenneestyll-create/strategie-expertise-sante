@@ -389,47 +389,34 @@ export const HomePage = () => {
                     className="w-full h-full object-cover object-top"
                   />
                 </div>
-                {/* Floating "Decision de justice" card — desktop only */}
-                <div className="hidden sm:block absolute -top-3 -right-6 sm:-right-10 bg-[#111] border border-[#C9A84C]/25 rounded-xl px-4 py-3 shadow-xl z-10">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-[#C9A84C]/15 flex items-center justify-center flex-shrink-0">
-                      <Scale className="w-4 h-4 text-[#C9A84C]" />
-                    </div>
-                    <div>
-                      <p className="text-white text-[11px] font-semibold leading-tight">Decision de justice</p>
-                      <p className="text-emerald-400 text-[10px]">reconnue favorable</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 3 Blocs CTA — mobile only */}
-                <button onClick={() => window.dispatchEvent(new Event('strategiia:open'))} className="sm:hidden absolute -top-3 -left-4 flex items-center gap-1.5 bg-[#0c0c1a]/90 backdrop-blur-sm rounded-lg px-2 py-1.5 shadow-[0_0_15px_rgba(201,168,76,0.12)] z-10 cursor-pointer" data-testid="founder-bloc-analyse">
-                  <div className="w-6 h-6 rounded-md bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
-                    <Brain className="w-3 h-3 text-[#C9A84C]" />
+                {/* 3 Blocs CTA — mobile + desktop */}
+                <button onClick={() => window.dispatchEvent(new Event('strategiia:open'))} className="absolute -top-3 -left-4 sm:-top-4 sm:-left-6 flex items-center gap-1.5 sm:gap-2 bg-[#0c0c1a]/90 backdrop-blur-sm rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 shadow-[0_0_15px_rgba(201,168,76,0.12)] z-10 cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_20px_rgba(201,168,76,0.2)] transition-all" data-testid="founder-bloc-analyse">
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
+                    <Brain className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C9A84C]" />
                   </div>
                   <div>
-                    <span className="text-white font-bold text-[9px] block leading-tight">Analyse IA</span>
-                    <span className="text-white/50 text-[7px] block leading-tight">Lecture intelligente</span>
+                    <span className="text-white font-bold text-[9px] sm:text-[11px] block leading-tight">Analyse IA</span>
+                    <span className="text-white/50 text-[7px] sm:text-[9px] block leading-tight">Lecture intelligente</span>
                   </div>
                 </button>
 
-                <Link to="/dossier-express?step=form" className="sm:hidden absolute top-[38%] -right-4 flex items-center gap-1.5 bg-[#0c0c1a]/90 backdrop-blur-sm rounded-lg px-2 py-1.5 shadow-[0_0_15px_rgba(201,168,76,0.12)] z-10 cursor-pointer" data-testid="founder-bloc-documents">
-                  <div className="w-6 h-6 rounded-md bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
-                    <FileText className="w-3 h-3 text-[#C9A84C]" />
+                <Link to="/dossier-express?step=form" className="absolute top-[38%] -right-4 sm:-right-6 flex items-center gap-1.5 sm:gap-2 bg-[#0c0c1a]/90 backdrop-blur-sm rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 shadow-[0_0_15px_rgba(201,168,76,0.12)] z-10 cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_20px_rgba(201,168,76,0.2)] transition-all" data-testid="founder-bloc-documents">
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
+                    <FileText className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C9A84C]" />
                   </div>
                   <div>
-                    <span className="text-white font-bold text-[9px] block leading-tight">Documents</span>
-                    <span className="text-white/50 text-[7px] block leading-tight">Étude de vos pièces</span>
+                    <span className="text-white font-bold text-[9px] sm:text-[11px] block leading-tight">Documents</span>
+                    <span className="text-white/50 text-[7px] sm:text-[9px] block leading-tight">Étude de vos pièces</span>
                   </div>
                 </Link>
 
-                <Link to="/simulateur" className="sm:hidden absolute -bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-[#0c0c1a]/90 backdrop-blur-sm rounded-lg px-2 py-1.5 shadow-[0_0_15px_rgba(201,168,76,0.12)] z-10 cursor-pointer" data-testid="founder-bloc-orientation">
-                  <div className="w-6 h-6 rounded-md bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
-                    <Compass className="w-3 h-3 text-[#C9A84C]" />
+                <Link to="/simulateur" className="absolute -bottom-3 sm:-bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 sm:gap-2 bg-[#0c0c1a]/90 backdrop-blur-sm rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 shadow-[0_0_15px_rgba(201,168,76,0.12)] z-10 cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_20px_rgba(201,168,76,0.2)] transition-all" data-testid="founder-bloc-orientation">
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
+                    <Compass className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C9A84C]" />
                   </div>
                   <div>
-                    <span className="text-white font-bold text-[9px] block leading-tight">Orientation</span>
-                    <span className="text-white/50 text-[7px] block leading-tight">Stratégie adaptée</span>
+                    <span className="text-white font-bold text-[9px] sm:text-[11px] block leading-tight">Orientation</span>
+                    <span className="text-white/50 text-[7px] sm:text-[9px] block leading-tight">Stratégie adaptée</span>
                   </div>
                 </Link>
               </div>
