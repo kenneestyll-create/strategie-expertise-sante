@@ -680,7 +680,7 @@ export const HomePage = () => {
       ══════════════════════════════════════════════════════════ */}
       <section className="py-16 sm:py-20 overflow-hidden bg-[#111] border-b border-white/5" data-testid="medecin-conseil-home-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             <div className="min-w-0">
               <span className="text-xs font-medium text-[#C9A84C] uppercase tracking-[0.2em]">Orientation stratégique</span>
               <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold mt-3 mb-4 text-[#f5f0e8]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }} data-testid="home-médecin-conseil-title">
@@ -698,21 +698,21 @@ export const HomePage = () => {
                 </Button>
               </Link>
             </div>
-            <div className="grid grid-cols-2 gap-4 min-w-0">
-              <div className="bg-[#0a0a08] border border-white/5 p-5 rounded-xl">
-                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#C9A84C] mb-1">800 - 3 000 EUR</p>
-                <p className="text-xs text-[#f5f0e8]/35">Coût moyen d'un médecin conseil</p>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 min-w-0">
+              <div className="bg-[#0a0a08] border border-white/5 p-4 sm:p-5 rounded-xl flex flex-col items-center text-center lg:items-start lg:text-left justify-center">
+                <p className="text-base sm:text-xl lg:text-3xl font-bold text-[#C9A84C] mb-1 leading-tight">800 – 3 000 EUR</p>
+                <p className="text-[11px] sm:text-xs text-[#f5f0e8]/35 leading-snug">Coût moyen d'un médecin conseil</p>
               </div>
-              <div className="bg-[#0a0a08] border border-white/5 p-5 rounded-xl">
+              <div className="bg-[#0a0a08] border border-white/5 p-4 sm:p-5 rounded-xl flex flex-col items-center text-center lg:items-start lg:text-left justify-center">
                 <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#C9A84C] mb-1">x10</p>
-                <p className="text-xs text-[#f5f0e8]/35">Retour sur investissement potentiel</p>
+                <p className="text-[11px] sm:text-xs text-[#f5f0e8]/35 leading-snug">Retour sur investissement potentiel</p>
               </div>
-              <div className="col-span-2 bg-[#0a0a08] border border-white/5 p-5 rounded-xl">
-                <div className="flex items-center gap-2 mb-2">
+              <div className="col-span-2 bg-[#0a0a08] border border-amber-500/10 p-4 sm:p-5 rounded-xl">
+                <div className="flex items-center justify-center lg:justify-start gap-2 mb-2">
                   <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
                   <p className="font-semibold text-sm text-[#f5f0e8]">Risque d'un mauvais choix</p>
                 </div>
-                <p className="text-xs text-[#f5f0e8]/40 leading-relaxed">
+                <p className="text-[11px] sm:text-xs text-[#f5f0e8]/40 leading-relaxed text-center lg:text-left">
                   Un taux d'IPP sous-évalué de quelques points peut représenter une perte de plusieurs dizaines de milliers d'euros sur votre indemnisation finale.
                 </p>
               </div>
