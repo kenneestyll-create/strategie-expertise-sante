@@ -563,7 +563,7 @@ export const HomePage = () => {
           </div>
 
           <div className="mt-8 text-center reveal">
-            <Link to="/contact" data-testid="solution-card-2">
+            <Link to="/contact" className="block" data-testid="solution-card-2">
               <Button className="w-full rounded-lg px-6 py-5 gap-2.5 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-bold text-sm whitespace-normal h-auto text-center justify-center">
                 <Shield className="w-4 h-4" />
                 Accompagnement stratégique complet — Sur devis
