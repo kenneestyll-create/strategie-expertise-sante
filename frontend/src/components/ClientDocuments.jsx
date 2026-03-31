@@ -192,7 +192,7 @@ export const ClientDocuments = ({ token, onDocumentsChange }) => {
         <Button size="sm" className="gap-1.5 text-xs rounded-lg" onClick={() => setShowUpload(!showUpload)} data-testid="upload-doc-btn">
           <Upload className="w-3.5 h-3.5" /> Ajouter un document
         </Button>
-        <div className="flex-1 min-w-[200px]">
+        <div className="flex-1 min-w-0">
           <div className="relative">
             <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input

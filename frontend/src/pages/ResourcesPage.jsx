@@ -1174,7 +1174,7 @@ export const ResourcesPage = () => {
             <Tabs defaultValue="AT/MP" className="w-full" data-testid="faq-tabs">
               <TabsList className="w-full flex-wrap h-auto gap-2 bg-muted/50 p-2 rounded-xl mb-8">
                 {categories.map(c => (
-                  <TabsTrigger key={c} value={c} className="flex-1 min-w-[100px] rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm" data-testid={`faq-tab-${c.toLowerCase().replace('/', '-')}`}>
+                  <TabsTrigger key={c} value={c} className="flex-1 min-w-0 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm" data-testid={`faq-tab-${c.toLowerCase().replace('/', '-')}`}>
                     {c}
                   </TabsTrigger>
                 ))}

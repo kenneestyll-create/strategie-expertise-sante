@@ -452,7 +452,7 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           3. NOS DEUX INTELLIGENCES DE DOSSIER
       ══════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-20 lg:py-24 bg-[#F8F5EF]" data-testid="solutions-section" ref={solutionsRef}>
+      <section className="py-16 sm:py-20 lg:py-24 overflow-hidden bg-[#F8F5EF]" data-testid="solutions-section" ref={solutionsRef}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-12 reveal">
             <span className="text-xs font-medium text-[#C9A84C] uppercase tracking-[0.2em]">Deux intelligences complémentaires</span>
@@ -577,7 +577,7 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           4. RISQUES — Warning section
       ══════════════════════════════════════════════════════════ */}
-      <section className="py-14 sm:py-16 bg-[#0a0a08] border-y border-[#C9A84C]/5" data-testid="risques-section">
+      <section className="py-14 sm:py-16 overflow-hidden bg-[#0a0a08] border-y border-[#C9A84C]/5" data-testid="risques-section">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8" ref={risquesRef}>
           <div className="text-center mb-10 reveal">
             <AlertTriangle className="w-7 h-7 text-amber-500 mx-auto mb-3" />
@@ -613,7 +613,7 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           5. ECOSYSTEME DE SERVICES
       ══════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-20 lg:py-28 bg-[#111]" data-testid="methode-section" ref={methodeRef}>
+      <section className="py-16 sm:py-20 lg:py-28 overflow-hidden bg-[#111]" data-testid="methode-section" ref={methodeRef}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14 reveal">
             <span className="text-xs font-medium text-[#C9A84C] uppercase tracking-[0.2em]">Écosystème complet</span>
@@ -644,7 +644,7 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           6. METHODE S.E.S — Process steps
       ══════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-20 bg-[#0a0a08] border-y border-white/5">
+      <section className="py-16 sm:py-20 overflow-hidden bg-[#0a0a08] border-y border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14">
             <span className="text-xs font-medium text-[#C9A84C] uppercase tracking-[0.2em]">Notre approche</span>
@@ -678,7 +678,7 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           7. MEDECIN CONSEIL
       ══════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-20 bg-[#111] border-b border-white/5" data-testid="medecin-conseil-home-section">
+      <section className="py-16 sm:py-20 overflow-hidden bg-[#111] border-b border-white/5" data-testid="medecin-conseil-home-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             <div className="min-w-0">
@@ -724,7 +724,7 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           8. CONFIDENTIALITE / SERENITE
       ══════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-20 bg-[#0a0a08]">
+      <section className="py-16 sm:py-20 overflow-hidden bg-[#0a0a08]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <Lock className="w-7 h-7 text-[#C9A84C] mx-auto mb-3" />
@@ -757,7 +757,7 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           9. CHIFFRES CLES
       ══════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-20 bg-[#111]" data-testid="chiffres-section" id="chiffres">
+      <section className="py-16 sm:py-20 overflow-hidden bg-[#111]" data-testid="chiffres-section" id="chiffres">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" ref={chiffresRef}>
           <div className="text-center max-w-2xl mx-auto mb-14 reveal">
             <span className="text-xs font-medium text-[#C9A84C] uppercase tracking-[0.2em]">Contexte national</span>
@@ -794,7 +794,7 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           10. CONFIANCE
       ══════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-20 bg-[#0a0a08]" data-testid="confiance-section">
+      <section className="py-16 sm:py-20 overflow-hidden bg-[#0a0a08]" data-testid="confiance-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" ref={confianceRef}>
           <div className="text-center max-w-2xl mx-auto mb-14 reveal">
             <span className="text-xs font-medium text-[#C9A84C] uppercase tracking-[0.2em]">Crédibilité</span>
@@ -822,7 +822,7 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           11. TEMOIGNAGES
       ══════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-20 bg-[#111]" data-testid="testimonials-section">
+      <section className="py-16 sm:py-20 overflow-hidden bg-[#111]" data-testid="testimonials-section">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <span className="text-[#C9A84C] text-xs font-medium uppercase tracking-[0.2em]">Ils ont fait confiance</span>
@@ -871,7 +871,7 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           12. DISCLAIMER
       ══════════════════════════════════════════════════════════ */}
-      <section className="py-6 bg-[#111] border-y border-amber-500/5">
+      <section className="py-6 overflow-hidden bg-[#111] border-y border-amber-500/5">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-start gap-3" data-testid="homepage-disclaimer">
             <Scale className="w-4 h-4 text-amber-500/50 flex-shrink-0 mt-0.5" strokeWidth={1.5} />

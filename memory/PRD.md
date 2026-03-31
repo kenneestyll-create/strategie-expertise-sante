@@ -62,6 +62,12 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA i
 - **Tests** : Génération PDF StrategiIA + Dossier Express + Guide + vérification PyMuPDF des accents = 100% OK
 - **Règle qualité** : Aucun PDF client ne peut être validé sans contrôle linguistique, typographique et encodage FR
 
+## Stabilisation responsive mobile — overflow horizontal (31/03/2026)
+- **Périmètre** : Audit global de tous les écrans mobiles (360/375/390/412px)
+- **Corrections** : Protection CSS globale (body, #root, main), overflow-hidden sur 10 sections HomePage, suppression min-width contraignants (ResourcesPage, ClientDocuments)
+- **Fichiers modifiés** : index.css, HomePage.jsx, ResourcesPage.jsx, ClientDocuments.jsx
+- **Tests** : 4 largeurs x 15+ pages = scroll=False partout, 0 overflow structurel, desktop intact
+
 ## Correction Blocs Fondateur Desktop (31/03/2026)
 - **Probleme** : Les 3 blocs CTA (Analyse IA, Documents, Orientation) sur la photo du fondateur etaient dupliques et inutiles sur desktop
 - **Correction** : Ajout de `lg:hidden` aux 3 blocs dans la section "Pourquoi ce site existe" pour les masquer sur desktop uniquement
