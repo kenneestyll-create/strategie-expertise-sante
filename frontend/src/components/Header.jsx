@@ -152,7 +152,10 @@ export const Header = () => {
               className={navLinkClass(false)}
               data-testid="nav-strategiia"
             >
-              StratégiIA
+              <span className="flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-[#C9A84C]" />
+                StratégiIA
+              </span>
             </button>
 
             {/* Tarifs */}
