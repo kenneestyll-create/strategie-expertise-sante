@@ -147,14 +147,14 @@ export const HomePage = () => {
         <div className="absolute bottom-0 right-0 w-[400px] h-[350px] bg-[#C9A84C]/[0.035] rounded-full blur-[130px] pointer-events-none translate-y-1/4 translate-x-1/4" />
         {/* Poussière d'or — particules scintillantes */}
         <GoldDustOverlay />
-        <div className="relative max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-20 lg:pt-[5.5rem] pb-8 sm:pb-10 lg:pb-10">
+        <div className="relative max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-20 lg:pt-[5.5rem] pb-4 sm:pb-6 lg:pb-6">
           <div className="grid lg:grid-cols-[55fr_45fr] gap-8 lg:gap-12 items-center">
 
             {/* ── COLONNE GAUCHE : Contenu ── */}
             <div className="order-2 lg:order-1">
               {/* Badge — Reconstruit : structure simple et saine */}
               <div
-                className="flex w-fit items-center gap-4 rounded-xl bg-[#161612] border border-[#C9A84C]/20 px-6 py-3.5 mb-3"
+                className="flex w-fit items-center gap-4 rounded-xl bg-[#161612] border border-[#C9A84C]/20 px-6 py-3.5 mb-2"
                 data-testid="pioneer-badge"
               >
                 <div className="w-10 h-10 rounded-lg bg-[#C9A84C]/10 border border-[#C9A84C]/20 flex items-center justify-center flex-shrink-0">
@@ -168,7 +168,7 @@ export const HomePage = () => {
 
               {/* Titre — noble et respirant */}
               <h1
-                className="text-[1.75rem] sm:text-[2rem] lg:text-[2.1rem] xl:text-[2.3rem] font-bold text-[#f5f0e8] leading-[1.18] mb-3"
+                className="text-[1.75rem] sm:text-[2rem] lg:text-[2.1rem] xl:text-[2.3rem] font-bold text-[#f5f0e8] leading-[1.18] mb-2"
                 style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
                 data-testid="hero-title"
               >
@@ -204,13 +204,13 @@ export const HomePage = () => {
               </div>
 
               {/* Micro-ligne IA — pont de conversion */}
-              <p className="text-[13px] text-[#C9A84C]/70 tracking-wide mb-2.5" data-testid="hero-ia-availability">
+              <p className="text-[13px] text-[#C9A84C]/70 tracking-wide mb-2" data-testid="hero-ia-availability">
                 <Zap className="w-3 h-3 inline-block mr-1.5 -mt-px text-[#C9A84C]/50" />
                 Vos deux agents IA vous répondent immédiatement, à toute heure.
               </p>
 
               {/* Preuve sociale + CTA Urgent intégré */}
-              <div className="flex flex-wrap items-center gap-4 sm:gap-5 mb-2.5">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-5 mb-2">
                 {visitorCount > 0 && (
                   <div className="flex items-center gap-2.5">
                     <div className="flex -space-x-1.5">
@@ -238,7 +238,7 @@ export const HomePage = () => {
               </div>
 
               {/* CTAs */}
-              <div className="flex flex-col sm:flex-row gap-3 mb-2">
+              <div className="flex flex-col sm:flex-row gap-3 mb-1">
                 <Button
                   size="lg"
                   onClick={() => window.dispatchEvent(new Event('strategiia:open'))}
