@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -98,6 +98,9 @@ export const ChatBot = () => {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const location = useLocation();
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+  const isHomePage = location.pathname === '/';
   const [sessionId, setSessionId] = useState(null);
   const [questionsUsed, setQuestionsUsed] = useState(0);
   const [quotaExceeded, setQuotaExceeded] = useState(false);
@@ -192,7 +195,7 @@ export const ChatBot = () => {
   return (
     <>
       {/* Mascot Floating Button — Premium */}
-      {!isOpen && (
+      {!isOpen && (!isMobile || isHomePage) && (
         <div className="absolute sm:fixed bottom-16 sm:bottom-6 right-4" style={{ zIndex: 'var(--z-chatbot)' }} data-testid="chatbot-fab-wrapper">
           <button
             onClick={() => { setIsOpen(true); }}
