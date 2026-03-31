@@ -27,7 +27,7 @@ export const AlerteUrgente = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!nom.trim() || !telephone.trim() || !email.trim() || !email.includes('@')) {
-      toast.error('Veuillez renseigner votre nom, telephone et email');
+      toast.error('Veuillez renseigner votre nom, téléphone et email');
       return;
     }
     setSending(true);

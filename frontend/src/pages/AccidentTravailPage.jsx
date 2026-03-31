@@ -196,7 +196,7 @@ export const AccidentTravailPage = () => {
             <div className="bg-primary-foreground/10 rounded-xl p-6" data-testid="atmp-ip-card">
               <h3 className="text-lg font-semibold text-primary-foreground mb-3">Incidence Professionnelle (IP)</h3>
               <p className="text-sm text-primary-foreground/70 mb-4">
-                Vos séquelles impactent votre carrière ? Vous avez peut-etre droit a une indemnisation complémentaire au titre de l'incidence professionnelle : pénibilité accrue, devalorisation, reconversion...
+                Vos séquelles impactent votre carrière ? Vous avez peut-être droit à une indemnisation complémentaire au titre de l'incidence professionnelle : pénibilité accrue, dévalorisation, reconversion...
               </p>
               <Link to="/ressources" className="text-sm text-accent hover:underline font-medium">
                 En savoir plus sur l'IP →
@@ -205,7 +205,7 @@ export const AccidentTravailPage = () => {
             <div className="bg-primary-foreground/10 rounded-xl p-6" data-testid="atmp-pgpf-card">
               <h3 className="text-lg font-semibold text-primary-foreground mb-3">Perte de Gains Futurs (PGPF)</h3>
               <p className="text-sm text-primary-foreground/70 mb-4">
-                Votre accident ou maladie reduit durablement vos revenus ? La PGPF compense cette perte definitive par capitalisation. Decouvrez la méthode de calcul et les justificatifs.
+                Votre accident ou maladie réduit durablement vos revenus ? La PGPF compense cette perte définitive par capitalisation. Découvrez la méthode de calcul et les justificatifs.
               </p>
               <Link to="/ressources" className="text-sm text-accent hover:underline font-medium">
                 En savoir plus sur la PGPF →

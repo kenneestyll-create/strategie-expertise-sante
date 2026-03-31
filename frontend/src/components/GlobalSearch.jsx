@@ -166,7 +166,7 @@ export const GlobalSearch = () => {
                   <div className="px-5 py-6">
                     <p className="text-sm text-muted-foreground mb-4 flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-[#C9A84C]" />
-                      Posez votre question — notre IA vous repond instantanement
+                      Posez votre question — notre IA vous répond instantanément
                     </p>
                     <div className="space-y-1.5">
                       {SUGGESTIONS.map(s => (

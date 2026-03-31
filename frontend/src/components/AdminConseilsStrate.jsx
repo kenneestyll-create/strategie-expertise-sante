@@ -268,14 +268,14 @@ export const AdminConseilsStrate = ({ axiosConfig }) => {
   };
 
   const handleSave = async () => {
-    if (!form.text.trim() || form.text.length < 5) { toast.error("Le texte doit contenir au moins 5 caracteres"); return; }
-    if (form.text.length > 200) { toast.error("Le texte ne doit pas depasser 200 caracteres"); return; }
+    if (!form.text.trim() || form.text.length < 5) { toast.error("Le texte doit contenir au moins 5 caractères"); return; }
+    if (form.text.length > 200) { toast.error("Le texte ne doit pas dépasser 200 caractères"); return; }
     try {
       setSaving(true);
       const payload = { ...form, start_date: form.start_date || null, end_date: form.end_date || null };
       if (editingId) {
         await axios.put(`${API}/conseils/admin/${editingId}`, payload, axiosConfig);
-        toast.success("Conseil mis a jour");
+        toast.success("Conseil mis à jour");
       } else {
         await axios.post(`${API}/conseils/admin/create`, payload, axiosConfig);
         toast.success("Conseil cree");
@@ -293,7 +293,7 @@ export const AdminConseilsStrate = ({ axiosConfig }) => {
     if (!deleteId) return;
     try {
       await axios.delete(`${API}/conseils/admin/${deleteId}`, axiosConfig);
-      toast.success("Conseil supprime");
+      toast.success("Conseil supprimé");
       setDeleteId(null);
       fetchConseils();
     } catch { toast.error("Erreur de suppression"); }
@@ -545,7 +545,7 @@ export const AdminConseilsStrate = ({ axiosConfig }) => {
             <Button variant="outline" onClick={() => setShowForm(false)}>Annuler</Button>
             <Button onClick={handleSave} disabled={saving} className="gap-1" data-testid="conseil-form-save-btn">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-              {editingId ? 'Mettre a jour' : 'Creer'}
+              {editingId ? 'Mettre à jour' : 'Créer'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -555,7 +555,7 @@ export const AdminConseilsStrate = ({ axiosConfig }) => {
       <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <DialogContent data-testid="conseil-delete-dialog">
           <DialogHeader><DialogTitle>Supprimer ce conseil ?</DialogTitle></DialogHeader>
-          <p className="text-sm text-muted-foreground">Cette action est irreversible.</p>
+          <p className="text-sm text-muted-foreground">Cette action est irréversible.</p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteId(null)}>Annuler</Button>
             <Button variant="destructive" onClick={handleDelete} data-testid="conseil-confirm-delete">Supprimer</Button>

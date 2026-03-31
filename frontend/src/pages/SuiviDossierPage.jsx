@@ -39,7 +39,7 @@ export const SuiviDossierPage = () => {
       const res = await axios.get(`${API}/dossier-express/suivi/${id}${params}`);
       setTracking(res.data);
     } catch {
-      setError('Dossier introuvable. Verifiez votre identifiant.');
+      setError('Dossier introuvable. Vérifiez votre identifiant.');
       setTracking(null);
     } finally {
       setLoading(false);
@@ -63,7 +63,7 @@ export const SuiviDossierPage = () => {
 
   return (
     <main className="page-transition pt-20 pb-16">
-      <SEO title="Suivi de votre dossier" description="Suivez l'avancement de votre analyse en temps reel" />
+      <SEO title="Suivi de votre dossier" description="Suivez l'avancement de votre analyse en temps réel" />
       <section className="max-w-2xl mx-auto px-4 sm:px-6">
 
         {/* Header */}
@@ -175,7 +175,7 @@ export const SuiviDossierPage = () => {
                           </p>
                           {isActive && tracking.status === 'incident' && (
                             <p className="text-xs text-amber-600 mt-1">
-                              Notre équipe veille a la qualité de votre rapport
+                              Notre équipe veille à la qualité de votre rapport
                             </p>
                           )}
                         </div>

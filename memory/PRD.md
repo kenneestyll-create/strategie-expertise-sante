@@ -49,6 +49,12 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA i
 
 ### Tests Homepage : 100% PASS (iteration 156-162)
 
+## Audit linguistique complet (31/03/2026)
+- **Périmètre** : Tous les textes visibles du frontend (pages, composants, données de recherche)
+- **Corrections** : ~67 fautes d'accents, formulations et typographie corrigées dans 11 fichiers
+- **Fichiers modifiés** : HomePage.jsx, ResourcesPage.jsx, CalculatriceIPPPage.jsx, AccidentTravailPage.jsx, AdminConseilsStrate.jsx, DossierExpressPage.jsx, DocumentUploader.jsx, SuiviDossierPage.jsx, GlobalSearch.jsx, AlerteUrgente.jsx, searchIndex.js
+- **Règle qualité** : Tout nouveau texte frontend en français doit être livré parfaitement accentué et relu
+
 ## Correction Blocs Fondateur Desktop (31/03/2026)
 - **Probleme** : Les 3 blocs CTA (Analyse IA, Documents, Orientation) sur la photo du fondateur etaient dupliques et inutiles sur desktop
 - **Correction** : Ajout de `lg:hidden` aux 3 blocs dans la section "Pourquoi ce site existe" pour les masquer sur desktop uniquement

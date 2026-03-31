@@ -328,7 +328,7 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
       }
       const newTotal = currentTotalSize + validFiles.reduce((s, f) => s + f.size, 0) + processedFile.size;
       if (newTotal > MAX_TOTAL_SIZE) {
-        newErrors.push(`Taille totale depassee (limite : ${formatSize(MAX_TOTAL_SIZE)}). Le fichier "${file.name}" (${formatSize(file.size)}) n'a pas ete ajoute.`);
+        newErrors.push(`Taille totale dépassée (limite : ${formatSize(MAX_TOTAL_SIZE)}). Le fichier "${file.name}" (${formatSize(file.size)}) n'a pas été ajouté.`);
         continue;
       }
       processedFile._validated = false;
@@ -518,7 +518,7 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
           <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
           <p className="text-sm text-muted-foreground">Glissez vos fichiers ou cliquez pour selectionner</p>
           <p className="text-xs text-muted-foreground mt-1">PDF, JPG, PNG, DOCX, XLSX — Max 50 Mo/fichier — Max {maxFiles} fichiers</p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">Les fichiers &gt; 5 Mo sont uploades automatiquement en mode fractionne securise</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5">Les fichiers &gt; 5 Mo sont uploadés automatiquement en mode fractionné sécurisé</p>
           {hasFiles && (
             <p className="text-[10px] text-amber-600 mt-2 flex items-center justify-center gap-1">
               <AlertTriangle className="w-3 h-3" />

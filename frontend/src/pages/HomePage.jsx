@@ -81,14 +81,14 @@ export const HomePage = () => {
   const risques = [
     { icon: CircleSlash, text: "Sous-évaluation de votre taux d'IPP" },
     { icon: ShieldAlert, text: "Mauvaise reconnaissance de l'incidence professionnelle" },
-    { icon: ScanSearch, text: "Expertise médicale defavorable" },
-    { icon: AlertTriangle, text: "Perte financière importante et irreversible" },
+    { icon: ScanSearch, text: "Expertise médicale défavorable" },
+    { icon: AlertTriangle, text: "Perte financière importante et irréversible" },
   ];
 
   const methodeSES = [
     { num: "01", icon: Crosshair, title: "Analyse stratégique", desc: "Étude approfondie de votre situation médicale, administrative et financière." },
-    { num: "02", icon: ShieldAlert, title: "Identification des risques", desc: "Reperage des failles, incoherences et points de vigilance." },
-    { num: "03", icon: Compass, title: "Orientation experte", desc: "Mise en relation avec les experts les plus adaptes a votre pathologie." },
+    { num: "02", icon: ShieldAlert, title: "Identification des risques", desc: "Repérage des failles, incohérences et points de vigilance." },
+    { num: "03", icon: Compass, title: "Orientation experte", desc: "Mise en relation avec les experts les plus adaptés à votre pathologie." },
     { num: "04", icon: Focus, title: "Optimisation de l'expertise", desc: "Préparation stratégique pour maximiser la reconnaissance." },
     { num: "05", icon: RefreshCcw, title: "Suivi et ajustement", desc: "Accompagnement continu et adaptation de la stratégie." },
   ];
@@ -96,24 +96,24 @@ export const HomePage = () => {
   const chiffresCles = [
     { icon: HardHat, value: 700000, unit: '', prefix: "Plus de", suffix: "accidents du travail par an en France", source: "CNAM", lien: "https://assurance-maladie.ameli.fr" },
     { icon: Activity, value: 50000, unit: '', prefix: "Environ", suffix: "maladies professionnelles reconnues chaque année", source: "CNAM", lien: "https://assurance-maladie.ameli.fr" },
-    { icon: Accessibility, value: 12, unit: ' millions', prefix: "Pres de", suffix: "de personnes en situation de handicap", source: "INSEE", lien: "https://www.insee.fr" },
+    { icon: Accessibility, value: 12, unit: ' millions', prefix: "Près de", suffix: "de personnes en situation de handicap", source: "INSEE", lien: "https://www.insee.fr" },
     { icon: ClipboardList, value: 300000, unit: '', prefix: "Plus de", suffix: "nouvelles demandes MDPH chaque année", source: "CNSA", lien: "https://www.cnsa.fr" },
   ];
 
   const confiance = [
-    { icon: HeartHandshake, title: "Expertise terrain réelle", desc: "Nee d'une expérience personnelle face aux mêmes épreuves que les votres." },
-    { icon: Stethoscope, title: "Maitrise des enjeux médicaux", desc: "Tableaux de maladies professionnelles, baremes et procedures." },
+    { icon: HeartHandshake, title: "Expertise terrain réelle", desc: "Née d'une expérience personnelle face aux mêmes épreuves que les vôtres." },
+    { icon: Stethoscope, title: "Maîtrise des enjeux médicaux", desc: "Tableaux de maladies professionnelles, barèmes et procédures." },
     { icon: Award, title: "Approche stratégique unique", desc: "Chaque dossier est traité comme un cas à part, avec une stratégie sur mesure." },
-    { icon: TrendingUp, title: "Vision orientee résultats", desc: "Obtenir la reconnaissance et l'indemnisation que vous méritéz." },
+    { icon: TrendingUp, title: "Vision orientée résultats", desc: "Obtenir la reconnaissance et l'indemnisation que vous méritez." },
   ];
 
   const temoignages = [
-    { initials: "M.L.", age: "52 ans", badge: "AT", text: "Apres 18 mois de refus par la CPAM, mon accident du travail a enfin ete reconnu. Sans cet accompagnement, j'aurais abandonne les démarches.", result: "AT reconnue — Rente obtenue" },
+    { initials: "M.L.", age: "52 ans", badge: "AT", text: "Après 18 mois de refus par la CPAM, mon accident du travail a enfin été reconnu. Sans cet accompagnement, j'aurais abandonné les démarches.", result: "AT reconnue — Rente obtenue" },
     { initials: "P.D.", age: "45 ans", badge: "PTIA", badgeGold: true, text: "Mon assureur refusait de reconnaître ma PTIA malgre l'avis de trois médecins. Grâce à une stratégie méthodique, la garantie a été activée après 8 mois de recours.", result: "Garantie PTIA activée" },
-    { initials: "S.B.", age: "38 ans", badge: "MP", text: "Ma maladie professionnelle n'etait pas dans les tableaux. L'accompagnement m'a permis de constituer un dossier solide — reconnaissance obtenue au premier passage.", result: "MP hors tableau reconnue" },
-    { initials: "C.R.", age: "61 ans", badge: "IPP", text: "Mon taux d'IPP avait ete évalué a 5% alors que mes séquelles sont bien plus importantes. Apres contestation, le taux a été réévalué a 23%.", result: "IPP réévaluée : 5% → 23%" },
-    { initials: "A.M.", age: "34 ans", badge: "MDPH", text: "Mes demandes MDPH etaient systematiquement refusees. Grâce à un dossier structure et des arguments adaptes, j'ai obtenu l'AAH en moins de 4 mois.", result: "AAH obtenue en 4 mois" },
-    { initials: "J.T.", age: "48 ans", badge: "ITT", badgeGold: true, text: "Mon assurance refusait les indemnites ITT en invoquant une clause floue. L'analyse du contrat a permis de debloquer 14 mois d'arrieres.", result: "ITT versee — Arrieres récupéres" },
+    { initials: "S.B.", age: "38 ans", badge: "MP", text: "Ma maladie professionnelle n'était pas dans les tableaux. L'accompagnement m'a permis de constituer un dossier solide — reconnaissance obtenue au premier passage.", result: "MP hors tableau reconnue" },
+    { initials: "C.R.", age: "61 ans", badge: "IPP", text: "Mon taux d'IPP avait été évalué à 5% alors que mes séquelles sont bien plus importantes. Après contestation, le taux a été réévalué à 23%.", result: "IPP réévaluée : 5% → 23%" },
+    { initials: "A.M.", age: "34 ans", badge: "MDPH", text: "Mes demandes MDPH étaient systématiquement refusées. Grâce à un dossier structuré et des arguments adaptés, j'ai obtenu l'AAH en moins de 4 mois.", result: "AAH obtenue en 4 mois" },
+    { initials: "J.T.", age: "48 ans", badge: "ITT", badgeGold: true, text: "Mon assurance refusait les indemnités ITT en invoquant une clause floue. L'analyse du contrat a permis de débloquer 14 mois d'arriérés.", result: "ITT versée — Arriérés récupérés" },
   ];
 
   const ecosysteme = [
@@ -123,7 +123,7 @@ export const HomePage = () => {
     { icon: Stethoscope, title: "Médecin conseil", desc: "Orientation vers le bon spécialiste", href: "/medecin-conseil" },
     { icon: Calculator, title: "Calculatrices IPP & AAH", desc: "Estimez vos droits en quelques clics", href: "/calculatrice-ipp" },
     { icon: BookOpen, title: "Ressources & guides", desc: "Documentation experte gratuite", href: "/ressources" },
-    { icon: ScanSearch, title: "Scanner de documents", desc: "Numerisez vos pieces facilement", href: "/dossier-express" },
+    { icon: ScanSearch, title: "Scanner de documents", desc: "Numérisez vos pièces facilement", href: "/dossier-express" },
     { icon: CalendarDays, title: "Rendez-vous", desc: "Planifiez votre consultation", href: "/agenda" },
   ];
 
@@ -185,7 +185,7 @@ export const HomePage = () => {
 
               {/* Sous-titre */}
               <p className="text-xs sm:text-[13px] text-[#f5f0e8]/55 leading-relaxed mb-2 max-w-xl" data-testid="hero-subtitle">
-                Analysez votre situation, identifiez vos leviers, comprenez vos droits et accédez a un accompagnement stratégique humain en cas de{' '}
+                Analysez votre situation, identifiez vos leviers, comprenez vos droits et accédez à un accompagnement stratégique humain en cas de{' '}
                 <strong className="text-[#f5f0e8]/70">maladie professionnelle</strong>,{' '}
                 <strong className="text-[#f5f0e8]/70">accident du travail</strong>,{' '}
                 <strong className="text-[#f5f0e8]/70">MDPH</strong> ou{' '}
@@ -429,8 +429,8 @@ export const HomePage = () => {
                 className="text-xl sm:text-2xl lg:text-3xl font-bold leading-snug mb-6"
                 style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
               >
-                <span className="text-[#1a1a1a]">Ce service n'est pas ne d'une theorie.</span><br />
-                <span className="text-[#C9A84C]">Il est ne d'un combat reel.</span>
+                <span className="text-[#1a1a1a]">Ce service n'est pas né d'une théorie.</span><br />
+                <span className="text-[#C9A84C]">Il est né d'un combat réel.</span>
               </h2>
 
               <p className="text-[#1a1a1a]/60 text-sm leading-relaxed mb-4">
@@ -475,7 +475,7 @@ export const HomePage = () => {
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-[#f5f0e8]">StrategiIA</h3>
-                      <p className="text-[#C9A84C] font-semibold text-xs">Pre-analyse gratuite</p>
+                      <p className="text-[#C9A84C] font-semibold text-xs">Pré-analyse gratuite</p>
                     </div>
                   </div>
 
@@ -485,7 +485,7 @@ export const HomePage = () => {
 
                   <div className="grid grid-cols-2 gap-4 mb-6">
                     <div>
-                      <p className="text-[#C9A84C] text-[10px] font-bold uppercase tracking-wider mb-2.5">Ideal pour</p>
+                      <p className="text-[#C9A84C] text-[10px] font-bold uppercase tracking-wider mb-2.5">Idéal pour</p>
                       {["Comprendre votre situation", "Identifier vos droits", "Obtenir une première orientation"].map((t, i) => (
                         <div key={i} className="flex items-start gap-2 mb-2">
                           <CheckCircle className="w-3 h-3 text-[#C9A84C]/60 flex-shrink-0 mt-0.5" />
@@ -525,18 +525,18 @@ export const HomePage = () => {
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-[#1a1a1a]">Dossier Express IA</h3>
-                      <p className="text-[#C9A84C] font-semibold text-xs">97 EUR — Livre sous 2h</p>
+                      <p className="text-[#C9A84C] font-semibold text-xs">97 EUR — Livré sous 2h</p>
                     </div>
                   </div>
 
                   <p className="text-[#1a1a1a]/50 text-sm leading-relaxed mb-5">
-                    L'analyse documentaire complete de votre dossier. Un rapport structure, approfondi et exploitable pour vos démarches.
+                    L'analyse documentaire complète de votre dossier. Un rapport structuré, approfondi et exploitable pour vos démarches.
                   </p>
 
                   <div className="grid grid-cols-2 gap-4 mb-6">
                     <div>
-                      <p className="text-[#C9A84C] text-[10px] font-bold uppercase tracking-wider mb-2.5">Ideal pour</p>
-                      {["Expertise médicale imminente", "Preparer votre stratégie", "Analyser vos documents"].map((t, i) => (
+                      <p className="text-[#C9A84C] text-[10px] font-bold uppercase tracking-wider mb-2.5">Idéal pour</p>
+                      {["Expertise médicale imminente", "Préparer votre stratégie", "Analyser vos documents"].map((t, i) => (
                         <div key={i} className="flex items-start gap-2 mb-2">
                           <CheckCircle className="w-3 h-3 text-[#C9A84C]/60 flex-shrink-0 mt-0.5" />
                           <span className="text-[#1a1a1a]/60 text-xs leading-tight">{t}</span>
@@ -545,7 +545,7 @@ export const HomePage = () => {
                     </div>
                     <div>
                       <p className="text-[#C9A84C] text-[10px] font-bold uppercase tracking-wider mb-2.5">Ce que vous recevez</p>
-                      {["Rapport d'analyse détaillé", "Étude de vos documents", "Stratégie d'action concrete"].map((t, i) => (
+                      {["Rapport d'analyse détaillé", "Étude de vos documents", "Stratégie d'action concrète"].map((t, i) => (
                         <div key={i} className="flex items-start gap-2 mb-2">
                           <CheckCircle className="w-3 h-3 text-[#C9A84C]/60 flex-shrink-0 mt-0.5" />
                           <span className="text-[#1a1a1a]/60 text-xs leading-tight">{t}</span>
@@ -555,7 +555,7 @@ export const HomePage = () => {
                   </div>
 
                   <span className="inline-flex items-center gap-2 text-[#C9A84C] text-sm font-medium group-hover:gap-3 transition-all">
-                    Deposer mon dossier <ArrowRight className="w-4 h-4" />
+                    Déposer mon dossier <ArrowRight className="w-4 h-4" />
                   </span>
                 </div>
               </Link>
@@ -599,7 +599,7 @@ export const HomePage = () => {
 
           <div className="text-center reveal">
             <p className="text-sm text-[#C9A84C]/60 italic mb-6 max-w-lg mx-auto" style={{ fontFamily: "'Playfair Display', Georgia, serif" }} data-testid="risques-accroche">
-              Une mauvaise decision aujourd'hui peut vous couter des milliers d'euros demain.
+              Une mauvaise décision aujourd'hui peut vous coûter des milliers d'euros demain.
             </p>
             <Link to="/contact">
               <Button className="rounded-full px-7 gap-2 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-bold text-sm" data-testid="risques-cta">
@@ -621,7 +621,7 @@ export const HomePage = () => {
               Bien plus qu'un outil IA
             </h2>
             <p className="text-sm text-[#f5f0e8]/40">
-              Un ecosysteme complet d'accompagnement, de l'analyse initiale au suivi personnalisé.
+              Un écosystème complet d'accompagnement, de l'analyse initiale au suivi personnalisé.
             </p>
           </div>
 
@@ -690,7 +690,7 @@ export const HomePage = () => {
                 Un médecin conseil mal choisi peut entraîner une sous-évaluation de vos séquelles et une perte d'indemnisation de plusieurs dizaines de milliers d'euros.
               </p>
               <p className="text-[#f5f0e8]/50 text-sm leading-relaxed mb-6">
-                Nous vous orientons vers le professionnel le plus adapte a votre pathologie et a votre stratégie juridique.
+                Nous vous orientons vers le professionnel le plus adapté à votre pathologie et à votre stratégie juridique.
               </p>
               <Link to="/medecin-conseil">
                 <Button className="rounded-full px-6 py-5 gap-2 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-bold text-sm" data-testid="home-médecin-conseil-cta">
@@ -732,15 +732,15 @@ export const HomePage = () => {
               Vos documents sont entre de bonnes mains
             </h2>
             <p className="text-sm text-[#f5f0e8]/40 max-w-2xl mx-auto">
-              Nous comprenons la nature sensible de vos documents médicaux et administratifs. La confidentialité et la sécurité de vos données sont au coeur de nos engagements.
+              Nous comprenons la nature sensible de vos documents médicaux et administratifs. La confidentialité et la sécurité de vos données sont au cœur de nos engagements.
             </p>
           </div>
 
           <div className="grid sm:grid-cols-3 gap-5">
             {[
-              { icon: Shield, title: "Confidentialité totale", desc: "Vos dossiers ne sont jamais partages avec des tiers. Traitement strictement confidentiel." },
-              { icon: Lock, title: "Sécurité des données", desc: "Vos documents sont traites de maniere securisee et supprimes après analyse si vous le souhaitez." },
-              { icon: Eye, title: "Transparence", desc: "Vous restez maitre de vos informations a chaque étape. Aucune utilisation commerciale de vos données." },
+              { icon: Shield, title: "Confidentialité totale", desc: "Vos dossiers ne sont jamais partagés avec des tiers. Traitement strictement confidentiel." },
+              { icon: Lock, title: "Sécurité des données", desc: "Vos documents sont traités de manière sécurisée et supprimés après analyse si vous le souhaitez." },
+              { icon: Eye, title: "Transparence", desc: "Vous restez maître de vos informations à chaque étape. Aucune utilisation commerciale de vos données." },
             ].map((item, i) => (
               <div key={i} className="bg-[#111] border border-white/5 rounded-xl p-6 text-center hover:border-[#C9A84C]/15 transition-all">
                 <div className="w-11 h-11 rounded-xl bg-[#C9A84C]/10 flex items-center justify-center mx-auto mb-4">
@@ -762,7 +762,7 @@ export const HomePage = () => {
           <div className="text-center max-w-2xl mx-auto mb-14 reveal">
             <span className="text-xs font-medium text-[#C9A84C] uppercase tracking-[0.2em]">Contexte national</span>
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold mt-3 mb-4 text-[#f5f0e8]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-              Le defi en chiffres
+              Le défi en chiffres
             </h2>
             <p className="text-sm text-[#f5f0e8]/40">
               Des millions de personnes sont concernées chaque année en France.
@@ -797,7 +797,7 @@ export const HomePage = () => {
       <section className="py-16 sm:py-20 bg-[#0a0a08]" data-testid="confiance-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" ref={confianceRef}>
           <div className="text-center max-w-2xl mx-auto mb-14 reveal">
-            <span className="text-xs font-medium text-[#C9A84C] uppercase tracking-[0.2em]">Credibilite</span>
+            <span className="text-xs font-medium text-[#C9A84C] uppercase tracking-[0.2em]">Crédibilité</span>
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold mt-3 mb-4 text-[#f5f0e8]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
               Pourquoi nous faire confiance ?
             </h2>
@@ -827,7 +827,7 @@ export const HomePage = () => {
           <div className="text-center mb-12">
             <span className="text-[#C9A84C] text-xs font-medium uppercase tracking-[0.2em]">Ils ont fait confiance</span>
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold mt-3 text-[#f5f0e8]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-              Des parcours transformes
+              Des parcours transformés
             </h2>
             <p className="text-[#f5f0e8]/30 mt-3 max-w-xl mx-auto text-sm">
               Témoignages anonymisés de personnes accompagnées par Stratégie & Expertise Santé.
@@ -863,7 +863,7 @@ export const HomePage = () => {
             ))}
           </div>
           <p className="text-center text-[#f5f0e8]/15 text-[10px] mt-6">
-            * Prenoms et details modifies pour preserver l'anonymat. Résultats reels obtenus pour nos clients.
+            * Prénoms et détails modifiés pour préserver l'anonymat. Résultats réels obtenus pour nos clients.
           </p>
         </div>
       </section>
@@ -881,8 +881,8 @@ export const HomePage = () => {
                 Ce service ne constitue pas une expertise médicale officielle ni une expertise judiciaire.
               </p>
               <p>
-                Les services proposes ne constituent pas un conseil juridique ni un avis medical.
-                Pour toute decision juridique ou médicale, consultez un professionnel qualifie.
+                Les services proposés ne constituent pas un conseil juridique ni un avis médical.
+                Pour toute décision juridique ou médicale, consultez un professionnel qualifié.
               </p>
             </div>
           </div>
@@ -903,7 +903,7 @@ export const HomePage = () => {
             className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-[#f5f0e8] mb-6 leading-snug"
             style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
           >
-            Votre situation mérité une stratégie claire, humaine et rigoureuse.
+            Votre situation mérite une stratégie claire, humaine et rigoureuse.
           </h2>
 
           <p className="text-[#f5f0e8]/45 text-sm sm:text-base mb-10 max-w-2xl mx-auto leading-relaxed">
@@ -941,7 +941,7 @@ export const HomePage = () => {
               Vous n'êtes plus seul face à votre combat.
             </p>
             <p className="text-[#C9A84C] text-lg font-bold tracking-wide">
-              Dorenavant, S.E.S est votre bouclier.
+              Dorénavant, S.E.S est votre bouclier.
             </p>
           </div>
         </div>

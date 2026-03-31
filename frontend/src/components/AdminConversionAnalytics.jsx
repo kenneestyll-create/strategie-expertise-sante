@@ -69,7 +69,7 @@ export const AdminConversionAnalytics = ({ axiosConfig }) => {
     return (
       <Card>
         <CardContent className="py-8 text-center text-muted-foreground text-sm">
-          Aucune donnee de conversion disponible.
+          Aucune donnée de conversion disponible.
         </CardContent>
       </Card>
     );

@@ -215,7 +215,7 @@ export const DossierExpressPage = () => {
         if (res.data.status === 'completed') {
           setStep('success');
           clearInterval(interval);
-          toast.success("Votre rapport est pret ! Verifiez votre email.");
+          toast.success("Votre rapport est prêt ! Vérifiez votre email.");
         } else if (res.data.delivery_status === 'incident_technique') {
           // Incident detected — show reassuring fallback (still in processing view)
           setPollStatus(res.data);
@@ -223,7 +223,7 @@ export const DossierExpressPage = () => {
           clearInterval(interval);
           const errorMsg = res.data.error || "Une erreur est survenue lors de l'analyse.";
           if (errorMsg.toLowerCase().includes('budget')) {
-            toast.error("Le service d'analyse nécessite un traitement complémentaire. Notre équipe a été notifiee. Vous serez contacte par email.", { duration: 10000 });
+            toast.error("Le service d'analyse nécessite un traitement complémentaire. Notre équipe a été notifiée. Vous serez contacté par email.", { duration: 10000 });
           } else {
             toast.error("Votre dossier est bien pris en charge. Un traitement complémentaire est en cours.", { duration: 8000 });
           }
@@ -251,7 +251,7 @@ export const DossierExpressPage = () => {
       sessionStorage.setItem('dossier_express_premium_pdf', premiumPdf ? '1' : '0');
       sessionStorage.setItem('dossier_express_admin_bypass', '1');
       setAdminPaid(true);
-      toast.success("Mode Admin : paiement bypass — completez le dossier puis lancez l'analyse.");
+      toast.success("Mode Admin : paiement bypass — complétez le dossier puis lancez l'analyse.");
       return;
     }
     sessionStorage.setItem('dossier_express_form', JSON.stringify(form));
@@ -318,7 +318,7 @@ export const DossierExpressPage = () => {
         const hasLargeFiles = files.some(f => f.size > 5 * 1024 * 1024);
         const totalSize = files.reduce((s, f) => s + (f.size || 0), 0);
         if (hasLargeFiles) {
-          toast.info("Fichiers volumineux detectes — upload fractionne securise en cours...");
+          toast.info("Fichiers volumineux détectés — upload fractionné sécurisé en cours...");
         } else if (totalSize > 2 * 1024 * 1024) {
           toast.info(`Envoi de ${files.length} document${files.length > 1 ? 's' : ''} — cela peut prendre quelques instants...`);
         } else {
@@ -348,7 +348,7 @@ export const DossierExpressPage = () => {
       const isTimeout = fileErr?.code === 'ECONNABORTED' || fileErr?.message?.includes('timeout');
       const isNetwork = !fileErr?.response && fileErr?.message?.includes('Network');
       if (isTimeout || isNetwork) {
-        toast.error("L'envoi a pris trop de temps. Verifiez votre connexion et reessayez.", { duration: 8000 });
+        toast.error("L'envoi a pris trop de temps. Vérifiez votre connexion et réessayez.", { duration: 8000 });
       }
       if (form.documents_text) {
         documentsText = `--- Contenu extrait par OCR ---\n${form.documents_text}\n`;
@@ -817,7 +817,7 @@ export const DossierExpressPage = () => {
                       <h4 className="text-sm font-semibold mb-2">Aucune action requise de votre part</h4>
                       <ul className="space-y-2">
                         {[
-                          "Votre paiement est bien confirme et securise",
+                          "Votre paiement est bien confirmé et sécurisé",
                           "Vos documents sont conserves en toute confidentialité",
                           "Vous recevrez votre rapport par email des qu'il sera finalise",
                           "En cas de besoin, notre équipe vous contactera directement"
@@ -1112,10 +1112,10 @@ export const DossierExpressPage = () => {
                 </h3>
                 <ul className="space-y-2.5">
                   {[
-                    "Votre paiement est confirme et securise",
+                    "Votre paiement est confirmé et sécurisé",
                     "Vos documents sont conserves en toute confidentialité",
                     "Notre équipe technique finalise votre rapport",
-                    "Vous recevrez votre analyse par email des que possible"
+                    "Vous recevrez votre analyse par email dès que possible"
                   ].map((item, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
                       <CheckCircle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
