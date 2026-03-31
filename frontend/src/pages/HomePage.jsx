@@ -188,7 +188,7 @@ export const HomePage = () => {
               </p>
 
               {/* 3 points clés */}
-              <div className="space-y-1.5 mb-3">
+              <div className="space-y-1.5 mb-1.5">
                 {[
                   { icon: HeartHandshake, text: "Expertise née d'un vécu concret" },
                   { icon: Crosshair, text: "Méthode stratégique & personnalisée" },
@@ -203,8 +203,14 @@ export const HomePage = () => {
                 ))}
               </div>
 
+              {/* Micro-ligne IA — pont de conversion */}
+              <p className="text-[13px] text-[#C9A84C]/70 tracking-wide mb-2.5" data-testid="hero-ia-availability">
+                <Zap className="w-3 h-3 inline-block mr-1.5 -mt-px text-[#C9A84C]/50" />
+                Vos deux agents IA vous répondent immédiatement, à toute heure.
+              </p>
+
               {/* Preuve sociale + CTA Urgent intégré */}
-              <div className="flex flex-wrap items-center gap-4 sm:gap-5 mb-3">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-5 mb-2.5">
                 {visitorCount > 0 && (
                   <div className="flex items-center gap-2.5">
                     <div className="flex -space-x-1.5">
