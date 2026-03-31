@@ -80,13 +80,13 @@ export const Header = () => {
     >
       {/* Filet doré premium — bas du header */}
       <div className="header-gold-line" />
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-clip">
         <div className="flex items-center justify-between min-h-[4.25rem] lg:min-h-[4.75rem]">
 
           {/* ═══ Bloc Marque — Ancrage premium ═══ */}
           <Link
             to="/"
-            className="flex items-center gap-3 hover:opacity-90 transition-opacity flex-shrink-0"
+            className="flex items-center gap-3 hover:opacity-90 transition-opacity min-w-0"
             data-testid="header-logo"
           >
             <LogoFull className="h-11 w-auto" textColor="#f5f0e8" />

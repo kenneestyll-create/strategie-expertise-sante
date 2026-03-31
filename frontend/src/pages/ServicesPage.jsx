@@ -279,10 +279,11 @@ export const ServicesPage = () => {
             Ne laissez pas le hasard décider.
           </p>
           <Link to="/medecin-conseil">
-            <Button size="lg" className="rounded-full px-8 gap-2 bg-accent hover:bg-accent/90 text-accent-foreground" data-testid="services-médecin-conseil-cta">
-              <Phone className="w-4 h-4" />
-              Être accompagné dans le choix de mon médecin conseil
-              <ArrowRight className="w-4 h-4" />
+            <Button size="lg" className="w-full sm:w-auto rounded-full px-6 sm:px-8 gap-2 bg-accent hover:bg-accent/90 text-accent-foreground whitespace-normal h-auto py-4 text-center leading-tight max-w-full" data-testid="services-médecin-conseil-cta">
+              <Phone className="w-4 h-4 flex-shrink-0" />
+              <span className="sm:hidden">Être accompagné</span>
+              <span className="hidden sm:inline">Être accompagné dans le choix de mon médecin conseil</span>
+              <ArrowRight className="w-4 h-4 flex-shrink-0" />
             </Button>
           </Link>
         </div>

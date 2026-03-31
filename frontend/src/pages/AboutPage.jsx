@@ -321,11 +321,11 @@ export const AboutPage = () => {
                 )}
               </div>
               {/* Download bar */}
-              <div className="flex items-center justify-between p-4 bg-card border-t border-border">
-                <div className="flex items-center gap-3">
-                  <FileText className="w-5 h-5 text-accent" strokeWidth={1.5} />
-                  <div>
-                    <p className="text-sm font-medium">Tribunal Judiciaire de Chartres — N°23/00331</p>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-card border-t border-border">
+                <div className="flex items-center gap-3 min-w-0">
+                  <FileText className="w-5 h-5 text-accent flex-shrink-0" strokeWidth={1.5} />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">Tribunal Judiciaire de Chartres — N°23/00331</p>
                     <p className="text-xs text-muted-foreground">Décision du 17/10/2025 — PDF, 50 Ko</p>
                   </div>
                 </div>

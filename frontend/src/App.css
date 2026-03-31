@@ -49,6 +49,28 @@
     overflow-x: clip;
     max-width: 100%;
   }
+
+  /* Conteneurs internes des sections : toujours contraints */
+  section > div {
+    overflow-x: clip;
+    max-width: 100%;
+  }
+
+  /* Enfants grid/flex : interdiction de forcer une largeur supérieure */
+  section .grid > *,
+  section .flex > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* Textes longs : toujours wrappés */
+  section a,
+  section p,
+  section span,
+  section h1, section h2, section h3, section h4 {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
 }
 
 

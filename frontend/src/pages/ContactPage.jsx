@@ -159,9 +159,9 @@ export const ContactPage = () => {
       {/* Contact Form Section */}
       <section className="section-padding">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-3 gap-12">
+          <div className="grid lg:grid-cols-3 gap-12 min-w-0">
             {/* Contact Info */}
-            <div className="lg:col-span-1 space-y-6">
+            <div className="lg:col-span-1 space-y-6 min-w-0">
               <div>
                 <h2 className="text-2xl font-semibold mb-4">Informations</h2>
                 <p className="text-muted-foreground mb-8">
@@ -171,17 +171,18 @@ export const ContactPage = () => {
               </div>
 
               {contactInfo.map((info, index) => (
-                <Card key={index} className="border-border">
-                  <CardContent className="p-4 flex items-start gap-4">
+                <Card key={index} className="border-border overflow-hidden">
+                  <CardContent className="p-4 flex items-start gap-4 min-w-0">
                     <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
                       <info.icon className="w-5 h-5 text-accent" strokeWidth={1.5} />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-sm text-muted-foreground">{info.title}</p>
                       {info.link ? (
                         <a 
                           href={info.link} 
-                          className="font-medium hover:text-accent transition-colors"
+                          className="font-medium hover:text-accent transition-colors break-all"
+                          style={{ overflowWrap: 'anywhere' }}
                         >
                           {info.value}
                         </a>

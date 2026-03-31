@@ -1,108 +1,67 @@
-# PRD — Strategie & Expertise Sante (S.E.S)
+# PRD — Stratégie & Expertise Santé (S.E.S)
 
-## Vision
-Plateforme premium de conseil en maladies professionnelles avec deux agents IA isoles.
+## Problème original
+Application web premium de conseil en maladie professionnelle (AT/MP). Scanner documentaire, contenu stratégique (IP, PGPF), mascotte IA "Straté", dashboard Admin, IA d'analyse (StrategiIA).
 
 ## Architecture
-- **Frontend** : React 18 + Shadcn/UI + Tailwind CSS
-- **Backend** : FastAPI + MongoDB
-- **IA** : Anthropic Claude Sonnet 4.5 — via Emergent LLM proxy
-- **PDF** : fpdf2 (Premium Signature V2) | **Email** : Resend | **Paiements** : Stripe + PayPal
+- **Frontend**: React + Tailwind CSS + Shadcn/UI
+- **Backend**: FastAPI + MongoDB
+- **Intégrations**: Claude Sonnet 4.5 (Emergent LLM Key), Stripe (test), Resend (sandbox)
 
-## Header Premium (30/03/2026)
-- Logo : h-11 (ancrage de marque renforce)
-- Hauteur : min-h 4.75rem desktop (plus statutaire)
-- Fond : bg/80 transparent au repos, bg/95 au scroll, bordure bottom doree au scroll
-- CTA : bouton outline dore statutaire (non agressif)
-- Navigation : separateurs verticaux, tracking-wide, espacement genereux
-- Dropdowns : fond #111110, bordure doree subtile, ombre profonde
-- Dossier Express : icone Zap doree
-- Tests : 100% PASS iteration 161 (29 tests desktop + mobile)
+## Tâches accomplies
 
-## Phase 2 Premium Home (30/03/2026)
-- H1 : leading-[1.18] plus respirant, tailles lg:2.1rem xl:2.3rem
-- Image droite : halo dore diffus, fondu haut+bas, filet dore horizontal bas, ombre profonde 70px, max-w 400px
-- CTA Urgent : "Reponse sous 2h" remplace par "Besoin urgent ?" CTA integre (event alerte-urgente:open -> modal)
-- Mascotte : scroll-reveal > 300px (Hero reste centre absolu)
-- AlerteUrgente : bouton flottant scroll-reveal > 400px + ecoute event alerte-urgente:open
-- Tests : 100% PASS iteration 161 (6/6 corrections verifiees)
+### Session précédente
+- Scanner documentaire natif (caméra mobile)
+- Contenu stratégique IP & PGPF intégré
+- Mascotte Straté (visuel + TTS hardcodé)
+- Audit linguistique frontend (accents)
+- Audit PDF encoding (cp1252)
+- Fix variable `etape` → `etape` (AccidentTravailPage)
 
-### Structure implementee (13 sections)
-1. **Hero** — Two-column propre (55fr/45fr) — V2 above-the-fold
-2. **Dossier Express strip** — Bande urgence rouge
-3. **Pourquoi ce site existe** — Narratif fondateur, fond ivoire #F8F5EF
-4. **Nos deux intelligences** — StrategiIA vs Dossier Express IA
-5. **Risques** — Ce que vous risquez sans accompagnement
-6. **Ecosysteme** — 8 services en grille
-7. **Methode S.E.S** — 5 etapes du processus
-8. **Medecin conseil** — Enjeu financier majeur
-9. **Confidentialite** — 3 piliers
-10. **Chiffres cles** — Contexte national (4 stats animees)
-11. **Confiance** — 4 piliers de credibilite
-12. **Temoignages** — 6 temoignages anonymises
-13. **CTA Final** — Signature emotionnelle
-
-### Direction artistique
-- Palette : #0a0a08 (fond), #111 (cartes), #C9A84C (or), #F8F5EF (ivoire)
-- Typographie : Playfair Display (titres), sans-serif (corps)
-- Theme : sombre, premium, luxe maitrise, or elegant
-
-### Tests Homepage : 100% PASS (iteration 156-162)
-
-## Audit linguistique complet (31/03/2026)
-- **Périmètre** : Tous les textes visibles du frontend (pages, composants, données de recherche)
-- **Corrections** : ~67 fautes d'accents, formulations et typographie corrigées dans 11 fichiers
-- **Fichiers modifiés** : HomePage.jsx, ResourcesPage.jsx, CalculatriceIPPPage.jsx, AccidentTravailPage.jsx, AdminConseilsStrate.jsx, DossierExpressPage.jsx, DocumentUploader.jsx, SuiviDossierPage.jsx, GlobalSearch.jsx, AlerteUrgente.jsx, searchIndex.js
-- **Règle qualité** : Tout nouveau texte frontend en français doit être livré parfaitement accentué et relu
-
-## Audit PDF — linguistique, typographique et encodage (31/03/2026)
-- **Périmètre** : pdf.py (moteur PDF principal), pdf_guides.py, prompts.py (StrategiIA + Dossier Express), SimulateurPage.jsx (jsPDF)
-- **Corrections** : ~35 chaînes statiques corrigées dans pdf.py, ~200 corrections d'accents dans prompts.py, encodage migré de latin-1 vers cp1252
-- **Fichiers modifiés** : utils/pdf.py, constants/prompts.py
-- **Tests** : Génération PDF StrategiIA + Dossier Express + Guide + vérification PyMuPDF des accents = 100% OK
-- **Règle qualité** : Aucun PDF client ne peut être validé sans contrôle linguistique, typographique et encodage FR
-
-## Stabilisation responsive mobile — overflow horizontal (31/03/2026)
-- **Périmètre** : Audit global de tous les écrans mobiles (360/375/390/412px)
-- **Corrections** : Protection CSS globale (body, #root, main), overflow-hidden sur 10 sections HomePage, suppression min-width contraignants (ResourcesPage, ClientDocuments)
-- **Fichiers modifiés** : index.css, HomePage.jsx, ResourcesPage.jsx, ClientDocuments.jsx
-- **Tests** : 4 largeurs x 15+ pages = scroll=False partout, 0 overflow structurel, desktop intact
-
-## Correction Blocs Fondateur Desktop (31/03/2026)
-- **Probleme** : Les 3 blocs CTA (Analyse IA, Documents, Orientation) sur la photo du fondateur etaient dupliques et inutiles sur desktop
-- **Correction** : Ajout de `lg:hidden` aux 3 blocs dans la section "Pourquoi ce site existe" pour les masquer sur desktop uniquement
-- **Fichier modifie** : HomePage.jsx (lignes 393, 403, 413)
-- **Mobile** : Blocs conserves et visibles
-
-## Fonctionnalites implementees
-- Mascotte Strate : TTS francais robuste (speakFrench), widget desktop + mobile, rotation quotidienne des conseils
-- Admin Conseils Strate : CRUD complet, analytics, stats, highlight/priorite
-- Backend conseils : /api/conseils/* (today, view, click, conversion, admin endpoints)
-- ChatBot : Orienteur ultra-court (3 questions max), prompt strict
-- PDF Premium Signature V2
-- DataConsentBox : Variantes adaptees
-- Document Scanner : Camera native mobile (pas d'auto-crop)
-
-## Correction Orthographique ASCII (30/03/2026)
-- **Probleme** : Script de remplacement global avait corrompu les variables, cles DB, data-testid, noms de composants avec des accents
-- **Correction** : Tous les identifiants programmatiques restaures en ASCII, texte affiche conserve avec accents francais
-- **Fichiers corriges** : AlerteUrgente.jsx, AgendaPage.jsx, ContactPage.jsx, useAdminTheme.js, CalculatriceAAHPage.jsx, HomePage.jsx, AccidentTravailPage.jsx, ExpertiseMedicalePage.jsx, ProtectionJuridiquePage.jsx, AdminConseilsStrate.jsx, SimulateurPage.jsx, AdminDashboard.jsx, App.js, MentionsLegalesPage.jsx, PolitiqueConfidentialitePage.jsx, MedecinConseilPage.jsx, AvisPage.jsx
-- **Bug critique corrige** : AlerteUrgente envoyait "telephone" (accentue) au backend qui attendait "telephone" (ASCII) -> formulaire alerte urgente non fonctionnel
-- **Bug Admin corrige** : AdminDashboard lisait last_results.eligible (accentue) mais backend renvoyait "eligible" (ASCII)
-- **Tests** : 100% PASS iteration 162 (10/10 backend, 13/13 frontend)
-
-## Etat des services
-- IA Anthropic (Emergent proxy) : OK
-- Paiement Stripe : TEST MODE
-- Email Resend : OK (sandbox)
-- Stockage S3 : NON CONFIGURE (en attente credentials AWS)
-- Database MongoDB : OK
+### Session actuelle (31/03/2026)
+- **Refonte responsive globale définitive**:
+  - Chaîne de confinement `overflow: clip` à chaque niveau DOM (html → body → #root → .App → main → sections)
+  - `contain: paint` sur `main`
+  - `clip-path: inset(0)` sur Hero (halos décoratifs)
+  - `touch-action: pan-y; overscroll-behavior-x: none` global
+  - Suppression du patch CSS App.css conflictuel (media query mobile qui écrasait Tailwind)
+  - Scrollbar custom scopée desktop uniquement
+  - Garde-fous CSS globaux: `section > div { overflow-x: clip; max-width: 100% }`, `section .grid > * { min-width: 0; max-width: 100% }`
+  - `overflow-wrap: break-word` global sur textes dans les sections
+- **Fix CTA ServicesPage**: Version mobile courte "Être accompagné" / desktop complète
+- **Fix ContactPage**: Email break-all + overflow-wrap: anywhere + min-w-0 sur la chaîne flex/grid
+- **Fix AboutPage**: Layout flex-col/sm:flex-row sur le download bar
+- **Fix Header**: Logo `min-w-0` (au lieu de flex-shrink-0) + `overflow-x-clip` sur nav
+- **Centrage optique Médecin Conseil**: Cards centrées sur mobile, font-sizes proportionnels
+- **`100vw` → `100%`**: Supprimé dans index.css (body) et App.css (sections)
+- **`overflow-hidden` → `overflow-clip`**: Toutes les sections de HomePage, DossierExpressPage, TarifsPage
+- **Audit DOM 17 pages × 320px**: 17/17 PASS (0 overflow, scrollWidth = viewport)
 
 ## Backlog
-### P1 : Cles de production (Checklist Live)
-- STRIPE_API_KEY live
-- S3 config (credentials AWS)
-- Domaine Resend verifie
 
-### P2 : Integration HubSpot CRM (en attente credentials)
-### P4 : Contenu juridique final
+### P0 (Aucun)
+Aucune tâche critique en cours.
+
+### P1
+- Exécution du protocole de lancement Live (clés Stripe live, AWS S3, domaine Resend)
+
+### P2
+- Intégration HubSpot CRM (en attente credentials)
+- Admin tips Straté (backend CRUD + frontend Admin tab + TTS français)
+
+### P3
+- S3 PDF Download (en attente credentials AWS)
+
+### P4
+- Contenu juridique final
+
+## Credentials de test
+- Admin: `admin@accompagn-sante.fr` / `Admin2024!`
+- Client: `demo@test.com` / `Password123!`
+
+## Contraintes utilisateur
+- NO INITIATIVES: Exécuter uniquement ce qui est demandé
+- NE PAS modifier la logique métier, routes, data-testid, tracking
+- Clés MongoDB TOUJOURS en ASCII (pas d'accents)
+- Format de rapport obligatoire (CAUSE RACINE, BLOCS CONCERNÉS, etc.)
+- Langue: Français uniquement
