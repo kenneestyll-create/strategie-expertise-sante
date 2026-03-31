@@ -73,7 +73,7 @@ _DE_BG = (245, 247, 252)
 
 
 def _safe(text: str) -> str:
-    return text.encode("latin-1", "replace").decode("latin-1")
+    return text.encode("cp1252", "replace").decode("cp1252")
 
 
 def _detect_vigilance_level(analysis: str) -> tuple:
@@ -89,11 +89,11 @@ def _detect_vigilance_level(analysis: str) -> tuple:
     high_count = sum(1 for kw in high_kw if kw in text)
     med_count = sum(1 for kw in med_kw if kw in text)
     if high_count >= 3:
-        return ("Vigilance elevee", 3, "Ce dossier presente des enjeux significatifs qui meritent une attention prioritaire.")
+        return ("Vigilance élevée", 3, "Ce dossier présente des enjeux significatifs qui méritent une attention prioritaire.")
     elif high_count >= 1 or med_count >= 3:
-        return ("Attention soutenue", 2, "Plusieurs elements de ce dossier necessitent une analyse approfondie.")
+        return ("Attention soutenue", 2, "Plusieurs éléments de ce dossier nécessitent une analyse approfondie.")
     else:
-        return ("Suivi recommande", 1, "Ce dossier contient des elements a structurer pour securiser votre situation.")
+        return ("Suivi recommandé", 1, "Ce dossier contient des éléments à structurer pour sécuriser votre situation.")
 
 
 def generate_secured_pdf(
@@ -123,13 +123,13 @@ def generate_secured_pdf(
     if is_strategiia:
         accent = _STRAT_ACCENT
         accent_light = _GOLD_LIGHT
-        service_label = "Analyse Strategique Premium"
+        service_label = "Analyse Stratégique Premium"
         service_tagline = "Regard expert sur votre situation"
     else:
         accent = _DE_ACCENT
         accent_light = _DE_ACCENT_LIGHT
-        service_label = "Pre-analyse Documentaire"
-        service_tagline = "Etude structuree de vos pieces"
+        service_label = "Pré-analyse Documentaire"
+        service_tagline = "Étude structurée de vos pièces"
 
     LM = 16
     RM = 16
@@ -156,7 +156,7 @@ def generate_secured_pdf(
             self.set_text_color(255, 255, 255)
             self.set_font("Helvetica", "B", 11)
             self.set_xy(text_x, 4.5)
-            self.cell(80, 5, "Strategie & Expertise Sante")
+            self.cell(80, 5, "Stratégie & Expertise Santé")
             # Pioneer line
             self.set_font("Helvetica", "", 6.5)
             self.set_text_color(*_GOLD_LIGHT)
@@ -188,7 +188,7 @@ def generate_secured_pdf(
             self.ln(2.5)
             self.set_font("Helvetica", "", 5.5)
             self.set_text_color(*_MUTED)
-            footer_txt = f"(c) {year} Strategie & Expertise Sante -- {report_number} -- Document confidentiel -- Analyse preliminaire a visee informative -- strategie-expertise-sante.fr"
+            footer_txt = f"(c) {year} Stratégie & Expertise Santé -- {report_number} -- Document confidentiel -- Analyse préliminaire à visée informative -- strategie-expertise-sante.fr"
             self.cell(
                 CW, 3.5,
                 footer_txt,
@@ -202,7 +202,7 @@ def generate_secured_pdf(
             self.set_font("Helvetica", "B", 38)
             self.set_text_color(240, 238, 232)
             cx, cy = self.w / 2, self.h / 2
-            txt = "Strategie & Expertise Sante"
+            txt = "Stratégie & Expertise Santé"
             tw = self.get_string_width(txt)
             with self.rotation(35, cx, cy):
                 self.text(cx - tw / 2, cy, txt)
@@ -262,7 +262,7 @@ def generate_secured_pdf(
         pdf.set_xy(LM + 6, ry + 2)
         pdf.set_font("Helvetica", "BI", 7)
         pdf.set_text_color(*_GOLD)
-        pdf.cell(0, 5, _safe("Document relu et finalise dans le cadre de l'option Relecture expert personnalisee"))
+        pdf.cell(0, 5, _safe("Document relu et finalisé dans le cadre de l'option Relecture expert personnalisée"))
         pdf.set_xy(LM, ry + 11)
 
     pdf.ln(3)
@@ -324,11 +324,11 @@ def generate_secured_pdf(
         elif all(s == "ocr_extracted" for s in statuses):
             level = "Bonne"
         elif all(s in ("text_extracted", "ocr_extracted") for s in statuses) and any(s == "ocr_extracted" for s in statuses):
-            level = "Tres bonne"
+            level = "Très bonne"
         elif any(s in ("text_extracted", "ocr_extracted") for s in statuses):
             level = "Partielle"
         else:
-            level = "Limitee"
+            level = "Limitée"
 
         dy = pdf.get_y()
         box_h = 14
@@ -341,14 +341,14 @@ def generate_secured_pdf(
         pdf.set_xy(LM + 6, dy + 2)
         pdf.set_font("Helvetica", "B", 7)
         pdf.set_text_color(*_DE_ACCENT)
-        pdf.cell(50, 3.5, "BASE DOCUMENTAIRE EXPLOITEE")
+        pdf.cell(50, 3.5, "BASE DOCUMENTAIRE EXPLOITÉE")
 
         # Metrics in a row
         col_w = (CW - 12) / 3
         metrics = [
-            (str(total_docs), "pieces analysees"),
-            (str(total_pages) if total_pages > 0 else "-", "pages exploitees"),
-            (level, "qualite d'extraction"),
+            (str(total_docs), "pièces analysées"),
+            (str(total_pages) if total_pages > 0 else "-", "pages exploitées"),
+            (level, "qualité d'extraction"),
         ]
         for i, (val, label) in enumerate(metrics):
             cx = LM + 6 + col_w * i
@@ -553,7 +553,7 @@ def generate_secured_pdf(
         pdf.set_x(LM + 5)
         pdf.set_font("Helvetica", "B", 8.5)
         pdf.set_text_color(*_DARK_TEXT)
-        pdf.cell(CW - 5, 5, _safe("Pieces analysees dans le cadre de cette etude"))
+        pdf.cell(CW - 5, 5, _safe("Pièces analysées dans le cadre de cette étude"))
         pdf.ln(8)
 
         # Table header
@@ -599,7 +599,7 @@ def generate_secured_pdf(
 
             pdf.set_xy(cx, ry + 1)
             status = doc.get("status", "")
-            status_label = {"text_extracted": "Texte natif", "ocr_extracted": "OCR", "failed": "Non lisible"}.get(status, "Traite")
+            status_label = {"text_extracted": "Texte natif", "ocr_extracted": "OCR", "failed": "Non lisible"}.get(status, "Traité")
             pdf.cell(col_widths[2], 3.5, _safe(status_label))
 
             pdf.set_y(ry + 5.5)
@@ -609,8 +609,8 @@ def generate_secured_pdf(
         pdf.set_font("Helvetica", "I", 6)
         pdf.set_text_color(*_MUTED)
         pdf.multi_cell(CW - 6, 3, _safe(
-            "Certaines pieces peuvent necessiter une relecture humaine complementaire "
-            "lorsqu'elles sont scannees, manuscrites ou de qualite inegale."
+            "Certaines pièces peuvent nécessiter une relecture humaine complémentaire "
+            "lorsqu'elles sont scannées, manuscrites ou de qualité inégale."
         ))
         pdf.ln(3)
 
@@ -636,7 +636,7 @@ def generate_secured_pdf(
     if is_strategiia:
         pdf.cell(CW - 6, 7, _safe("Votre situation, notre regard"))
     else:
-        pdf.cell(CW - 6, 7, _safe("Ce que cette etude vous apporte"))
+        pdf.cell(CW - 6, 7, _safe("Ce que cette étude vous apporte"))
     pdf.ln(12)
 
     # ── Part 1: Standardized emotional opening ──
@@ -644,8 +644,8 @@ def generate_secured_pdf(
     pdf.set_text_color(*_BODY_TEXT)
     pdf.set_x(LM)
     pdf.multi_cell(CW, 5, _safe(
-        "Votre situation merite plus qu'une simple lecture automatisee : "
-        "elle merite une strategie claire, humaine et rigoureuse."
+        "Votre situation mérite plus qu'une simple lecture automatisée : "
+        "elle mérite une stratégie claire, humaine et rigoureuse."
     ))
     pdf.ln(4)
 
@@ -654,9 +654,9 @@ def generate_secured_pdf(
     pdf.set_text_color(*_BODY_TEXT)
     pdf.set_x(LM)
     pdf.multi_cell(CW, 5, _safe(
-        "Ce document vous apporte une premiere vision structuree de votre dossier, "
-        "mais certaines situations necessitent un regard plus approfondi, une relecture experte "
-        "et un accompagnement reellement adapte a vos enjeux."
+        "Ce document vous apporte une première vision structurée de votre dossier, "
+        "mais certaines situations nécessitent un regard plus approfondi, une relecture experte "
+        "et un accompagnement réellement adapté à vos enjeux."
     ))
     pdf.ln(4)
 
@@ -671,9 +671,9 @@ def generate_secured_pdf(
     pdf.set_text_color(*_BODY_TEXT)
     pdf.set_x(LM)
     pdf.multi_cell(CW, 5, _safe(
-        "Si vous souhaitez aller plus loin, Strategie & Expertise Sante peut vous accompagner "
-        "a travers une prestation personnalisee avec un de nos experts, "
-        "afin de transformer cette premiere analyse en veritable levier d'action."
+        "Si vous souhaitez aller plus loin, Stratégie & Expertise Santé peut vous accompagner "
+        "à travers une prestation personnalisée avec un de nos experts, "
+        "afin de transformer cette première analyse en véritable levier d'action."
     ))
     pdf.ln(4)
 
@@ -699,14 +699,14 @@ def generate_secured_pdf(
     if is_strategiia:
         pdf.multi_cell(CW - 12, 4.2, _safe(
             "Nos experts vous proposent un accompagnement sur mesure : "
-            "analyse approfondie, strategie de recours personnalisee, "
-            "preparation d'expertise medicale et defense de vos interets."
+            "analyse approfondie, stratégie de recours personnalisée, "
+            "préparation d'expertise médicale et défense de vos intérêts."
         ))
     else:
         pdf.multi_cell(CW - 12, 4.2, _safe(
-            "Nos experts peuvent prolonger cette etude : "
-            "relecture approfondie, verification des delais et procedures, "
-            "chiffrage precis des prejudices et construction d'un dossier incontestable."
+            "Nos experts peuvent prolonger cette étude : "
+            "relecture approfondie, vérification des délais et procédures, "
+            "chiffrage précis des préjudices et construction d'un dossier incontestable."
         ))
 
     pdf.set_y(box_y + box_h + 6)
@@ -745,7 +745,7 @@ def generate_secured_pdf(
     if qr_tmp_path and os.path.isfile(qr_tmp_path):
         pdf.set_font("Helvetica", "B", 7)
         pdf.set_text_color(*_MUTED)
-        pdf.cell(CW, 3.5, _safe("Prochaine etape recommandee"), align="C", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(CW, 3.5, _safe("Prochaine étape recommandée"), align="C", new_x="LMARGIN", new_y="NEXT")
         pdf.ln(3)
 
         qr_size = 22
@@ -755,7 +755,7 @@ def generate_secured_pdf(
 
         pdf.set_font("Helvetica", "I", 6.5)
         pdf.set_text_color(*_MUTED)
-        pdf.cell(CW, 3, _safe("Scannez pour acceder a l'accompagnement expert personnalise S.E.S"), align="C", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(CW, 3, _safe("Scannez pour accéder à l'accompagnement expert personnalisé S.E.S"), align="C", new_x="LMARGIN", new_y="NEXT")
         pdf.ln(1.5)
 
         try:
@@ -767,7 +767,7 @@ def generate_secured_pdf(
 
     pdf.set_font("Helvetica", "", 6)
     pdf.set_text_color(*_MUTED)
-    pdf.cell(CW, 3, _safe("Premiere consultation offerte  |  strategie-expertise-sante.fr/contact"), align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(CW, 3, _safe("Première consultation offerte  |  strategie-expertise-sante.fr/contact"), align="C", new_x="LMARGIN", new_y="NEXT")
 
     pdf.ln(6)
 
@@ -781,16 +781,16 @@ def generate_secured_pdf(
     pdf.set_font("Helvetica", "B", 7)
     pdf.set_text_color(*_MUTED)
     pdf.set_x(LM)
-    pdf.cell(CW, 4, _safe("Confidentialite"), align="L")
+    pdf.cell(CW, 4, _safe("Confidentialité"), align="L")
     pdf.ln(5)
     pdf.set_font("Helvetica", "I", 6.5)
     pdf.set_text_color(*_MUTED)
     pdf.set_x(LM)
     pdf.multi_cell(CW, 3.5, _safe(
-        "Ce rapport a ete elabore a partir des informations et pieces transmises "
+        "Ce rapport a été élaboré à partir des informations et pièces transmises "
         "dans le cadre exclusif de l'analyse de votre dossier. "
-        "Les documents fournis sont traites avec une attention particuliere "
-        "en raison de leur caractere potentiellement sensible."
+        "Les documents fournis sont traités avec une attention particulière "
+        "en raison de leur caractère potentiellement sensible."
     ))
 
     pdf.ln(6)
@@ -804,11 +804,11 @@ def generate_secured_pdf(
 
     pdf.set_font("Helvetica", "BI", 9)
     pdf.set_text_color(*_BLACK)
-    pdf.cell(CW, 5, _safe("Vous n'etes plus seul face a votre combat."), align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(CW, 5, _safe("Vous n'êtes plus seul face à votre combat."), align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(1)
     pdf.set_font("Helvetica", "B", 9)
     pdf.set_text_color(*_GOLD)
-    pdf.cell(CW, 5, _safe("Dorenavant, S.E.S est votre bouclier."), align="C")
+    pdf.cell(CW, 5, _safe("Dorénavant, S.E.S est votre bouclier."), align="C")
 
     # ── Watermark ──
     if with_watermark:

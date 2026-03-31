@@ -55,6 +55,13 @@ Plateforme premium de conseil en maladies professionnelles avec deux agents IA i
 - **Fichiers modifiés** : HomePage.jsx, ResourcesPage.jsx, CalculatriceIPPPage.jsx, AccidentTravailPage.jsx, AdminConseilsStrate.jsx, DossierExpressPage.jsx, DocumentUploader.jsx, SuiviDossierPage.jsx, GlobalSearch.jsx, AlerteUrgente.jsx, searchIndex.js
 - **Règle qualité** : Tout nouveau texte frontend en français doit être livré parfaitement accentué et relu
 
+## Audit PDF — linguistique, typographique et encodage (31/03/2026)
+- **Périmètre** : pdf.py (moteur PDF principal), pdf_guides.py, prompts.py (StrategiIA + Dossier Express), SimulateurPage.jsx (jsPDF)
+- **Corrections** : ~35 chaînes statiques corrigées dans pdf.py, ~200 corrections d'accents dans prompts.py, encodage migré de latin-1 vers cp1252
+- **Fichiers modifiés** : utils/pdf.py, constants/prompts.py
+- **Tests** : Génération PDF StrategiIA + Dossier Express + Guide + vérification PyMuPDF des accents = 100% OK
+- **Règle qualité** : Aucun PDF client ne peut être validé sans contrôle linguistique, typographique et encodage FR
+
 ## Correction Blocs Fondateur Desktop (31/03/2026)
 - **Probleme** : Les 3 blocs CTA (Analyse IA, Documents, Orientation) sur la photo du fondateur etaient dupliques et inutiles sur desktop
 - **Correction** : Ajout de `lg:hidden` aux 3 blocs dans la section "Pourquoi ce site existe" pour les masquer sur desktop uniquement
