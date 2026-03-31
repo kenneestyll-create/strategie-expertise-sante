@@ -1,0 +1,75 @@
+/* ═══════════════════════════════════════════════════════════
+   LAYOUT GUARDRAILS — PROTECTION CSS GLOBALE DÉFINITIVE
+   ═══════════════════════════════════════════════════════════
+   Ce fichier est INTOUCHABLE.
+   Il empêche tout débordement horizontal, toute casse
+   responsive, tout élément parasite sur mobile.
+   NE PAS MODIFIER sans validation visuelle desktop + mobile.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Box-sizing universel ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ── Confinement global ── */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* ── Médias responsifs ── */
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ── Protection textes : aucun débordement possible ── */
+button,
+a,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+span,
+div,
+li,
+td,
+th,
+label {
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* ── Containers : aucun scroll horizontal ── */
+.container,
+section,
+main,
+article,
+footer,
+header,
+nav {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+/* ── Flex/Grid children : pas de min-width implicite ── */
+.grid > *,
+.flex > * {
+  min-width: 0;
+}
+
+/* ── Sections > div directs : confinement renforcé ── */
+section > div {
+  overflow-x: clip;
+  max-width: 100%;
+}

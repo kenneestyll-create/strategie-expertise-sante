@@ -138,6 +138,15 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           1. HERO — Structure propre, stable, 2 colonnes
       ══════════════════════════════════════════════════════════ */}
+      {/* 
+        ZONE GELÉE — HERO VALIDÉ
+        Ne pas modifier librement cette section sans validation visuelle complète desktop + mobile.
+        Toute modification doit conserver :
+        - même hauteur générale
+        - même hiérarchie visuelle
+        - même position des CTA
+        - même équilibre texte / image
+      */}
       <section className="relative bg-[#0a0a08] overflow-clip" style={{ clipPath: 'inset(0)' }} data-testid="hero-section">
         {/* Fond premium — lueur dorée diffuse */}
         <div className="absolute top-1/2 right-0 w-[600px] h-[600px] -translate-y-1/2 translate-x-1/4 bg-[#C9A84C]/[0.04] rounded-full blur-[180px] pointer-events-none" />

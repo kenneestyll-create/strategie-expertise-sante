@@ -13,41 +13,36 @@ Application web premium de conseil en maladie professionnelle (AT/MP). Scanner d
 ### Session précédente
 - Scanner documentaire natif (caméra mobile)
 - Contenu stratégique IP & PGPF intégré
-- Mascotte Straté (visuel + TTS hardcodé)
+- Mascotte Straté (visuel + TTS français + backend CRUD complet)
+- Admin Conseils Straté (composant AdminConseilsStrate.jsx)
+- Backend `/api/conseils` (CRUD, tracking, analytics, rotation quotidienne)
 - Audit linguistique frontend (accents)
 - Audit PDF encoding (cp1252)
-- Fix variable `etape` → `etape` (AccidentTravailPage)
+- Fix variable `etape` (AccidentTravailPage)
 
-### Session actuelle (31/03/2026)
-- **Refonte responsive globale définitive**:
-  - Chaîne de confinement `overflow: clip` à chaque niveau DOM (html → body → #root → .App → main → sections)
-  - `contain: paint` sur `main`
-  - `clip-path: inset(0)` sur Hero (halos décoratifs)
-  - `touch-action: pan-y; overscroll-behavior-x: none` global
-  - Suppression du patch CSS App.css conflictuel (media query mobile qui écrasait Tailwind)
-  - Scrollbar custom scopée desktop uniquement
-  - Garde-fous CSS globaux: `section > div { overflow-x: clip; max-width: 100% }`, `section .grid > * { min-width: 0; max-width: 100% }`
-  - `overflow-wrap: break-word` global sur textes dans les sections
-- **Fix CTA ServicesPage**: Version mobile courte "Être accompagné" / desktop complète
-- **Fix ContactPage**: Email break-all + overflow-wrap: anywhere + min-w-0 sur la chaîne flex/grid
-- **Fix AboutPage**: Layout flex-col/sm:flex-row sur le download bar
-- **Fix Header**: Logo `min-w-0` (au lieu de flex-shrink-0) + `overflow-x-clip` sur nav
-- **Centrage optique Médecin Conseil**: Cards centrées sur mobile, font-sizes proportionnels
-- **`100vw` → `100%`**: Supprimé dans index.css (body) et App.css (sections)
-- **`overflow-hidden` → `overflow-clip`**: Toutes les sections de HomePage, DossierExpressPage, TarifsPage
-- **Audit DOM 17 pages × 320px**: 17/17 PASS (0 overflow, scrollWidth = viewport)
+### Session actuelle (01/04/2026)
+- **Fix centrage "Choisir mon médecin conseil"** : `text-center lg:text-left` sur la colonne texte (P0 résolu)
+- **Gel définitif du frontend — Anti-régression** :
+  - `/frontend/src/styles/layout-guardrails.css` : Protection CSS globale définitive (box-sizing, overflow-x, word-wrap, media max-width)
+  - `/FRONTEND_GUARDRAILS.md` : Charte anti-casse avec interdictions et obligations
+  - `/RELEASE_VISUAL_CHECKLIST.md` : Checklist visuelle obligatoire avant mise en prod
+  - `/frontend/tests/visual.spec.ts` : Tests Playwright de non-régression (scroll horizontal, CTA, cartes, texte, hero, header, menu mobile)
+  - `/frontend/playwright.config.ts` : Configuration Playwright
+  - 51 captures de baseline dans `/frontend/tests/visual-baseline/`
+  - Zones gelées (commentaires) dans Hero (HomePage.jsx) et Header (Header.jsx)
+  - Import guardrails CSS dans index.css
+  - Tous tests PASS : 0 échec sur scroll, CTA, cartes, texte, hero, header, menu
 
 ## Backlog
 
 ### P0 (Aucun)
-- Fix centrage "Choisir mon médecin conseil" sur mobile : CORRIGÉ (01/04/2026) — `text-center lg:text-left` sur la colonne texte
+Aucune tâche critique en cours.
 
 ### P1
 - Exécution du protocole de lancement Live (clés Stripe live, AWS S3, domaine Resend)
 
 ### P2
 - Intégration HubSpot CRM (en attente credentials)
-- Admin tips Straté (backend CRUD + frontend Admin tab + TTS français)
 
 ### P3
 - S3 PDF Download (en attente credentials AWS)
@@ -65,3 +60,4 @@ Application web premium de conseil en maladie professionnelle (AT/MP). Scanner d
 - Clés MongoDB TOUJOURS en ASCII (pas d'accents)
 - Format de rapport obligatoire (CAUSE RACINE, BLOCS CONCERNÉS, etc.)
 - Langue: Français uniquement
+- FRONTEND GELÉ : Voir FRONTEND_GUARDRAILS.md et RELEASE_VISUAL_CHECKLIST.md

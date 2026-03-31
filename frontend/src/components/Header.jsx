@@ -10,6 +10,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+/* 
+  ZONE GELÉE — HEADER VALIDÉ
+  Ne pas modifier librement ce composant sans validation visuelle complète desktop + mobile.
+  Toute modification doit conserver :
+  - même structure de navigation
+  - même logo et position
+  - même CTA "Réserver un appel"
+  - même comportement du menu mobile
+  - même breakpoints responsifs
+*/
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);

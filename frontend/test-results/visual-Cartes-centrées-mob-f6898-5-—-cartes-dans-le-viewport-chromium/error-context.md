@@ -1,0 +1,321 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - navigation [ref=e5]:
+      - generic [ref=e6]:
+        - link "Stratégie & Expertise Santé" [ref=e7] [cursor=pointer]:
+          - /url: /
+          - img "Stratégie & Expertise Santé" [ref=e8]:
+            - generic [ref=e9]:
+              - generic [ref=e11]: F
+              - generic [ref=e12]: S
+            - generic [ref=e13]: Stratégie & Expertise Santé
+            - generic [ref=e14]: PIONNIER EN FRANCE
+        - button "Ouvrir le menu" [ref=e15] [cursor=pointer]:
+          - img [ref=e17]
+  - main [ref=e18]:
+    - generic [ref=e21]:
+      - text: Accompagnements
+      - heading "Des services adaptés à votre parcours" [level=1] [ref=e22]
+      - paragraph [ref=e23]: Chaque situation est unique. Je propose un accompagnement personnalisé, à votre rythme, pour vous aider à traverser les épreuves administratives et médicales liées à la maladie professionnelle ou à l'accident du travail.
+      - generic [ref=e24]:
+        - generic [ref=e25]:
+          - img [ref=e26]
+          - generic [ref=e29]: Consultation gratuite — 10 min
+        - generic [ref=e30]:
+          - img [ref=e31]
+          - generic [ref=e33]: Suivi personnalisé
+    - generic [ref=e37]:
+      - generic [ref=e39]:
+        - generic [ref=e40]:
+          - img [ref=e41]
+          - generic [ref=e46]: Analyse de dossier médical et administratif
+          - generic [ref=e47]:
+            - img [ref=e48]
+            - generic [ref=e51]: Selon la complexité du dossier
+        - generic [ref=e52]:
+          - paragraph [ref=e53]: "Je passe en revue l'ensemble de vos documents : certificats médicaux, rapports d'expertise, courriers de la CPAM, contrats d'assurance. L'objectif est de comprendre votre situation dans sa globalité et d'identifier les points forts et les failles de votre dossier."
+          - heading "Ce que comprend cet accompagnement :" [level=4] [ref=e54]
+          - list [ref=e55]:
+            - generic [ref=e56]:
+              - listitem [ref=e57]:
+                - img [ref=e58]
+                - generic [ref=e61]: Lecture complète de votre dossier
+              - listitem [ref=e62]:
+                - img [ref=e63]
+                - generic [ref=e66]: Identification des documents manquants
+              - listitem [ref=e67]:
+                - img [ref=e68]
+                - generic [ref=e71]: Repérage des incohérences ou erreurs
+              - listitem [ref=e72]:
+                - img [ref=e73]
+                - generic [ref=e76]: Recommandations personnalisées
+      - generic [ref=e78]:
+        - generic [ref=e79]:
+          - img [ref=e80]
+          - generic [ref=e82]: Préparation aux expertises médicales
+          - generic [ref=e83]:
+            - img [ref=e84]
+            - generic [ref=e87]: 1 à 2 séances de préparation
+        - generic [ref=e88]:
+          - paragraph [ref=e89]: "L'expertise médicale est souvent un moment stressant et décisif. Je vous aide à vous y préparer : quoi apporter, comment présenter vos symptômes, quels pièges éviter, et comment rester serein face à l'expert."
+          - heading "Ce que comprend cet accompagnement :" [level=4] [ref=e90]
+          - list [ref=e91]:
+            - generic [ref=e92]:
+              - listitem [ref=e93]:
+                - img [ref=e94]
+                - generic [ref=e97]: Simulation d'entretien d'expertise
+              - listitem [ref=e98]:
+                - img [ref=e99]
+                - generic [ref=e102]: Liste des documents à préparer
+              - listitem [ref=e103]:
+                - img [ref=e104]
+                - generic [ref=e107]: Conseils sur la présentation de vos symptômes
+              - listitem [ref=e108]:
+                - img [ref=e109]
+                - generic [ref=e112]: Aide à la rédaction de vos observations
+      - generic [ref=e114]:
+        - generic [ref=e115]:
+          - img [ref=e116]
+          - generic [ref=e121]: Stratégie AT/MP et CRRMP
+          - generic [ref=e122]:
+            - img [ref=e123]
+            - generic [ref=e126]: Accompagnement sur plusieurs mois
+        - generic [ref=e127]:
+          - paragraph [ref=e128]: "La reconnaissance d'une maladie professionnelle est un parcours semé d'embûches. Je vous guide dans les démarches : déclaration initiale, constitution du dossier, passage devant le CRRMP, et suivi de votre demande."
+          - heading "Ce que comprend cet accompagnement :" [level=4] [ref=e129]
+          - list [ref=e130]:
+            - generic [ref=e131]:
+              - listitem [ref=e132]:
+                - img [ref=e133]
+                - generic [ref=e136]: Aide à la déclaration de maladie professionnelle
+              - listitem [ref=e137]:
+                - img [ref=e138]
+                - generic [ref=e141]: Préparation du dossier CRRMP
+              - listitem [ref=e142]:
+                - img [ref=e143]
+                - generic [ref=e146]: Suivi des délais et relances
+              - listitem [ref=e147]:
+                - img [ref=e148]
+                - generic [ref=e151]: Conseils en cas de refus
+      - generic [ref=e153]:
+        - generic [ref=e154]:
+          - img [ref=e155]
+          - generic [ref=e157]: Accompagnement assurantiel
+          - generic [ref=e158]:
+            - img [ref=e159]
+            - generic [ref=e162]: Variable selon les procédures
+        - generic [ref=e163]:
+          - paragraph [ref=e164]: Face à votre assurance prévoyance ou emprunteur, vous n'êtes pas seul. Je vous aide à décrypter vos contrats, à comprendre les garanties (PTIA, invalidité), et à défendre vos droits en cas de refus d'indemnisation.
+          - heading "Ce que comprend cet accompagnement :" [level=4] [ref=e165]
+          - list [ref=e166]:
+            - generic [ref=e167]:
+              - listitem [ref=e168]:
+                - img [ref=e169]
+                - generic [ref=e172]: Analyse de vos contrats d'assurance
+              - listitem [ref=e173]:
+                - img [ref=e174]
+                - generic [ref=e177]: Décryptage des conditions générales
+              - listitem [ref=e178]:
+                - img [ref=e179]
+                - generic [ref=e182]: Aide à la rédaction de courriers de contestation
+              - listitem [ref=e183]:
+                - img [ref=e184]
+                - generic [ref=e187]: Conseils pour la négociation
+    - generic [ref=e189]:
+      - generic [ref=e190]:
+        - text: Comment ça marche
+        - heading "Un accompagnement en 4 étapes" [level=2] [ref=e191]
+        - paragraph [ref=e192]: Simple, transparent et adapté à votre rythme.
+      - generic [ref=e194]:
+        - generic [ref=e195]:
+          - generic [ref=e196]: "1"
+          - heading "Premier contact gratuit" [level=3] [ref=e197]
+          - paragraph [ref=e198]: Première consultation téléphonique gratuite — 10 minutes pour évaluer votre situation.
+        - generic [ref=e199]:
+          - generic [ref=e200]: "2"
+          - heading "Analyse de votre dossier" [level=3] [ref=e201]
+          - paragraph [ref=e202]: Envoi de vos documents, que j'étudie en détail. Je prépare un compte-rendu avec mes observations.
+        - generic [ref=e203]:
+          - generic [ref=e204]: "3"
+          - heading "Plan d'action personnalisé" [level=3] [ref=e205]
+          - paragraph [ref=e206]: Nous définissons ensemble les étapes à suivre, adaptées à votre situation et vos priorités.
+        - generic [ref=e207]:
+          - generic [ref=e208]: "4"
+          - heading "Accompagnement continu" [level=3] [ref=e209]
+          - paragraph [ref=e210]: Je reste disponible pour répondre à vos questions, relire vos courriers et vous soutenir dans vos démarches.
+    - generic [ref=e213]:
+      - generic [ref=e214]:
+        - text: Spécialisation
+        - heading "Régimes spéciaux" [level=2] [ref=e215]
+        - paragraph [ref=e216]: Au-delà du régime général, j'accompagné également les agents relevant de régimes spéciaux, qui ont des spécificités propres en matière de reconnaissance des maladies professionnelles et d'accidents du travail.
+        - paragraph [ref=e217]: Les démarches, les interlocuteurs et les droits peuvent différer significativement. Mon expérience me permet de vous guider dans ces procédures particulières.
+      - generic [ref=e218]:
+        - generic [ref=e219]:
+          - generic [ref=e220]:
+            - img [ref=e222]
+            - generic [ref=e226]:
+              - heading "SNCF" [level=3] [ref=e227]
+              - paragraph [ref=e228]: Cheminots et agents SNCF
+          - list [ref=e229]:
+            - listitem [ref=e230]:
+              - img [ref=e231]
+              - text: Spécificités du régime spécial SNCF
+            - listitem [ref=e234]:
+              - img [ref=e235]
+              - text: Reconnaissance des maladies professionnelles
+            - listitem [ref=e238]:
+              - img [ref=e239]
+              - text: Accompagnement des expertises
+        - generic [ref=e242]:
+          - generic [ref=e243]:
+            - img [ref=e245]
+            - generic [ref=e249]:
+              - heading "RATP" [level=3] [ref=e250]
+              - paragraph [ref=e251]: Agents RATP
+          - list [ref=e252]:
+            - listitem [ref=e253]:
+              - img [ref=e254]
+              - text: Procédures propres au régime RATP
+            - listitem [ref=e257]:
+              - img [ref=e258]
+              - text: Droits spécifiques des agents
+            - listitem [ref=e261]:
+              - img [ref=e262]
+              - text: Aide à la constitution du dossier
+    - generic [ref=e266]:
+      - img [ref=e267]
+      - heading "Besoin d'un médecin conseil adapté à votre situation ?" [level=2] [ref=e271]
+      - paragraph [ref=e272]: Le choix du médecin conseil de victime est une décision stratégique majeure qui influence directement votre taux d'IPP et votre indemnisation. Ne laissez pas le hasard décider.
+      - link "Être accompagné" [ref=e273] [cursor=pointer]:
+        - /url: /medecin-conseil
+        - button "Être accompagné" [ref=e274]:
+          - img
+          - generic [ref=e275]: Être accompagné
+          - img
+    - generic [ref=e279]:
+      - heading "Important à savoir" [level=3] [ref=e280]
+      - paragraph [ref=e281]: Je ne suis ni médecin, ni avocat, ni expert agréé. Mon accompagnement repose sur mon expérience personnelle et ne se substitue pas aux conseils médicaux ou juridiques professionnels.
+      - paragraph [ref=e282]: Pour les questions juridiques complexes ou les procédures contentieuses, je vous orienterai vers les professionnels compétents (avocats spécialisés, associations de victimes, etc.).
+    - generic [ref=e284]:
+      - heading "Besoin d'un accompagnement personnalisé ?" [level=2] [ref=e285]
+      - paragraph [ref=e286]: Contactez-moi pour une première consultation gratuite de 10 minutes. Nous verrons ensemble comment je peux vous aider dans votre situation.
+      - link "Prendre rendez-vous" [ref=e287] [cursor=pointer]:
+        - /url: /contact
+        - button "Prendre rendez-vous" [ref=e288]:
+          - text: Prendre rendez-vous
+          - img
+  - contentinfo [ref=e289]:
+    - generic [ref=e292]:
+      - generic [ref=e293]:
+        - generic [ref=e294]:
+          - img [ref=e296]
+          - heading "Devenez partenaire" [level=3] [ref=e301]
+        - paragraph [ref=e302]: Vous êtes professionnel de santé, avocat, expert ou association ? Rejoignez notre réseau pour collaborer, sponsoriser nos actions ou contribuer à améliorer l'accompagnement des victimes de maladies professionnelles.
+        - generic [ref=e303]:
+          - link "LinkedIn" [ref=e304] [cursor=pointer]:
+            - /url: https://www.linkedin.com/company/strategie-expertise-sante
+            - img [ref=e305]
+          - link "Email partenariat" [ref=e309] [cursor=pointer]:
+            - /url: mailto:partenaires@strategie-expertise-sante.fr
+            - img [ref=e310]
+      - generic [ref=e315]:
+        - generic [ref=e316]:
+          - generic [ref=e317]:
+            - text: Nom *
+            - generic [ref=e318]:
+              - img [ref=e319]
+              - textbox "Votre nom" [ref=e322]
+          - generic [ref=e323]:
+            - text: Société
+            - generic [ref=e324]:
+              - img [ref=e325]
+              - textbox "Votre société" [ref=e329]
+        - generic [ref=e330]:
+          - text: Email *
+          - generic [ref=e331]:
+            - img [ref=e332]
+            - textbox "votre@email.fr" [ref=e335]
+        - generic [ref=e336]:
+          - text: Type de partenariat *
+          - combobox [ref=e337] [cursor=pointer]:
+            - generic: Sélectionnez...
+            - img [ref=e338]
+          - combobox [ref=e340]
+        - generic [ref=e341]:
+          - text: Message (optionnel)
+          - textbox "Décrivez brièvement votre projet de collaboration..." [ref=e342]
+        - button "Envoyer ma demande" [ref=e343] [cursor=pointer]:
+          - img
+          - text: Envoyer ma demande
+    - generic [ref=e344]:
+      - generic [ref=e345]:
+        - generic [ref=e346]:
+          - link "Stratégie & Expertise Santé" [ref=e347] [cursor=pointer]:
+            - /url: /
+            - img "Stratégie & Expertise Santé" [ref=e348]:
+              - generic [ref=e349]:
+                - generic [ref=e351]: F
+                - generic [ref=e352]: S
+              - generic [ref=e353]: Stratégie & Expertise Santé
+              - generic [ref=e354]: PIONNIER EN FRANCE
+          - paragraph [ref=e355]: Conseil et accompagnement pour les victimes de maladies professionnelles, accidents du travail et litiges assurantiels. Une aide humaine et experte, née d'une expérience vécue.
+        - generic [ref=e356]:
+          - heading "Navigation" [level=4] [ref=e357]
+          - list [ref=e358]:
+            - listitem [ref=e359]:
+              - link "À propos" [ref=e360] [cursor=pointer]:
+                - /url: /a-propos
+            - listitem [ref=e361]:
+              - link "Accompagnements" [ref=e362] [cursor=pointer]:
+                - /url: /accompagnements
+            - listitem [ref=e363]:
+              - link "Choisir son médecin conseil" [ref=e364] [cursor=pointer]:
+                - /url: /medecin-conseil
+            - listitem [ref=e365]:
+              - link "Ressources" [ref=e366] [cursor=pointer]:
+                - /url: /ressources
+            - listitem [ref=e367]:
+              - link "Contact" [ref=e368] [cursor=pointer]:
+                - /url: /contact
+            - listitem [ref=e369]:
+              - link "Parrainage" [ref=e370] [cursor=pointer]:
+                - /url: /parrainage
+                - img [ref=e371]
+                - text: Parrainage
+            - listitem [ref=e375]:
+              - link "Agenda" [ref=e376] [cursor=pointer]:
+                - /url: /agenda
+            - listitem [ref=e377]:
+              - link "Simulateur" [ref=e378] [cursor=pointer]:
+                - /url: /simulateur
+            - listitem [ref=e379]:
+              - link "Espace client" [ref=e380] [cursor=pointer]:
+                - /url: /espace-client
+        - generic [ref=e381]:
+          - heading "Contact" [level=4] [ref=e382]
+          - list [ref=e383]:
+            - listitem [ref=e384]:
+              - link "contact@strategie-expertise-sante.fr" [ref=e385] [cursor=pointer]:
+                - /url: mailto:contact@strategie-expertise-sante.fr
+                - img [ref=e386]
+                - text: contact@strategie-expertise-sante.fr
+            - listitem [ref=e389]:
+              - link "06 00 00 00 00" [ref=e390] [cursor=pointer]:
+                - /url: tel:+33600000000
+                - img [ref=e391]
+                - text: 06 00 00 00 00
+      - paragraph [ref=e394]: Stratégie & Expertise Santé propose un accompagnement stratégique et une analyse documentaire. Ce service ne constitue pas une expertise médicale officielle ni une expertise judiciaire, lesquelles sont réalisées par des médecins experts et experts judiciaires agréés. Les services proposés ne constituent pas un conseil juridique ni un avis médical. Pour toute décision juridique ou médicale, consultez un professionnel qualifié.
+      - generic [ref=e396]:
+        - paragraph [ref=e397]: © 2026 Stratégie & Expertise Santé. Tous droits réservés.
+        - generic [ref=e398]:
+          - link "Mentions légales & CGU" [ref=e399] [cursor=pointer]:
+            - /url: /mentions-legales
+          - link "Politique de confidentialité" [ref=e400] [cursor=pointer]:
+            - /url: /politique-confidentialite
+          - link "Administration" [ref=e401] [cursor=pointer]:
+            - /url: /admin/login
+  - region "Notifications alt+T"
+```
