@@ -177,3 +177,62 @@ iframe[src*="emergent"] {
   height: 0 !important;
   overflow: hidden !important;
 }
+
+
+/* ══════════════════════════════════════
+   Gold Dust Particles — Premium Effect
+   ══════════════════════════════════════ */
+@keyframes goldShimmer1 {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.6; }
+}
+@keyframes goldShimmer2 {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.1; }
+}
+@keyframes goldShimmer3 {
+  0%, 100% { opacity: 0.05; }
+  50% { opacity: 0.45; }
+}
+@keyframes goldDrift {
+  0% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(-8px) translateX(3px); }
+  100% { transform: translateY(0) translateX(0); }
+}
+
+.gold-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.gold-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, #C9A84C, #DAA520, transparent);
+  pointer-events: none;
+}
+
+/* Header gold line glow */
+.header-gold-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(201,168,76,0.05) 10%, rgba(201,168,76,0.4) 30%, rgba(201,168,76,0.7) 50%, rgba(201,168,76,0.4) 70%, rgba(201,168,76,0.05) 90%, transparent 100%);
+  pointer-events: none;
+}
+.header-gold-line::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  right: 10%;
+  height: 6px;
+  background: linear-gradient(90deg, transparent 0%, rgba(201,168,76,0.08) 25%, rgba(201,168,76,0.15) 50%, rgba(201,168,76,0.08) 75%, transparent 100%);
+  filter: blur(3px);
+  pointer-events: none;
+}

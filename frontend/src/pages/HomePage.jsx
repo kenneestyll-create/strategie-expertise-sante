@@ -12,6 +12,7 @@ import {
   FileText, Lock, Users, BookOpen, Calculator, Search, CalendarDays
 } from 'lucide-react';
 import { MascotteMobileWidget } from '@/components/MascotteStrate';
+import { GoldDustOverlay } from '@/components/GoldDustOverlay';
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -137,9 +138,15 @@ export const HomePage = () => {
       {/* ══════════════════════════════════════════════════════════
           1. HERO — Structure propre, stable, 2 colonnes
       ══════════════════════════════════════════════════════════ */}
-      <section className="relative bg-[#0a0a08]" data-testid="hero-section">
-        {/* Fond premium — lueur dorée diffuse très discrète */}
-        <div className="absolute top-1/2 right-0 w-[600px] h-[600px] -translate-y-1/2 translate-x-1/4 bg-[#C9A84C]/[0.03] rounded-full blur-[180px] pointer-events-none" />
+      <section className="relative bg-[#0a0a08] overflow-hidden" data-testid="hero-section">
+        {/* Fond premium — lueur dorée diffuse */}
+        <div className="absolute top-1/2 right-0 w-[600px] h-[600px] -translate-y-1/2 translate-x-1/4 bg-[#C9A84C]/[0.04] rounded-full blur-[180px] pointer-events-none" />
+        {/* Halo doré bas-gauche */}
+        <div className="absolute bottom-0 left-0 w-[500px] h-[400px] bg-[#C9A84C]/[0.03] rounded-full blur-[150px] pointer-events-none translate-y-1/3 -translate-x-1/4" />
+        {/* Halo doré bas-droite */}
+        <div className="absolute bottom-0 right-0 w-[400px] h-[350px] bg-[#C9A84C]/[0.035] rounded-full blur-[130px] pointer-events-none translate-y-1/4 translate-x-1/4" />
+        {/* Poussière d'or — particules scintillantes */}
+        <GoldDustOverlay />
         <div className="relative max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-20 lg:pt-[5.5rem] pb-8 sm:pb-10 lg:pb-10">
           <div className="grid lg:grid-cols-[55fr_45fr] gap-8 lg:gap-12 items-center">
 
