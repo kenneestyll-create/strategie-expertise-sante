@@ -40,7 +40,7 @@ Application web premium de conseil en maladie professionnelle (AT/MP). Scanner d
 ## Backlog
 
 ### P0 (Aucun)
-Aucune tâche critique en cours.
+- Fix centrage "Choisir mon médecin conseil" sur mobile : CORRIGÉ (01/04/2026) — `text-center lg:text-left` sur la colonne texte
 
 ### P1
 - Exécution du protocole de lancement Live (clés Stripe live, AWS S3, domaine Resend)

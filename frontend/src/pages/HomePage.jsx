@@ -681,7 +681,7 @@ export const HomePage = () => {
       <section className="py-16 sm:py-20 overflow-clip bg-[#111] border-b border-white/5" data-testid="medecin-conseil-home-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-            <div className="min-w-0">
+            <div className="min-w-0 text-center lg:text-left">
               <span className="text-xs font-medium text-[#C9A84C] uppercase tracking-[0.2em]">Orientation stratégique</span>
               <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold mt-3 mb-4 text-[#f5f0e8]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }} data-testid="home-médecin-conseil-title">
                 Le choix du médecin conseil : un enjeu financier majeur
