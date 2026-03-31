@@ -182,7 +182,11 @@ export const DossierExpressPage = () => {
   useEffect(() => {
     const payment = searchParams.get('payment');
     const sessionId = searchParams.get('session_id');
-    if (payment === 'success' && sessionId) {
+    const stepParam = searchParams.get('step');
+    if (stepParam === 'form') {
+      setStep('form');
+      window.history.replaceState({}, '', '/dossier-express');
+    } else if (payment === 'success' && sessionId) {
       const savedForm = sessionStorage.getItem('dossier_express_form');
       if (savedForm) {
         const parsed = JSON.parse(savedForm);

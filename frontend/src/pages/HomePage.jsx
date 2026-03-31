@@ -431,7 +431,7 @@ export const HomePage = () => {
           <div className="grid md:grid-cols-2 gap-6 lg:gap-8 stagger">
             {/* Card 1 — StrategiIA — DARK CARD */}
             <div className="reveal" data-testid="solution-card-0">
-              <Link to="/simulateur" className="group block h-full">
+              <Link to="/simulateur" className="group block h-full" onClick={(e) => { e.preventDefault(); window.dispatchEvent(new Event('strategiia:open')); }}>
                 <div className="h-full bg-[#111] rounded-2xl p-7 sm:p-8 transition-all duration-300 hover:shadow-2xl hover:shadow-[#C9A84C]/5 group-hover:-translate-y-1">
                   <div className="flex items-center gap-4 mb-5">
                     <div className="w-12 h-12 rounded-xl bg-[#C9A84C]/10 flex items-center justify-center">
@@ -477,7 +477,7 @@ export const HomePage = () => {
 
             {/* Card 2 — Dossier Express IA — IVORY CARD */}
             <div className="reveal" data-testid="solution-card-1">
-              <Link to="/dossier-express" className="group block h-full">
+              <Link to="/dossier-express?step=form" className="group block h-full">
                 <div className="h-full bg-white border border-[#C9A84C]/15 rounded-2xl p-7 sm:p-8 transition-all duration-300 hover:shadow-2xl hover:shadow-[#C9A84C]/10 group-hover:-translate-y-1 relative overflow-hidden">
                   <div className="absolute top-4 right-4">
                     <span className="bg-red-600 text-white text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">Urgence</span>
