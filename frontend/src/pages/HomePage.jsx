@@ -154,7 +154,7 @@ export const HomePage = () => {
             <div className="relative z-10">
               {/* Badge — Reconstruit : structure simple et saine */}
               <div
-                className="flex w-fit items-center gap-4 rounded-xl bg-[#161612] border border-[#C9A84C]/20 px-4 py-2.5 sm:px-6 sm:py-3.5 mb-1"
+                className="hidden sm:flex w-fit items-center gap-4 rounded-xl bg-[#161612] border border-[#C9A84C]/20 px-4 py-2.5 sm:px-6 sm:py-3.5 mb-1"
                 data-testid="pioneer-badge"
               >
                 <div className="w-10 h-10 rounded-lg bg-[#C9A84C]/10 border border-[#C9A84C]/20 flex items-center justify-center flex-shrink-0">
