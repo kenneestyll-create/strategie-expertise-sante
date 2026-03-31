@@ -4,33 +4,53 @@
    Ce fichier est INTOUCHABLE.
    Il empêche tout débordement horizontal, toute casse
    responsive, tout élément parasite sur mobile.
-   NE PAS MODIFIER sans validation visuelle desktop + mobile.
+   NE PAS MODIFIER sans validation visuelle desktop + mobile
+   sur les 8 résolutions obligatoires.
+   
+   Date de gel : 01/04/2026
    ═══════════════════════════════════════════════════════════ */
 
-/* ── Box-sizing universel ── */
+/* ── 1. Box-sizing universel ── */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-/* ── Confinement global ── */
+/* ── 2. Confinement global : aucun scroll horizontal ── */
 html,
 body {
   overflow-x: hidden;
   max-width: 100%;
 }
 
-/* ── Médias responsifs ── */
+/* ── 3. Médias responsifs : jamais plus larges que le parent ── */
 img,
 video,
 canvas,
-svg {
+svg,
+iframe,
+object,
+embed {
   max-width: 100%;
   height: auto;
 }
 
-/* ── Protection textes : aucun débordement possible ── */
+/* ── 4. Formulaires : pas de débordement ── */
+input,
+textarea,
+select {
+  max-width: 100%;
+}
+
+/* ── 5. Tableaux : scroll interne si nécessaire ── */
+table {
+  max-width: 100%;
+  overflow-x: auto;
+  display: block;
+}
+
+/* ── 6. Protection textes : aucun débordement possible ── */
 button,
 a,
 p,
@@ -45,31 +65,61 @@ div,
 li,
 td,
 th,
-label {
+label,
+blockquote,
+figcaption {
   word-wrap: break-word;
   overflow-wrap: anywhere;
 }
 
-/* ── Containers : aucun scroll horizontal ── */
+/* ── 7. Containers : overflow clip sur tous les blocs structurels ── */
 .container,
 section,
 main,
 article,
 footer,
 header,
-nav {
+nav,
+aside {
   max-width: 100%;
   overflow-x: clip;
 }
 
-/* ── Flex/Grid children : pas de min-width implicite ── */
+/* ── 8. Flex/Grid children : pas de min-width implicite ── */
 .grid > *,
 .flex > * {
   min-width: 0;
 }
 
-/* ── Sections > div directs : confinement renforcé ── */
+/* ── 9. Sections > div directs : confinement renforcé ── */
 section > div {
   overflow-x: clip;
   max-width: 100%;
+}
+
+/* ── 10. Boutons et liens : jamais plus larges que le viewport ── */
+button,
+a,
+[role="button"] {
+  max-width: 100%;
+}
+
+/* ── 11. Cartes et encadrés : containment ── */
+[class*="rounded-xl"],
+[class*="rounded-lg"],
+[class*="rounded-2xl"] {
+  max-width: 100%;
+}
+
+/* ── 12. Position absolute décoratifs : ne pas créer de scrollbar ── */
+[class*="absolute"] {
+  max-width: 100vw;
+}
+
+/* ── 13. Touch mobile : pas de scroll horizontal au swipe ── */
+@media (max-width: 1024px) {
+  html {
+    touch-action: pan-y;
+    overscroll-behavior-x: none;
+  }
 }

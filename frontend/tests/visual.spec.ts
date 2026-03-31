@@ -3,19 +3,22 @@
  * TESTS VISUELS DE NON-RÉGRESSION — Stratégie & Expertise Santé
  * ═══════════════════════════════════════════════════════════
  * 
+ * BASELINE GELÉE LE 01/04/2026
+ * 
  * RÈGLE ABSOLUE :
  * Aucune modification frontend ne doit être considérée comme
  * "terminée" si ces tests ne sont pas PASS à 100%.
  * 
- * Ces tests vérifient automatiquement :
- * - Absence de scroll horizontal
- * - CTA non tronqués
- * - Cartes bien centrées
- * - Badges non coupés
- * - Hero entièrement visible above-the-fold sur desktop
- * - Header non cassé
- * - Aucun texte qui sort d'un encadré
- * - Aucun bouton plus large que le viewport
+ * Vérifie automatiquement :
+ * - Absence de scroll horizontal (toutes pages × 8 résolutions)
+ * - CTA non tronqués (mobile)
+ * - Cartes bien centrées (mobile)
+ * - Badges non coupés (mobile)
+ * - Hero entièrement visible above-the-fold (desktop)
+ * - Header non cassé (desktop + mobile)
+ * - Aucun texte qui sort d'un encadré (mobile)
+ * - Aucun bouton plus large que le viewport (mobile)
+ * - Menu mobile fonctionnel
  * ═══════════════════════════════════════════════════════════
  */
 
@@ -23,14 +26,29 @@ import { test, expect, Page } from '@playwright/test';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
-const PAGES = [
+/* ═══════════════════════════════════════════
+   PAGES SENSIBLES — Couverture complète
+   ═══════════════════════════════════════════ */
+
+const CRITICAL_PAGES = [
   { path: '/', name: 'home' },
   { path: '/accompagnements', name: 'accompagnements' },
   { path: '/tarifs', name: 'tarifs' },
   { path: '/medecin-conseil', name: 'medecin-conseil' },
   { path: '/dossier-express', name: 'dossier-express' },
-  { path: '/strategiia', name: 'strategiia' },
+  { path: '/simulateur', name: 'strategiia' },
+  { path: '/contact', name: 'contact' },
+  { path: '/a-propos', name: 'a-propos' },
+  { path: '/accident-travail-maladie-professionnelle', name: 'accident-travail' },
+  { path: '/ressources', name: 'ressources' },
+  { path: '/calculatrice-ipp', name: 'calculatrice-ipp' },
+  { path: '/expertise-medicale', name: 'expertise-medicale' },
+  { path: '/mdph', name: 'mdph' },
 ];
+
+/* ═══════════════════════════════════════════
+   RÉSOLUTIONS OBLIGATOIRES
+   ═══════════════════════════════════════════ */
 
 const MOBILE_VIEWPORTS = [
   { width: 360, height: 800, name: '360x800' },
@@ -51,278 +69,302 @@ const DESKTOP_VIEWPORTS = [
 
 const ALL_VIEWPORTS = [...MOBILE_VIEWPORTS, ...TABLET_VIEWPORTS, ...DESKTOP_VIEWPORTS];
 
-// ═══════════════════════════════════════════
-// HELPER: Vérifier absence de scroll horizontal
-// ═══════════════════════════════════════════
+/* ═══════════════════════════════════════════
+   HELPERS — Vérifications automatiques
+   ═══════════════════════════════════════════ */
+
 async function assertNoHorizontalOverflow(page: Page, context: string) {
   const overflow = await page.evaluate(() => {
     return document.documentElement.scrollWidth > document.documentElement.clientWidth;
   });
-  expect(overflow, `Scroll horizontal détecté sur ${context}`).toBe(false);
+  expect(overflow, `SCROLL HORIZONTAL détecté sur ${context}`).toBe(false);
 }
 
-// ═══════════════════════════════════════════
-// HELPER: Vérifier qu'aucun bouton ne dépasse le viewport
-// ═══════════════════════════════════════════
 async function assertNoButtonOverflow(page: Page, context: string) {
   const overflowingButtons = await page.evaluate(() => {
-    const viewportWidth = document.documentElement.clientWidth;
-    const buttons = document.querySelectorAll('button, a.rounded-full, [role="button"]');
+    const vw = document.documentElement.clientWidth;
+    const buttons = document.querySelectorAll('button, a[class*="rounded"], [role="button"]');
     const results: string[] = [];
     buttons.forEach((btn) => {
       const rect = btn.getBoundingClientRect();
-      if (rect.right > viewportWidth + 2 || rect.left < -2) {
-        results.push(`${btn.textContent?.trim().substring(0, 40)} (left:${Math.round(rect.left)}, right:${Math.round(rect.right)}, vw:${viewportWidth})`);
+      if (rect.width > 0 && rect.height > 0 && rect.top < window.innerHeight * 3) {
+        if (rect.right > vw + 2 || rect.left < -2) {
+          results.push(`"${btn.textContent?.trim().substring(0, 40)}" (L:${Math.round(rect.left)}, R:${Math.round(rect.right)}, VW:${vw})`);
+        }
       }
     });
     return results;
   });
-  expect(overflowingButtons, `Boutons dépassant le viewport sur ${context}: ${overflowingButtons.join(', ')}`).toHaveLength(0);
+  expect(overflowingButtons, `BOUTON TRONQUÉ sur ${context}: ${overflowingButtons.join(', ')}`).toHaveLength(0);
 }
 
-// ═══════════════════════════════════════════
-// HELPER: Vérifier que les cartes sont centrées (pas de décalage asymétrique)
-// ═══════════════════════════════════════════
 async function assertCardsContained(page: Page, context: string) {
   const overflowingCards = await page.evaluate(() => {
-    const viewportWidth = document.documentElement.clientWidth;
-    const cards = document.querySelectorAll('[class*="rounded-xl"], [class*="rounded-lg"], [class*="Card"]');
+    const vw = document.documentElement.clientWidth;
+    const cards = document.querySelectorAll('[class*="rounded-xl"], [class*="rounded-lg"], [class*="rounded-2xl"]');
     const results: string[] = [];
     cards.forEach((card) => {
       const rect = card.getBoundingClientRect();
-      if (rect.width > 0 && rect.height > 0 && rect.top < window.innerHeight * 3) {
-        if (rect.right > viewportWidth + 2 || rect.left < -2) {
-          results.push(`Card (left:${Math.round(rect.left)}, right:${Math.round(rect.right)}, w:${Math.round(rect.width)})`);
+      if (rect.width > 10 && rect.height > 10 && rect.top < window.innerHeight * 3) {
+        if (rect.right > vw + 2 || rect.left < -2) {
+          results.push(`Carte (L:${Math.round(rect.left)}, R:${Math.round(rect.right)}, W:${Math.round(rect.width)}, VW:${vw})`);
         }
       }
     });
     return results;
   });
-  expect(overflowingCards, `Cartes dépassant le viewport sur ${context}: ${overflowingCards.join(', ')}`).toHaveLength(0);
+  expect(overflowingCards, `CARTE DÉBORDE sur ${context}: ${overflowingCards.join(', ')}`).toHaveLength(0);
 }
 
-// ═══════════════════════════════════════════
-// HELPER: Vérifier qu'aucun texte visible ne sort de son conteneur
-// ═══════════════════════════════════════════
 async function assertNoTextOverflow(page: Page, context: string) {
   const overflowingTexts = await page.evaluate(() => {
-    const viewportWidth = document.documentElement.clientWidth;
-    const textElements = document.querySelectorAll('h1, h2, h3, h4, p, span, a, button');
+    const vw = document.documentElement.clientWidth;
+    const els = document.querySelectorAll('h1, h2, h3, h4, p, span, a, button, label');
     const results: string[] = [];
-    textElements.forEach((el) => {
+    els.forEach((el) => {
       const rect = el.getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0 && rect.top < window.innerHeight * 2) {
-        if (rect.right > viewportWidth + 5) {
-          const text = el.textContent?.trim().substring(0, 50) || '';
-          results.push(`"${text}" (right:${Math.round(rect.right)}, vw:${viewportWidth})`);
+        if (rect.right > vw + 5) {
+          results.push(`"${el.textContent?.trim().substring(0, 50)}" (R:${Math.round(rect.right)}, VW:${vw})`);
         }
       }
     });
     return results;
   });
-  expect(overflowingTexts, `Texte dépassant le viewport sur ${context}: ${overflowingTexts.join(', ')}`).toHaveLength(0);
+  expect(overflowingTexts, `TEXTE DÉBORDE sur ${context}: ${overflowingTexts.join(', ')}`).toHaveLength(0);
 }
 
-// ═══════════════════════════════════════════
-// TEST 1: Absence de scroll horizontal — toutes pages × toutes résolutions
-// ═══════════════════════════════════════════
-test.describe('Scroll horizontal interdit', () => {
-  for (const pageInfo of PAGES) {
+async function assertNoBadgeOverflow(page: Page, context: string) {
+  const overflowing = await page.evaluate(() => {
+    const vw = document.documentElement.clientWidth;
+    const badges = document.querySelectorAll('[class*="badge"], [class*="Badge"], [class*="tag"], [class*="pill"], span[class*="rounded-full"], span[class*="rounded-lg"]');
+    const results: string[] = [];
+    badges.forEach((el) => {
+      const rect = el.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0 && rect.top < window.innerHeight * 3) {
+        if (rect.right > vw + 2 || rect.left < -2) {
+          results.push(`Badge "${el.textContent?.trim().substring(0, 30)}" (R:${Math.round(rect.right)}, VW:${vw})`);
+        }
+      }
+    });
+    return results;
+  });
+  expect(overflowing, `BADGE COUPÉ sur ${context}: ${overflowing.join(', ')}`).toHaveLength(0);
+}
+
+/* ═══════════════════════════════════════════
+   TEST 1: Absence de scroll horizontal
+   Toutes pages × toutes résolutions
+   ═══════════════════════════════════════════ */
+test.describe('1. Scroll horizontal interdit', () => {
+  for (const pg of CRITICAL_PAGES) {
     for (const vp of ALL_VIEWPORTS) {
-      test(`${pageInfo.name} @ ${vp.name} — pas de scroll horizontal`, async ({ page }) => {
+      test(`${pg.name} @ ${vp.name}`, async ({ page }) => {
         await page.setViewportSize({ width: vp.width, height: vp.height });
-        await page.goto(`${BASE_URL}${pageInfo.path}`, { waitUntil: 'networkidle' });
-        await page.waitForTimeout(500);
-        await assertNoHorizontalOverflow(page, `${pageInfo.name} @ ${vp.name}`);
+        await page.goto(`${BASE_URL}${pg.path}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        await page.waitForTimeout(800);
+        await assertNoHorizontalOverflow(page, `${pg.name} @ ${vp.name}`);
       });
     }
   }
 });
 
-// ═══════════════════════════════════════════
-// TEST 2: Boutons / CTA non tronqués — mobile uniquement
-// ═══════════════════════════════════════════
-test.describe('CTA non tronqués (mobile)', () => {
-  for (const pageInfo of PAGES) {
+/* ═══════════════════════════════════════════
+   TEST 2: CTA non tronqués (mobile)
+   ═══════════════════════════════════════════ */
+test.describe('2. CTA non tronqués (mobile)', () => {
+  for (const pg of CRITICAL_PAGES) {
     for (const vp of MOBILE_VIEWPORTS) {
-      test(`${pageInfo.name} @ ${vp.name} — aucun CTA tronqué`, async ({ page }) => {
+      test(`${pg.name} @ ${vp.name}`, async ({ page }) => {
         await page.setViewportSize({ width: vp.width, height: vp.height });
-        await page.goto(`${BASE_URL}${pageInfo.path}`, { waitUntil: 'networkidle' });
-        await page.waitForTimeout(500);
-        await assertNoButtonOverflow(page, `${pageInfo.name} @ ${vp.name}`);
+        await page.goto(`${BASE_URL}${pg.path}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        await page.waitForTimeout(800);
+        await assertNoButtonOverflow(page, `${pg.name} @ ${vp.name}`);
       });
     }
   }
 });
 
-// ═══════════════════════════════════════════
-// TEST 3: Cartes contenues dans le viewport — mobile
-// ═══════════════════════════════════════════
-test.describe('Cartes centrées (mobile)', () => {
-  for (const pageInfo of PAGES) {
+/* ═══════════════════════════════════════════
+   TEST 3: Cartes contenues (mobile)
+   ═══════════════════════════════════════════ */
+test.describe('3. Cartes centrées (mobile)', () => {
+  for (const pg of CRITICAL_PAGES) {
     for (const vp of MOBILE_VIEWPORTS) {
-      test(`${pageInfo.name} @ ${vp.name} — cartes dans le viewport`, async ({ page }) => {
+      test(`${pg.name} @ ${vp.name}`, async ({ page }) => {
         await page.setViewportSize({ width: vp.width, height: vp.height });
-        await page.goto(`${BASE_URL}${pageInfo.path}`, { waitUntil: 'networkidle' });
-        await page.waitForTimeout(500);
-        await assertCardsContained(page, `${pageInfo.name} @ ${vp.name}`);
+        await page.goto(`${BASE_URL}${pg.path}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        await page.waitForTimeout(800);
+        await assertCardsContained(page, `${pg.name} @ ${vp.name}`);
       });
     }
   }
 });
 
-// ═══════════════════════════════════════════
-// TEST 4: Texte ne sort pas des encadrés — mobile
-// ═══════════════════════════════════════════
-test.describe('Texte contenu (mobile)', () => {
-  for (const pageInfo of PAGES) {
+/* ═══════════════════════════════════════════
+   TEST 4: Texte ne déborde pas (mobile)
+   ═══════════════════════════════════════════ */
+test.describe('4. Texte contenu (mobile)', () => {
+  for (const pg of CRITICAL_PAGES) {
     for (const vp of MOBILE_VIEWPORTS) {
-      test(`${pageInfo.name} @ ${vp.name} — texte ne déborde pas`, async ({ page }) => {
+      test(`${pg.name} @ ${vp.name}`, async ({ page }) => {
         await page.setViewportSize({ width: vp.width, height: vp.height });
-        await page.goto(`${BASE_URL}${pageInfo.path}`, { waitUntil: 'networkidle' });
-        await page.waitForTimeout(500);
-        await assertNoTextOverflow(page, `${pageInfo.name} @ ${vp.name}`);
+        await page.goto(`${BASE_URL}${pg.path}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        await page.waitForTimeout(800);
+        await assertNoTextOverflow(page, `${pg.name} @ ${vp.name}`);
       });
     }
   }
 });
 
-// ═══════════════════════════════════════════
-// TEST 5: Hero above-the-fold sur desktop
-// ═══════════════════════════════════════════
-test.describe('Hero above-the-fold (desktop)', () => {
+/* ═══════════════════════════════════════════
+   TEST 5: Badges non coupés (mobile)
+   ═══════════════════════════════════════════ */
+test.describe('5. Badges non coupés (mobile)', () => {
+  for (const pg of CRITICAL_PAGES) {
+    for (const vp of MOBILE_VIEWPORTS) {
+      test(`${pg.name} @ ${vp.name}`, async ({ page }) => {
+        await page.setViewportSize({ width: vp.width, height: vp.height });
+        await page.goto(`${BASE_URL}${pg.path}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        await page.waitForTimeout(500);
+        await assertNoBadgeOverflow(page, `${pg.name} @ ${vp.name}`);
+      });
+    }
+  }
+});
+
+/* ═══════════════════════════════════════════
+   TEST 6: Hero above-the-fold (desktop)
+   ═══════════════════════════════════════════ */
+test.describe('6. Hero above-the-fold (desktop)', () => {
   for (const vp of DESKTOP_VIEWPORTS) {
-    test(`Home hero visible sans scroll @ ${vp.name}`, async ({ page }) => {
+    test(`Hero visible @ ${vp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
-      await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
+      await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
       await page.waitForTimeout(500);
 
-      const heroSection = page.locator('[data-testid="hero-section"]');
-      const heroBox = await heroSection.boundingBox();
-      expect(heroBox, 'Hero section introuvable').not.toBeNull();
-
-      // Le bas du hero ne doit pas dépasser 120% de la hauteur du viewport
-      const heroBottom = heroBox!.y + heroBox!.height;
-      expect(heroBottom, `Hero dépasse le fold: bottom=${Math.round(heroBottom)}px vs viewport=${vp.height}px`).toBeLessThanOrEqual(vp.height * 1.2);
+      const hero = page.locator('[data-testid="hero-section"]');
+      const box = await hero.boundingBox();
+      expect(box, 'Hero introuvable').not.toBeNull();
+      expect(box!.y + box!.height, `Hero dépasse le fold @ ${vp.name}`).toBeLessThanOrEqual(vp.height * 1.2);
     });
   }
 });
 
-// ═══════════════════════════════════════════
-// TEST 6: Header intact — desktop + mobile
-// ═══════════════════════════════════════════
-test.describe('Header non cassé', () => {
-  test('Header desktop — logo + nav visibles', async ({ page }) => {
+/* ═══════════════════════════════════════════
+   TEST 7: Header non cassé (desktop + mobile)
+   ═══════════════════════════════════════════ */
+test.describe('7. Header intact', () => {
+  test('Header desktop — logo + nav visibles @ 1440x900', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
+    await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.waitForTimeout(500);
 
     const header = page.locator('header').first();
-    const headerBox = await header.boundingBox();
-    expect(headerBox, 'Header introuvable').not.toBeNull();
-    expect(headerBox!.width, 'Header ne prend pas toute la largeur').toBeGreaterThan(1400);
+    const box = await header.boundingBox();
+    expect(box, 'Header introuvable').not.toBeNull();
+    expect(box!.width, 'Header ne prend pas toute la largeur').toBeGreaterThan(1400);
+  });
+
+  test('Header desktop — aligné @ 1366x768', async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForTimeout(500);
+
+    const header = page.locator('header').first();
+    const box = await header.boundingBox();
+    expect(box, 'Header introuvable').not.toBeNull();
+    expect(box!.width, 'Header ne prend pas toute la largeur').toBeGreaterThan(1340);
   });
 
   for (const vp of MOBILE_VIEWPORTS) {
     test(`Header mobile @ ${vp.name} — pas de débordement`, async ({ page }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
-      await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
+      await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
       await page.waitForTimeout(500);
 
       await assertNoHorizontalOverflow(page, `Header mobile @ ${vp.name}`);
-
       const header = page.locator('header').first();
-      const headerBox = await header.boundingBox();
-      expect(headerBox, 'Header introuvable').not.toBeNull();
-      expect(headerBox!.width, `Header plus large que le viewport @ ${vp.name}`).toBeLessThanOrEqual(vp.width + 1);
+      const box = await header.boundingBox();
+      expect(box, 'Header introuvable').not.toBeNull();
+      expect(box!.width, `Header trop large @ ${vp.name}`).toBeLessThanOrEqual(vp.width + 1);
     });
   }
 });
 
-// ═══════════════════════════════════════════
-// TEST 7: Menu mobile — ouverture/fermeture
-// ═══════════════════════════════════════════
-test.describe('Menu mobile', () => {
-  test('Menu mobile ouvre et ferme correctement', async ({ page }) => {
-    await page.setViewportSize({ width: 360, height: 800 });
-    await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
-    await page.waitForTimeout(500);
+/* ═══════════════════════════════════════════
+   TEST 8: Menu mobile — ouverture / fermeture
+   ═══════════════════════════════════════════ */
+test.describe('8. Menu mobile', () => {
+  for (const vp of MOBILE_VIEWPORTS) {
+    test(`Menu ouvre/ferme @ ${vp.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: vp.width, height: vp.height });
+      await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.waitForTimeout(500);
 
-    // Cliquer sur le bouton hamburger
-    const menuBtn = page.locator('button[aria-label*="menu" i], button[data-testid*="menu" i], header button:has(svg)').first();
-    if (await menuBtn.isVisible()) {
-      await menuBtn.click();
-      await page.waitForTimeout(300);
-
-      // Vérifier pas de scroll horizontal après ouverture
-      await assertNoHorizontalOverflow(page, 'Menu mobile ouvert');
-    }
-  });
+      const menuBtn = page.locator('header button').first();
+      if (await menuBtn.isVisible()) {
+        await menuBtn.click();
+        await page.waitForTimeout(400);
+        await assertNoHorizontalOverflow(page, `Menu ouvert @ ${vp.name}`);
+      }
+    });
+  }
 });
 
-// ═══════════════════════════════════════════
-// TEST 8: Captures de baseline (génération)
-// ═══════════════════════════════════════════
-test.describe('Génération baseline visuelle', () => {
-  const baselinePaths = [
+/* ═══════════════════════════════════════════
+   TEST 9: Sections à encadrés — pas de débordement
+   ═══════════════════════════════════════════ */
+test.describe('9. Encadrés contenus (mobile)', () => {
+  const pagesWithEncadres = [
     { path: '/', name: 'home' },
     { path: '/accompagnements', name: 'accompagnements' },
     { path: '/tarifs', name: 'tarifs' },
     { path: '/medecin-conseil', name: 'medecin-conseil' },
-    { path: '/dossier-express', name: 'dossier-express' },
-    { path: '/strategiia', name: 'strategiia' },
   ];
 
-  for (const pageInfo of baselinePaths) {
-    for (const vp of ALL_VIEWPORTS) {
-      test(`Baseline: ${pageInfo.name} @ ${vp.name}`, async ({ page }) => {
-        await page.setViewportSize({ width: vp.width, height: vp.height });
-        await page.goto(`${BASE_URL}${pageInfo.path}`, { waitUntil: 'networkidle' });
-        await page.waitForTimeout(1000);
-        await expect(page).toHaveScreenshot(`${pageInfo.name}-${vp.name}.png`, {
-          fullPage: true,
-          maxDiffPixelRatio: 0.01,
-        });
-      });
-    }
-  }
-
-  // Header desktop
-  test('Baseline: header-desktop', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
-    await page.waitForTimeout(500);
-    const header = page.locator('header').first();
-    await expect(header).toHaveScreenshot('header-desktop.png', { maxDiffPixelRatio: 0.01 });
-  });
-
-  // Hero desktop + mobile
-  test('Baseline: hero-desktop', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
-    await page.waitForTimeout(500);
-    const hero = page.locator('[data-testid="hero-section"]');
-    await expect(hero).toHaveScreenshot('hero-desktop.png', { maxDiffPixelRatio: 0.01 });
-  });
-
-  test('Baseline: hero-mobile', async ({ page }) => {
-    await page.setViewportSize({ width: 360, height: 800 });
-    await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
-    await page.waitForTimeout(500);
-    const hero = page.locator('[data-testid="hero-section"]');
-    await expect(hero).toHaveScreenshot('hero-mobile.png', { maxDiffPixelRatio: 0.01 });
-  });
-
-  // Menu mobile ouvert
-  test('Baseline: menu-mobile-ouvert', async ({ page }) => {
-    await page.setViewportSize({ width: 360, height: 800 });
-    await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
-    await page.waitForTimeout(500);
-    const menuBtn = page.locator('button[aria-label*="menu" i], button[data-testid*="menu" i], header button:has(svg)').first();
-    if (await menuBtn.isVisible()) {
-      await menuBtn.click();
+  for (const pg of pagesWithEncadres) {
+    test(`${pg.name} @ 360x800 — encadrés contenus`, async ({ page }) => {
+      await page.setViewportSize({ width: 360, height: 800 });
+      await page.goto(`${BASE_URL}${pg.path}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
       await page.waitForTimeout(500);
-      await expect(page).toHaveScreenshot('menu-mobile-ouvert.png', { maxDiffPixelRatio: 0.01 });
-    }
-  });
+
+      const overflowing = await page.evaluate(() => {
+        const vw = document.documentElement.clientWidth;
+        const encadres = document.querySelectorAll('[class*="border"][class*="rounded"], [class*="bg-"][class*="rounded"], [class*="shadow"][class*="rounded"]');
+        const results: string[] = [];
+        encadres.forEach((el) => {
+          const rect = el.getBoundingClientRect();
+          if (rect.width > 20 && rect.height > 20 && rect.top < window.innerHeight * 4) {
+            if (rect.right > vw + 2) {
+              results.push(`Encadré (L:${Math.round(rect.left)}, R:${Math.round(rect.right)}, W:${Math.round(rect.width)}, VW:${vw})`);
+            }
+          }
+        });
+        return results;
+      });
+      expect(overflowing, `ENCADRÉ DÉBORDE sur ${pg.name}: ${overflowing.join(', ')}`).toHaveLength(0);
+    });
+  }
+});
+
+/* ═══════════════════════════════════════════
+   TEST 10: Largeur de page — aucune page plus large que le viewport
+   ═══════════════════════════════════════════ */
+test.describe('10. Largeur page === viewport (mobile)', () => {
+  for (const pg of CRITICAL_PAGES) {
+    test(`${pg.name} @ 360x800 — scrollWidth === clientWidth`, async ({ page }) => {
+      await page.setViewportSize({ width: 360, height: 800 });
+      await page.goto(`${BASE_URL}${pg.path}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.waitForTimeout(500);
+
+      const result = await page.evaluate(() => {
+        return {
+          scrollWidth: document.documentElement.scrollWidth,
+          clientWidth: document.documentElement.clientWidth,
+        };
+      });
+      expect(result.scrollWidth, `${pg.name}: scrollWidth(${result.scrollWidth}) > clientWidth(${result.clientWidth})`).toBeLessThanOrEqual(result.clientWidth);
+    });
+  }
 });

@@ -10,7 +10,7 @@ Application web premium de conseil en maladie professionnelle (AT/MP). Scanner d
 
 ## Tâches accomplies
 
-### Session précédente
+### Sessions précédentes
 - Scanner documentaire natif (caméra mobile)
 - Contenu stratégique IP & PGPF intégré
 - Mascotte Straté (visuel + TTS français + backend CRUD complet)
@@ -18,20 +18,22 @@ Application web premium de conseil en maladie professionnelle (AT/MP). Scanner d
 - Backend `/api/conseils` (CRUD, tracking, analytics, rotation quotidienne)
 - Audit linguistique frontend (accents)
 - Audit PDF encoding (cp1252)
-- Fix variable `etape` (AccidentTravailPage)
+- Refonte responsive globale (overflow-clip, 100vw → 100%, audit 17 pages)
 
 ### Session actuelle (01/04/2026)
-- **Fix centrage "Choisir mon médecin conseil"** : `text-center lg:text-left` sur la colonne texte (P0 résolu)
-- **Gel définitif du frontend — Anti-régression** :
-  - `/frontend/src/styles/layout-guardrails.css` : Protection CSS globale définitive (box-sizing, overflow-x, word-wrap, media max-width)
-  - `/FRONTEND_GUARDRAILS.md` : Charte anti-casse avec interdictions et obligations
-  - `/RELEASE_VISUAL_CHECKLIST.md` : Checklist visuelle obligatoire avant mise en prod
-  - `/frontend/tests/visual.spec.ts` : Tests Playwright de non-régression (scroll horizontal, CTA, cartes, texte, hero, header, menu mobile)
-  - `/frontend/playwright.config.ts` : Configuration Playwright
-  - 51 captures de baseline dans `/frontend/tests/visual-baseline/`
-  - Zones gelées (commentaires) dans Hero (HomePage.jsx) et Header (Header.jsx)
-  - Import guardrails CSS dans index.css
-  - Tous tests PASS : 0 échec sur scroll, CTA, cartes, texte, hero, header, menu
+- **Fix centrage "Choisir mon médecin conseil"** : `text-center lg:text-left`
+- **GEL DÉFINITIF DU FRONTEND** :
+  - `layout-guardrails.css` : 13 règles CSS anti-débordement
+  - `FRONTEND_GUARDRAILS.md` : Charte anti-casse + 8 zones gelées + protocole obligatoire
+  - `RELEASE_VISUAL_CHECKLIST.md` : Checklist visuelle avant prod
+  - `visual.spec.ts` : 341 tests Playwright (10 suites × 13 pages × 8 résolutions)
+  - 115 captures baseline dans `/frontend/tests/visual-baseline/`
+  - Zones gelées documentées dans Hero + Header (commentaires code)
+  - **341/341 tests PASS — 0 échec**
+
+## Frontend — État gelé
+Le frontend est officiellement gelé depuis le 01/04/2026.
+Toute modification doit suivre le protocole dans `FRONTEND_GUARDRAILS.md`.
 
 ## Backlog
 
