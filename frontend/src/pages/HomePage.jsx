@@ -483,7 +483,7 @@ export const HomePage = () => {
                     Votre premier éclairage stratégique. Une analyse intelligente de votre situation pour comprendre vos droits et identifier vos leviers.
                   </p>
 
-                  <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                     <div>
                       <p className="text-[#C9A84C] text-[10px] font-bold uppercase tracking-wider mb-2.5">Idéal pour</p>
                       {["Comprendre votre situation", "Identifier vos droits", "Obtenir une première orientation"].map((t, i) => (
@@ -533,7 +533,7 @@ export const HomePage = () => {
                     L'analyse documentaire complète de votre dossier. Un rapport structuré, approfondi et exploitable pour vos démarches.
                   </p>
 
-                  <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                     <div>
                       <p className="text-[#C9A84C] text-[10px] font-bold uppercase tracking-wider mb-2.5">Idéal pour</p>
                       {["Expertise médicale imminente", "Préparer votre stratégie", "Analyser vos documents"].map((t, i) => (
@@ -562,7 +562,7 @@ export const HomePage = () => {
             </div>
           </div>
 
-          <div className="mt-8 text-center reveal px-4">
+          <div className="mt-8 text-center reveal">
             <Link to="/contact" data-testid="solution-card-2">
               <Button className="w-full rounded-lg px-6 py-5 gap-2.5 bg-[#C9A84C] hover:bg-[#b8963e] text-[#0a0a08] font-bold text-sm whitespace-normal h-auto text-center justify-center">
                 <Shield className="w-4 h-4" />
@@ -628,7 +628,7 @@ export const HomePage = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 stagger">
             {ecosysteme.map((s, i) => (
               <Link key={i} to={s.href} className="group reveal" data-testid={`méthode-step-${i}`}>
-                <div className="h-full bg-[#0a0a08] rounded-xl p-5 sm:p-6 border border-white/5 hover:border-[#C9A84C]/20 transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
+                <div className="h-full bg-[#0a0a08] rounded-xl p-4 sm:p-6 border border-white/5 hover:border-[#C9A84C]/20 transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg min-w-0">
                   <div className="w-10 h-10 rounded-lg bg-[#C9A84C]/10 flex items-center justify-center mb-4">
                     <s.icon className="w-5 h-5 text-[#C9A84C]" />
                   </div>
@@ -700,11 +700,11 @@ export const HomePage = () => {
             </div>
             <div className="grid grid-cols-2 gap-4 min-w-0">
               <div className="bg-[#0a0a08] border border-white/5 p-5 rounded-xl">
-                <p className="text-2xl sm:text-3xl font-bold text-[#C9A84C] mb-1">800 - 3 000 EUR</p>
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#C9A84C] mb-1">800 - 3 000 EUR</p>
                 <p className="text-xs text-[#f5f0e8]/35">Coût moyen d'un médecin conseil</p>
               </div>
               <div className="bg-[#0a0a08] border border-white/5 p-5 rounded-xl">
-                <p className="text-2xl sm:text-3xl font-bold text-[#C9A84C] mb-1">x10</p>
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#C9A84C] mb-1">x10</p>
                 <p className="text-xs text-[#f5f0e8]/35">Retour sur investissement potentiel</p>
               </div>
               <div className="col-span-2 bg-[#0a0a08] border border-white/5 p-5 rounded-xl">
@@ -777,7 +777,7 @@ export const HomePage = () => {
                     <item.icon className="w-5 h-5 text-[#C9A84C]" strokeWidth={1.5} />
                   </div>
                   <p className="text-[10px] uppercase tracking-wider text-[#f5f0e8]/30 mb-1">{item.prefix}</p>
-                  <p className="text-2xl sm:text-3xl font-bold text-[#C9A84C] leading-tight mb-1.5" data-testid={`chiffre-value-${index}`}>
+                  <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#C9A84C] leading-tight mb-1.5" data-testid={`chiffre-value-${index}`}>
                     <CountUpNumber value={item.value} unit={item.unit} duration={1300} started={countStarted} />
                   </p>
                   <p className="text-xs text-[#f5f0e8]/40 leading-relaxed flex-1 mb-3">{item.suffix}</p>
