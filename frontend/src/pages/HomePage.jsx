@@ -184,7 +184,7 @@ export const HomePage = () => {
               </h1>
 
               {/* Sous-titre */}
-              <p className="text-sm sm:text-[15px] text-[#f5f0e8]/55 leading-relaxed mb-2 max-w-xl" data-testid="hero-subtitle">
+              <p className="text-xs sm:text-[13px] text-[#f5f0e8]/55 leading-relaxed mb-2 max-w-xl" data-testid="hero-subtitle">
                 Analysez votre situation, identifiez vos leviers, comprenez vos droits et accédez a un accompagnement stratégique humain en cas de{' '}
                 <strong className="text-[#f5f0e8]/70">maladie professionnelle</strong>,{' '}
                 <strong className="text-[#f5f0e8]/70">accident du travail</strong>,{' '}
@@ -193,17 +193,17 @@ export const HomePage = () => {
               </p>
 
               {/* 3 points clés */}
-              <div className="space-y-1.5 mb-1.5">
+              <div className="space-y-1 mb-1.5">
                 {[
                   { icon: HeartHandshake, text: "Expertise née d'un vécu concret" },
                   { icon: Crosshair, text: "Méthode stratégique & personnalisée" },
                   { icon: Brain, text: "Analyse IA + accompagnement humain" },
                 ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div className="w-7 h-7 rounded-full border border-[#C9A84C]/30 bg-[#C9A84C]/5 flex items-center justify-center flex-shrink-0">
-                      <item.icon className="w-3.5 h-3.5 text-[#C9A84C]" />
+                  <div key={i} className="flex items-center gap-2.5">
+                    <div className="w-6 h-6 rounded-full border border-[#C9A84C]/30 bg-[#C9A84C]/5 flex items-center justify-center flex-shrink-0">
+                      <item.icon className="w-3 h-3 text-[#C9A84C]" />
                     </div>
-                    <span className="text-[#f5f0e8]/65 text-sm">{item.text}</span>
+                    <span className="text-[#f5f0e8]/65 text-xs">{item.text}</span>
                   </div>
                 ))}
               </div>
@@ -217,17 +217,17 @@ export const HomePage = () => {
               {/* Preuve sociale + CTA Urgent intégré */}
               <div className="flex flex-wrap items-center gap-4 sm:gap-5 mb-2">
                 {visitorCount > 0 && (
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-2">
                     <div className="flex -space-x-1.5">
                       {[1,2,3].map(i => (
-                        <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-br from-[#C9A84C]/30 to-[#C9A84C]/10 border-2 border-[#0a0a08] flex items-center justify-center">
-                          <Users className="w-2.5 h-2.5 text-[#C9A84C]/60" />
+                        <div key={i} className="w-5 h-5 rounded-full bg-gradient-to-br from-[#C9A84C]/30 to-[#C9A84C]/10 border-2 border-[#0a0a08] flex items-center justify-center">
+                          <Users className="w-2 h-2 text-[#C9A84C]/60" />
                         </div>
                       ))}
                     </div>
                     <div className="leading-tight">
-                      <span className="text-[#f5f0e8] text-sm font-bold">{visitorCount.toLocaleString('fr-FR')}+</span>
-                      <span className="text-[#f5f0e8]/30 text-xs block">personnes accompagnées</span>
+                      <span className="text-[#f5f0e8] text-xs font-bold">{visitorCount.toLocaleString('fr-FR')}+</span>
+                      <span className="text-[#f5f0e8]/30 text-[10px] block">personnes accompagnées</span>
                     </div>
                   </div>
                 )}
