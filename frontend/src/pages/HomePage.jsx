@@ -154,7 +154,7 @@ export const HomePage = () => {
             <div className="order-2 lg:order-1">
               {/* Badge — Reconstruit : structure simple et saine */}
               <div
-                className="flex w-fit items-center gap-4 rounded-xl bg-[#161612] border border-[#C9A84C]/20 px-6 py-3.5 mb-2"
+                className="flex w-fit items-center gap-4 rounded-xl bg-[#161612] border border-[#C9A84C]/20 px-6 py-3.5 mb-1.5"
                 data-testid="pioneer-badge"
               >
                 <div className="w-10 h-10 rounded-lg bg-[#C9A84C]/10 border border-[#C9A84C]/20 flex items-center justify-center flex-shrink-0">
@@ -165,6 +165,11 @@ export const HomePage = () => {
                   <span className="text-[11px] text-[#C9A84C]/40 block mt-1">Plateforme d'analyse & d'accompagnement en droits santé</span>
                 </div>
               </div>
+
+              {/* Sous-titre métier — clarification immédiate */}
+              <p className="text-[13px] sm:text-sm uppercase tracking-[0.15em] text-[#f5f0e8]/40 mb-2" data-testid="hero-metier-subtitle">
+                Conseil en droits MDPH, AT/MP et litiges assuranciels
+              </p>
 
               {/* Titre — noble et respirant */}
               <h1
