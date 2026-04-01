@@ -307,7 +307,7 @@ export const HomePage = () => {
                 <div className="relative">
                   <div className="overflow-hidden shadow-[0_35px_80px_-15px_rgba(0,0,0,0.75)] h-full lg:h-auto">
                     <img
-                      src="https://static.prod-images.emergentagent.com/jobs/457be1c0-7422-4df2-b806-00b4baec9f14/images/0e4393172424d6058f322a4a8c414acc6f5f3a3f7f56eb9be167d96b26d32d09.png"
+                      src="/hero_paris_edited.png"
                       alt="Expert en stratégie santé"
                       className="w-full h-full lg:aspect-[4/5] object-cover object-top"
                       loading="eager"
