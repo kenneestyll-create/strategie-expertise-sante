@@ -27,8 +27,8 @@ import {
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// AAH 2024-2025 : montant max = 971,37 €/mois
-const AAH_MAX = 971.37;
+// AAH avril 2026 : montant max = 1 041,59 €/mois
+const AAH_MAX = 1041.59;
 // Plafond de ressources annuel pour une personne seule
 const PLAFOND_SEUL = 11_656;
 // Plafond pour couple
