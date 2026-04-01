@@ -299,15 +299,15 @@ export const HomePage = () => {
             </div>
 
             {/* ── COLONNE DROITE : Visuel signature ── */}
-            <div className="absolute inset-0 lg:relative lg:order-2 lg:flex lg:justify-center lg:justify-end">
-              <div className="w-full h-full lg:max-w-[400px] relative">
+            <div className="absolute inset-0 lg:relative lg:order-2 lg:flex lg:flex-col lg:justify-center">
+              <div className="w-full h-full lg:max-w-[400px] relative lg:flex lg:flex-col">
                 {/* Halo doré subtil derrière l'image */}
                 <div className="absolute -inset-10 bg-[#C9A84C]/[0.04] rounded-full blur-[70px] pointer-events-none hidden lg:block" />
                 {/* Cadre image — ombre profonde + filet doré gauche */}
                 <div className="relative">
                   <div className="overflow-hidden shadow-[0_35px_80px_-15px_rgba(0,0,0,0.75)] h-full lg:h-auto">
                     <img
-                      src="https://static.prod-images.emergentagent.com/jobs/457be1c0-7422-4df2-b806-00b4baec9f14/images/2d6a48441a5b26549385ed80b38493cc10283a9225017fbb6d9b5016eec6f0ad.png"
+                      src="https://static.prod-images.emergentagent.com/jobs/457be1c0-7422-4df2-b806-00b4baec9f14/images/9a62ced809d416a09ad4597b5889e55e9d4cc67c6b76d0da29f95ea8ac6fec34.png"
                       alt="Expert en stratégie santé"
                       className="w-full h-full lg:aspect-[4/5] object-cover object-top"
                       loading="eager"
@@ -318,6 +318,18 @@ export const HomePage = () => {
                     <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#0a0a08] via-[#0a0a08]/60 to-transparent" />
                     {/* Overlay sombre mobile — lisibilité du texte */}
                     <div className="absolute inset-0 bg-[#0a0a08]/70 lg:hidden" />
+                  </div>
+
+                  {/* ── Citation fondateur — sur l'image ── */}
+                  <div className="hidden lg:block absolute bottom-4 left-4 right-4 z-10">
+                    <blockquote className="bg-[#0a0a08]/80 backdrop-blur-md border border-[#C9A84C]/15 rounded-xl px-4 py-3">
+                      <p className="text-[11px] text-[#f5f0e8]/70 leading-[1.6] italic" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                        "Après des années de combat personnel face aux assurances et aux expertises médicales, j'ai créé ce service pour que vous ne soyez plus jamais seuls face à votre dossier."
+                      </p>
+                      <footer className="mt-1.5 text-[10px] text-[#C9A84C]/70 tracking-wide font-medium">
+                        — F.S., Fondateur
+                      </footer>
+                    </blockquote>
                   </div>
 
                   {/* ── 3 Blocs flottants sur l'image ── */}
