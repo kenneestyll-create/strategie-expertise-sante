@@ -171,7 +171,7 @@ export const HomePage = () => {
                 </div>
                 <div>
                   <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#C9A84C] block">Pionnier en France</span>
-                  <span className="text-[10px] text-[#C9A84C]/35 block mt-0.5">Plateforme d'analyse & d'accompagnement en droits santé</span>
+                  <span className="text-[11px] text-[#C9A84C]/55 block mt-0.5">Plateforme d'analyse & d'accompagnement en droits santé</span>
                 </div>
               </div>
 
@@ -275,8 +275,8 @@ export const HomePage = () => {
               </div>
 
               {/* Texte sous CTAs */}
-              <p className="text-xs text-[#f5f0e8]/25 leading-relaxed tracking-wide">
-                <span className="text-[#C9A84C]/50">Analyse immédiate par IA</span> ou <span className="text-[#C9A84C]/50">prise en charge humaine personnalisée</span>.
+              <p className="text-xs text-[#f5f0e8]/45 leading-relaxed tracking-wide">
+                <span className="text-[#C9A84C]/70">Analyse immédiate par IA</span> ou <span className="text-[#C9A84C]/70">prise en charge humaine personnalisée</span>.
               </p>
             </div>
 
