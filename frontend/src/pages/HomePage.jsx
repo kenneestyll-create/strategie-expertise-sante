@@ -149,7 +149,7 @@ export const HomePage = () => {
       */}
       <section className="relative bg-[#0a0a08] overflow-clip" style={{ clipPath: 'inset(0)' }} data-testid="hero-section">
         {/* Fond premium — lueur dorée diffuse */}
-        <div className="absolute top-1/2 right-0 w-[600px] h-[600px] -translate-y-1/2 translate-x-1/4 bg-[#C9A84C]/[0.04] rounded-full blur-[180px] pointer-events-none" />
+        <div className="absolute top-1/2 right-0 w-[600px] h-[600px] -translate-y-1/2 translate-x-1/4 bg-[#C9A84C]/[0.05] rounded-full blur-[180px] pointer-events-none" />
         {/* Halo doré bas-gauche */}
         <div className="absolute bottom-0 left-0 w-[500px] h-[400px] bg-[#C9A84C]/[0.03] rounded-full blur-[150px] pointer-events-none translate-y-1/3 -translate-x-1/4" />
         {/* Halo doré bas-droite */}
@@ -163,26 +163,26 @@ export const HomePage = () => {
             <div className="relative z-10">
               {/* Badge — Reconstruit : structure simple et saine */}
               <div
-                className="invisible sm:visible flex w-fit items-center gap-4 rounded-xl bg-[#161612] border border-[#C9A84C]/20 px-4 py-2.5 sm:px-6 sm:py-3.5 mb-1"
+                className="invisible sm:visible flex w-fit items-center gap-3.5 rounded-xl bg-[#161612] border border-[#C9A84C]/15 px-3.5 py-2 sm:px-5 sm:py-2.5 mb-2"
                 data-testid="pioneer-badge"
               >
-                <div className="w-10 h-10 rounded-lg bg-[#C9A84C]/10 border border-[#C9A84C]/20 flex items-center justify-center flex-shrink-0">
-                  <Scale className="w-5 h-5 text-[#C9A84C]" />
+                <div className="w-8 h-8 rounded-md bg-[#C9A84C]/10 border border-[#C9A84C]/15 flex items-center justify-center flex-shrink-0">
+                  <Scale className="w-4 h-4 text-[#C9A84C]" />
                 </div>
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-widest text-[#C9A84C] block">Pionnier en France</span>
-                  <span className="text-[11px] text-[#C9A84C]/40 block mt-1">Plateforme d'analyse & d'accompagnement en droits santé</span>
+                  <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#C9A84C] block">Pionnier en France</span>
+                  <span className="text-[10px] text-[#C9A84C]/35 block mt-0.5">Plateforme d'analyse & d'accompagnement en droits santé</span>
                 </div>
               </div>
 
               {/* Sous-titre métier — clarification immédiate */}
-              <p className="text-[13px] sm:text-sm uppercase tracking-[0.15em] text-[#f5f0e8]/40 mb-1 sm:mb-2" data-testid="hero-metier-subtitle">
+              <p className="text-[12px] sm:text-[13px] uppercase tracking-[0.22em] text-[#f5f0e8]/35 mb-2 sm:mb-3" data-testid="hero-metier-subtitle">
                 Conseil en droits MDPH, AT/MP et litiges assuranciels
               </p>
 
               {/* Titre — noble et respirant */}
               <h1
-                className="text-[1.75rem] sm:text-[2rem] lg:text-[2.1rem] xl:text-[2.3rem] font-bold text-[#f5f0e8] leading-[1.18] mb-2"
+                className="text-[1.75rem] sm:text-[2rem] lg:text-[2.1rem] xl:text-[2.3rem] font-bold text-[#f5f0e8] leading-[1.22] mb-3"
                 style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
                 data-testid="hero-title"
               >
@@ -193,7 +193,7 @@ export const HomePage = () => {
               </h1>
 
               {/* Sous-titre */}
-              <p className="text-xs sm:text-[13px] text-[#f5f0e8]/55 leading-relaxed mb-2 max-w-xl" data-testid="hero-subtitle">
+              <p className="text-xs sm:text-[13px] text-[#f5f0e8]/50 leading-[1.8] mb-3 max-w-xl" data-testid="hero-subtitle">
                 Analysez votre situation, identifiez vos leviers, comprenez vos droits et accédez à un accompagnement stratégique humain en cas de{' '}
                 <strong className="text-[#f5f0e8]/70">maladie professionnelle</strong>,{' '}
                 <strong className="text-[#f5f0e8]/70">accident du travail</strong>,{' '}
@@ -202,29 +202,29 @@ export const HomePage = () => {
               </p>
 
               {/* 3 points clés */}
-              <div className="space-y-1 mb-1.5">
+              <div className="space-y-2 mb-3">
                 {[
                   { icon: HeartHandshake, text: "Expertise née d'un vécu concret" },
                   { icon: Crosshair, text: "Méthode stratégique & personnalisée" },
                   { icon: Brain, text: "Analyse IA + accompagnement humain" },
                 ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-2.5">
-                    <div className="w-6 h-6 rounded-full border border-[#C9A84C]/30 bg-[#C9A84C]/5 flex items-center justify-center flex-shrink-0">
-                      <item.icon className="w-3 h-3 text-[#C9A84C]" />
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-full border border-[#C9A84C]/25 bg-[#C9A84C]/[0.06] flex items-center justify-center flex-shrink-0">
+                      <item.icon className="w-3.5 h-3.5 text-[#C9A84C]" />
                     </div>
-                    <span className="text-[#f5f0e8]/65 text-xs">{item.text}</span>
+                    <span className="text-[#f5f0e8]/60 text-[13px]">{item.text}</span>
                   </div>
                 ))}
               </div>
 
               {/* Micro-ligne IA — pont de conversion */}
-              <p className="text-[13px] text-[#C9A84C]/70 tracking-wide mb-2" data-testid="hero-ia-availability">
+              <p className="text-[13px] text-[#C9A84C]/65 tracking-[0.04em] mb-3 border-l-2 border-[#C9A84C]/20 pl-3" data-testid="hero-ia-availability">
                 <Zap className="w-3 h-3 inline-block mr-1.5 -mt-px text-[#C9A84C]/50" />
                 Vos deux agents IA vous répondent immédiatement, à toute heure.
               </p>
 
               {/* Preuve sociale + CTA Urgent intégré */}
-              <div className="flex flex-wrap items-center gap-4 sm:gap-5 mb-2">
+              <div className="flex flex-wrap items-center gap-5 sm:gap-6 mb-3">
                 {visitorCount > 0 && (
                   <div className="flex items-center gap-2">
                     <div className="flex -space-x-1.5">
@@ -252,7 +252,7 @@ export const HomePage = () => {
               </div>
 
               {/* CTAs */}
-              <div className="flex flex-col sm:flex-row gap-3 mb-1">
+              <div className="flex flex-col sm:flex-row gap-3.5 mb-2">
                 <Button
                   size="lg"
                   onClick={() => window.dispatchEvent(new Event('strategiia:open'))}
@@ -275,7 +275,7 @@ export const HomePage = () => {
               </div>
 
               {/* Texte sous CTAs */}
-              <p className="text-xs text-[#f5f0e8]/30 leading-relaxed">
+              <p className="text-xs text-[#f5f0e8]/25 leading-relaxed tracking-wide">
                 <span className="text-[#C9A84C]/50">Analyse immédiate par IA</span> ou <span className="text-[#C9A84C]/50">prise en charge humaine personnalisée</span>.
               </p>
             </div>
@@ -284,10 +284,10 @@ export const HomePage = () => {
             <div className="absolute inset-0 lg:relative lg:order-2 lg:flex lg:justify-center lg:justify-end">
               <div className="w-full h-full lg:max-w-[400px] relative">
                 {/* Halo doré subtil derrière l'image */}
-                <div className="absolute -inset-8 bg-[#C9A84C]/[0.03] rounded-full blur-[60px] pointer-events-none hidden lg:block" />
+                <div className="absolute -inset-10 bg-[#C9A84C]/[0.04] rounded-full blur-[70px] pointer-events-none hidden lg:block" />
                 {/* Cadre image — ombre profonde + filet doré gauche */}
                 <div className="relative">
-                  <div className="overflow-hidden shadow-[0_30px_70px_-15px_rgba(0,0,0,0.7)] h-full lg:h-auto">
+                  <div className="overflow-hidden shadow-[0_35px_80px_-15px_rgba(0,0,0,0.75)] h-full lg:h-auto">
                     <img
                       src="https://images.pexels.com/photos/28446973/pexels-photo-28446973.jpeg?auto=compress&cs=tinysrgb&w=800"
                       alt="Expert en stratégie santé"
@@ -304,7 +304,7 @@ export const HomePage = () => {
 
                   {/* ── 3 Blocs flottants sur l'image ── */}
                   {/* Bloc Analyse IA — haut gauche */}
-                  <button onClick={() => window.dispatchEvent(new Event('strategiia:open'))} className="hidden lg:flex absolute z-20 lg:top-[12%] lg:left-[-8%] lg:right-auto items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/90 backdrop-blur-sm rounded-lg px-2 py-1.5 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)] cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_25px_rgba(201,168,76,0.2)] transition-all" data-testid="hero-bloc-analyse">
+                  <button onClick={() => window.dispatchEvent(new Event('strategiia:open'))} className="hidden lg:flex absolute z-20 lg:top-[12%] lg:left-[-8%] lg:right-auto items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/90 backdrop-blur-md border border-[#C9A84C]/10 rounded-xl px-2 py-1.5 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)] cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_25px_rgba(201,168,76,0.2)] hover:border-[#C9A84C]/20 transition-all" data-testid="hero-bloc-analyse">
                     <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
                       <Brain className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-[#C9A84C]" />
                     </div>
@@ -315,7 +315,7 @@ export const HomePage = () => {
                   </button>
 
                   {/* Bloc Documents — droite centre */}
-                  <Link to="/dossier-express?step=form" className="hidden lg:flex absolute z-20 lg:top-[25%] lg:right-[-5%] items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/90 backdrop-blur-sm rounded-lg px-2 py-1.5 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)] cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_25px_rgba(201,168,76,0.2)] transition-all" data-testid="hero-bloc-documents">
+                  <Link to="/dossier-express?step=form" className="hidden lg:flex absolute z-20 lg:top-[25%] lg:right-[-5%] items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/90 backdrop-blur-md border border-[#C9A84C]/10 rounded-xl px-2 py-1.5 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)] cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_25px_rgba(201,168,76,0.2)] hover:border-[#C9A84C]/20 transition-all" data-testid="hero-bloc-documents">
                     <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
                       <FileText className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-[#C9A84C]" />
                     </div>
@@ -326,7 +326,7 @@ export const HomePage = () => {
                   </Link>
 
                   {/* Bloc Orientation — bas centre */}
-                  <Link to="/simulateur" className="hidden lg:flex absolute z-20 lg:top-auto lg:right-auto lg:bottom-[38%] lg:left-1/2 lg:-translate-x-1/2 items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/90 backdrop-blur-sm rounded-lg px-2 py-1.5 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)] cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_25px_rgba(201,168,76,0.2)] transition-all" data-testid="hero-bloc-orientation">
+                  <Link to="/simulateur" className="hidden lg:flex absolute z-20 lg:top-auto lg:right-auto lg:bottom-[38%] lg:left-1/2 lg:-translate-x-1/2 items-center gap-2 sm:gap-2.5 bg-[#0c0c1a]/90 backdrop-blur-md border border-[#C9A84C]/10 rounded-xl px-2 py-1.5 sm:px-3.5 sm:py-2.5 shadow-[0_0_20px_rgba(201,168,76,0.12)] cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_25px_rgba(201,168,76,0.2)] hover:border-[#C9A84C]/20 transition-all" data-testid="hero-bloc-orientation">
                     <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
                       <Compass className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-[#C9A84C]" />
                     </div>

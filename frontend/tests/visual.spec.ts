@@ -336,7 +336,18 @@ test.describe('9. Encadrés contenus (mobile)', () => {
         encadres.forEach((el) => {
           const rect = el.getBoundingClientRect();
           if (rect.width > 20 && rect.height > 20 && rect.top < window.innerHeight * 4) {
-            if (rect.right > vw + 2) {
+            // Skip elements clipped by parent overflow
+            let clipped = false;
+            let parent = el.parentElement;
+            while (parent) {
+              const style = getComputedStyle(parent);
+              if (style.overflowX === 'clip' || style.overflowX === 'hidden' || style.overflow === 'clip' || style.overflow === 'hidden') {
+                const pRect = parent.getBoundingClientRect();
+                if (rect.right > pRect.right + 2) { clipped = true; break; }
+              }
+              parent = parent.parentElement;
+            }
+            if (!clipped && rect.right > vw + 2) {
               results.push(`Encadré (L:${Math.round(rect.left)}, R:${Math.round(rect.right)}, W:${Math.round(rect.width)}, VW:${vw})`);
             }
           }

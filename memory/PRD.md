@@ -17,19 +17,12 @@ Application web premium de conseil en maladie professionnelle (AT/MP). Scanner d
 - Admin Conseils Straté (composant AdminConseilsStrate.jsx)
 - Backend `/api/conseils` (CRUD, tracking, analytics, rotation quotidienne)
 - Audit linguistique frontend (accents)
-- Audit PDF encoding (cp1252)
-- Refonte responsive globale (overflow-clip, 100vw → 100%, audit 17 pages)
+- Refonte responsive globale (overflow-clip, 100vw → 100%)
 
 ### Session actuelle (01/04/2026)
 - **Fix centrage "Choisir mon médecin conseil"** : `text-center lg:text-left`
-- **GEL DÉFINITIF DU FRONTEND** :
-  - `layout-guardrails.css` : 13 règles CSS anti-débordement
-  - `FRONTEND_GUARDRAILS.md` : Charte anti-casse + 8 zones gelées + protocole obligatoire
-  - `RELEASE_VISUAL_CHECKLIST.md` : Checklist visuelle avant prod
-  - `visual.spec.ts` : 341 tests Playwright (10 suites × 13 pages × 8 résolutions)
-  - 115 captures baseline dans `/frontend/tests/visual-baseline/`
-  - Zones gelées documentées dans Hero + Header (commentaires code)
-  - **341/341 tests PASS — 0 échec**
+- **Gel définitif du frontend** : 341 tests Playwright, 115 captures baseline, 13 gardes-fous CSS, 8 zones gelées documentées
+- **Hero premium chirurgical** : micro-optimisation visuelle (badge affiné, tracking sous-titre, line-height H1, espacement puces, accent 24/7, glass mini-cartes, profondeur image, halo fond)
 
 ## Frontend — État gelé
 Le frontend est officiellement gelé depuis le 01/04/2026.
