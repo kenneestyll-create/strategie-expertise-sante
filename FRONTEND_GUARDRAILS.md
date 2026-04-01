@@ -13,13 +13,17 @@ Les zones suivantes sont sanctuarisées. Toute modification nécessite :
 - Screenshots AVANT/APRÈS
 - Tests Playwright PASS à 100%
 
-### 1. Hero Home (`HomePage.jsx` — `data-testid="hero-section"`)
-- Hauteur générale : ne doit pas dépasser le premier écran desktop
-- Hiérarchie visuelle : badge, titre, sous-titre, CTA dans cet ordre
+### 1. Hero Home (`HomePage.jsx` — `data-testid="hero-section"`) — VERROUILLÉ 01/04/2026
+- **STATUT : GELÉ DÉFINITIVEMENT — Ne pas modifier sans ordre explicite**
+- Hauteur validée : 617px (above-the-fold sur 1366×768 avec chrome navigateur)
+- Paddings validés : `lg:pt-20` (top), `lg:pb-1` (bottom) — calibrés pour header fixed 76px
+- Hiérarchie visuelle : badge → sous-titre métier → H1 → paragraphe → 3 puces → ligne 24/7 → preuve sociale + urgence → CTAs → micro-texte
 - Position des CTA : "Besoin urgent ?", "Lancer mon analyse", "Être accompagné maintenant"
-- Équilibre texte / image : colonne gauche texte, colonne droite photo
-- Blocs flottants desktop (analyse IA, documents, orientation) : positions figées
-- **Interdit de modifier librement sans validation complète**
+- Équilibre texte / image : colonne gauche 55% texte, colonne droite 45% photo
+- Mini-cartes desktop (Analyse IA, Documents, Orientation) : positions figées
+- Ligne finale "Analyse immédiate par IA..." : doit rester visible sans scroll
+- Badge "Pionnier en France" : doit être entièrement visible sous le header
+- **Toute modification nécessite : ordre explicite + validation desktop 1366×768 + mobile 360px + tests Playwright PASS**
 
 ### 2. Header Desktop (`Header.jsx`)
 - Logo à gauche, navigation au centre, CTA "Réserver un appel" à droite

@@ -139,13 +139,31 @@ export const HomePage = () => {
           1. HERO — Structure propre, stable, 2 colonnes
       ══════════════════════════════════════════════════════════ */}
       {/* 
-        ZONE GELÉE — HERO VALIDÉ
-        Ne pas modifier librement cette section sans validation visuelle complète desktop + mobile.
-        Toute modification doit conserver :
-        - même hauteur générale
-        - même hiérarchie visuelle
-        - même position des CTA
-        - même équilibre texte / image
+        ╔═══════════════════════════════════════════════════════════╗
+        ║  ZONE GELÉE — HERO VALIDÉ LE 01/04/2026                  ║
+        ║                                                           ║
+        ║  Ce Hero est officiellement VERROUILLÉ.                   ║
+        ║  Ne pas modifier sans ordre explicite du responsable.     ║
+        ║                                                           ║
+        ║  Toute modification nécessite :                           ║
+        ║  1. Ordre explicite écrit                                 ║
+        ║  2. Validation visuelle desktop (1366×768 + 1440×900)     ║
+        ║  3. Validation visuelle mobile (360/375/390/412 px)       ║
+        ║  4. Tests Playwright PASS à 100%                          ║
+        ║  5. Rapport au format obligatoire                         ║
+        ║                                                           ║
+        ║  Éléments protégés :                                      ║
+        ║  - Structure, textes, CTA, liens, onClick, data-testid    ║
+        ║  - Paddings (lg:pt-20, lg:pb-1), marges internes          ║
+        ║  - Hiérarchie visuelle, équilibre texte/image             ║
+        ║  - Badge "Pionnier en France"                             ║
+        ║  - 3 puces de preuve                                      ║
+        ║  - Ligne 24/7                                             ║
+        ║  - Preuve sociale + CTA urgent                            ║
+        ║  - CTA principal + secondaire                             ║
+        ║  - Ligne finale sous CTA                                  ║
+        ║  - Bloc droit (photo + mini-cartes)                       ║
+        ╚═══════════════════════════════════════════════════════════╝
       */}
       <section className="relative bg-[#0a0a08] overflow-clip" style={{ clipPath: 'inset(0)' }} data-testid="hero-section">
         {/* Fond premium — lueur dorée diffuse */}

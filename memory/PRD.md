@@ -8,42 +8,53 @@ Application web premium de conseil en maladie professionnelle (AT/MP). Scanner d
 - **Backend**: FastAPI + MongoDB
 - **Intégrations**: Claude Sonnet 4.5 (Emergent LLM Key), Stripe (test), Resend (sandbox)
 
+## Zones gelées
+
+### Hero HomePage — VERROUILLÉ 01/04/2026
+- Hauteur : 617px — above-the-fold sur 1366×768
+- Paddings : `lg:pt-20` (top), `lg:pb-1` (bottom)
+- Header fixed : 76px → badge à 80px (4px de marge)
+- Ligne finale : bottom=613px → 155px de marge
+- Fichier : `HomePage.jsx` lignes 139-350
+- Commentaire protecteur dans le code
+- Baselines : `hero-desktop.png`, `hero-laptop-1366.png`, `hero-mobile.png`
+- Tests : suite 6 (Hero above-fold) dans `visual.spec.ts`
+
+### Header — VERROUILLÉ 01/04/2026
+- Fichier : `Header.jsx`
+- Commentaire protecteur dans le code
+
+### Frontend global — GELÉ 01/04/2026
+- `layout-guardrails.css` : 13 règles CSS
+- `FRONTEND_GUARDRAILS.md` : charte anti-casse
+- `RELEASE_VISUAL_CHECKLIST.md` : checklist obligatoire
+- `visual.spec.ts` : 341 tests Playwright
+- 117 captures baseline
+
 ## Tâches accomplies
 
-### Sessions précédentes
-- Scanner documentaire natif (caméra mobile)
-- Contenu stratégique IP & PGPF intégré
-- Mascotte Straté (visuel + TTS français + backend CRUD complet)
-- Admin Conseils Straté (composant AdminConseilsStrate.jsx)
-- Backend `/api/conseils` (CRUD, tracking, analytics, rotation quotidienne)
-- Audit linguistique frontend (accents)
-- Refonte responsive globale (overflow-clip, 100vw → 100%)
-
 ### Session actuelle (01/04/2026)
-- **Fix centrage "Choisir mon médecin conseil"** : `text-center lg:text-left`
-- **Gel définitif du frontend** : 341 tests Playwright, 115 captures baseline, 13 gardes-fous CSS, 8 zones gelées documentées
-- **Hero premium chirurgical** : micro-optimisation visuelle (badge affiné, tracking sous-titre, line-height H1, espacement puces, accent 24/7, glass mini-cartes, profondeur image, halo fond)
-
-## Frontend — État gelé
-Le frontend est officiellement gelé depuis le 01/04/2026.
-Toute modification doit suivre le protocole dans `FRONTEND_GUARDRAILS.md`.
+- Fix centrage "Choisir mon médecin conseil" : `text-center lg:text-left`
+- Gel définitif du frontend : tests, baselines, guardrails
+- Hero premium chirurgical : micro-optimisation visuelle
+- Suppression doublon disclaimer mobile
+- Fix badge coupé par header fixed : `lg:pt-20`
+- Fix ligne finale : compression marges internes (-18px)
+- Fix lisibilité badge + ligne finale : opacités renforcées
+- Gel définitif Hero : commentaire renforcé, guardrails mis à jour, baselines régénérées
 
 ## Backlog
 
 ### P0 (Aucun)
-Aucune tâche critique en cours.
 
 ### P1
-- Exécution du protocole de lancement Live (clés Stripe live, AWS S3, domaine Resend)
+- Protocole de lancement Live (Stripe live, AWS S3, Resend)
 
 ### P2
-- Intégration HubSpot CRM (en attente credentials)
+- HubSpot CRM (attente credentials)
 
 ### P3
-- S3 PDF Download (en attente credentials AWS)
-
-### P4
-- Contenu juridique final
+- S3 PDF Download (attente credentials AWS)
 
 ## Credentials de test
 - Admin: `admin@accompagn-sante.fr` / `Admin2024!`
@@ -51,8 +62,6 @@ Aucune tâche critique en cours.
 
 ## Contraintes utilisateur
 - NO INITIATIVES: Exécuter uniquement ce qui est demandé
-- NE PAS modifier la logique métier, routes, data-testid, tracking
-- Clés MongoDB TOUJOURS en ASCII (pas d'accents)
 - Format de rapport obligatoire (CAUSE RACINE, BLOCS CONCERNÉS, etc.)
 - Langue: Français uniquement
-- FRONTEND GELÉ : Voir FRONTEND_GUARDRAILS.md et RELEASE_VISUAL_CHECKLIST.md
+- FRONTEND GELÉ + HERO GELÉ : Voir FRONTEND_GUARDRAILS.md
