@@ -878,27 +878,6 @@ export const HomePage = () => {
       </section>
 
       {/* ══════════════════════════════════════════════════════════
-          12. DISCLAIMER
-      ══════════════════════════════════════════════════════════ */}
-      <section className="py-6 overflow-clip bg-[#111] border-y border-amber-500/5">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-start gap-3" data-testid="homepage-disclaimer">
-            <Scale className="w-4 h-4 text-amber-500/50 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-            <div className="text-xs text-[#f5f0e8]/25 leading-relaxed space-y-1.5">
-              <p>
-                <strong className="text-[#f5f0e8]/40">Information importante :</strong> Stratégie & Expertise Santé propose un accompagnement stratégique et une analyse documentaire.
-                Ce service ne constitue pas une expertise médicale officielle ni une expertise judiciaire.
-              </p>
-              <p>
-                Les services proposés ne constituent pas un conseil juridique ni un avis médical.
-                Pour toute décision juridique ou médicale, consultez un professionnel qualifié.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════
           13. CTA FINAL — Emotional close
       ══════════════════════════════════════════════════════════ */}
       <section className="relative py-20 sm:py-28 overflow-clip bg-[#0a0a08]">
