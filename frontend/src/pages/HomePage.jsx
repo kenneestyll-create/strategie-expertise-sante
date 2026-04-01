@@ -320,16 +320,13 @@ export const HomePage = () => {
                     <div className="absolute inset-0 bg-[#0a0a08]/70 lg:hidden" />
                   </div>
 
-                  {/* ── Citation fondateur — sur l'image ── */}
+                  {/* ── Signature fondateur — sur l'image ── */}
                   <div className="hidden lg:block absolute bottom-4 left-4 right-4 z-10">
-                    <blockquote className="bg-[#0a0a08]/80 backdrop-blur-md border border-[#C9A84C]/15 rounded-xl px-4 py-3">
-                      <p className="text-[11px] text-[#f5f0e8]/70 leading-[1.6] italic" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                        "Après des années de combat personnel face aux assurances et aux expertises médicales, j'ai créé ce service pour que vous ne soyez plus jamais seuls face à votre dossier."
-                      </p>
-                      <footer className="mt-1.5 text-[10px] text-[#C9A84C]/70 tracking-wide font-medium">
+                    <div className="bg-[#0a0a08]/70 backdrop-blur-md border border-[#C9A84C]/15 rounded-xl px-4 py-2.5">
+                      <p className="text-[11px] text-[#C9A84C]/70 tracking-wide font-medium">
                         — F.S., Fondateur
-                      </footer>
-                    </blockquote>
+                      </p>
+                    </div>
                   </div>
 
                   {/* ── 3 Blocs flottants sur l'image ── */}
@@ -423,7 +420,7 @@ export const HomePage = () => {
               <div className="relative">
                 <div className="w-64 h-72 sm:w-72 sm:h-80 rounded-3xl overflow-hidden shadow-xl">
                   <img
-                    src="https://static.prod-images.emergentagent.com/jobs/457be1c0-7422-4df2-b806-00b4baec9f14/images/2d6a48441a5b26549385ed80b38493cc10283a9225017fbb6d9b5016eec6f0ad.png"
+                    src="https://static.prod-images.emergentagent.com/jobs/457be1c0-7422-4df2-b806-00b4baec9f14/images/3fa7bfa32cf421a1f88abd623ad94eaaa157b975199cc94bc2b4cff8206976b9.png"
                     alt="Fondateur S.E.S"
                     className="w-full h-full object-cover object-top"
                   />
