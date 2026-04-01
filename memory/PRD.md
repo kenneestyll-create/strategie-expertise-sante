@@ -16,6 +16,7 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - Bloc Documents décalé droite sur section 2 — DONE (validé 01/04/2026)
 - Frontend Freeze : layout-guardrails.css + 115 baselines Playwright — DONE
 - Hero déclaré ZONE GELÉE — DONE
+- Admin > Config > Compteur Hero (personnes accompagnées, modifiable) — DONE (01/04/2026)
 
 ## Image Hero
 - Image éditée via OpenAI GPT Image 1 (édition de l'image originale, fond NYC → Paris)

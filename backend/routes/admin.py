@@ -24,6 +24,25 @@ from utils.email import create_client_notification
 router = APIRouter()
 
 
+# ==================== COMPTEUR HERO ====================
+
+@router.get("/admin/compteur")
+async def get_compteur(admin: dict = Depends(get_current_admin)):
+    counter = await db.visitor_counter.find_one({"id": "visitor_counter"}, {"_id": 0})
+    return {"count": counter.get("count", 0) if counter else 0}
+
+@router.put("/admin/compteur")
+async def set_compteur(request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    new_count = int(body.get("count", 0))
+    await db.visitor_counter.update_one(
+        {"id": "visitor_counter"},
+        {"$set": {"count": new_count, "last_updated": datetime.now(timezone.utc).isoformat(), "updated_by": "admin"}},
+        upsert=True
+    )
+    return {"success": True, "count": new_count}
+
+
 # ==================== AUTH ====================
 
 @router.post("/auth/login", response_model=TokenResponse)
