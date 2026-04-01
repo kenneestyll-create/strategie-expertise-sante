@@ -263,7 +263,7 @@ export const TarifsPage = () => {
                     </Badge>
                   </div>
                   <p className="text-muted-foreground mb-4">
-                    Uploadez vos documents, notre équipe les analyse avec l'aide de StratégiIA et génère un rapport
+                    Uploadez vos documents, notre équipe les analyse avec l'aide de Dossier Express IA et génère un rapport
                     PDF complet : cadre juridique, droits identifiés, stratégie recommandée, prochaines étapes.
                   </p>
                   <ul className="grid sm:grid-cols-2 gap-2 text-sm">
