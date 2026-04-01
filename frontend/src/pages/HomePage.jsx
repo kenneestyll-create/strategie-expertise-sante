@@ -307,7 +307,7 @@ export const HomePage = () => {
                 <div className="relative">
                   <div className="overflow-hidden shadow-[0_35px_80px_-15px_rgba(0,0,0,0.75)] h-full lg:h-auto">
                     <img
-                      src="https://static.prod-images.emergentagent.com/jobs/457be1c0-7422-4df2-b806-00b4baec9f14/images/77d3a8818ab70ae6d3e20825cc139e2b5d4f961f65f8d0937e7f2f098e0c330a.png"
+                      src="https://static.prod-images.emergentagent.com/jobs/457be1c0-7422-4df2-b806-00b4baec9f14/images/3fa7bfa32cf421a1f88abd623ad94eaaa157b975199cc94bc2b4cff8206976b9.png"
                       alt="Expert en stratégie santé"
                       className="w-full h-full lg:aspect-[4/5] object-cover object-top"
                       loading="eager"
@@ -420,7 +420,7 @@ export const HomePage = () => {
               <div className="relative">
                 <div className="w-64 h-72 sm:w-72 sm:h-80 rounded-3xl overflow-hidden shadow-xl">
                   <img
-                    src="https://static.prod-images.emergentagent.com/jobs/457be1c0-7422-4df2-b806-00b4baec9f14/images/77d3a8818ab70ae6d3e20825cc139e2b5d4f961f65f8d0937e7f2f098e0c330a.png"
+                    src="https://static.prod-images.emergentagent.com/jobs/457be1c0-7422-4df2-b806-00b4baec9f14/images/3fa7bfa32cf421a1f88abd623ad94eaaa157b975199cc94bc2b4cff8206976b9.png"
                     alt="Fondateur S.E.S"
                     className="w-full h-full object-cover object-top"
                   />
