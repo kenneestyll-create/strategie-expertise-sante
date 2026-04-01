@@ -524,10 +524,19 @@ async def preview_strategiia_pdf(analysis_id: str, admin: dict = Depends(get_cur
         raise HTTPException(status_code=404, detail="Analyse non trouvée")
     analysis_text = pa.get("reviewed_analysis") or pa.get("analysis", "")
     if not analysis_text:
+        strat = None
         if pa.get("job_id"):
             strat = await db.strategiia_analyses.find_one({"job_id": pa["job_id"]}, {"_id": 0, "analysis": 1})
-            if strat:
-                analysis_text = strat.get("analysis", "")
+        if not strat:
+            strat = await db.strategiia_analyses.find_one(
+                {"email": pa.get("email", ""), "is_premium": True},
+                {"_id": 0, "analysis": 1},
+                sort=[("created_at", -1)]
+            )
+        if strat:
+            analysis_text = strat.get("analysis", "")
+    if not analysis_text and pa.get("context"):
+        analysis_text = pa["context"]
     if not analysis_text:
         raise HTTPException(status_code=400, detail="Aucune analyse disponible pour ce dossier")
     strat_data = None
