@@ -307,7 +307,7 @@ export const HomePage = () => {
                 <div className="relative">
                   <div className="overflow-hidden shadow-[0_35px_80px_-15px_rgba(0,0,0,0.75)] h-full lg:h-auto">
                     <img
-                      src="https://static.prod-images.emergentagent.com/jobs/457be1c0-7422-4df2-b806-00b4baec9f14/images/3fa7bfa32cf421a1f88abd623ad94eaaa157b975199cc94bc2b4cff8206976b9.png"
+                      src="https://static.prod-images.emergentagent.com/jobs/457be1c0-7422-4df2-b806-00b4baec9f14/images/e68d905d0486e45fb6d41ca99ab9f77e5db7cb609a22ebfc65afdfc41dbb4ab8.png"
                       alt="Expert en stratégie santé"
                       className="w-full h-full lg:aspect-[4/5] object-cover object-top"
                       loading="eager"
@@ -318,15 +318,6 @@ export const HomePage = () => {
                     <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#0a0a08] via-[#0a0a08]/60 to-transparent" />
                     {/* Overlay sombre mobile — lisibilité du texte */}
                     <div className="absolute inset-0 bg-[#0a0a08]/70 lg:hidden" />
-                  </div>
-
-                  {/* ── Signature fondateur — sur l'image ── */}
-                  <div className="hidden lg:block absolute bottom-4 left-4 right-4 z-10">
-                    <div className="bg-[#0a0a08]/70 backdrop-blur-md border border-[#C9A84C]/15 rounded-xl px-4 py-2.5">
-                      <p className="text-[11px] text-[#C9A84C]/70 tracking-wide font-medium">
-                        — F.S., Fondateur
-                      </p>
-                    </div>
                   </div>
 
                   {/* ── 3 Blocs flottants sur l'image ── */}
@@ -420,7 +411,7 @@ export const HomePage = () => {
               <div className="relative">
                 <div className="w-64 h-72 sm:w-72 sm:h-80 rounded-3xl overflow-hidden shadow-xl">
                   <img
-                    src="https://static.prod-images.emergentagent.com/jobs/457be1c0-7422-4df2-b806-00b4baec9f14/images/3fa7bfa32cf421a1f88abd623ad94eaaa157b975199cc94bc2b4cff8206976b9.png"
+                    src="https://static.prod-images.emergentagent.com/jobs/457be1c0-7422-4df2-b806-00b4baec9f14/images/e68d905d0486e45fb6d41ca99ab9f77e5db7cb609a22ebfc65afdfc41dbb4ab8.png"
                     alt="Fondateur S.E.S"
                     className="w-full h-full object-cover object-top"
                   />
