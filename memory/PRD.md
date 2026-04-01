@@ -18,6 +18,10 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - Hero déclaré ZONE GELÉE — DONE
 - Admin > Config > Compteur Hero (personnes accompagnées, modifiable) — DONE (01/04/2026)
 - Admin > Guide interactif flottant avec recherche (15 sections documentées, Ctrl+H) — DONE (01/04/2026)
+- Clé API Anthropic native configurée — DONE (01/04/2026)
+- Chatbot optimisé sur claude-haiku-4-5 (coûts réduits) — DONE (01/04/2026)
+- Montant AAH mis à jour : 1 041,59 € (avril 2026) — DONE (01/04/2026)
+- Texte Dossier Express IA corrigé (remplacé "StratégiIA" par "Dossier Express IA") — DONE (01/04/2026)
 
 ## Image Hero
 - Image éditée via OpenAI GPT Image 1 (édition de l'image originale, fond NYC → Paris)

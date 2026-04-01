@@ -165,7 +165,7 @@ async def get_ai_response(message: str, session_id: str) -> str:
             import anthropic
             client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
             response = await client.messages.create(
-                model="claude-sonnet-4-5-20250929",
+                model="claude-haiku-4-5-20251001",
                 max_tokens=150,
                 system=prompt,
                 messages=[{"role": "user", "content": message}],
@@ -178,7 +178,7 @@ async def get_ai_response(message: str, session_id: str) -> str:
         url = f"{proxy_url}/llm/chat/completions"
         headers = {"Authorization": f"Bearer {EMERGENT_LLM_KEY}", "Content-Type": "application/json"}
         payload = {
-            "model": "claude-sonnet-4-5-20250929",
+            "model": "claude-haiku-4-5-20251001",
             "messages": [
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": message}
