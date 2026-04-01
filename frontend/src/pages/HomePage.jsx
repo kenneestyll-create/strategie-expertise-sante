@@ -156,14 +156,14 @@ export const HomePage = () => {
         <div className="absolute bottom-0 right-0 w-[400px] h-[350px] bg-[#C9A84C]/[0.035] rounded-full blur-[130px] pointer-events-none translate-y-1/4 translate-x-1/4" />
         {/* Poussière d'or — particules scintillantes */}
         <GoldDustOverlay />
-        <div className="relative max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-20 pb-4 sm:pb-6 lg:pb-3">
+        <div className="relative max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-20 pb-4 sm:pb-6 lg:pb-1">
           <div className="grid lg:grid-cols-[55fr_45fr] gap-8 lg:gap-12 items-center">
 
             {/* ── COLONNE GAUCHE : Contenu ── */}
             <div className="relative z-10">
               {/* Badge — Reconstruit : structure simple et saine */}
               <div
-                className="invisible sm:visible flex w-fit items-center gap-3.5 rounded-xl bg-[#161612] border border-[#C9A84C]/15 px-3.5 py-2 sm:px-5 sm:py-2.5 mb-2"
+                className="invisible sm:visible flex w-fit items-center gap-3.5 rounded-xl bg-[#161612] border border-[#C9A84C]/15 px-3.5 py-2 sm:px-5 sm:py-2.5 mb-2 lg:mb-1"
                 data-testid="pioneer-badge"
               >
                 <div className="w-8 h-8 rounded-md bg-[#C9A84C]/10 border border-[#C9A84C]/15 flex items-center justify-center flex-shrink-0">
@@ -176,7 +176,7 @@ export const HomePage = () => {
               </div>
 
               {/* Sous-titre métier — clarification immédiate */}
-              <p className="text-[12px] sm:text-[13px] uppercase tracking-[0.22em] text-[#f5f0e8]/35 mb-2 sm:mb-3" data-testid="hero-metier-subtitle">
+              <p className="text-[12px] sm:text-[13px] uppercase tracking-[0.22em] text-[#f5f0e8]/35 mb-2 sm:mb-3 lg:mb-1.5" data-testid="hero-metier-subtitle">
                 Conseil en droits MDPH, AT/MP et litiges assuranciels
               </p>
 
