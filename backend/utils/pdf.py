@@ -73,20 +73,7 @@ _DE_BG = (245, 247, 252)
 
 
 def _safe(text: str) -> str:
-    replacements = {
-        '\u2013': '-', '\u2014': '-', '\u2015': '-',  # en-dash, em-dash
-        '\u2018': "'", '\u2019': "'",  # smart single quotes
-        '\u201c': '"', '\u201d': '"',  # smart double quotes
-        '\u2026': '...', '\u2022': '-',  # ellipsis, bullet
-        '\u00a0': ' ',  # non-breaking space
-        '\u2032': "'", '\u2033': '"',  # prime, double prime
-        '\u20ac': 'EUR',  # euro sign fallback
-        '\u2192': '->', '\u2190': '<-',  # arrows
-        '\u2265': '>=', '\u2264': '<=',  # comparison
-    }
-    for old, new in replacements.items():
-        text = text.replace(old, new)
-    return text.encode("cp1252", "replace").decode("cp1252")
+    return text
 
 
 def _detect_vigilance_level(analysis: str) -> tuple:
@@ -148,7 +135,16 @@ def generate_secured_pdf(
     RM = 16
     CW = 210 - LM - RM
 
+    FONT_DIR = "/usr/share/fonts/truetype/liberation"
+
     class PremiumPDF(FPDF):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.add_font("LibSans", "", os.path.join(FONT_DIR, "LiberationSans-Regular.ttf"), uni=True)
+            self.add_font("LibSans", "B", os.path.join(FONT_DIR, "LiberationSans-Bold.ttf"), uni=True)
+            self.add_font("LibSans", "I", os.path.join(FONT_DIR, "LiberationSans-Italic.ttf"), uni=True)
+            self.add_font("LibSans", "BI", os.path.join(FONT_DIR, "LiberationSans-BoldItalic.ttf"), uni=True)
+
         def header(self):
             # Dark header band
             self.set_fill_color(*_BLACK)
@@ -167,17 +163,17 @@ def generate_secured_pdf(
 
             # Brand name
             self.set_text_color(255, 255, 255)
-            self.set_font("Helvetica", "B", 11)
+            self.set_font("LibSans", "B", 11)
             self.set_xy(text_x, 4.5)
             self.cell(80, 5, "Stratégie & Expertise Santé")
             # Pioneer line
-            self.set_font("Helvetica", "", 6.5)
+            self.set_font("LibSans", "", 6.5)
             self.set_text_color(*_GOLD_LIGHT)
             self.set_xy(text_x, 10.5)
             self.cell(80, 4, "PIONNIER EN FRANCE")
 
             # Right: date, number, service badge
-            self.set_font("Helvetica", "", 7)
+            self.set_font("LibSans", "", 7)
             self.set_text_color(180, 180, 180)
             self.set_xy(-RM - 65, 4)
             self.cell(65, 4, gen_date, align="R")
@@ -185,7 +181,7 @@ def generate_secured_pdf(
             self.set_xy(-RM - 65, 8.5)
             self.cell(65, 4, report_number, align="R")
             # Service type badge
-            self.set_font("Helvetica", "B", 5.5)
+            self.set_font("LibSans", "B", 5.5)
             self.set_text_color(200, 200, 200)
             self.set_xy(-RM - 65, 14)
             self.cell(65, 4, _safe(service_label.upper()), align="R")
@@ -199,7 +195,7 @@ def generate_secured_pdf(
             self.set_line_width(0.3)
             self.line(LM, self.get_y(), 210 - RM, self.get_y())
             self.ln(2.5)
-            self.set_font("Helvetica", "", 5.5)
+            self.set_font("LibSans", "", 5.5)
             self.set_text_color(*_MUTED)
             footer_txt = f"(c) {year} Stratégie & Expertise Santé -- {report_number} -- Document confidentiel -- Analyse préliminaire à visée informative -- strategie-expertise-sante.fr"
             self.cell(
@@ -212,7 +208,7 @@ def generate_secured_pdf(
             if not with_watermark:
                 return
             sx, sy = self.x, self.y
-            self.set_font("Helvetica", "B", 38)
+            self.set_font("LibSans", "B", 38)
             self.set_text_color(240, 238, 232)
             cx, cy = self.w / 2, self.h / 2
             txt = "Stratégie & Expertise Santé"
@@ -239,13 +235,13 @@ def generate_secured_pdf(
     pdf.rect(LM, y, 2, 12, "F")
 
     pdf.set_xy(LM + 6, y + 2)
-    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_font("LibSans", "B", 8)
     pdf.set_text_color(*_DARK_TEXT)
     safe_name = _safe(name or email or "Client")
     pdf.cell(60, 4, safe_name)
 
     # Client metadata
-    pdf.set_font("Helvetica", "", 7)
+    pdf.set_font("LibSans", "", 7)
     pdf.set_text_color(*_MUTED)
     safe_td = _safe(type_dossier or "")
     safe_reg = _safe(regime or "")
@@ -254,7 +250,7 @@ def generate_secured_pdf(
         pdf.cell(0, 4, "  |  ".join(info_parts))
 
     pdf.set_xy(LM + 6, y + 7)
-    pdf.set_font("Helvetica", "", 6.5)
+    pdf.set_font("LibSans", "", 6.5)
     if is_strategiia:
         pdf.set_text_color(*_GOLD)
     else:
@@ -273,7 +269,7 @@ def generate_secured_pdf(
         pdf.set_fill_color(*_GOLD)
         pdf.rect(LM, ry, 2, 9, "F")
         pdf.set_xy(LM + 6, ry + 2)
-        pdf.set_font("Helvetica", "BI", 7)
+        pdf.set_font("LibSans", "BI", 7)
         pdf.set_text_color(*_GOLD)
         pdf.cell(0, 5, _safe("Document relu et finalisé dans le cadre de l'option Relecture expert personnalisée"))
         pdf.set_xy(LM, ry + 11)
@@ -295,7 +291,7 @@ def generate_secured_pdf(
 
         # Label
         pdf.set_xy(LM + 5, vy + 2)
-        pdf.set_font("Helvetica", "B", 7)
+        pdf.set_font("LibSans", "B", 7)
         pdf.set_text_color(*_MUTED)
         pdf.cell(30, 3.5, "NIVEAU DE VIGILANCE")
 
@@ -312,13 +308,13 @@ def generate_secured_pdf(
 
         # Level text
         pdf.set_xy(dot_x + 28, vy + 6.5)
-        pdf.set_font("Helvetica", "B", 8.5)
+        pdf.set_font("LibSans", "B", 8.5)
         pdf.set_text_color(*_DARK_TEXT)
         pdf.cell(40, 4, _safe(level_label))
 
         # Description
         pdf.set_xy(dot_x + 28, vy + 11)
-        pdf.set_font("Helvetica", "I", 6.5)
+        pdf.set_font("LibSans", "I", 6.5)
         pdf.set_text_color(*_BODY_TEXT)
         pdf.cell(CW - 40, 3.5, _safe(level_desc))
 
@@ -352,7 +348,7 @@ def generate_secured_pdf(
 
         # Title
         pdf.set_xy(LM + 6, dy + 2)
-        pdf.set_font("Helvetica", "B", 7)
+        pdf.set_font("LibSans", "B", 7)
         pdf.set_text_color(*_DE_ACCENT)
         pdf.cell(50, 3.5, "BASE DOCUMENTAIRE EXPLOITÉE")
 
@@ -366,11 +362,11 @@ def generate_secured_pdf(
         for i, (val, label) in enumerate(metrics):
             cx = LM + 6 + col_w * i
             pdf.set_xy(cx, dy + 7)
-            pdf.set_font("Helvetica", "B", 9)
+            pdf.set_font("LibSans", "B", 9)
             pdf.set_text_color(*_DARK_TEXT)
             pdf.cell(col_w, 4, _safe(val), align="C")
             pdf.set_xy(cx, dy + 11)
-            pdf.set_font("Helvetica", "", 5.5)
+            pdf.set_font("LibSans", "", 5.5)
             pdf.set_text_color(*_MUTED)
             pdf.cell(col_w, 2.5, _safe(label), align="C")
 
@@ -408,14 +404,14 @@ def generate_secured_pdf(
 
         # Section title — larger, bolder
         pdf.set_x(LM + bar_w + 4)
-        pdf.set_font("Helvetica", "B", 10.5)
+        pdf.set_font("LibSans", "B", 10.5)
         pdf.set_text_color(*_BLACK)
         pdf.cell(CW - bar_w - 4, 7, _safe(text))
         pdf.ln(11)
 
     def sub_title(text):
         pdf.ln(5)
-        pdf.set_font("Helvetica", "B", 8.5)
+        pdf.set_font("LibSans", "B", 8.5)
         if is_strategiia:
             pdf.set_text_color(*_STRAT_ACCENT)
         else:
@@ -425,14 +421,14 @@ def generate_secured_pdf(
         pdf.ln(7)
 
     def body_text(text):
-        pdf.set_font("Helvetica", "", 8)
+        pdf.set_font("LibSans", "", 8)
         pdf.set_text_color(*_BODY_TEXT)
         pdf.set_x(LM)
         pdf.multi_cell(CW, 4.8, _safe(text), markdown=True)
         pdf.ln(2.5)
 
     def bullet_text(text):
-        pdf.set_font("Helvetica", "", 8)
+        pdf.set_font("LibSans", "", 8)
         pdf.set_text_color(*_BODY_TEXT)
         pdf.set_x(LM + 5)
         bx, by = pdf.get_x(), pdf.get_y() + 1.5
@@ -445,14 +441,14 @@ def generate_secured_pdf(
         pdf.ln(1.5)
 
     def bold_text(text):
-        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_font("LibSans", "B", 8)
         pdf.set_text_color(*_DARK_TEXT)
         pdf.set_x(LM)
         pdf.multi_cell(CW, 4.2, _safe(text))
         pdf.ln(1)
 
     def italic_text(text):
-        pdf.set_font("Helvetica", "I", 7.5)
+        pdf.set_font("LibSans", "I", 7.5)
         pdf.set_text_color(*_MUTED)
         pdf.set_x(LM)
         pdf.multi_cell(CW, 4, _safe(text))
@@ -463,7 +459,7 @@ def generate_secured_pdf(
         pdf.ln(2)
         by = pdf.get_y()
         # Calculate height needed
-        pdf.set_font("Helvetica", "I", 7.5)
+        pdf.set_font("LibSans", "I", 7.5)
         # Estimate lines needed
         line_h = 3.8
         text_w = CW - 14
@@ -485,7 +481,7 @@ def generate_secured_pdf(
         # We'll draw the box after knowing the height
         start_y = pdf.get_y()
         pdf.set_x(LM + 8)
-        pdf.set_font("Helvetica", "I", 7.5)
+        pdf.set_font("LibSans", "I", 7.5)
         pdf.set_text_color(*_BODY_TEXT)
         bottom_before = pdf.get_y()
         pdf.multi_cell(CW - 14, 3.8, safe_t, markdown=True)
@@ -564,7 +560,7 @@ def generate_secured_pdf(
         pdf.set_fill_color(*_DE_ACCENT)
         pdf.rect(LM, ty, 2, 5, "F")
         pdf.set_x(LM + 5)
-        pdf.set_font("Helvetica", "B", 8.5)
+        pdf.set_font("LibSans", "B", 8.5)
         pdf.set_text_color(*_DARK_TEXT)
         pdf.cell(CW - 5, 5, _safe("Pièces analysées dans le cadre de cette étude"))
         pdf.ln(8)
@@ -575,7 +571,7 @@ def generate_secured_pdf(
         hy = pdf.get_y()
         pdf.set_fill_color(*_DE_BG)
         pdf.rect(LM, hy, CW, 6, "F")
-        pdf.set_font("Helvetica", "B", 6.5)
+        pdf.set_font("LibSans", "B", 6.5)
         pdf.set_text_color(*_DE_ACCENT)
         cx = LM + 3
         for j, (hdr, w) in enumerate(zip(headers, col_widths)):
@@ -595,7 +591,7 @@ def generate_secured_pdf(
                 pdf.set_fill_color(*_IVORY)
                 pdf.rect(LM, ry, CW, 5.5, "F")
 
-            pdf.set_font("Helvetica", "", 6.5)
+            pdf.set_font("LibSans", "", 6.5)
             pdf.set_text_color(*_BODY_TEXT)
             cx = LM + 3
             doc_name = doc.get("filename", doc.get("name", f"Document {idx+1}"))
@@ -619,7 +615,7 @@ def generate_secured_pdf(
 
         pdf.ln(2)
         pdf.set_x(LM + 3)
-        pdf.set_font("Helvetica", "I", 6)
+        pdf.set_font("LibSans", "I", 6)
         pdf.set_text_color(*_MUTED)
         pdf.multi_cell(CW - 6, 3, _safe(
             "Certaines pièces peuvent nécessiter une relecture humaine complémentaire "
@@ -644,7 +640,7 @@ def generate_secured_pdf(
         pdf.set_fill_color(*_DE_ACCENT)
     pdf.rect(LM, ty, 2.5, 7, "F")
     pdf.set_x(LM + 6)
-    pdf.set_font("Helvetica", "B", 11)
+    pdf.set_font("LibSans", "B", 11)
     pdf.set_text_color(*_BLACK)
     if is_strategiia:
         pdf.cell(CW - 6, 7, _safe("Votre situation, notre regard"))
@@ -653,7 +649,7 @@ def generate_secured_pdf(
     pdf.ln(12)
 
     # ── Part 1: Standardized emotional opening ──
-    pdf.set_font("Helvetica", "I", 8.5)
+    pdf.set_font("LibSans", "I", 8.5)
     pdf.set_text_color(*_BODY_TEXT)
     pdf.set_x(LM)
     pdf.multi_cell(CW, 5, _safe(
@@ -663,7 +659,7 @@ def generate_secured_pdf(
     pdf.ln(4)
 
     # ── Part 2: Structured value ──
-    pdf.set_font("Helvetica", "", 8)
+    pdf.set_font("LibSans", "", 8)
     pdf.set_text_color(*_BODY_TEXT)
     pdf.set_x(LM)
     pdf.multi_cell(CW, 5, _safe(
@@ -680,7 +676,7 @@ def generate_secured_pdf(
     pdf.line(LM + 20, sep_y, LM + CW - 20, sep_y)
     pdf.ln(6)
 
-    pdf.set_font("Helvetica", "", 8)
+    pdf.set_font("LibSans", "", 8)
     pdf.set_text_color(*_BODY_TEXT)
     pdf.set_x(LM)
     pdf.multi_cell(CW, 5, _safe(
@@ -702,12 +698,12 @@ def generate_secured_pdf(
     pdf.rect(LM, box_y, 2, box_h, "F")
 
     pdf.set_xy(LM + 7, box_y + 3)
-    pdf.set_font("Helvetica", "B", 9)
+    pdf.set_font("LibSans", "B", 9)
     pdf.set_text_color(*_BLACK)
     pdf.cell(CW - 12, 5, _safe("Vous souhaitez aller plus loin ?"))
 
     pdf.set_xy(LM + 7, box_y + 10)
-    pdf.set_font("Helvetica", "", 7.5)
+    pdf.set_font("LibSans", "", 7.5)
     pdf.set_text_color(*_BODY_TEXT)
     if is_strategiia:
         pdf.multi_cell(CW - 12, 4.2, _safe(
@@ -756,7 +752,7 @@ def generate_secured_pdf(
     pdf.ln(5)
 
     if qr_tmp_path and os.path.isfile(qr_tmp_path):
-        pdf.set_font("Helvetica", "B", 7)
+        pdf.set_font("LibSans", "B", 7)
         pdf.set_text_color(*_MUTED)
         pdf.cell(CW, 3.5, _safe("Prochaine étape recommandée"), align="C", new_x="LMARGIN", new_y="NEXT")
         pdf.ln(3)
@@ -766,7 +762,7 @@ def generate_secured_pdf(
         pdf.image(qr_tmp_path, x=qr_x, y=pdf.get_y(), w=qr_size, h=qr_size)
         pdf.set_y(pdf.get_y() + qr_size + 2)
 
-        pdf.set_font("Helvetica", "I", 6.5)
+        pdf.set_font("LibSans", "I", 6.5)
         pdf.set_text_color(*_MUTED)
         pdf.cell(CW, 3, _safe("Scannez pour accéder à l'accompagnement expert personnalisé S.E.S"), align="C", new_x="LMARGIN", new_y="NEXT")
         pdf.ln(1.5)
@@ -778,7 +774,7 @@ def generate_secured_pdf(
     else:
         pdf.ln(2)
 
-    pdf.set_font("Helvetica", "", 6)
+    pdf.set_font("LibSans", "", 6)
     pdf.set_text_color(*_MUTED)
     pdf.cell(CW, 3, _safe("Première consultation offerte  |  strategie-expertise-sante.fr/contact"), align="C", new_x="LMARGIN", new_y="NEXT")
 
@@ -791,12 +787,12 @@ def generate_secured_pdf(
         pdf.add_page()
         pdf.ln(4)
 
-    pdf.set_font("Helvetica", "B", 7)
+    pdf.set_font("LibSans", "B", 7)
     pdf.set_text_color(*_MUTED)
     pdf.set_x(LM)
     pdf.cell(CW, 4, _safe("Confidentialité"), align="L")
     pdf.ln(5)
-    pdf.set_font("Helvetica", "I", 6.5)
+    pdf.set_font("LibSans", "I", 6.5)
     pdf.set_text_color(*_MUTED)
     pdf.set_x(LM)
     pdf.multi_cell(CW, 3.5, _safe(
@@ -815,11 +811,11 @@ def generate_secured_pdf(
     pdf.line(70, sep_y3, 140, sep_y3)
     pdf.ln(5)
 
-    pdf.set_font("Helvetica", "BI", 9)
+    pdf.set_font("LibSans", "BI", 9)
     pdf.set_text_color(*_BLACK)
     pdf.cell(CW, 5, _safe("Vous n'êtes plus seul face à votre combat."), align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(1)
-    pdf.set_font("Helvetica", "B", 9)
+    pdf.set_font("LibSans", "B", 9)
     pdf.set_text_color(*_GOLD)
     pdf.cell(CW, 5, _safe("Dorénavant, S.E.S est votre bouclier."), align="C")
 
