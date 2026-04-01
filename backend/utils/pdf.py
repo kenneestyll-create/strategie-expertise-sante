@@ -73,6 +73,19 @@ _DE_BG = (245, 247, 252)
 
 
 def _safe(text: str) -> str:
+    replacements = {
+        '\u2013': '-', '\u2014': '-', '\u2015': '-',  # en-dash, em-dash
+        '\u2018': "'", '\u2019': "'",  # smart single quotes
+        '\u201c': '"', '\u201d': '"',  # smart double quotes
+        '\u2026': '...', '\u2022': '-',  # ellipsis, bullet
+        '\u00a0': ' ',  # non-breaking space
+        '\u2032': "'", '\u2033': '"',  # prime, double prime
+        '\u20ac': 'EUR',  # euro sign fallback
+        '\u2192': '->', '\u2190': '<-',  # arrows
+        '\u2265': '>=', '\u2264': '<=',  # comparison
+    }
+    for old, new in replacements.items():
+        text = text.replace(old, new)
     return text.encode("cp1252", "replace").decode("cp1252")
 
 
