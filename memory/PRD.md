@@ -1,67 +1,45 @@
-# PRD — Stratégie & Expertise Santé (S.E.S)
+# Stratégie & Expertise Santé (S.E.S) — PRD
 
 ## Problème original
-Application web premium de conseil en maladie professionnelle (AT/MP). Scanner documentaire, contenu stratégique (IP, PGPF), mascotte IA "Straté", dashboard Admin, IA d'analyse (StrategiIA).
+Application web premium de conseil en maladies professionnelles. Objectifs : scanner de documents fiable, contenu stratégique (IP/PGPF), mascotte IA "Straté" avec TTS et gestion Admin.
 
 ## Architecture
-- **Frontend**: React + Tailwind CSS + Shadcn/UI
-- **Backend**: FastAPI + MongoDB
-- **Intégrations**: Claude Sonnet 4.5 (Emergent LLM Key), Stripe (test), Resend (sandbox)
+- Frontend: React + Tailwind CSS + Shadcn/UI
+- Backend: FastAPI + MongoDB
+- Intégrations: Anthropic Claude (Emergent LLM Key), Stripe (test), Resend (sandbox)
 
-## Zones gelées
+## Ce qui est implémenté
+- Scanner de documents natif (caméra mobile `<input capture>`) — DONE
+- Contenu stratégique IP & PGPF intégré (Ressources, Calculateur, Recherche, IA) — DONE
+- Mascotte Straté visuelle (composant flottant) — DONE
+- Hero section avec image parisienne (Tour Eiffel) — DONE (validé 01/04/2026)
+- Bloc Documents décalé droite sur section 2 — DONE (validé 01/04/2026)
+- Frontend Freeze : layout-guardrails.css + 115 baselines Playwright — DONE
+- Hero déclaré ZONE GELÉE — DONE
 
-### Hero HomePage — VERROUILLÉ 01/04/2026
-- Hauteur : 617px — above-the-fold sur 1366×768
-- Paddings : `lg:pt-20` (top), `lg:pb-1` (bottom)
-- Header fixed : 76px → badge à 80px (4px de marge)
-- Ligne finale : bottom=613px → 155px de marge
-- Fichier : `HomePage.jsx` lignes 139-350
-- Commentaire protecteur dans le code
-- Baselines : `hero-desktop.png`, `hero-laptop-1366.png`, `hero-mobile.png`
-- Tests : suite 6 (Hero above-fold) dans `visual.spec.ts`
+## Image Hero
+- Image éditée via OpenAI GPT Image 1 (édition de l'image originale, fond NYC → Paris)
+- Fichier : `/app/frontend/public/hero_paris_edited.png`
+- Utilisée ligne 310 (Hero) et ligne 414 (Section 2) de HomePage.jsx
 
-### Header — VERROUILLÉ 01/04/2026
-- Fichier : `Header.jsx`
-- Commentaire protecteur dans le code
+## P0 — En attente
+1. Bug TTS Mascotte Straté : voix lit en anglais au lieu de français
+2. Backend CRUD `/api/conseils` + Admin UI pour les tips Straté
 
-### Frontend global — GELÉ 01/04/2026
-- `layout-guardrails.css` : 13 règles CSS
-- `FRONTEND_GUARDRAILS.md` : charte anti-casse
-- `RELEASE_VISUAL_CHECKLIST.md` : checklist obligatoire
-- `visual.spec.ts` : 341 tests Playwright
-- 117 captures baseline
+## P1 — À venir
+- Checklist lancement live (clés Stripe/Anthropic production)
+- Intégration HubSpot CRM (en attente identifiants utilisateur)
 
-## Tâches accomplies
+## P2 — Backlog
+- Lien S3 PDF cassé (en attente identifiants AWS)
+- Finalisation contenu juridique
+- Refactoring EmailTemplateEditor.jsx
 
-### Session actuelle (01/04/2026)
-- Fix centrage "Choisir mon médecin conseil" : `text-center lg:text-left`
-- Gel définitif du frontend : tests, baselines, guardrails
-- Hero premium chirurgical : micro-optimisation visuelle
-- Suppression doublon disclaimer mobile
-- Fix badge coupé par header fixed : `lg:pt-20`
-- Fix ligne finale : compression marges internes (-18px)
-- Fix lisibilité badge + ligne finale : opacités renforcées
-- Gel définitif Hero : commentaire renforcé, guardrails mis à jour, baselines régénérées
+## Identifiants de test
+- Admin: admin@accompagn-sante.fr / Admin2024!
+- Client: demo@test.com / Password123!
 
-## Backlog
-
-### P0 (Aucun)
-
-### P1
-- Protocole de lancement Live (Stripe live, AWS S3, Resend)
-
-### P2
-- HubSpot CRM (attente credentials)
-
-### P3
-- S3 PDF Download (attente credentials AWS)
-
-## Credentials de test
-- Admin: `admin@accompagn-sante.fr` / `Admin2024!`
-- Client: `demo@test.com` / `Password123!`
-
-## Contraintes utilisateur
-- NO INITIATIVES: Exécuter uniquement ce qui est demandé
-- Format de rapport obligatoire (CAUSE RACINE, BLOCS CONCERNÉS, etc.)
-- Langue: Français uniquement
-- FRONTEND GELÉ + HERO GELÉ : Voir FRONTEND_GUARDRAILS.md
+## Règles strictes
+- ZONE GELÉE sur le Hero : aucune modification sans commande explicite
+- Pas de refactoring opportuniste
+- Format de rapport obligatoire pour chaque fix UI
