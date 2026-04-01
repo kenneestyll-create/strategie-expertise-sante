@@ -411,7 +411,7 @@ export const HomePage = () => {
               <div className="relative">
                 <div className="w-64 h-72 sm:w-72 sm:h-80 rounded-3xl overflow-hidden shadow-xl">
                   <img
-                    src="https://static.prod-images.emergentagent.com/jobs/457be1c0-7422-4df2-b806-00b4baec9f14/images/0e4393172424d6058f322a4a8c414acc6f5f3a3f7f56eb9be167d96b26d32d09.png"
+                    src="/hero_paris_edited.png"
                     alt="Fondateur S.E.S"
                     className="w-full h-full object-cover object-top"
                   />
