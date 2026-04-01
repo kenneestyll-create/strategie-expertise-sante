@@ -307,7 +307,7 @@ export const HomePage = () => {
                 <div className="relative">
                   <div className="overflow-hidden shadow-[0_35px_80px_-15px_rgba(0,0,0,0.75)] h-full lg:h-auto">
                     <img
-                      src="https://images.pexels.com/photos/28446973/pexels-photo-28446973.jpeg?auto=compress&cs=tinysrgb&w=800"
+                      src="https://static.prod-images.emergentagent.com/jobs/457be1c0-7422-4df2-b806-00b4baec9f14/images/2d6a48441a5b26549385ed80b38493cc10283a9225017fbb6d9b5016eec6f0ad.png"
                       alt="Expert en stratégie santé"
                       className="w-full h-full lg:aspect-[4/5] object-cover object-top"
                       loading="eager"
@@ -411,7 +411,7 @@ export const HomePage = () => {
               <div className="relative">
                 <div className="w-64 h-72 sm:w-72 sm:h-80 rounded-3xl overflow-hidden shadow-xl">
                   <img
-                    src="https://images.pexels.com/photos/28446973/pexels-photo-28446973.jpeg?auto=compress&cs=tinysrgb&w=600"
+                    src="https://static.prod-images.emergentagent.com/jobs/457be1c0-7422-4df2-b806-00b4baec9f14/images/2d6a48441a5b26549385ed80b38493cc10283a9225017fbb6d9b5016eec6f0ad.png"
                     alt="Fondateur S.E.S"
                     className="w-full h-full object-cover object-top"
                   />
