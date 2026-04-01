@@ -55,6 +55,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { useAdminTest } from '@/components/AdminTestBanner';
 import { useAdminTheme } from '@/hooks/useAdminTheme';
+import { AdminHelpPanel } from '@/components/AdminHelpPanel';
 import axios from 'axios';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { BarChart3, BellRing, Download, FlaskConical, PenTool, FileSearch, QrCode, Globe, BadgeCheck } from 'lucide-react';
@@ -3698,6 +3699,7 @@ export const AdminDashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <AdminHelpPanel onNavigateTab={(tab) => setActiveTab(tab)} />
     </div>
   );
 };
