@@ -335,8 +335,12 @@ export const AdminPremiumReview = ({ items, stats, productType, productLabel, ic
                     const pdfEndpoint = productType === 'dossier_express' && reviewDialog.dossier_id
                       ? `${API}/admin/dossier-express/${reviewDialog.dossier_id}/preview-pdf`
                       : `${API}/admin/strategiia/${reviewDialog.id}/preview-pdf`;
-                    const res = await axios.get(pdfEndpoint, { ...axiosConfig, responseType: 'blob' });
-                    const blob = new Blob([res.data], { type: 'application/pdf' });
+                    const token = axiosConfig?.headers?.Authorization?.replace('Bearer ', '') || '';
+                    const response = await fetch(pdfEndpoint, {
+                      headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (!response.ok) throw new Error('Erreur PDF');
+                    const blob = await response.blob();
                     const url = URL.createObjectURL(blob);
                     window.open(url, '_blank');
                     toast.success("PDF généré avec succès");

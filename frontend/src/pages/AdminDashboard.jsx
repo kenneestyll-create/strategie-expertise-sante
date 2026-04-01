@@ -2269,8 +2269,10 @@ export const AdminDashboard = () => {
                             <Button className="gap-2" data-testid="preview-pdf-btn" onClick={async () => {
                               try {
                                 toast.info('Génération du PDF…');
-                                const res = await axios.get(`${API}/admin/dossier-express/${dossierViewDialog.id}/preview-pdf`, { ...axiosConfig, responseType: 'blob' });
-                                window.open(URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' })), '_blank');
+                                const response = await fetch(`${API}/admin/dossier-express/${dossierViewDialog.id}/preview-pdf`, { headers: { 'Authorization': `Bearer ${token}` } });
+                                if (!response.ok) throw new Error('Erreur PDF');
+                                const blob = await response.blob();
+                                window.open(URL.createObjectURL(blob), '_blank');
                                 toast.success('PDF ouvert dans un nouvel onglet');
                               } catch { toast.error('Erreur lors de la génération du PDF'); }
                             }}>
@@ -2278,9 +2280,11 @@ export const AdminDashboard = () => {
                             </Button>
                             <Button variant="outline" className="gap-2" data-testid="download-pdf-btn" onClick={async () => {
                               try {
-                                const res = await axios.get(`${API}/admin/dossier-express/${dossierViewDialog.id}/preview-pdf`, { ...axiosConfig, responseType: 'blob' });
+                                const response = await fetch(`${API}/admin/dossier-express/${dossierViewDialog.id}/preview-pdf`, { headers: { 'Authorization': `Bearer ${token}` } });
+                                if (!response.ok) throw new Error('Erreur PDF');
+                                const blob = await response.blob();
                                 const a = document.createElement('a');
-                                a.href = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+                                a.href = URL.createObjectURL(blob);
                                 a.download = `Rapport_DossierExpress_${(dossierViewDialog.name || 'client').replace(/\s/g, '_')}.pdf`;
                                 a.click();
                                 toast.success('Téléchargement lancé');
@@ -2343,9 +2347,11 @@ export const AdminDashboard = () => {
                                   onClick={async () => {
                                     try {
                                       toast.info('Téléchargement en cours...');
-                                      const res = await axios.get(`${API}/admin/dossier-express/${dossierViewDialog.id}/documents/${doc.file_id}/download`, { ...axiosConfig, responseType: 'blob' });
+                                      const response = await fetch(`${API}/admin/dossier-express/${dossierViewDialog.id}/documents/${doc.file_id}/download`, { headers: { 'Authorization': `Bearer ${token}` } });
+                                      if (!response.ok) throw new Error('Erreur téléchargement');
+                                      const blob = await response.blob();
                                       const a = document.createElement('a');
-                                      a.href = URL.createObjectURL(new Blob([res.data]));
+                                      a.href = URL.createObjectURL(blob);
                                       a.download = doc.original_filename || 'document';
                                       a.click();
                                       toast.success('Document téléchargé');
