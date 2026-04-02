@@ -10,33 +10,33 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 
 ## Ce qui est implémenté
 - Scanner de documents natif (caméra mobile `<input capture>`) — DONE
-- Contenu stratégique IP & PGPF intégré (Ressources, Calculateur, Recherche, IA) — DONE
-- Mascotte Straté visuelle + TTS français robuste (mobile/desktop) — DONE
-- Backend CRUD `/api/conseils` complet (30 conseils, rotation, priorité, tracking, analytics) — DONE
+- Contenu stratégique IP & PGPF intégré — DONE
+- Mascotte Straté visuelle + TTS français robuste — DONE
+- Backend CRUD `/api/conseils` complet — DONE
 - Admin "Conseils Straté" tab fonctionnel — DONE
 - Hero section avec image parisienne (Tour Eiffel) — DONE
-- Frontend Freeze : layout-guardrails.css + baselines Playwright — DONE
+- Frontend Freeze : layout-guardrails.css — DONE
 - Hero déclaré ZONE GELÉE — DONE
-- Admin > Config > Compteur Hero — DONE
+- Admin > Config > Compteur visiteurs Hero (auto-incrément par visite) — DONE (02/04/2026)
 - Admin > Config > Base dossiers hebdomadaire — DONE
 - Admin > Config > Le défi en chiffres — DONE
 - Admin > Config > Tarifs & Promotions — DONE
-- Admin > Guide interactif flottant (15 sections, 8 étapes Config, Ctrl+H) — DONE (02/04/2026)
-- Admin > Tutoriel interactif d'onboarding Straté (6 étapes, auto 1ère connexion, relançable) — DONE (02/04/2026)
-- Admin > Statistiques d'engagement du tutoriel (démarrages, complétion, abandon par étape) — DONE (02/04/2026)
+- Admin > Guide interactif flottant (15 sections, 8 étapes Config, Ctrl+H) — DONE
+- Admin > Tutoriel interactif d'onboarding Straté (6 étapes) — DONE
+- Admin > Statistiques d'engagement du tutoriel — DONE
+- Admin > Préparation Production (purge données test + reset compteurs) — DONE (02/04/2026)
+- Hero renommé : "personnes accompagnées" → "visiteurs" — DONE (02/04/2026)
 - Clé API Anthropic native configurée — DONE
 - Chatbot optimisé sur claude-haiku-4-5 — DONE
 - Bug PDF Unicode résolu (police LiberationSans TTF) — DONE
 - Téléchargement PDF admin : axios → fetch natif — DONE
 
-## Tutoriel Onboarding Admin
-- Composant : `/app/frontend/src/components/AdminOnboardingTour.jsx`
-- 6 étapes : Bienvenue, StratégiIA, Dossier Express, Configuration, Mode Test, Aide & Guide
-- Déclenchement automatique 1ère connexion (localStorage `ses_admin_onboarding_done`)
-- Relançable via Help Panel ou widget Config
-- Tracking : POST `/api/admin/onboarding/track` (events: start, step, skip, complete)
-- Stats : GET `/api/admin/onboarding/stats` (taux complétion, vues par étape)
-- Widget stats dans Admin > Config > "Tutoriel Straté"
+## Préparation Production
+- Panneau dans Admin > Config > "Préparation Production"
+- 6 purges individuelles : contacts, StratégiIA, Dossier Express, avis, chatbot, onboarding
+- 2 resets compteurs : visiteurs Hero, base dossiers hebdo
+- 1 purge complète avec confirmation
+- Endpoints : POST `/api/admin/cleanup/{section}`, `/api/admin/cleanup/counter-reset`, `/api/admin/cleanup/full-purge`
 
 ## P1 — À venir
 - Checklist lancement live (clés Stripe/Anthropic production)
@@ -47,6 +47,9 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - Google Analytics / Plausible
 - Finalisation contenu juridique
 - Vérification domaine Resend
+
+## Suggestions gardées pour plus tard
+- Statistiques d'engagement du tutoriel (taux de complétion, étape d'abandon) — IMPLÉMENTÉ mais à enrichir si besoin
 
 ## Identifiants de test
 - Admin: admin@accompagn-sante.fr / Admin2024!
