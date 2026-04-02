@@ -49,7 +49,10 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - Vérification domaine Resend
 
 ## Suggestions gardées pour plus tard
-- Statistiques d'engagement du tutoriel (taux de complétion, étape d'abandon) — IMPLÉMENTÉ mais à enrichir si besoin
+- Statistiques d'engagement du tutoriel — IMPLÉMENTÉ, à enrichir si besoin
+- **Accès Professionnel B2B** — Système à 3 niveaux (Client / Pro / Admin). Dashboard Pro dédié avec Dossier Express illimité, rapports en marque blanche (logo du pro), tarif mensuel (97-497€/mois). Phase 1 : rôle `pro` + dashboard simplifié. Phase 2 : personnalisation PDF. Phase 3 : facturation Stripe récurrente. Commencer par un partenaire pilote.
+- **Amélioration OCR** — Remplacement de Tesseract par Google Vision API pour les PDF scannés/photos. Gain estimé : 72% → 93% de précision. Gratuit jusqu'à 1000 pages/mois. À valider après retours clients réels.
+- **Enrichir le prompt chatbot** — Ajouter les faits réels sur S.E.S (fondateur, histoire, mission) pour éviter les hallucinations. Ajouter garde-fou "ne jamais inventer".
 
 ## Identifiants de test
 - Admin: admin@accompagn-sante.fr / Admin2024!
