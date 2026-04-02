@@ -177,14 +177,17 @@ const HELP_SECTIONS = [
     icon: Settings,
     title: 'Configuration',
     color: '#6b7280',
-    summary: 'Paramètres techniques : email, stockage, compteur Hero.',
+    summary: 'Email, stockage, compteurs, chiffres clés, tarifs & promotions.',
     steps: [
       { label: 'Email (Resend)', text: 'Vérifiez le statut de la configuration email et envoyez un email test.' },
       { label: 'Stockage', text: 'Statut du stockage objet cloud pour les documents uploadés.' },
-      { label: 'Compteur Hero', text: 'Modifiez le nombre "personnes accompagnées" affiché sur la page d\'accueil.' },
+      { label: 'Compteur Hero', text: 'Modifiez le nombre "personnes accompagnées" affiché sur la page d\'accueil (section Hero).' },
+      { label: 'Base dossiers hebdo', text: 'Ajustez la base du compteur "dossiers analysés cette semaine" affiché sur Dossier Express. Le total affiché = base + vrais dossiers.' },
+      { label: 'Le défi en chiffres', text: 'Éditez les 4 statistiques clés affichées sur la page d\'accueil (valeur, préfixe, unité, source). Cliquez "Enregistrer les chiffres" pour appliquer.' },
+      { label: 'Tarifs & Promotions', text: 'Modifiez le prix de chaque prestation et ajoutez un badge promo (ex: "-20%", "Nouveau"). Les changements se reflètent sur la page Tarifs.' },
       { label: 'Notifications Push', text: 'Statut du Service Worker et des notifications push (VAPID).' },
     ],
-    keywords: ['config', 'configuration', 'email', 'resend', 'stockage', 'compteur', 'hero', 'personnes', 'accompagnées', 'push', 'notification']
+    keywords: ['config', 'configuration', 'email', 'resend', 'stockage', 'compteur', 'hero', 'personnes', 'accompagnées', 'push', 'notification', 'tarifs', 'prix', 'promotion', 'badge', 'promo', 'chiffres', 'statistiques', 'défi', 'dossiers', 'hebdomadaire', 'semaine', 'base']
   },
   {
     id: 'notifications',
