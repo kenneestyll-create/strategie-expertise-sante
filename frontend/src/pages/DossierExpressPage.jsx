@@ -85,7 +85,7 @@ const StepIndicator = ({ currentStep }) => {
 /* ── Value Sidebar for Form ── */
 const ValueReminder = ({ weeklyCount }) => (
   <div className="space-y-5" data-testid="form-value-sidebar">
-    <Card className="border-accent/20 bg-accent/[0.03]">
+    <Card className="border border-accent/30 bg-accent/[0.03]">
       <CardContent className="p-5">
         <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
           <FileText className="w-4 h-4 text-accent" />
