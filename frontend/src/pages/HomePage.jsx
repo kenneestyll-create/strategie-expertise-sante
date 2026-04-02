@@ -93,12 +93,29 @@ export const HomePage = () => {
     { num: "05", icon: RefreshCcw, title: "Suivi et ajustement", desc: "Accompagnement continu et adaptation de la stratégie." },
   ];
 
-  const chiffresCles = [
+  const defaultChiffresCles = [
     { icon: HardHat, value: 700000, unit: '', prefix: "Plus de", suffix: "accidents du travail par an en France", source: "CNAM", lien: "https://assurance-maladie.ameli.fr" },
     { icon: Activity, value: 50000, unit: '', prefix: "Environ", suffix: "maladies professionnelles reconnues chaque année", source: "CNAM", lien: "https://assurance-maladie.ameli.fr" },
     { icon: Accessibility, value: 12, unit: ' millions', prefix: "Près de", suffix: "de personnes en situation de handicap", source: "INSEE", lien: "https://www.insee.fr" },
     { icon: ClipboardList, value: 300000, unit: '', prefix: "Plus de", suffix: "nouvelles demandes MDPH chaque année", source: "CNSA", lien: "https://www.cnsa.fr" },
   ];
+
+  const [chiffresCles, setChiffresCles] = useState(defaultChiffresCles);
+
+  useEffect(() => {
+    axios.get(`${API}/public/chiffres-cles`).then(res => {
+      if (res.data && res.data.length === 4) {
+        setChiffresCles(prev => prev.map((c, i) => ({
+          ...c,
+          value: res.data[i].value ?? c.value,
+          unit: res.data[i].unit ?? c.unit,
+          prefix: res.data[i].prefix ?? c.prefix,
+          suffix: res.data[i].suffix ?? c.suffix,
+          source: res.data[i].source ?? c.source,
+        })));
+      }
+    }).catch(() => {});
+  }, []);
 
   const confiance = [
     { icon: HeartHandshake, title: "Expertise terrain réelle", desc: "Née d'une expérience personnelle face aux mêmes épreuves que les vôtres." },

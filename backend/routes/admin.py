@@ -58,6 +58,50 @@ async def set_compteur_dossiers(request: Request, admin: dict = Depends(get_curr
     )
     return {"success": True, "base": new_base}
 
+# ==================== TARIFS ====================
+
+@router.get("/admin/tarifs")
+async def get_tarifs(admin: dict = Depends(get_current_admin)):
+    doc = await db.site_settings.find_one({"id": "tarifs"}, {"_id": 0})
+    return doc.get("value", {}) if doc else {}
+
+@router.put("/admin/tarifs")
+async def set_tarifs(request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    await db.site_settings.update_one(
+        {"id": "tarifs"},
+        {"$set": {"value": body, "last_updated": datetime.now(timezone.utc).isoformat()}},
+        upsert=True
+    )
+    return {"success": True}
+
+@router.get("/public/tarifs")
+async def get_public_tarifs():
+    doc = await db.site_settings.find_one({"id": "tarifs"}, {"_id": 0})
+    return doc.get("value", {}) if doc else {}
+
+# ==================== CHIFFRES CLES ====================
+
+@router.get("/admin/chiffres-cles")
+async def get_chiffres_cles(admin: dict = Depends(get_current_admin)):
+    doc = await db.site_settings.find_one({"id": "chiffres_cles"}, {"_id": 0})
+    return doc.get("value", []) if doc else []
+
+@router.put("/admin/chiffres-cles")
+async def set_chiffres_cles(request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    await db.site_settings.update_one(
+        {"id": "chiffres_cles"},
+        {"$set": {"value": body.get("chiffres", []), "last_updated": datetime.now(timezone.utc).isoformat()}},
+        upsert=True
+    )
+    return {"success": True}
+
+@router.get("/public/chiffres-cles")
+async def get_public_chiffres_cles():
+    doc = await db.site_settings.find_one({"id": "chiffres_cles"}, {"_id": 0})
+    return doc.get("value", []) if doc else []
+
 
 # ==================== AUTH ====================
 

@@ -24,6 +24,8 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - Texte Dossier Express IA corrigé (remplacé "StratégiIA" par "Dossier Express IA") — DONE (01/04/2026)
 - Compteur "dossiers analysés cette semaine" modifiable depuis Admin > Config — DONE (02/04/2026)
 - Section "Chiffres du site" regroupée dans Admin > Config (Hero + Dossiers) — DONE (02/04/2026)
+- Tarifs & Promotions modifiables depuis Admin > Config (9 forfaits, prix + badge promo) — DONE (02/04/2026)
+- Le défi en chiffres modifiable depuis Admin > Config (4 stats clés page accueil) — DONE (02/04/2026)
 - Bug PDF Unicode résolu (police LiberationSans TTF) — DONE (02/04/2026)
 - Bug PDF fallback analyse résolu (recherche par email) — DONE (02/04/2026)
 - Prompt IA : suppression des recommandations commerciales — DONE (02/04/2026)

@@ -134,7 +134,7 @@ export const TarifsPage = () => {
     setShowPaymentModal(open);
   };
 
-  const prestations = [
+  const defaultPrestations = [
     { id: "analyse_dossier", icon: FileSearch, title: "Analyse de dossier", description: "Étude personnalisée du dossier médical et administratif. Identification des points forts, faiblesses et éléments manquants.", price: "150", features: ["Lecture complète du dossier", "Rapport d'analyse détaillé", "Recommandations personnalisées", "Échange téléphonique de restitution"] },
     { id: "préparation_expertise", icon: Shield, title: "Préparation expertise médicale", description: "Accompagnement pour aborder sereinement une expertise médicale.", price: "250", popular: true, features: ["Analyse du dossier médical", "Préparation des arguments", "Simulation d'entretien", "Documents à apporter"] },
     { id: "accompagnement_mdph", icon: Users, title: "Accompagnement MDPH", description: "Aide à la compréhension et structuration du dossier MDPH.", price: "200", features: ["Analyse de votre situation", "Aide au formulaire", "Conseils pièces justificatives", "Suivi de la demande"] },
@@ -142,12 +142,34 @@ export const TarifsPage = () => {
     { id: "accompagnement_complet", icon: Briefcase, title: "Accompagnement complet", description: "Suivi global des démarches administratives et médicales.", price: "500", badge: "Sur devis", features: ["Analyse complète de la situation", "Stratégie personnalisée", "Suivi des démarches", "Disponibilité continue"] },
   ];
 
-  const prestationsUrgentes = [
+  const defaultUrgentes = [
     { id: "urgent_analyse_dossier", icon: FileSearch, title: "Analyse de dossier", price: "250", priceStandard: "150", features: ["Traitement prioritaire 48h", "Rapport d'analyse express", "Recommandations personnalisées", "Échange téléphonique immédiat"] },
     { id: "urgent_préparation_expertise", icon: Shield, title: "Préparation expertise", price: "400", priceStandard: "250", features: ["Traitement prioritaire 48h", "Préparation d'urgence", "Simulation d'entretien rapide", "Disponibilité immédiate"] },
     { id: "urgent_accompagnement_mdph", icon: Users, title: "Accompagnement MDPH", price: "320", priceStandard: "200", features: ["Traitement prioritaire 48h", "Constitution dossier express", "Suivi accéléré", "Interlocuteur dédié"] },
     { id: "urgent_accompagnement_complet", icon: Briefcase, title: "Accompagnement complet", price: "750", priceStandard: "500", features: ["Traitement prioritaire 48h", "Analyse complète express", "Stratégie immédiate", "Disponibilité 7j/7"] },
   ];
+
+  const [prestations, setPrestations] = useState(defaultPrestations);
+  const [prestationsUrgentes, setPrestationsUrgentes] = useState(defaultUrgentes);
+
+  useEffect(() => {
+    axios.get(`${API}/public/tarifs`).then(res => {
+      const t = res.data;
+      if (t && Object.keys(t).length > 0) {
+        setPrestations(prev => prev.map(p => ({
+          ...p,
+          price: t[p.id]?.price || p.price,
+          badge: t[p.id]?.badge || p.badge,
+        })));
+        setPrestationsUrgentes(prev => prev.map(p => ({
+          ...p,
+          price: t[p.id]?.price || p.price,
+          priceStandard: t[p.id]?.priceStandard || p.priceStandard,
+          badge: t[p.id]?.badge || p.badge,
+        })));
+      }
+    }).catch(() => {});
+  }, []);
 
   return (
     <main className="page-transition pt-20">

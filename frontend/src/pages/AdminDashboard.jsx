@@ -56,9 +56,10 @@ import { useAuth } from '@/context/AuthContext';
 import { useAdminTest } from '@/components/AdminTestBanner';
 import { useAdminTheme } from '@/hooks/useAdminTheme';
 import { AdminHelpPanel } from '@/components/AdminHelpPanel';
+import { TarifsEditor, ChiffresClesEditor } from '@/components/ConfigEditors';
 import axios from 'axios';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { BarChart3, BellRing, Download, FlaskConical, PenTool, FileSearch, QrCode, Globe, BadgeCheck } from 'lucide-react';
+import { BarChart3, BellRing, Download, FlaskConical, PenTool, FileSearch, QrCode, Globe, BadgeCheck, Tag } from 'lucide-react';
 import { EmailTemplateEditor } from '@/components/EmailTemplateEditor';
 import { AdminConseilsStrate } from '@/components/AdminConseilsStrate';
 import { AdminConversionAnalytics } from '@/components/AdminConversionAnalytics';
@@ -2789,6 +2790,28 @@ export const AdminDashboard = () => {
                     </Button>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* ═══ Le défi en chiffres ═══ */}
+            <Card data-testid="config-chiffres-cles">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2"><BarChart3 className="w-5 h-5 text-accent" /> Le défi en chiffres</CardTitle>
+                <p className="text-xs text-muted-foreground">Les 4 statistiques clés affichées sur la page d'accueil.</p>
+              </CardHeader>
+              <CardContent>
+                <ChiffresClesEditor axiosConfig={axiosConfig} />
+              </CardContent>
+            </Card>
+
+            {/* ═══ Tarifs & Promotions ═══ */}
+            <Card data-testid="config-tarifs">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2"><Tag className="w-5 h-5 text-accent" /> Tarifs & Promotions</CardTitle>
+                <p className="text-xs text-muted-foreground">Modifiez les prix et ajoutez des badges promotionnels.</p>
+              </CardHeader>
+              <CardContent>
+                <TarifsEditor axiosConfig={axiosConfig} />
               </CardContent>
             </Card>
 
