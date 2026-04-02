@@ -1987,3 +1987,48 @@ async def admin_services_status(admin: dict = Depends(get_current_admin)):
         "ready_for_launch": all_ok,
         "services": results,
     }
+
+
+# ═══ Onboarding Tour Analytics ═══
+
+@router.post("/admin/onboarding/track")
+async def track_onboarding(request: Request, admin: dict = Depends(get_current_admin)):
+    data = await request.json()
+    event = data.get("event")  # start, step, skip, complete
+    step = data.get("step", 0)
+    if event not in ("start", "step", "skip", "complete"):
+        raise HTTPException(400, "Invalid event type")
+    await db.onboarding_events.insert_one({
+        "admin_email": admin.get("email", ""),
+        "event": event,
+        "step": step,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    })
+    return {"ok": True}
+
+
+@router.get("/admin/onboarding/stats")
+async def get_onboarding_stats(admin: dict = Depends(get_current_admin)):
+    total_starts = await db.onboarding_events.count_documents({"event": "start"})
+    total_completes = await db.onboarding_events.count_documents({"event": "complete"})
+    total_skips = await db.onboarding_events.count_documents({"event": "skip"})
+    completion_rate = round((total_completes / total_starts) * 100) if total_starts > 0 else 0
+
+    # Step drop-off analysis
+    step_labels = ["Bienvenue", "StratégiIA", "Dossier Express", "Configuration", "Mode Test", "Aide & Guide"]
+    step_views = []
+    for i in range(6):
+        count = await db.onboarding_events.count_documents({"event": "step", "step": i})
+        step_views.append({"step": i, "label": step_labels[i], "views": count})
+
+    # Recent events
+    recent = await db.onboarding_events.find({}, {"_id": 0}).sort("timestamp", -1).limit(10).to_list(10)
+
+    return {
+        "total_starts": total_starts,
+        "total_completes": total_completes,
+        "total_skips": total_skips,
+        "completion_rate": completion_rate,
+        "step_views": step_views,
+        "recent": recent,
+    }

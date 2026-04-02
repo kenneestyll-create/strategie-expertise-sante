@@ -288,6 +288,69 @@ const AnalyticsTab = ({ data, period, onPeriodChange }) => {
   );
 };
 
+const OnboardingStatsCard = ({ axiosConfig, onRestartTour }) => {
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    axios.get(`${API}/admin/onboarding/stats`, axiosConfig)
+      .then(r => setStats(r.data))
+      .catch(() => {});
+  }, []);
+
+  if (!stats || stats.total_starts === 0) return null;
+
+  return (
+    <Card data-testid="config-onboarding-stats">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Star className="w-5 h-5 text-[#C9A84C]" /> Tutoriel Straté
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">Engagement du tutoriel d'onboarding admin.</p>
+          </div>
+          <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={onRestartTour} data-testid="config-restart-tour">
+            Relancer
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="p-3 rounded-lg border text-center">
+            <p className="text-xl font-bold">{stats.total_starts}</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Démarrages</p>
+          </div>
+          <div className="p-3 rounded-lg border text-center">
+            <p className="text-xl font-bold text-emerald-600">{stats.total_completes}</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Terminés</p>
+          </div>
+          <div className="p-3 rounded-lg border text-center">
+            <p className="text-xl font-bold">{stats.completion_rate}%</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Taux</p>
+          </div>
+        </div>
+        {stats.step_views.some(s => s.views > 0) && (
+          <div className="space-y-1.5">
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Vues par étape</p>
+            {stats.step_views.map(s => (
+              <div key={s.step} className="flex items-center gap-2 text-xs">
+                <span className="w-28 text-muted-foreground truncate">{s.label}</span>
+                <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-[#C9A84C] transition-all"
+                    style={{ width: `${stats.step_views[0].views ? (s.views / stats.step_views[0].views) * 100 : 0}%` }}
+                  />
+                </div>
+                <span className="w-6 text-right font-medium">{s.views}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
 export const AdminDashboard = () => {
   const [contacts, setContacts] = useState([]);
   const [avis, setAvis] = useState([]);
@@ -2825,6 +2888,9 @@ export const AdminDashboard = () => {
               </CardContent>
             </Card>
 
+            {/* ═══ Onboarding Straté Stats ═══ */}
+            <OnboardingStatsCard axiosConfig={axiosConfig} onRestartTour={() => setShowTour(true)} />
+
             {/* Push Notifications Status */}
             <Card>
               <CardHeader>
@@ -3782,7 +3848,7 @@ export const AdminDashboard = () => {
         </DialogContent>
       </Dialog>
       <AdminHelpPanel onNavigateTab={(tab) => setActiveTab(tab)} onRestartTour={() => setShowTour(true)} />
-      <AdminOnboardingTour isActive={showTour} onClose={() => setShowTour(false)} />
+      <AdminOnboardingTour isActive={showTour} onClose={() => setShowTour(false)} token={token} />
     </div>
   );
 };

@@ -185,9 +185,10 @@ const HELP_SECTIONS = [
       { label: 'Base dossiers hebdo', text: 'Ajustez la base du compteur "dossiers analysés cette semaine" affiché sur Dossier Express. Le total affiché = base + vrais dossiers.' },
       { label: 'Le défi en chiffres', text: 'Éditez les 4 statistiques clés affichées sur la page d\'accueil (valeur, préfixe, unité, source). Cliquez "Enregistrer les chiffres" pour appliquer.' },
       { label: 'Tarifs & Promotions', text: 'Modifiez le prix de chaque prestation et ajoutez un badge promo (ex: "-20%", "Nouveau"). Les changements se reflètent sur la page Tarifs.' },
+      { label: 'Tutoriel Straté', text: 'Statistiques d\'engagement du tutoriel d\'onboarding : démarrages, taux de complétion et abandon par étape. Bouton "Relancer" pour revoir le tutoriel.' },
       { label: 'Notifications Push', text: 'Statut du Service Worker et des notifications push (VAPID).' },
     ],
-    keywords: ['config', 'configuration', 'email', 'resend', 'stockage', 'compteur', 'hero', 'personnes', 'accompagnées', 'push', 'notification', 'tarifs', 'prix', 'promotion', 'badge', 'promo', 'chiffres', 'statistiques', 'défi', 'dossiers', 'hebdomadaire', 'semaine', 'base']
+    keywords: ['config', 'configuration', 'email', 'resend', 'stockage', 'compteur', 'hero', 'personnes', 'accompagnées', 'push', 'notification', 'tarifs', 'prix', 'promotion', 'badge', 'promo', 'chiffres', 'statistiques', 'défi', 'dossiers', 'hebdomadaire', 'semaine', 'base', 'tutoriel', 'onboarding', 'engagement']
   },
   {
     id: 'notifications',

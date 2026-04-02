@@ -2,6 +2,16 @@ import { useState, useEffect, useCallback } from 'react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 
 const TOUR_KEY = 'ses_admin_onboarding_done';
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+function trackEvent(event, step, token) {
+  if (!token) return;
+  fetch(`${API}/admin/onboarding/track`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ event, step }),
+  }).catch(() => {});
+}
 
 const StrateTourSVG = ({ size = 28 }) => (
   <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -50,7 +60,7 @@ const STEPS = [
   },
 ];
 
-export const AdminOnboardingTour = ({ isActive, onClose }) => {
+export const AdminOnboardingTour = ({ isActive, onClose, token }) => {
   const [step, setStep] = useState(0);
   const [rect, setRect] = useState(null);
   const [bubbleAbove, setBubbleAbove] = useState(false);
@@ -72,9 +82,18 @@ export const AdminOnboardingTour = ({ isActive, onClose }) => {
 
   useEffect(() => {
     if (!isActive) { setStep(0); return; }
+    trackEvent('start', 0, token);
     const timer = setTimeout(updatePosition, 250);
     return () => clearTimeout(timer);
-  }, [step, isActive, updatePosition]);
+  }, [isActive, updatePosition]);
+
+  // Track step views + reposition on step change
+  useEffect(() => {
+    if (!isActive) return;
+    trackEvent('step', step, token);
+    const timer = setTimeout(updatePosition, 250);
+    return () => clearTimeout(timer);
+  }, [step, token]);
 
   useEffect(() => {
     if (!isActive) return;
@@ -91,6 +110,7 @@ export const AdminOnboardingTour = ({ isActive, onClose }) => {
   }, [isActive]);
 
   const complete = () => {
+    trackEvent('complete', step, token);
     localStorage.setItem(TOUR_KEY, 'true');
     setStep(0);
     onClose();
