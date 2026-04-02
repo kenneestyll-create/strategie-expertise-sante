@@ -85,7 +85,7 @@ const StepIndicator = ({ currentStep }) => {
 /* ── Value Sidebar for Form ── */
 const ValueReminder = ({ weeklyCount }) => (
   <div className="space-y-5" data-testid="form-value-sidebar">
-    <Card className="border border-l border-accent/30 bg-accent/[0.03]" style={{borderLeft: '1px solid rgba(201,168,76,0.3)'}}>
+    <Card className="bg-accent/[0.03]" style={{outline: '1px solid rgba(201,168,76,0.3)', outlineOffset: '-1px'}}>
       <CardContent className="p-5">
         <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
           <FileText className="w-4 h-4 text-accent" />
@@ -776,8 +776,8 @@ export const DossierExpressPage = () => {
               </div>
 
               {/* Sidebar — value reminder */}
-              <div className="hidden lg:block">
-                <div className="sticky top-24">
+              <div className="hidden lg:block" style={{overflow: 'visible'}}>
+                <div className="sticky top-24" style={{overflow: 'visible'}}>
                   <ValueReminder weeklyCount={weeklyCount} />
                 </div>
               </div>
