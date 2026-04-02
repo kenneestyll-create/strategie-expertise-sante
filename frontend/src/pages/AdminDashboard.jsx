@@ -351,6 +351,166 @@ const OnboardingStatsCard = ({ axiosConfig, onRestartTour }) => {
   );
 };
 
+const CLEANUP_ITEMS = [
+  { key: 'contacts', label: 'Demandes de contact', endpoint: '/admin/cleanup/contacts', icon: 'Mail' },
+  { key: 'strategiia', label: 'Analyses StratégiIA', endpoint: '/admin/cleanup/strategiia', icon: 'Brain' },
+  { key: 'dossier', label: 'Dossiers Express', endpoint: '/admin/cleanup/dossier-express', icon: 'FolderOpen' },
+  { key: 'avis', label: 'Avis clients', endpoint: '/admin/cleanup/avis', icon: 'Star' },
+  { key: 'chatbot', label: 'Sessions chatbot', endpoint: '/admin/cleanup/chatbot', icon: 'MessageSquare' },
+  { key: 'onboarding', label: 'Stats tutoriel', endpoint: '/admin/cleanup/onboarding', icon: 'Zap' },
+];
+
+const ProductionCleanupCard = ({ axiosConfig }) => {
+  const [confirmTarget, setConfirmTarget] = useState(null);
+  const [purging, setPurging] = useState(null);
+  const [results, setResults] = useState({});
+
+  const handlePurge = async (item) => {
+    setPurging(item.key);
+    try {
+      const res = await axios.post(`${API}${item.endpoint}`, {}, axiosConfig);
+      setResults(prev => ({ ...prev, [item.key]: res.data.deleted }));
+      toast.success(`${item.label} : ${res.data.deleted} élément(s) supprimé(s)`);
+    } catch {
+      toast.error(`Erreur lors de la purge de ${item.label}`);
+    }
+    setPurging(null);
+    setConfirmTarget(null);
+  };
+
+  const handleResetCounter = async (type, label) => {
+    setPurging(type);
+    try {
+      await axios.post(`${API}/admin/cleanup/counter-reset`, { type }, axiosConfig);
+      toast.success(`${label} remis à zéro`);
+      setResults(prev => ({ ...prev, [type]: 0 }));
+    } catch {
+      toast.error('Erreur lors de la remise à zéro');
+    }
+    setPurging(null);
+  };
+
+  const handleFullPurge = async () => {
+    setPurging('full');
+    try {
+      const res = await axios.post(`${API}/admin/cleanup/full-purge`, {}, axiosConfig);
+      const total = Object.values(res.data.purged).filter(v => typeof v === 'number').reduce((a, b) => a + b, 0);
+      toast.success(`Purge complète : ${total} élément(s) supprimé(s) + compteurs remis à zéro`);
+      setResults({ full: total });
+    } catch {
+      toast.error('Erreur lors de la purge complète');
+    }
+    setPurging(null);
+    setConfirmTarget(null);
+  };
+
+  return (
+    <Card data-testid="config-production-cleanup" className="border-red-500/20">
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <Shield className="w-5 h-5 text-red-500" /> Préparation Production
+        </CardTitle>
+        <p className="text-xs text-muted-foreground">Supprimez les données de test et remettez les compteurs à zéro avant le lancement.</p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Individual purge buttons */}
+        <div className="space-y-2">
+          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Purge par section</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {CLEANUP_ITEMS.map(item => (
+              <div key={item.key} className="flex items-center justify-between p-2.5 rounded-lg border">
+                <span className="text-sm">{item.label}</span>
+                <div className="flex items-center gap-2">
+                  {results[item.key] !== undefined && (
+                    <span className="text-[10px] text-emerald-600 font-medium">{results[item.key]} supprimé(s)</span>
+                  )}
+                  {confirmTarget === item.key ? (
+                    <div className="flex items-center gap-1">
+                      <Button size="sm" variant="destructive" className="h-7 text-[11px] gap-1" disabled={purging === item.key}
+                        onClick={() => handlePurge(item)} data-testid={`confirm-purge-${item.key}`}
+                      >
+                        {purging === item.key ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                        Confirmer
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-7 text-[11px]" onClick={() => setConfirmTarget(null)}>
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 text-red-600 hover:text-red-700 hover:border-red-300"
+                      onClick={() => setConfirmTarget(item.key)} data-testid={`purge-${item.key}`}
+                    >
+                      <Trash2 className="w-3 h-3" /> Purger
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Counter resets */}
+        <div className="space-y-2">
+          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Remise à zéro des compteurs</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="flex items-center justify-between p-2.5 rounded-lg border">
+              <span className="text-sm">Compteur visiteurs (Hero)</span>
+              <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 text-orange-600 hover:text-orange-700"
+                disabled={purging === 'visitors'}
+                onClick={() => handleResetCounter('visitors', 'Compteur visiteurs')}
+                data-testid="reset-visitors"
+              >
+                {purging === 'visitors' ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                Remettre à 0
+              </Button>
+            </div>
+            <div className="flex items-center justify-between p-2.5 rounded-lg border">
+              <span className="text-sm">Base dossiers hebdo</span>
+              <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 text-orange-600 hover:text-orange-700"
+                disabled={purging === 'dossiers'}
+                onClick={() => handleResetCounter('dossiers', 'Base dossiers')}
+                data-testid="reset-dossiers"
+              >
+                {purging === 'dossiers' ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                Remettre à 0
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Full purge */}
+        <div className="pt-3 border-t border-red-500/10">
+          {confirmTarget === 'full' ? (
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-red-500/5 border border-red-500/20">
+              <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-red-600">Purge complète irréversible</p>
+                <p className="text-[11px] text-muted-foreground">Toutes les données de test seront supprimées et les compteurs remis à zéro.</p>
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" variant="destructive" className="gap-1" disabled={purging === 'full'}
+                  onClick={handleFullPurge} data-testid="confirm-full-purge"
+                >
+                  {purging === 'full' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                  Purger tout
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setConfirmTarget(null)}>Annuler</Button>
+              </div>
+            </div>
+          ) : (
+            <Button variant="outline" className="w-full gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+              onClick={() => setConfirmTarget('full')} data-testid="full-purge-btn"
+            >
+              <AlertTriangle className="w-4 h-4" /> Purge complète — Tout supprimer pour la production
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+
 export const AdminDashboard = () => {
   const [contacts, setContacts] = useState([]);
   const [avis, setAvis] = useState([]);
@@ -2786,8 +2946,8 @@ export const AdminDashboard = () => {
               <CardContent className="space-y-6">
                 {/* Compteur Hero */}
                 <div className="space-y-2" data-testid="config-compteur-hero">
-                  <label className="text-sm font-semibold text-foreground">Personnes accompagnées (Hero)</label>
-                  <p className="text-[11px] text-muted-foreground">Affiché sur le Hero : "X+ personnes accompagnées"</p>
+                  <label className="text-sm font-semibold text-foreground">Compteur visiteurs (Hero)</label>
+                  <p className="text-[11px] text-muted-foreground">Affiché sur le Hero : "X+ visiteurs" — s'incrémente automatiquement à chaque visite.</p>
                   <div className="flex items-end gap-3">
                     <input
                       type="number"
@@ -2906,9 +3066,10 @@ export const AdminDashboard = () => {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
 
-          {/* NOTIFICATIONS TAB */}
+            {/* ═══ Préparation Production ═══ */}
+            <ProductionCleanupCard axiosConfig={axiosConfig} />
+          </TabsContent>
           <TabsContent value="notifications" className="space-y-6" data-testid="notifications-tab-content">
             {/* Engagement KPIs Dashboard */}
             {engagementKpis && (

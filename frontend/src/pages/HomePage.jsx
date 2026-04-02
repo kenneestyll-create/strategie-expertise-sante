@@ -271,7 +271,7 @@ export const HomePage = () => {
                     </div>
                     <div className="leading-tight">
                       <span className="text-[#f5f0e8] text-xs font-bold">{visitorCount.toLocaleString('fr-FR')}+</span>
-                      <span className="text-[#f5f0e8]/30 text-[10px] block">personnes accompagnées</span>
+                      <span className="text-[#f5f0e8]/30 text-[10px] block">visiteurs</span>
                     </div>
                   </div>
                 )}

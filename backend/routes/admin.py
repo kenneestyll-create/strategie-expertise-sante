@@ -2032,3 +2032,63 @@ async def get_onboarding_stats(admin: dict = Depends(get_current_admin)):
         "step_views": step_views,
         "recent": recent,
     }
+
+
+
+# ═══ Production Cleanup ═══
+
+@router.post("/admin/cleanup/contacts")
+async def purge_contacts(admin: dict = Depends(get_current_admin)):
+    result = await db.contacts.delete_many({})
+    return {"deleted": result.deleted_count, "collection": "contacts"}
+
+@router.post("/admin/cleanup/strategiia")
+async def purge_strategiia(admin: dict = Depends(get_current_admin)):
+    r1 = await db.strategiia_analyses.delete_many({})
+    r2 = await db.premium_analyses.delete_many({})
+    return {"deleted": r1.deleted_count + r2.deleted_count, "collection": "strategiia + premium_analyses"}
+
+@router.post("/admin/cleanup/dossier-express")
+async def purge_dossier_express(admin: dict = Depends(get_current_admin)):
+    result = await db.dossier_express.delete_many({})
+    return {"deleted": result.deleted_count, "collection": "dossier_express"}
+
+@router.post("/admin/cleanup/avis")
+async def purge_avis(admin: dict = Depends(get_current_admin)):
+    result = await db.avis.delete_many({})
+    return {"deleted": result.deleted_count, "collection": "avis"}
+
+@router.post("/admin/cleanup/chatbot")
+async def purge_chatbot(admin: dict = Depends(get_current_admin)):
+    result = await db.chatbot_sessions.delete_many({})
+    return {"deleted": result.deleted_count, "collection": "chatbot_sessions"}
+
+@router.post("/admin/cleanup/onboarding")
+async def purge_onboarding(admin: dict = Depends(get_current_admin)):
+    result = await db.onboarding_events.delete_many({})
+    return {"deleted": result.deleted_count, "collection": "onboarding_events"}
+
+@router.post("/admin/cleanup/counter-reset")
+async def reset_counter(request: Request, admin: dict = Depends(get_current_admin)):
+    data = await request.json()
+    counter_type = data.get("type")
+    if counter_type == "visitors":
+        await db.visitor_counter.update_one({"id": "visitor_counter"}, {"$set": {"count": 0}}, upsert=True)
+        return {"reset": "visitor_counter", "value": 0}
+    elif counter_type == "dossiers":
+        await db.dossier_express_base.update_one({"id": "base_count"}, {"$set": {"count": 0}}, upsert=True)
+        return {"reset": "dossier_express_base", "value": 0}
+    else:
+        raise HTTPException(400, "Type invalide. Utilisez 'visitors' ou 'dossiers'.")
+
+@router.post("/admin/cleanup/full-purge")
+async def full_purge(admin: dict = Depends(get_current_admin)):
+    results = {}
+    for coll_name in ["contacts", "strategiia_analyses", "premium_analyses", "dossier_express", "avis", "chatbot_sessions", "onboarding_events", "newsletter_subscribers"]:
+        coll = db[coll_name]
+        r = await coll.delete_many({})
+        results[coll_name] = r.deleted_count
+    await db.visitor_counter.update_one({"id": "visitor_counter"}, {"$set": {"count": 0}}, upsert=True)
+    await db.dossier_express_base.update_one({"id": "base_count"}, {"$set": {"count": 0}}, upsert=True)
+    results["counters_reset"] = True
+    return {"purged": results}
