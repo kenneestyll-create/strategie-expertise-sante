@@ -96,6 +96,10 @@ section > div {
   overflow-x: clip;
   max-width: 100%;
 }
+/* Exception : formulaire dossier-express — préserver les bordures */
+section > div > .grid {
+  overflow: visible;
+}
 
 /* ── 10. Boutons et liens : jamais plus larges que le viewport ── */
 button,

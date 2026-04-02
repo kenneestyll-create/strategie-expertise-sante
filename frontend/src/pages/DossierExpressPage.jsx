@@ -668,7 +668,7 @@ export const DossierExpressPage = () => {
                       value={form.situation}
                       onChange={e => setForm(p => ({...p, situation: e.target.value}))}
                       rows={6}
-                      className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                      className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset"
                       placeholder="Décrivez votre situation en détail : historique, démarches entreprises, difficultés rencontrées, objectifs..."
                       data-testid="de-situation-input"
                     />
