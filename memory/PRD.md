@@ -22,6 +22,15 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - Chatbot optimisé sur claude-haiku-4-5 (coûts réduits) — DONE (01/04/2026)
 - Montant AAH mis à jour : 1 041,59 € (avril 2026) — DONE (01/04/2026)
 - Texte Dossier Express IA corrigé (remplacé "StratégiIA" par "Dossier Express IA") — DONE (01/04/2026)
+- Compteur "dossiers analysés cette semaine" modifiable depuis Admin > Config — DONE (02/04/2026)
+- Section "Chiffres du site" regroupée dans Admin > Config (Hero + Dossiers) — DONE (02/04/2026)
+- Bug PDF Unicode résolu (police LiberationSans TTF) — DONE (02/04/2026)
+- Bug PDF fallback analyse résolu (recherche par email) — DONE (02/04/2026)
+- Prompt IA : suppression des recommandations commerciales — DONE (02/04/2026)
+- Temps d'attente StratégiIA : "10-15s" → "jusqu'à 2 minutes" — DONE (02/04/2026)
+- Label conditionnel : "pré-analyse" (gratuit) vs "analyse" (premium) — DONE (02/04/2026)
+- Bordure gauche textarea Firefox (Dossier Express) corrigée — DONE (02/04/2026)
+- Téléchargement PDF admin : axios → fetch natif (fix erreur Emergent script) — DONE (02/04/2026)
 
 ## Image Hero
 - Image éditée via OpenAI GPT Image 1 (édition de l'image originale, fond NYC → Paris)

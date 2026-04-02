@@ -42,6 +42,22 @@ async def set_compteur(request: Request, admin: dict = Depends(get_current_admin
     )
     return {"success": True, "count": new_count}
 
+@router.get("/admin/compteur-dossiers")
+async def get_compteur_dossiers(admin: dict = Depends(get_current_admin)):
+    setting = await db.site_settings.find_one({"id": "dossiers_weekly_base"}, {"_id": 0})
+    return {"base": setting.get("value", 12) if setting else 12}
+
+@router.put("/admin/compteur-dossiers")
+async def set_compteur_dossiers(request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    new_base = int(body.get("base", 0))
+    await db.site_settings.update_one(
+        {"id": "dossiers_weekly_base"},
+        {"$set": {"value": new_base, "last_updated": datetime.now(timezone.utc).isoformat()}},
+        upsert=True
+    )
+    return {"success": True, "base": new_base}
+
 
 # ==================== AUTH ====================
 

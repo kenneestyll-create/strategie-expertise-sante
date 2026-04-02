@@ -776,6 +776,8 @@ async def dossier_express_weekly_count():
     now = datetime.now(timezone.utc)
     week_start = (now - timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
     real_count = await db.dossier_express.count_documents({"created_at": {"$gte": week_start}})
-    display_count = 12 + real_count
+    setting = await db.site_settings.find_one({"id": "dossiers_weekly_base"}, {"_id": 0})
+    base = setting.get("value", 12) if setting else 12
+    display_count = base + real_count
     return {"count": display_count, "period": "week"}
 

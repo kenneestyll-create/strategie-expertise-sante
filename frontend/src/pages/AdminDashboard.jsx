@@ -2703,21 +2703,23 @@ export const AdminDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Compteur Hero */}
-            <Card data-testid="config-compteur-hero">
+            {/* ═══ Chiffres du site ═══ */}
+            <Card data-testid="config-chiffres-site">
               <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2"><Users className="w-5 h-5 text-accent" /> Compteur Hero — Personnes accompagnées</CardTitle>
+                <CardTitle className="text-base flex items-center gap-2"><BarChart3 className="w-5 h-5 text-accent" /> Chiffres du site</CardTitle>
+                <p className="text-xs text-muted-foreground">Contrôlez les chiffres affichés publiquement sur le site.</p>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-xs text-muted-foreground">Ce chiffre s'affiche sur le Hero de la page d'accueil ("X+ personnes accompagnées").</p>
-                <div className="flex items-end gap-3">
-                  <div className="flex-1 max-w-xs">
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Nombre actuel</label>
+              <CardContent className="space-y-6">
+                {/* Compteur Hero */}
+                <div className="space-y-2" data-testid="config-compteur-hero">
+                  <label className="text-sm font-semibold text-foreground">Personnes accompagnées (Hero)</label>
+                  <p className="text-[11px] text-muted-foreground">Affiché sur le Hero : "X+ personnes accompagnées"</p>
+                  <div className="flex items-end gap-3">
                     <input
                       type="number"
                       min="0"
                       data-testid="compteur-hero-input"
-                      className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm"
+                      className="w-40 px-3 py-2 rounded-lg border bg-background text-foreground text-sm"
                       defaultValue=""
                       ref={(el) => {
                         if (el && !el.dataset.loaded) {
@@ -2728,23 +2730,64 @@ export const AdminDashboard = () => {
                       }}
                       id="compteur-hero-input"
                     />
+                    <Button
+                      size="sm"
+                      className="gap-2"
+                      data-testid="compteur-hero-save"
+                      onClick={async () => {
+                        const input = document.getElementById('compteur-hero-input');
+                        const val = parseInt(input?.value);
+                        if (isNaN(val) || val < 0) { toast.error('Valeur invalide'); return; }
+                        try {
+                          await axios.put(`${API}/admin/compteur`, { count: val }, axiosConfig);
+                          toast.success(`Compteur mis à jour : ${val.toLocaleString('fr-FR')}+`);
+                        } catch { toast.error('Erreur lors de la sauvegarde'); }
+                      }}
+                    >
+                      <CheckCircle className="w-3 h-3" /> Enregistrer
+                    </Button>
                   </div>
-                  <Button
-                    size="sm"
-                    className="gap-2"
-                    data-testid="compteur-hero-save"
-                    onClick={async () => {
-                      const input = document.getElementById('compteur-hero-input');
-                      const val = parseInt(input?.value);
-                      if (isNaN(val) || val < 0) { toast.error('Valeur invalide'); return; }
-                      try {
-                        await axios.put(`${API}/admin/compteur`, { count: val }, axiosConfig);
-                        toast.success(`Compteur mis à jour : ${val.toLocaleString('fr-FR')}+`);
-                      } catch { toast.error('Erreur lors de la sauvegarde'); }
-                    }}
-                  >
-                    <CheckCircle className="w-3 h-3" /> Enregistrer
-                  </Button>
+                </div>
+
+                <hr className="border-border/50" />
+
+                {/* Compteur Dossiers hebdo */}
+                <div className="space-y-2" data-testid="config-compteur-dossiers">
+                  <label className="text-sm font-semibold text-foreground">Dossiers analysés cette semaine (Dossier Express)</label>
+                  <p className="text-[11px] text-muted-foreground">Base ajoutée au nombre réel de dossiers. Affiché : "base + vrais dossiers cette semaine"</p>
+                  <div className="flex items-end gap-3">
+                    <input
+                      type="number"
+                      min="0"
+                      data-testid="compteur-dossiers-input"
+                      className="w-40 px-3 py-2 rounded-lg border bg-background text-foreground text-sm"
+                      defaultValue=""
+                      ref={(el) => {
+                        if (el && !el.dataset.loaded) {
+                          axios.get(`${API}/admin/compteur-dossiers`, axiosConfig)
+                            .then(res => { el.value = res.data.base; el.dataset.loaded = "true"; })
+                            .catch(() => {});
+                        }
+                      }}
+                      id="compteur-dossiers-input"
+                    />
+                    <Button
+                      size="sm"
+                      className="gap-2"
+                      data-testid="compteur-dossiers-save"
+                      onClick={async () => {
+                        const input = document.getElementById('compteur-dossiers-input');
+                        const val = parseInt(input?.value);
+                        if (isNaN(val) || val < 0) { toast.error('Valeur invalide'); return; }
+                        try {
+                          await axios.put(`${API}/admin/compteur-dossiers`, { base: val }, axiosConfig);
+                          toast.success(`Base dossiers mis à jour : ${val}`);
+                        } catch { toast.error('Erreur lors de la sauvegarde'); }
+                      }}
+                    >
+                      <CheckCircle className="w-3 h-3" /> Enregistrer
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
