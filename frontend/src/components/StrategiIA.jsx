@@ -440,7 +440,7 @@ export const StrategiIA = () => {
                         'Identification du type de dossier',
                         'Croisement des jurisprudences',
                         'Recherche de cas similaires',
-                        'Génération de votre pré-analyse',
+                        analysePremium ? 'Génération de votre analyse' : 'Génération de votre pré-analyse',
                       ].map((label, i) => {
                         const stepNum = i + 1;
                         const isDone = loadingStep > stepNum;
@@ -459,7 +459,7 @@ export const StrategiIA = () => {
                       })}
                     </div>
 
-                    <p className="text-xs text-muted-foreground text-center">Cela prend généralement 10 à 15 secondes</p>
+                    <p className="text-xs text-muted-foreground text-center">Cette opération peut prendre jusqu'à deux minutes</p>
                   </div>
                 )}
 
@@ -468,7 +468,7 @@ export const StrategiIA = () => {
                   <div className="space-y-0" data-testid="strategiia-teaser">
                     <div className="flex items-center gap-2 mb-3">
                       <Sparkles className="w-5 h-5 text-accent" />
-                      <h3 className="font-semibold">Votre pré-analyse est prête</h3>
+                      <h3 className="font-semibold">{analysePremium ? 'Votre analyse est prête' : 'Votre pré-analyse est prête'}</h3>
                       {casesFound > 0 && <Badge variant="outline" className="text-xs">{casesFound} cas similaire{casesFound > 1 ? 's' : ''}</Badge>}
                     </div>
                     {/* Tier 1 content — 1/3 visible */}
