@@ -56,6 +56,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useAdminTest } from '@/components/AdminTestBanner';
 import { useAdminTheme } from '@/hooks/useAdminTheme';
 import { AdminHelpPanel } from '@/components/AdminHelpPanel';
+import { AdminOnboardingTour, TOUR_KEY } from '@/components/AdminOnboardingTour';
 import { TarifsEditor, ChiffresClesEditor } from '@/components/ConfigEditors';
 import axios from 'axios';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -345,6 +346,7 @@ export const AdminDashboard = () => {
   const [abTests, setAbTests] = useState([]);
   const [abResults, setAbResults] = useState({});
   const [creatingAb, setCreatingAb] = useState(false);
+  const [showTour, setShowTour] = useState(false);
 
   const navigate = useNavigate();
   const { token, adminName, logout } = useAuth();
@@ -358,6 +360,14 @@ export const AdminDashboard = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Auto-start onboarding tour on first admin login
+  useEffect(() => {
+    if (!loading && !localStorage.getItem(TOUR_KEY)) {
+      const timer = setTimeout(() => setShowTour(true), 1800);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -3771,7 +3781,8 @@ export const AdminDashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <AdminHelpPanel onNavigateTab={(tab) => setActiveTab(tab)} />
+      <AdminHelpPanel onNavigateTab={(tab) => setActiveTab(tab)} onRestartTour={() => setShowTour(true)} />
+      <AdminOnboardingTour isActive={showTour} onClose={() => setShowTour(false)} />
     </div>
   );
 };

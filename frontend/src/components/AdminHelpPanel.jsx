@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { HelpCircle, X, Search, ChevronRight, ArrowRight, Sparkles, BookOpen, Users, MessageSquare, Gift, Calendar, FolderOpen, Send, Zap, Brain, FileSearch, BarChart3, FileText, Star, Settings, Bell, PenTool, ChevronDown } from 'lucide-react';
+import { HelpCircle, X, Search, ChevronRight, ArrowRight, Sparkles, BookOpen, Users, MessageSquare, Gift, Calendar, FolderOpen, Send, Zap, Brain, FileSearch, BarChart3, FileText, Star, Settings, Bell, PenTool, ChevronDown, RotateCcw } from 'lucide-react';
 
 const HELP_SECTIONS = [
   {
@@ -286,7 +286,7 @@ const HelpCard = ({ section, isExpanded, onToggle, onNavigate, index }) => {
   );
 };
 
-export const AdminHelpPanel = ({ onNavigateTab }) => {
+export const AdminHelpPanel = ({ onNavigateTab, onRestartTour }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState(null);
@@ -435,7 +435,18 @@ export const AdminHelpPanel = ({ onNavigateTab }) => {
         </div>
 
         {/* Footer */}
-        <div className="flex-shrink-0 px-5 py-3 border-t border-border/60 bg-muted/20">
+        <div className="flex-shrink-0 px-5 py-3 border-t border-border/60 bg-muted/20 space-y-2">
+          {onRestartTour && (
+            <button
+              onClick={() => { setIsOpen(false); setTimeout(() => onRestartTour(), 400); }}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[11px] font-semibold transition-all border border-[#C9A84C]/30 hover:border-[#C9A84C]/60 hover:bg-[#C9A84C]/5"
+              style={{ color: '#C9A84C' }}
+              data-testid="help-restart-tour"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Revoir le tutoriel Straté
+            </button>
+          )}
           <p className="text-[10px] text-muted-foreground text-center">
             Raccourci clavier : <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono border border-border/60">Ctrl + H</kbd> pour ouvrir/fermer
           </p>
