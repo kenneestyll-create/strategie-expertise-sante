@@ -1571,17 +1571,17 @@ export const AdminDashboard = () => {
                   <div className="space-y-4" data-testid="clients-list">
                     {clients.map((client) => (
                       <div key={client.id} className="border border-border rounded-lg p-4" data-testid={`client-row-${client.id}`}>
-                        <div className="flex items-center justify-between mb-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-accent/10 rounded-full flex items-center justify-center">
+                            <div className="w-10 h-10 bg-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
                               <User className="w-5 h-5 text-accent" strokeWidth={1.5} />
                             </div>
-                            <div>
-                              <p className="font-semibold">{client.name}</p>
-                              <p className="text-sm text-muted-foreground">{client.email}</p>
+                            <div className="min-w-0">
+                              <p className="font-semibold text-sm truncate">{client.name}</p>
+                              <p className="text-xs text-muted-foreground truncate">{client.email}</p>
                             </div>
                           </div>
-                          <Badge variant="secondary">{client.cases_count || 0} dossier(s)</Badge>
+                          <Badge variant="secondary" className="self-start sm:self-auto">{client.cases_count || 0} dossier(s)</Badge>
                         </div>
                         
                         {/* Quick actions */}
@@ -1629,7 +1629,7 @@ export const AdminDashboard = () => {
 
           {/* Relance Tab */}
           <TabsContent value="relance" className="space-y-6">
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Card><CardContent className="p-4 flex items-center gap-3">
                 <Mail className="w-8 h-8 text-accent" strokeWidth={1.5} />
                 <div><p className="text-2xl font-bold">{relanceData.stats.total}</p><p className="text-xs text-muted-foreground">Paniers abandonnés</p></div>
@@ -1655,7 +1655,7 @@ export const AdminDashboard = () => {
                 ) : (
                   <div className="space-y-3" data-testid="relance-list">
                     {relanceData.items.map((item, i) => (
-                      <div key={i} className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/30">
+                      <div key={i} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border border-border rounded-lg hover:bg-muted/30 gap-2.5">
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0">
                             <Mail className="w-4 h-4 text-accent" />
@@ -1666,14 +1666,14 @@ export const AdminDashboard = () => {
                             <p className="text-xs text-muted-foreground">{item.created_at ? formatDate(item.created_at) : ''}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 ml-4">
+                        <div className="flex items-center gap-2 sm:ml-4">
                           {item.relance_sent ? (
                             <Badge className="bg-green-100 text-green-800 gap-1"><CheckCircle className="w-3 h-3" />Relancé</Badge>
                           ) : (
                             <Button
                               variant="outline"
                               size="sm"
-                              className="gap-1"
+                              className="gap-1 w-full sm:w-auto"
                               onClick={async () => {
                                 try {
                                   const res = await axios.post(`${API}/admin/relance/send/${item.id}`, {}, axiosConfig);
@@ -1710,32 +1710,32 @@ export const AdminDashboard = () => {
                 ) : (
                   <div className="space-y-3">
                     {urgentAlerts.items?.map((alert) => (
-                      <div key={alert.id} className={`p-4 rounded-lg border ${alert.traité ? 'bg-muted/30 border-border' : 'bg-red-50 border-red-200'}`} data-testid={`alert-item-${alert.id}`}>
-                        <div className="flex items-start justify-between gap-4">
+                      <div key={alert.id} className={`p-3 sm:p-4 rounded-lg border ${alert.traité ? 'bg-muted/30 border-border' : 'bg-red-50 border-red-200'}`} data-testid={`alert-item-${alert.id}`}>
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2.5 sm:gap-4">
                           <div className="flex-1 space-y-1">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-semibold">{alert.nom}</span>
-                              <Badge variant={alert.formule === '30min' ? 'destructive' : 'secondary'}>
+                              <span className="font-semibold text-sm">{alert.nom}</span>
+                              <Badge variant={alert.formule === '30min' ? 'destructive' : 'secondary'} className="text-[10px]">
                                 {alert.formule === '30min' ? '30min — 80€' : '2h — 50€'}
                               </Badge>
                               {alert.traité ? (
-                                <Badge variant="outline" className="text-green-600 border-green-300">Traité</Badge>
+                                <Badge variant="outline" className="text-green-600 border-green-300 text-[10px]">Traité</Badge>
                               ) : (
-                                <Badge variant="destructive">Nouveau</Badge>
+                                <Badge variant="destructive" className="text-[10px]">Nouveau</Badge>
                               )}
                             </div>
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground flex-wrap">
                               <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{alert.telephone}</span>
-                              {alert.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{alert.email}</span>}
+                              {alert.email && <span className="flex items-center gap-1 truncate"><Mail className="w-3 h-3 flex-shrink-0" /><span className="truncate">{alert.email}</span></span>}
                             </div>
-                            {alert.message && <p className="text-sm mt-1">{alert.message}</p>}
+                            {alert.message && <p className="text-xs sm:text-sm mt-1">{alert.message}</p>}
                             <p className="text-xs text-muted-foreground">{new Date(alert.created_at).toLocaleString('fr-FR')}</p>
                           </div>
                           {!alert.traité && (
                             <Button
                               size="sm"
                               variant="outline"
-                              className="gap-1 text-green-600 border-green-300 hover:bg-green-50"
+                              className="gap-1 text-green-600 border-green-300 hover:bg-green-50 w-full sm:w-auto flex-shrink-0"
                               onClick={async () => {
                                 try {
                                   await axios.put(`${API}/admin/alertes-urgentes/${alert.id}`, { traite: true }, axiosConfig);
@@ -2033,7 +2033,7 @@ export const AdminDashboard = () => {
                   <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                   <h3 className="text-sm font-semibold tracking-tight uppercase text-muted-foreground">Monitoring Live</h3>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3" data-testid="monitoring-kpi-grid">
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3" data-testid="monitoring-kpi-grid">
                   {[
                     { label: "Aujourd'hui", value: monitoring.kpis.orders_today, icon: Zap, color: 'text-blue-600', bg: 'bg-blue-50' },
                     { label: "7 jours", value: monitoring.kpis.orders_7_days, icon: BarChart3, color: 'text-indigo-600', bg: 'bg-indigo-50' },
@@ -2216,17 +2216,17 @@ export const AdminDashboard = () => {
                       Tous les dossiers soumis
                       <Badge variant="outline" className="text-[10px] ml-1 font-normal">{dossierExpressAdmin.items.length}</Badge>
                     </CardTitle>
-                    <div className="flex gap-1 bg-muted rounded-lg p-1" data-testid="de-filter-bar">
+                    <div className="flex gap-1 bg-muted rounded-lg p-1 overflow-x-auto" data-testid="de-filter-bar">
                       {[
                         { v: 'all', l: 'Tous' },
                         { v: 'delivered', l: 'Livres' },
                         { v: 'processing', l: 'En cours' },
                         { v: 'incidents', l: 'Incidents' },
-                        { v: 'pending', l: 'En attente' },
+                        { v: 'pending', l: 'Attente' },
                       ].map(f => (
                         <button key={f.v}
                           onClick={() => setDeFilter(f.v)}
-                          className={`px-3 py-1 text-[11px] rounded-md transition-all font-medium ${deFilter === f.v ? 'bg-foreground text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                          className={`px-2.5 sm:px-3 py-1 text-[11px] rounded-md transition-all font-medium whitespace-nowrap ${deFilter === f.v ? 'bg-foreground text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                           data-testid={`de-filter-${f.v}`}
                         >{f.l}{f.v === 'incidents' && (dossierExpressAdmin.stats?.incidents || 0) > 0 ? ` (${dossierExpressAdmin.stats.incidents})` : ''}</button>
                       ))}
@@ -2274,46 +2274,52 @@ export const AdminDashboard = () => {
                       const sc = statusConfig[d.status] || { label: d.status || 'En attente', bg: 'bg-amber-50/40', border: 'border-amber-200/60', icon: Clock, iconCls: 'text-amber-500' };
                       const StatusIcon = sc.icon;
                       return (
-                        <div key={d.id} className={`group p-4 rounded-xl border ${sc.border} ${sc.bg} hover:shadow-sm transition-all`} data-testid={`de-row-${d.id}`}>
-                          <div className="flex items-start gap-3.5">
-                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${d.status === 'completed' ? 'bg-green-100' : d.status === 'error' ? 'bg-red-100' : 'bg-blue-100'}`}>
-                              <StatusIcon className={`w-4.5 h-4.5 ${sc.iconCls}`} />
+                        <div key={d.id} className={`group p-3 sm:p-4 rounded-xl border ${sc.border} ${sc.bg} hover:shadow-sm transition-all`} data-testid={`de-row-${d.id}`}>
+                          <div className="flex flex-col sm:flex-row sm:items-start gap-2.5 sm:gap-3.5">
+                            {/* Top row mobile: icon + name */}
+                            <div className="flex items-center gap-2.5 sm:block sm:flex-shrink-0">
+                              <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${d.status === 'completed' ? 'bg-green-100' : d.status === 'error' ? 'bg-red-100' : 'bg-blue-100'}`}>
+                                <StatusIcon className={`w-4 h-4 ${sc.iconCls}`} />
+                              </div>
+                              <span className="font-semibold text-sm truncate sm:hidden">{d.name || d.email}</span>
+                              <Badge variant="outline" className={`text-[10px] border ${dc.cls} sm:hidden flex-shrink-0`}>{dc.label}</Badge>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                                <span className="font-semibold text-sm">{d.name || d.email}</span>
-                                {/* Delivery status badge */}
-                                <Badge variant="outline" className={`text-[10px] border ${dc.cls}`} data-testid={`de-delivery-${d.id}`}>
-                                  {dc.label}
-                                </Badge>
-                                {/* Processing step badge */}
-                                {stepLabel && (
-                                  <Badge variant="outline" className="text-[10px] border-zinc-200 text-zinc-500" data-testid={`de-step-${d.id}`}>
-                                    {stepLabel}
-                                  </Badge>
-                                )}
+                              {/* Desktop badges row */}
+                              <div className="hidden sm:flex items-center gap-2 flex-wrap mb-1.5">
+                                <span className="font-semibold text-sm truncate max-w-[200px] lg:max-w-none">{d.name || d.email}</span>
+                                <Badge variant="outline" className={`text-[10px] border ${dc.cls}`} data-testid={`de-delivery-${d.id}`}>{dc.label}</Badge>
+                                {stepLabel && <Badge variant="outline" className="text-[10px] border-zinc-200 text-zinc-500" data-testid={`de-step-${d.id}`}>{stepLabel}</Badge>}
                                 {d.type_dossier && <Badge variant="outline" className="text-[10px]">{d.type_dossier}</Badge>}
                                 {d.premium_pdf && <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">PDF Pro</Badge>}
                                 {d.admin_test && <Badge className="bg-zinc-100 text-zinc-500 border-zinc-200 text-[10px]">Test</Badge>}
                                 {d.retry_count > 0 && <Badge className="bg-purple-100 text-purple-600 border-purple-200 text-[10px]">Relance x{d.retry_count}</Badge>}
                               </div>
-                              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                <span className="flex items-center gap-1">
-                                  <Mail className="w-3 h-3" />
-                                  {d.email}
+                              {/* Mobile badges row */}
+                              <div className="flex items-center gap-1.5 flex-wrap mb-1.5 sm:hidden">
+                                {stepLabel && <Badge variant="outline" className="text-[10px] border-zinc-200 text-zinc-500">{stepLabel}</Badge>}
+                                {d.type_dossier && <Badge variant="outline" className="text-[10px]">{d.type_dossier}</Badge>}
+                                {d.premium_pdf && <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">PDF Pro</Badge>}
+                                {d.admin_test && <Badge className="bg-zinc-100 text-zinc-500 border-zinc-200 text-[10px]">Test</Badge>}
+                              </div>
+                              <div className="flex items-center gap-2 sm:gap-3 text-[11px] sm:text-xs text-muted-foreground flex-wrap">
+                                <span className="flex items-center gap-1 truncate">
+                                  <Mail className="w-3 h-3 flex-shrink-0" />
+                                  <span className="truncate">{d.email}</span>
                                 </span>
                                 <span className="flex items-center gap-1">
-                                  <Calendar className="w-3 h-3" />
-                                  {d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
+                                  <Calendar className="w-3 h-3 flex-shrink-0" />
+                                  {d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
                                 </span>
                               </div>
-                              {d.completed_at && <p className="text-[11px] text-green-600 mt-1 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Livre le {new Date(d.completed_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>}
+                              {d.completed_at && <p className="text-[11px] text-green-600 mt-1 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Livre le {new Date(d.completed_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</p>}
                               {d.email_sent && <p className="text-[11px] text-emerald-600 mt-0.5 flex items-center gap-1"><Send className="w-3 h-3" /> Email envoye</p>}
                               {d.error && d.status === 'error' && <p className="text-[11px] text-red-500 mt-1 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> {d.error}</p>}
                             </div>
-                            <div className="flex gap-2 flex-shrink-0 items-start">
+                            {/* Actions — below on mobile */}
+                            <div className="flex gap-2 flex-wrap sm:flex-shrink-0 sm:items-start pt-1.5 sm:pt-0 border-t sm:border-t-0 border-border/40">
                               {d.status === 'completed' && (
-                                <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300"
+                                <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 border-green-200 text-green-700 hover:bg-green-50 flex-1 sm:flex-none"
                                   data-testid={`de-view-analysis-${d.id}`}
                                   onClick={async () => {
                                     try {
@@ -2325,7 +2331,7 @@ export const AdminDashboard = () => {
                                 </Button>
                               )}
                               {d.status === 'error' && (
-                                <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 border-amber-200 text-amber-700 hover:bg-amber-50 hover:border-amber-300"
+                                <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 border-amber-200 text-amber-700 hover:bg-amber-50 flex-1 sm:flex-none"
                                   data-testid={`de-retry-${d.id}`}
                                   onClick={async () => {
                                     try {
@@ -2614,7 +2620,7 @@ export const AdminDashboard = () => {
                               <div className="w-1 h-5 rounded-full bg-blue-500" />
                               <h4 className="text-sm font-semibold">Indicateur de complétude</h4>
                             </div>
-                            <div className="grid grid-cols-4 gap-3">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                               <div className="text-center p-2.5 rounded-lg bg-background border">
                                 <span className="block text-lg font-bold">{originals.length}</span>
                                 <span className="text-[10px] text-muted-foreground">Originaux stockés</span>
@@ -3117,7 +3123,7 @@ export const AdminDashboard = () => {
                   )}
 
                   {/* Alert thresholds config */}
-                  <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30 border" data-testid="kpi-alert-config">
+                  <div className="flex flex-wrap items-center gap-3 sm:gap-4 p-3 rounded-lg bg-muted/30 border" data-testid="kpi-alert-config">
                     <span className="text-xs text-muted-foreground whitespace-nowrap">Seuils d'alerte :</span>
                     <div className="flex items-center gap-1.5">
                       <span className="text-[10px] text-muted-foreground">Ouverture &lt;</span>

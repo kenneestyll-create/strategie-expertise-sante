@@ -153,20 +153,27 @@ export const AdminPremiumReview = ({ items, stats, productType, productLabel, ic
             {filteredItems.map(item => {
               const sc = STATUS_CONFIG[item.status] || STATUS_CONFIG.en_attente;
               return (
-                <div key={item.id} className={`group p-4 rounded-xl border ${sc.border} hover:shadow-sm transition-all`} data-testid={`premium-item-${item.id}`}>
-                  <div className="flex items-start gap-3.5">
-                    {/* Status indicator */}
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${item.status === 'en_attente' ? 'bg-amber-100' : item.status === 'en_cours' ? 'bg-blue-100' : item.status === 'valide' ? 'bg-green-100' : 'bg-emerald-100'}`}>
-                      {item.status === 'en_attente' && <Clock className="w-4 h-4 text-amber-600" />}
-                      {item.status === 'en_cours' && <PenTool className="w-4 h-4 text-blue-600" />}
-                      {item.status === 'valide' && <CheckCircle className="w-4 h-4 text-green-600" />}
-                      {(item.status === 'envoye' || item.status === 'termine') && <Send className="w-4 h-4 text-emerald-600" />}
+                <div key={item.id} className={`group p-3 sm:p-4 rounded-xl border ${sc.border} hover:shadow-sm transition-all`} data-testid={`premium-item-${item.id}`}>
+                  {/* Mobile: stacked layout / Desktop: horizontal layout */}
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-2.5 sm:gap-3.5">
+                    {/* Top row on mobile: icon + email + status */}
+                    <div className="flex items-center gap-2.5 sm:block sm:flex-shrink-0">
+                      <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${item.status === 'en_attente' ? 'bg-amber-100' : item.status === 'en_cours' ? 'bg-blue-100' : item.status === 'valide' ? 'bg-green-100' : 'bg-emerald-100'}`}>
+                        {item.status === 'en_attente' && <Clock className="w-4 h-4 text-amber-600" />}
+                        {item.status === 'en_cours' && <PenTool className="w-4 h-4 text-blue-600" />}
+                        {item.status === 'valide' && <CheckCircle className="w-4 h-4 text-green-600" />}
+                        {(item.status === 'envoye' || item.status === 'termine') && <Send className="w-4 h-4 text-emerald-600" />}
+                      </div>
+                      {/* Email visible inline on mobile only */}
+                      <span className="font-semibold text-sm truncate sm:hidden">{item.email || item.name || 'Client'}</span>
+                      <Badge className={`text-[10px] ${sc.color} sm:hidden flex-shrink-0`}>{sc.label}</Badge>
                     </div>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="font-semibold text-sm">{item.email || item.name || 'Client'}</span>
+                      {/* Email + badges row — hidden on mobile (shown inline above) */}
+                      <div className="hidden sm:flex items-center gap-2 flex-wrap mb-1">
+                        <span className="font-semibold text-sm truncate max-w-[200px] lg:max-w-none">{item.email || item.name || 'Client'}</span>
                         <Badge className={`text-[10px] ${sc.color}`}>{sc.label}</Badge>
                         <Badge variant="outline" className="text-[10px]">{productLabel}</Badge>
                         {item.premium_pdf && <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">PDF Pro</Badge>}
@@ -174,19 +181,26 @@ export const AdminPremiumReview = ({ items, stats, productType, productLabel, ic
                         {item.admin_test && <Badge className="bg-zinc-100 text-zinc-500 border-zinc-200 text-[10px]">Test Admin</Badge>}
                         <span className="text-[11px] text-muted-foreground font-medium">{item.amount}€</span>
                       </div>
-                      {item.name && item.email && <p className="text-xs text-muted-foreground">Client : {item.name}</p>}
-                      {item.context && <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-md">{item.context}</p>}
-                      <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(item.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                        {item.sent_at && <span className="flex items-center gap-1 text-green-600"><Send className="w-3 h-3" /> Envoyé le {new Date(item.sent_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>}
+                      {/* Mobile-only badges row */}
+                      <div className="flex items-center gap-1.5 flex-wrap mb-1.5 sm:hidden">
+                        <Badge variant="outline" className="text-[10px]">{productLabel}</Badge>
+                        {item.premium_pdf && <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">PDF Pro</Badge>}
+                        {item.relecture_expert_required && <Badge className="bg-red-500/10 text-red-600 border-red-500/20 text-[10px] font-bold">Relecture</Badge>}
+                        {item.admin_test && <Badge className="bg-zinc-100 text-zinc-500 border-zinc-200 text-[10px]">Test</Badge>}
+                        <span className="text-[11px] text-muted-foreground font-medium">{item.amount}€</span>
+                      </div>
+                      {item.name && item.email && <p className="text-xs text-muted-foreground truncate">Client : {item.name}</p>}
+                      {item.context && <p className="text-xs text-muted-foreground mt-0.5 truncate">{item.context}</p>}
+                      <div className="flex items-center gap-2 sm:gap-3 mt-1.5 text-[11px] sm:text-xs text-muted-foreground flex-wrap">
+                        <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(item.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                        {item.sent_at && <span className="flex items-center gap-1 text-green-600"><Send className="w-3 h-3" /> Envoyé {new Date(item.sent_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>}
                       </div>
                     </div>
 
-                    {/* Actions column */}
-                    <div className="flex gap-1.5 flex-shrink-0 flex-wrap items-start">
-                      {/* Step 1: En attente → En cours */}
+                    {/* Actions — full width on mobile, inline on desktop */}
+                    <div className="flex gap-1.5 flex-wrap items-center sm:items-start sm:flex-shrink-0 pt-1.5 sm:pt-0 border-t sm:border-t-0 border-border/40">
                       {item.status === 'en_attente' && (
-                        <Button size="sm" variant="outline" className="text-xs h-7 gap-1 border-blue-500/30 text-blue-600 hover:bg-blue-50"
+                        <Button size="sm" variant="outline" className="text-xs h-8 sm:h-7 gap-1 border-blue-500/30 text-blue-600 hover:bg-blue-50 flex-1 sm:flex-none"
                           onClick={async () => {
                             try {
                               await axios.patch(`${API}/admin/premium-analyses/${item.id}`, { status: 'en_cours' }, axiosConfig);
@@ -196,16 +210,14 @@ export const AdminPremiumReview = ({ items, stats, productType, productLabel, ic
                           <Eye className="w-3 h-3" /> Traiter
                         </Button>
                       )}
-                      {/* Step 2: En cours → open review dialog */}
                       {item.status === 'en_cours' && (
-                        <Button size="sm" variant="outline" className="text-xs h-7 gap-1 border-green-500/30 text-green-600 hover:bg-green-50"
+                        <Button size="sm" variant="outline" className="text-xs h-8 sm:h-7 gap-1 border-green-500/30 text-green-600 hover:bg-green-50 flex-1 sm:flex-none"
                           onClick={() => openReviewDialog(item)} data-testid={`premium-review-${item.id}`}>
-                          <PenTool className="w-3 h-3" /> Relire / Valider
+                          <PenTool className="w-3 h-3" /> Relire
                         </Button>
                       )}
-                      {/* Step 3: Validé → Envoyer */}
                       {item.status === 'valide' && (
-                        <Button size="sm" className="text-xs h-7 gap-1 bg-emerald-600 hover:bg-emerald-500 text-white"
+                        <Button size="sm" className="text-xs h-8 sm:h-7 gap-1 bg-emerald-600 hover:bg-emerald-500 text-white flex-1 sm:flex-none"
                           onClick={async () => {
                             try {
                               const res = await axios.post(`${API}/admin/premium-analyses/${item.id}/send-reviewed`, {
@@ -215,18 +227,16 @@ export const AdminPremiumReview = ({ items, stats, productType, productLabel, ic
                               onRefresh();
                             } catch { toast.error("Erreur lors de l'envoi"); }
                           }} data-testid={`premium-send-${item.id}`}>
-                          <Send className="w-3 h-3" /> Envoyer au client
+                          <Send className="w-3 h-3" /> Envoyer
                         </Button>
                       )}
-                      {/* Consulter (always available when reviewed) */}
                       {item.reviewed_analysis && (
-                        <Button size="sm" variant="outline" className="text-xs h-7 gap-1"
+                        <Button size="sm" variant="outline" className="text-xs h-8 sm:h-7 gap-1"
                           onClick={() => openReviewDialog(item)}>
-                          <Eye className="w-3 h-3" /> Consulter
+                          <Eye className="w-3 h-3" /> <span className="hidden sm:inline">Consulter</span><span className="sm:hidden">Voir</span>
                         </Button>
                       )}
-                      {/* Notify */}
-                      <Button size="sm" variant="outline" className={`text-xs h-7 gap-1 ${item.client_notified ? 'border-green-500/30 text-green-600' : 'border-accent/30 text-accent hover:bg-accent/5'}`}
+                      <Button size="sm" variant="outline" className={`text-xs h-8 sm:h-7 gap-1 ${item.client_notified ? 'border-green-500/30 text-green-600' : 'border-accent/30 text-accent hover:bg-accent/5'}`}
                         onClick={async () => {
                           const notifType = item.status === 'envoye' ? 'report_ready' : item.status === 'valide' ? 'analyse_premium_ready' : item.status === 'en_cours' ? 'dossier_in_progress' : 'payment_confirmed';
                           try {
@@ -237,16 +247,14 @@ export const AdminPremiumReview = ({ items, stats, productType, productLabel, ic
                         }} data-testid={`premium-notify-${item.id}`}>
                         <Bell className="w-3 h-3" /> {item.client_notified ? 'Relancer' : 'Notifier'}
                       </Button>
-                      {/* Consulter l'analyse (3 onglets) */}
                       {item.dossier_id && onViewDossierAnalysis && (
-                        <Button size="sm" variant="outline" className="text-xs h-7 gap-1 border-amber-500/30 text-amber-600 hover:bg-amber-50"
+                        <Button size="sm" variant="outline" className="text-xs h-8 sm:h-7 gap-1 border-amber-500/30 text-amber-600 hover:bg-amber-50"
                           onClick={() => onViewDossierAnalysis(item.dossier_id)}
                           data-testid={`premium-view-analysis-${item.id}`}>
-                          <FileSearch className="w-3 h-3" /> Consulter l'analyse
+                          <FileSearch className="w-3 h-3" /> <span className="hidden sm:inline">Consulter l'analyse</span><span className="sm:hidden">Analyse</span>
                         </Button>
                       )}
-                      {/* Supprimer */}
-                      <Button size="sm" variant="ghost" className="text-xs h-7 w-7 p-0 text-muted-foreground/50 hover:text-red-600 hover:bg-red-50"
+                      <Button size="sm" variant="ghost" className="text-xs h-8 sm:h-7 w-8 sm:w-7 p-0 text-muted-foreground/50 hover:text-red-600 hover:bg-red-50"
                         onClick={() => {
                           if (window.confirm(`Supprimer le dossier de ${item.name || item.email} ? Cette action est irréversible.`)) {
                             axios.delete(`${API}/admin/premium-analyses/${item.id}`, axiosConfig)
