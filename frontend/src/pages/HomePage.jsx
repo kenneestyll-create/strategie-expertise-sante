@@ -434,7 +434,7 @@ export const HomePage = () => {
                   />
                 </div>
                 {/* 3 Blocs CTA — mobile + desktop */}
-                <button onClick={() => window.dispatchEvent(new Event('strategiia:open'))} className="absolute top-[15%] -left-8 sm:top-[15%] sm:-left-12 lg:top-[10%] lg:-left-16 flex items-center gap-1.5 sm:gap-2 bg-[#0c0c1a]/90 backdrop-blur-sm rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 shadow-[0_0_15px_rgba(201,168,76,0.12)] z-10 cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_20px_rgba(201,168,76,0.2)] transition-all" data-testid="founder-bloc-analyse">
+                <button onClick={() => window.dispatchEvent(new Event('strategiia:open'))} className="hero-bloc-wave absolute top-[15%] -left-8 sm:top-[15%] sm:-left-12 lg:top-[10%] lg:-left-16 flex items-center gap-1.5 sm:gap-2 bg-[#0c0c1a]/90 backdrop-blur-sm rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 shadow-[0_0_15px_rgba(201,168,76,0.12)] z-10 cursor-pointer hover:bg-[#0c0c1a]/95 transition-all" data-testid="founder-bloc-analyse">
                   <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
                     <Brain className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C9A84C]" />
                   </div>
@@ -444,7 +444,7 @@ export const HomePage = () => {
                   </div>
                 </button>
 
-                <Link to="/dossier-express?step=form" className="absolute top-[25%] -right-4 sm:-right-6 lg:top-[20%] lg:-right-16 flex items-center gap-1.5 sm:gap-2 bg-[#0c0c1a]/90 backdrop-blur-sm rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 shadow-[0_0_15px_rgba(201,168,76,0.12)] z-10 cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_20px_rgba(201,168,76,0.2)] transition-all" data-testid="founder-bloc-documents">
+                <Link to="/dossier-express?step=form" className="hero-bloc-wave absolute top-[25%] -right-4 sm:-right-6 lg:top-[20%] lg:-right-16 flex items-center gap-1.5 sm:gap-2 bg-[#0c0c1a]/90 backdrop-blur-sm rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 shadow-[0_0_15px_rgba(201,168,76,0.12)] z-10 cursor-pointer hover:bg-[#0c0c1a]/95 transition-all" data-testid="founder-bloc-documents">
                   <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
                     <FileText className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C9A84C]" />
                   </div>
@@ -454,7 +454,7 @@ export const HomePage = () => {
                   </div>
                 </Link>
 
-                <Link to="/simulateur" className="absolute bottom-[30%] sm:bottom-[30%] lg:bottom-[25%] left-1/2 -translate-x-1/2 flex items-center gap-1.5 sm:gap-2 bg-[#0c0c1a]/90 backdrop-blur-sm rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 shadow-[0_0_15px_rgba(201,168,76,0.12)] z-10 cursor-pointer hover:bg-[#0c0c1a]/95 hover:shadow-[0_0_20px_rgba(201,168,76,0.2)] transition-all" data-testid="founder-bloc-orientation">
+                <Link to="/simulateur" className="hero-bloc-wave absolute bottom-[30%] sm:bottom-[30%] lg:bottom-[25%] left-1/2 -translate-x-1/2 flex items-center gap-1.5 sm:gap-2 bg-[#0c0c1a]/90 backdrop-blur-sm rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 shadow-[0_0_15px_rgba(201,168,76,0.12)] z-10 cursor-pointer hover:bg-[#0c0c1a]/95 transition-all" data-testid="founder-bloc-orientation">
                   <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
                     <Compass className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C9A84C]" />
                   </div>
@@ -970,6 +970,21 @@ export const HomePage = () => {
         </div>
       </section>
 
+      <style>{`
+        @media (hover: hover) {
+          .hero-bloc-wave:hover {
+            animation: heroWave 2s ease-in-out infinite;
+            box-shadow: 0 0 28px rgba(201,168,76,0.28), 0 0 56px rgba(201,168,76,0.08) !important;
+            border: 1px solid rgba(201,168,76,0.4);
+          }
+        }
+        @keyframes heroWave {
+          0%, 100% { translate: 0 0; }
+          30% { translate: 0 -6px; }
+          60% { translate: 0 -2px; }
+          80% { translate: 0 -5px; }
+        }
+      `}</style>
     </main>
   );
 };
