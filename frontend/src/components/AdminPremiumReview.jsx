@@ -173,7 +173,7 @@ export const AdminPremiumReview = ({ items, stats, productType, productLabel, ic
                     <div className="flex-1 min-w-0">
                       {/* Email + badges row — hidden on mobile (shown inline above) */}
                       <div className="hidden sm:flex items-center gap-2 flex-wrap mb-1">
-                        <span className="font-semibold text-sm truncate max-w-[200px] lg:max-w-none">{item.email || item.name || 'Client'}</span>
+                        <span className="font-semibold text-sm truncate">{item.email || item.name || 'Client'}</span>
                         <Badge className={`text-[10px] ${sc.color}`}>{sc.label}</Badge>
                         <Badge variant="outline" className="text-[10px]">{productLabel}</Badge>
                         {item.premium_pdf && <Badge className="bg-accent/10 text-accent border-accent/20 text-[10px]">PDF Pro</Badge>}
@@ -190,10 +190,10 @@ export const AdminPremiumReview = ({ items, stats, productType, productLabel, ic
                         <span className="text-[11px] text-muted-foreground font-medium">{item.amount}€</span>
                       </div>
                       {item.name && item.email && <p className="text-xs text-muted-foreground truncate">Client : {item.name}</p>}
-                      {item.context && <p className="text-xs text-muted-foreground mt-0.5 truncate">{item.context}</p>}
+                      {item.context && <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-md">{item.context}</p>}
                       <div className="flex items-center gap-2 sm:gap-3 mt-1.5 text-[11px] sm:text-xs text-muted-foreground flex-wrap">
                         <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(item.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                        {item.sent_at && <span className="flex items-center gap-1 text-green-600"><Send className="w-3 h-3" /> Envoyé {new Date(item.sent_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>}
+                        {item.sent_at && <span className="flex items-center gap-1 text-green-600"><Send className="w-3 h-3" /> <span className="hidden sm:inline">Envoyé le</span><span className="sm:hidden">Envoyé</span> {new Date(item.sent_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>}
                       </div>
                     </div>
 
@@ -213,7 +213,7 @@ export const AdminPremiumReview = ({ items, stats, productType, productLabel, ic
                       {item.status === 'en_cours' && (
                         <Button size="sm" variant="outline" className="text-xs h-8 sm:h-7 gap-1 border-green-500/30 text-green-600 hover:bg-green-50 flex-1 sm:flex-none"
                           onClick={() => openReviewDialog(item)} data-testid={`premium-review-${item.id}`}>
-                          <PenTool className="w-3 h-3" /> Relire
+                          <PenTool className="w-3 h-3" /> <span className="hidden sm:inline">Relire / Valider</span><span className="sm:hidden">Relire</span>
                         </Button>
                       )}
                       {item.status === 'valide' && (
@@ -227,7 +227,7 @@ export const AdminPremiumReview = ({ items, stats, productType, productLabel, ic
                               onRefresh();
                             } catch { toast.error("Erreur lors de l'envoi"); }
                           }} data-testid={`premium-send-${item.id}`}>
-                          <Send className="w-3 h-3" /> Envoyer
+                          <Send className="w-3 h-3" /> <span className="hidden sm:inline">Envoyer au client</span><span className="sm:hidden">Envoyer</span>
                         </Button>
                       )}
                       {item.reviewed_analysis && (
