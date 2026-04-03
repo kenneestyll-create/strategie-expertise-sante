@@ -17,26 +17,33 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - Hero section avec image parisienne (Tour Eiffel) — DONE
 - Frontend Freeze : layout-guardrails.css — DONE
 - Hero déclaré ZONE GELÉE — DONE
-- Admin > Config > Compteur visiteurs Hero (auto-incrément par visite) — DONE (02/04/2026)
+- Admin > Config > Compteur visiteurs Hero (auto-incrément) — DONE
 - Admin > Config > Base dossiers hebdomadaire — DONE
 - Admin > Config > Le défi en chiffres — DONE
 - Admin > Config > Tarifs & Promotions — DONE
-- Admin > Guide interactif flottant (15 sections, 8 étapes Config, Ctrl+H) — DONE
+- Admin > Guide interactif flottant (15 sections, 9 étapes Config, Ctrl+H) — DONE
 - Admin > Tutoriel interactif d'onboarding Straté (6 étapes) — DONE
 - Admin > Statistiques d'engagement du tutoriel — DONE
-- Admin > Préparation Production (purge données test + reset compteurs) — DONE (02/04/2026)
-- Hero renommé : "personnes accompagnées" → "visiteurs" — DONE (02/04/2026)
+- Admin > Préparation Production (purge données test + reset compteurs) — DONE
+- Hero renommé : "personnes accompagnées" → "visiteurs" — DONE
+- Dossier Express : padding hero réduit (tout visible sans scroll desktop) — DONE (03/04/2026)
+- Mascotte Straté : bouton "Écouter" whitespace-nowrap (plus de coupure) — DONE (03/04/2026)
+- FAQ : correction champ `réponse` → `reponse` (réponses réaffichées) — DONE (03/04/2026)
+- 3 blocs flottants Section 2 : animation vague au hover desktop — DONE (03/04/2026)
+- 3 blocs flottants Section 2 : pulse doré + flottement permanent mobile+desktop — DONE (03/04/2026)
 - Clé API Anthropic native configurée — DONE
 - Chatbot optimisé sur claude-haiku-4-5 — DONE
 - Bug PDF Unicode résolu (police LiberationSans TTF) — DONE
 - Téléchargement PDF admin : axios → fetch natif — DONE
 
-## Préparation Production
-- Panneau dans Admin > Config > "Préparation Production"
-- 6 purges individuelles : contacts, StratégiIA, Dossier Express, avis, chatbot, onboarding
-- 2 resets compteurs : visiteurs Hero, base dossiers hebdo
-- 1 purge complète avec confirmation
-- Endpoints : POST `/api/admin/cleanup/{section}`, `/api/admin/cleanup/counter-reset`, `/api/admin/cleanup/full-purge`
+## Animations blocs flottants (VALIDÉ — NE PAS MODIFIER)
+- Fichier : `/app/frontend/src/pages/HomePage.jsx` (style tag en fin de `<main>`)
+- `heroPulse` : respiration glow doré (box-shadow + border-color, 3s, permanent)
+- `heroFloat` : oscillation verticale 4px (margin-top + margin-bottom, 3s, permanent)
+- `heroWave` : vague hover desktop (translate standalone, 2s, hover only)
+- Classe : `hero-bloc-wave` sur les 3 blocs de la Section 2
+- margin-bottom utilisé pour le bloc Orientation (positionné via `bottom`, pas `top`)
+- VALIDÉ sur Samsung Internet mobile + desktop
 
 ## P1 — À venir
 - Checklist lancement live (clés Stripe/Anthropic production)
@@ -49,10 +56,9 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - Vérification domaine Resend
 
 ## Suggestions gardées pour plus tard
-- Statistiques d'engagement du tutoriel — IMPLÉMENTÉ, à enrichir si besoin
-- **Accès Professionnel B2B** — Système à 3 niveaux (Client / Pro / Admin). Dashboard Pro dédié avec Dossier Express illimité, rapports en marque blanche (logo du pro), tarif mensuel (97-497€/mois). Phase 1 : rôle `pro` + dashboard simplifié. Phase 2 : personnalisation PDF. Phase 3 : facturation Stripe récurrente. Commencer par un partenaire pilote.
-- **Amélioration OCR** — Remplacement de Tesseract par Google Vision API pour les PDF scannés/photos. Gain estimé : 72% → 93% de précision. Gratuit jusqu'à 1000 pages/mois. À valider après retours clients réels.
-- **Enrichir le prompt chatbot** — Ajouter les faits réels sur S.E.S (fondateur, histoire, mission) pour éviter les hallucinations. Ajouter garde-fou "ne jamais inventer".
+- **Accès Professionnel B2B** — Système à 3 niveaux (Client / Pro / Admin). Dashboard Pro dédié, rapports en marque blanche, tarif mensuel. Phase 1 : rôle `pro` + dashboard. Phase 2 : personnalisation PDF. Phase 3 : facturation Stripe récurrente.
+- **Amélioration OCR** — Google Vision API pour PDF scannés/photos. Gain estimé : 72% → 93%. Gratuit 1000 pages/mois.
+- **Enrichir le prompt chatbot** — Ajouter faits réels sur S.E.S pour éviter hallucinations.
 
 ## Identifiants de test
 - Admin: admin@accompagn-sante.fr / Admin2024!
@@ -60,7 +66,9 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 
 ## Règles strictes
 - ZONE GELÉE sur le Hero : aucune modification sans commande explicite
+- Animations blocs flottants : VALIDÉES, ne pas modifier
 - Pas de refactoring opportuniste
 - PDF : toujours LiberationSans (pas Helvetica)
 - Blob downloads : toujours fetch() (pas axios)
+- FAQ : champ `reponse` (sans accent) dans l'API
 - Format de rapport obligatoire pour chaque fix UI
