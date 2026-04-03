@@ -147,16 +147,16 @@ const DesktopWidget = ({ conseil, isOpen, setIsOpen, isSpeaking, speak, close })
           <button
             onClick={speak}
             disabled={isSpeaking}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${isSpeaking ? 'bg-accent/20 text-accent animate-pulse' : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'}`}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap transition-all ${isSpeaking ? 'bg-accent/20 text-accent animate-pulse' : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'}`}
             data-testid="strate-speak-btn"
           >
-            <Volume2 className="w-3 h-3" />
+            <Volume2 className="w-3 h-3 flex-shrink-0" />
             {isSpeaking ? 'Lecture...' : 'Écouter'}
           </button>
           <Link
             to={conseil.link}
             onClick={() => { trackClick(conseil.id); close(); }}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-foreground text-primary-foreground hover:bg-foreground/90 transition-all"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap bg-foreground text-primary-foreground hover:bg-foreground/90 transition-all"
             data-testid="strate-action-btn"
           >
             {conseil.label} <ArrowRight className="w-2.5 h-2.5" />
@@ -218,16 +218,16 @@ const MobileWidget = ({ conseil, isSpeaking, speak }) => (
           <button
             onClick={speak}
             disabled={isSpeaking}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${isSpeaking ? 'bg-accent/20 text-accent animate-pulse' : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'}`}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap transition-all ${isSpeaking ? 'bg-accent/20 text-accent animate-pulse' : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'}`}
             data-testid="strate-mobile-speak"
           >
-            <Volume2 className="w-3 h-3" />
+            <Volume2 className="w-3 h-3 flex-shrink-0" />
             {isSpeaking ? 'Lecture...' : 'Écouter'}
           </button>
           <Link
             to={conseil.link}
             onClick={() => trackClick(conseil.id)}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-foreground text-primary-foreground hover:bg-foreground/90 transition-all"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap bg-foreground text-primary-foreground hover:bg-foreground/90 transition-all"
             data-testid="strate-mobile-action"
           >
             {conseil.label} <ArrowRight className="w-2.5 h-2.5" />
