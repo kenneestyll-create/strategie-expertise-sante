@@ -31,6 +31,7 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - FAQ : correction champ `réponse` → `reponse` (réponses réaffichées) — DONE (03/04/2026)
 - 3 blocs flottants Section 2 : animation vague au hover desktop — DONE (03/04/2026)
 - 3 blocs flottants Section 2 : pulse doré + flottement permanent mobile+desktop — DONE (03/04/2026)
+- Upgrade Chirurgical Premium des 3 prompts PDF (4 blocs premium + ciblage métier/sinistre/blocage) — DONE (03/04/2026)
 - Clé API Anthropic native configurée — DONE
 - Chatbot optimisé sur claude-haiku-4-5 — DONE
 - Bug PDF Unicode résolu (police LiberationSans TTF) — DONE
