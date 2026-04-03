@@ -901,7 +901,43 @@ export const AdminDashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <div className="overflow-x-auto -mx-4 px-4 pb-1 scrollbar-thin" data-testid="admin-tabs-nav">
+          {/* Mobile: Select dropdown — visible < md */}
+          <div className="md:hidden" data-testid="admin-tabs-mobile">
+            <select
+              value={activeTab}
+              onChange={(e) => setActiveTab(e.target.value)}
+              className="w-full h-11 px-4 text-sm font-medium rounded-xl border border-border/60 bg-card/80 backdrop-blur shadow-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent/40"
+              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
+              data-testid="admin-tab-select"
+            >
+              <optgroup label="Gestion">
+                <option value="contacts">Contacts</option>
+                <option value="avis">Avis</option>
+                <option value="referrals">Parrainage</option>
+                <option value="bookings">RDV</option>
+                <option value="clients">Clients</option>
+                <option value="relance">Relance</option>
+                <option value="alertes">{`Alertes${urgentAlerts.non_traite > 0 ? ` (${urgentAlerts.non_traite})` : ''}`}</option>
+              </optgroup>
+              <optgroup label="IA & Production">
+                <option value="strategiia">{`StrategiIA${premiumAnalyses.items.filter(i => i.type === 'strategiia' && i.status === 'en_attente').length > 0 ? ` (${premiumAnalyses.items.filter(i => i.type === 'strategiia' && i.status === 'en_attente').length})` : ''}`}</option>
+                <option value="dossier-express">{`Dossier Express${premiumAnalyses.items.filter(i => i.type === 'dossier_express' && i.status === 'en_attente').length > 0 ? ` (${premiumAnalyses.items.filter(i => i.type === 'dossier_express' && i.status === 'en_attente').length})` : ''}`}</option>
+              </optgroup>
+              <optgroup label="Suivi">
+                <option value="analytics">Analytique</option>
+                <option value="documents">Documents</option>
+                <option value="conseils-strate">Strate</option>
+              </optgroup>
+              <optgroup label="Configuration">
+                <option value="config">Config</option>
+                <option value="notifications">Notifications</option>
+                <option value="templates">Templates</option>
+              </optgroup>
+            </select>
+          </div>
+
+          {/* Desktop: Horizontal tabs — visible >= md */}
+          <div className="hidden md:block overflow-x-auto -mx-4 px-4 pb-1 scrollbar-thin" data-testid="admin-tabs-nav">
             <TabsList className="inline-flex w-auto min-w-full gap-0.5 bg-card/80 backdrop-blur border border-border/60 p-1.5 rounded-xl shadow-sm">
               <TabsTrigger value="contacts" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
                 <Users className="w-3.5 h-3.5" />
