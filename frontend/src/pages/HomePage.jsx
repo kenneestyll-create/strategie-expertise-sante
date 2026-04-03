@@ -971,6 +971,13 @@ export const HomePage = () => {
       </section>
 
       <style>{`
+        .hero-bloc-wave {
+          animation: heroPulse 3s ease-in-out infinite;
+        }
+        @keyframes heroPulse {
+          0%, 100% { box-shadow: 0 0 15px rgba(201,168,76,0.12); border-color: rgba(201,168,76,0.1); }
+          50% { box-shadow: 0 0 22px rgba(201,168,76,0.3), 0 0 44px rgba(201,168,76,0.08); border-color: rgba(201,168,76,0.35); }
+        }
         @media (hover: hover) {
           .hero-bloc-wave:hover {
             animation: heroWave 2s ease-in-out infinite;
@@ -983,15 +990,6 @@ export const HomePage = () => {
           30% { translate: 0 -6px; }
           60% { translate: 0 -2px; }
           80% { translate: 0 -5px; }
-        }
-        @media (hover: none) {
-          .hero-bloc-wave {
-            animation: heroPulse 3s ease-in-out infinite;
-          }
-        }
-        @keyframes heroPulse {
-          0%, 100% { box-shadow: 0 0 15px rgba(201,168,76,0.12); border-color: rgba(201,168,76,0.1); }
-          50% { box-shadow: 0 0 22px rgba(201,168,76,0.3), 0 0 44px rgba(201,168,76,0.08); border-color: rgba(201,168,76,0.35); }
         }
       `}</style>
     </main>
