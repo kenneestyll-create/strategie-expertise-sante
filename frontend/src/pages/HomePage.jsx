@@ -979,8 +979,8 @@ export const HomePage = () => {
           50% { box-shadow: 0 0 22px rgba(201,168,76,0.3), 0 0 44px rgba(201,168,76,0.08); border-color: rgba(201,168,76,0.35); }
         }
         @keyframes heroFloat {
-          0%, 100% { margin-top: 0; }
-          50% { margin-top: -4px; }
+          0%, 100% { margin-top: 0; margin-bottom: 0; }
+          50% { margin-top: -4px; margin-bottom: 4px; }
         }
         @media (hover: hover) {
           .hero-bloc-wave:hover {
