@@ -2345,10 +2345,10 @@ export const AdminDashboard = () => {
                                 </span>
                                 <span className="flex items-center gap-1">
                                   <Calendar className="w-3 h-3 flex-shrink-0" />
-                                  {d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                                  {d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
                                 </span>
                               </div>
-                              {d.completed_at && <p className="text-[11px] text-green-600 mt-1 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Livre le {new Date(d.completed_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</p>}
+                              {d.completed_at && <p className="text-[11px] text-green-600 mt-1 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Livre le {new Date(d.completed_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>}
                               {d.email_sent && <p className="text-[11px] text-emerald-600 mt-0.5 flex items-center gap-1"><Send className="w-3 h-3" /> Email envoye</p>}
                               {d.error && d.status === 'error' && <p className="text-[11px] text-red-500 mt-1 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> {d.error}</p>}
                             </div>

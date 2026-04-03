@@ -192,8 +192,8 @@ export const AdminPremiumReview = ({ items, stats, productType, productLabel, ic
                       {item.name && item.email && <p className="text-xs text-muted-foreground truncate">Client : {item.name}</p>}
                       {item.context && <p className="text-xs text-muted-foreground mt-0.5 truncate">{item.context}</p>}
                       <div className="flex items-center gap-2 sm:gap-3 mt-1.5 text-[11px] sm:text-xs text-muted-foreground flex-wrap">
-                        <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(item.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                        {item.sent_at && <span className="flex items-center gap-1 text-green-600"><Send className="w-3 h-3" /> Envoyé {new Date(item.sent_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>}
+                        <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(item.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                        {item.sent_at && <span className="flex items-center gap-1 text-green-600"><Send className="w-3 h-3" /> Envoyé {new Date(item.sent_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>}
                       </div>
                     </div>
 
