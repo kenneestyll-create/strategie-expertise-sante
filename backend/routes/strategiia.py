@@ -146,6 +146,15 @@ INSTRUCTION : Utilise cette matiere documentaire structuree pour affiner ta lect
                 ANTHROPIC_API_KEY, session_id, STRATEGIIA_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
             )
             analysis_doc = {"id": str(uuid.uuid4()), "type_dossier": type_dossier, "regime": regime, "situation": situation[:500], "analysis": response, "is_premium": is_premium, "email": email if email else "", "admin_test": is_admin_test, "job_id": job_id, "created_at": datetime.now(timezone.utc).isoformat()}
+            # Quality scoring interne (admin pilotage)
+            try:
+                from utils.quality_scoring import score_report
+                report_t = "premium" if is_premium else "basic"
+                quality = score_report(response, report_t, metier=type_dossier, sinistre=type_dossier)
+                analysis_doc["quality_score"] = quality
+                logger.info(f"StrategiIA {job_id}: Quality={quality['level']} ({quality['score']}/100)")
+            except Exception as qs_err:
+                logger.warning(f"StrategiIA {job_id}: Quality scoring failed (non-blocking): {qs_err}")
             await db.strategiia_analyses.insert_one(analysis_doc)
             # Persist analysis in premium_analyses for admin relecture
             if is_premium:

@@ -305,7 +305,16 @@ CONTENU DES DOCUMENTS FOURNIS :
         await _notify_client_delay(email, name, "Dossier Express IA")
         return
 
-    # === STEP 5: PDF Generation ===
+    # === STEP 5: Quality Scoring (internal admin) ===
+    quality_score = None
+    try:
+        from utils.quality_scoring import score_report
+        quality_score = score_report(analysis, "dossier_express", metier=type_dossier, sinistre=type_dossier)
+        logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] Quality={quality_score['level']} ({quality_score['score']}/100)")
+    except Exception as qs_err:
+        logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}] Quality scoring failed (non-blocking): {qs_err}")
+
+    # === STEP 6: PDF Generation ===
     t_pdf = time.monotonic()
     await _update_dossier_step(dossier_id, "pdf_en_cours", "en_attente_traitement", {"progress_step": "generating", "analysis": analysis[:30000]})
 
@@ -451,7 +460,7 @@ CONTENU DES DOCUMENTS FOURNIS :
 
     final_delivery = "livre_client" if email_sent else "genere_sans_email"
     final_step = "termine" if email_sent else "erreur_email"
-    await _update_dossier_step(dossier_id, final_step, final_delivery, {
+    final_update = {
         "status": "completed",
         "email_sent": email_sent,
         "completed_at": datetime.now(timezone.utc).isoformat(),
@@ -459,7 +468,10 @@ CONTENU DES DOCUMENTS FOURNIS :
         "timings": timings,
         "llm_path": llm_path_used,
         "analysis_chars": len(analysis),
-    })
+    }
+    if quality_score:
+        final_update["quality_score"] = quality_score
+    await _update_dossier_step(dossier_id, final_step, final_delivery, final_update)
 
     logger.info(f"[DOSSIER_EXPRESS][{dossier_id}][COMPLETE] path={llm_path_used} total={t_total}s | context={timings.get('context_prep',0)}s llm={timings.get('llm_generation',0)}s pdf={timings.get('pdf_generation',0)}s storage={timings.get('storage',0)}s email={timings.get('email',0)}s | chars={len(analysis)} pdf={len(pdf_bytes)}B")
 

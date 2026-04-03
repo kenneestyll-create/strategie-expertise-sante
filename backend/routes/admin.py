@@ -2092,3 +2092,60 @@ async def full_purge(admin: dict = Depends(get_current_admin)):
     await db.dossier_express_base.update_one({"id": "base_count"}, {"$set": {"count": 0}}, upsert=True)
     results["counters_reset"] = True
     return {"purged": results}
+
+
+
+# ==================== SCORING QUALITE INTERNE ====================
+
+@router.get("/admin/quality-scores")
+async def get_quality_scores(admin: dict = Depends(get_current_admin)):
+    """Retourne les scores qualite des derniers rapports generes."""
+    scores = []
+
+    # StrategiIA analyses with quality scores
+    strategiia_docs = await db.strategiia_analyses.find(
+        {"quality_score": {"$exists": True}},
+        {"_id": 0, "id": 1, "email": 1, "type_dossier": 1, "is_premium": 1, "quality_score": 1, "created_at": 1}
+    ).sort("created_at", -1).to_list(50)
+
+    for doc in strategiia_docs:
+        scores.append({
+            "id": doc.get("id"),
+            "service": "StrategiIA Premium" if doc.get("is_premium") else "StrategiIA Basic",
+            "email": doc.get("email", ""),
+            "type_dossier": doc.get("type_dossier", ""),
+            "quality": doc.get("quality_score", {}),
+            "created_at": doc.get("created_at", ""),
+        })
+
+    # Dossier Express with quality scores
+    dossier_docs = await db.dossier_express.find(
+        {"quality_score": {"$exists": True}},
+        {"_id": 0, "id": 1, "email": 1, "type_dossier": 1, "quality_score": 1, "created_at": 1}
+    ).sort("created_at", -1).to_list(50)
+
+    for doc in dossier_docs:
+        scores.append({
+            "id": doc.get("id"),
+            "service": "Dossier Express IA",
+            "email": doc.get("email", ""),
+            "type_dossier": doc.get("type_dossier", ""),
+            "quality": doc.get("quality_score", {}),
+            "created_at": doc.get("created_at", ""),
+        })
+
+    # Sort by date descending
+    scores.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+
+    # Stats summary
+    levels = [s["quality"]["level"] for s in scores if "quality" in s and "level" in s["quality"]]
+    stats = {
+        "total": len(scores),
+        "excellence": levels.count("Excellence"),
+        "premium": levels.count("Premium"),
+        "solide": levels.count("Solide"),
+        "a_renforcer": levels.count("A Renforcer"),
+        "avg_score": round(sum(s["quality"].get("score", 0) for s in scores) / max(len(scores), 1), 1),
+    }
+
+    return {"scores": scores[:30], "stats": stats}
