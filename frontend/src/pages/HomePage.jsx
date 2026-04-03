@@ -972,11 +972,15 @@ export const HomePage = () => {
 
       <style>{`
         .hero-bloc-wave {
-          animation: heroPulse 3s ease-in-out infinite;
+          animation: heroPulse 3s ease-in-out infinite, heroFloat 3s ease-in-out infinite;
         }
         @keyframes heroPulse {
           0%, 100% { box-shadow: 0 0 15px rgba(201,168,76,0.12); border-color: rgba(201,168,76,0.1); }
           50% { box-shadow: 0 0 22px rgba(201,168,76,0.3), 0 0 44px rgba(201,168,76,0.08); border-color: rgba(201,168,76,0.35); }
+        }
+        @keyframes heroFloat {
+          0%, 100% { margin-top: 0; }
+          50% { margin-top: -4px; }
         }
         @media (hover: hover) {
           .hero-bloc-wave:hover {
