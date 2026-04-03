@@ -1185,7 +1185,7 @@ export const ResourcesPage = () => {
                     {getFaqsByCategory(c).map((faq, i) => (
                       <AccordionItem key={faq.id} value={faq.id} className="border-border" data-testid={`faq-item-${i}`}>
                         <AccordionTrigger className="text-left hover:no-underline hover:text-accent">{faq.question}</AccordionTrigger>
-                        <AccordionContent className="text-muted-foreground">{faq.réponse}</AccordionContent>
+                        <AccordionContent className="text-muted-foreground">{faq.reponse}</AccordionContent>
                       </AccordionItem>
                     ))}
                     {getFaqsByCategory(c).length === 0 && <p className="text-muted-foreground text-center py-8">Aucune question dans cette catégorie.</p>}
