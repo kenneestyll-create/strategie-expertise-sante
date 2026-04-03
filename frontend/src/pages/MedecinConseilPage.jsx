@@ -61,7 +61,7 @@ export default function MedecinConseilPage() {
       />
 
       {/* ── HERO ── */}
-      <section className="section-padding bg-secondary">
+      <section className="px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-14 bg-secondary">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-3xl">
             <span className="text-sm font-medium text-accent uppercase tracking-wider">Expertise stratégique</span>
