@@ -105,6 +105,7 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 
 ## Règles strictes
 - ZONE GELÉE sur le Hero : aucune modification sans commande explicite
+- ZONE GELÉE sur le ChatBot mobile : position `absolute sm:fixed top-[520px] sm:top-auto sm:bottom-6 right-4` VERROUILLÉE le 04/04/2026. INTERDICTION ABSOLUE de modifier le positionnement mobile du chatbot sans ordre explicite du responsable. Aucun agent Emergent ne doit prendre cette liberté.
 - Animations blocs flottants : VALIDÉES, ne pas modifier
 - Pas de refactoring opportuniste
 - PDF : toujours LiberationSans (pas Helvetica)

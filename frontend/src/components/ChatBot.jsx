@@ -194,7 +194,19 @@ export const ChatBot = () => {
 
   return (
     <>
-      {/* Mascot Floating Button — Premium */}
+      {/* ╔═══════════════════════════════════════════════════════════╗
+         ║  ZONE GELÉE — CHATBOT MOBILE VALIDÉ LE 04/04/2026       ║
+         ║                                                          ║
+         ║  Position mobile VERROUILLÉE par ordre du responsable.   ║
+         ║  INTERDICTION ABSOLUE de modifier sans ordre explicite.  ║
+         ║  Aucun agent Emergent ne doit toucher ce positionnement. ║
+         ║                                                          ║
+         ║  Éléments protégés :                                     ║
+         ║  - absolute sm:fixed top-[520px] sm:top-auto sm:bottom-6 ║
+         ║  - Alignement horizontal avec "Besoin urgent ?"          ║
+         ║  - Ne suit pas le scroll (absolute, pas fixed)           ║
+         ║  - Desktop : fixed bottom-6 right-4 (inchangé)          ║
+         ╚═══════════════════════════════════════════════════════════╝ */}
       {!isOpen && (!isMobile || isHomePage) && (
         <div className="absolute sm:fixed top-[520px] sm:top-auto sm:bottom-6 right-4" style={{ zIndex: 'var(--z-chatbot)' }} data-testid="chatbot-fab-wrapper">
           <button
