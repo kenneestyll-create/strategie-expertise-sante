@@ -92,6 +92,15 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
   - Reset automatique du 2e dropdown au changement de type
   - 15/15 tests PASS, zéro régression, zéro modification backend
 
+### Base de connaissances MDPH (05/04/2026)
+- **Fichier** : `/app/backend/constants/mdph_knowledge.py` — DONE
+- Couverture complete : MDPH general, AAH (conditions, montants, deconjugalisation, cumuls), PCH (5 elements, plafonds), RQTH (avantages emploi, protection), CMI (3 types), pension invalidite (3 categories, cumul AAH), maladies invalidantes (14 pathologies, strategie dossier), voies de recours (RAPO obligatoire, contentieux), orientation professionnelle (milieu ordinaire, ESAT, CRP)
+- `detect_mdph_context()` : detection automatique par mots-cles avec 7 types de retour (aah, pch, rqth, cmi, invalidite, maladie_invalidante, general)
+- `get_mdph_context()` : injection contextuelle adaptee au type de demande detecte
+- Integration non bloquante dans `strategiia.py` et `dossier_express.py` (meme pattern que contestation_knowledge)
+- 25/25 tests PASS, zero regression sur contestation_knowledge et assurance_knowledge
+- Articles de reference : L.821-1 CSS (AAH), L.245-1 CASF (PCH), L.5213-1 CT (RQTH), L.341-1 CSS (invalidite), R.241-33 CASF (silence vaut rejet MDPH)
+
 ## Animations blocs flottants (VALIDÉ — NE PAS MODIFIER)
 - Fichier : `/app/frontend/src/pages/HomePage.jsx` (style tag en fin de `<main>`)
 - `heroPulse` : respiration glow doré (box-shadow + border-color, 3s, permanent)
