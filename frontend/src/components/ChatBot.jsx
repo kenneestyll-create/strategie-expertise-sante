@@ -90,7 +90,6 @@ export const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showBubble, setShowBubble] = useState(false);
   const [bubbleDismissed, setBubbleDismissed] = useState(true);
-  const [chatbotBottom, setChatbotBottom] = useState(null);
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -107,20 +106,6 @@ export const ChatBot = () => {
   const [quotaExceeded, setQuotaExceeded] = useState(false);
   const messagesEndRef = useRef(null);
   const pendingQuestionRef = useRef(null);
-
-  // Aligne le chatbot avec "Besoin urgent ?" — mesure depuis le BAS du viewport (stable au scroll)
-  useEffect(() => {
-    if (!isHomePage || !isMobile) return;
-    const align = () => {
-      const el = document.querySelector('[data-testid="hero-urgent-cta"]');
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const centerFromBottom = window.innerHeight - (rect.top + rect.height / 2) - 22;
-      if (centerFromBottom > 0) setChatbotBottom(Math.round(centerFromBottom));
-    };
-    const timer = setTimeout(align, 600);
-    return () => clearTimeout(timer);
-  }, [isHomePage, isMobile]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -211,7 +196,7 @@ export const ChatBot = () => {
     <>
       {/* Mascot Floating Button — Premium */}
       {!isOpen && (!isMobile || isHomePage) && (
-        <div className="fixed sm:top-auto sm:bottom-6 right-4" style={{ zIndex: 'var(--z-chatbot)', bottom: isMobile && chatbotBottom != null ? `${chatbotBottom}px` : undefined }} data-testid="chatbot-fab-wrapper">
+        <div className="fixed bottom-28 sm:bottom-6 right-4" style={{ zIndex: 'var(--z-chatbot)' }} data-testid="chatbot-fab-wrapper">
           <button
             onClick={() => { setIsOpen(true); }}
             className="group relative w-11 h-11 rounded-xl bg-[#0a0a08] border-2 border-[#C9A84C]/40 shadow-lg shadow-[#C9A84C]/10 flex items-center justify-center transition-all duration-300 hover:border-[#C9A84C]/70 hover:shadow-[#C9A84C]/25 hover:scale-105"
