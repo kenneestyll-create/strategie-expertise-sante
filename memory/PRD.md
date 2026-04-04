@@ -101,6 +101,18 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - 25/25 tests PASS, zero regression sur contestation_knowledge et assurance_knowledge
 - Articles de reference : L.821-1 CSS (AAH), L.245-1 CASF (PCH), L.5213-1 CT (RQTH), L.341-1 CSS (invalidite), R.241-33 CASF (silence vaut rejet MDPH)
 
+### Pack Patterns MDPH Premium v1 (05/04/2026)
+- **26 patterns MDPH** injectes dans `seed_patterns.py` et MongoDB (`source_type: seed_mdph_v1`)
+- Repartition : blocage(7), vigilance(6), levier(5), erreur_frequente(4), piece_manquante(4)
+- Sous-familles couvertes : aah_rsdae(4), rqth_emploi(3), pch_aides(2), maladie_invalidante(2), aah_taux_80(1), cmi_mobilite(1), refus_mdph(1) + 12 patterns transversaux
+- Blocages principaux : probatoire, traduction_fonctionnelle, medical, qualification
+- `seed_mdph_patterns()` : injection incrementale idempotente (skip si deja en base)
+- Endpoint admin : `POST /api/knowledge-patterns/seed-mdph`
+- Moteur de scoring existant inchangé — les patterns MDPH sont selectionnes automatiquement quand `type_dossier = demande_mdph`
+- Anti-hallucination : formulations conditionnelles strictes ("ce type de dossier est souvent fragilise lorsque...")
+- 22/22 tests PASS (testing agent iteration 170), zero regression AT/assurance/contestation
+- **ZERO modification** : pdf.py, frontend, prompts USER, workflows, payments
+
 ## Animations blocs flottants (VALIDÉ — NE PAS MODIFIER)
 - Fichier : `/app/frontend/src/pages/HomePage.jsx` (style tag en fin de `<main>`)
 - `heroPulse` : respiration glow doré (box-shadow + border-color, 3s, permanent)
