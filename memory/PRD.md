@@ -40,6 +40,7 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - Bug PDF Unicode résolu (police LiberationSans TTF) — DONE
 - Téléchargement PDF admin : axios → fetch natif — DONE
 - **Base de connaissances assurantielle** (`assurance_knowledge.py`) — DONE (04/04/2026)
+- **Base de connaissances contestation IPP** (`contestation_knowledge.py`) — DONE (04/04/2026) : Procedures CCAS RATP + regime general CPAM, contestation administrative/medicale, revision post-consolidation, recours tiers. Injection automatique par detection mots-cles.
   - 3 assureurs : GENERALI, GROUPAMA GAN VIE, CNP ASSURANCES
   - 7 garanties normalisées : ITT, ITP, IPT, IPP, PTIA, PE, DÉCÈS
   - Tableau comparatif inter-assureurs (7 critères)

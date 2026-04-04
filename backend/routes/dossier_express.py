@@ -23,6 +23,7 @@ from constants.workflows import LLM_MAX_RETRIES, LLM_RETRY_DELAY_SECONDS, MAX_FI
 from constants.guards import assert_valid_service, assert_premium_analyses_entry
 from constants.prompts import DOSSIER_EXPRESS_SYSTEM_PROMPT, DOSSIER_EXPRESS_PROMPT
 from constants.assurance_knowledge import get_assurance_context, detect_insurer_from_text
+from constants.contestation_knowledge import get_contestation_context, detect_contestation_context
 from utils.llm import (
     has_llm_key as _has_llm_key,
     check_llm_health as _check_llm_health,
@@ -251,6 +252,19 @@ async def _process_dossier_express(dossier_id: str, email: str, name: str, situa
         except Exception as e:
             logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}] Assurance context injection failed (non-blocking): {e}")
 
+    # INJECTION CONTEXTE CONTESTATION IPP
+    contestation_context = ""
+    try:
+        all_text = f"{situation} {documents_text or ''}"
+        detected_regime = detect_contestation_context(all_text)
+        if detected_regime or (type_dossier or "").lower() in ("contestation_taux_ipp", "contestation taux ipp"):
+            regime_key = detected_regime or "regime_general"
+            contestation_context = "\n\n" + get_contestation_context(regime=regime_key)
+            contestation_context += "\nINSTRUCTION : Utilise ces procedures de contestation pour orienter le beneficiaire. Cite les delais, instances, adresses et erreurs a eviter."
+            logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] Contestation context injected ({len(contestation_context)} chars, regime={regime_key})")
+    except Exception as e:
+        logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}] Contestation context injection failed (non-blocking): {e}")
+
     # === STEP 4: AI Generation ===
     t_llm = time.monotonic()
     await _update_dossier_step(dossier_id, "analyse_ia", "en_attente_traitement", {"progress_step": "analyzing"})
@@ -273,7 +287,7 @@ DESCRIPTION DE LA SITUATION :
 
 CONTENU DES DOCUMENTS FOURNIS :
 {documents_text[:12000] if documents_text else "(Aucun document textuel fourni)"}
-{case_context}{assurance_context}
+{case_context}{assurance_context}{contestation_context}
 
 {DOSSIER_EXPRESS_PROMPT}"""
 

@@ -23,6 +23,7 @@ from constants.workflows import LLM_MAX_RETRIES, LLM_RETRY_DELAY_SECONDS, LLM_MI
 from constants.guards import assert_valid_service, assert_premium_analyses_entry
 from constants.prompts import STRATEGIIA_SYSTEM_PROMPT, STRATEGIIA_BASIC_PROMPT, STRATEGIIA_PREMIUM_PROMPT
 from constants.assurance_knowledge import get_assurance_context, detect_insurer_from_text
+from constants.contestation_knowledge import get_contestation_context, detect_contestation_context
 from utils.llm import has_llm_key as _has_llm_key, llm_call, ANTHROPIC_API_KEY, EMERGENT_LLM_KEY
 from utils.notifications import notify_admin_incident as _notify_admin_incident
 
@@ -161,10 +162,22 @@ INSTRUCTION : Utilise cette matiere documentaire structuree pour affiner ta lect
         except Exception as e:
             logger.warning(f"StrategiIA {job_id}: Assurance context injection failed (non-blocking): {e}")
 
+    # INJECTION CONTEXTE CONTESTATION IPP — si contestation taux / consolidation detectee
+    contestation_context = ""
+    try:
+        detected_regime = detect_contestation_context(situation)
+        if detected_regime or type_dossier in ("contestation_taux_ipp", "contestation taux ipp"):
+            regime_key = detected_regime or "regime_general"
+            contestation_context = "\n\n" + get_contestation_context(regime=regime_key)
+            contestation_context += "\nINSTRUCTION : Utilise ces procedures de contestation pour orienter le beneficiaire. Cite les delais, instances, adresses et erreurs a eviter. Si CCAS RATP detecte, fournis les adresses exactes."
+            logger.info(f"StrategiIA {job_id}: Contestation context injected ({len(contestation_context)} chars, regime={regime_key})")
+    except Exception as e:
+        logger.warning(f"StrategiIA {job_id}: Contestation context injection failed (non-blocking): {e}")
+
     for attempt in range(3):
         try:
             analysis_prompt = STRATEGIIA_PREMIUM_PROMPT if is_premium else STRATEGIIA_BASIC_PROMPT
-            user_msg = f"""Type de dossier : {type_dossier}\nRegime : {regime}\nDescription de la situation : {situation}\n{case_context}{dossier_express_context}{assurance_context}\n\n{analysis_prompt}"""
+            user_msg = f"""Type de dossier : {type_dossier}\nRegime : {regime}\nDescription de la situation : {situation}\n{case_context}{dossier_express_context}{assurance_context}{contestation_context}\n\n{analysis_prompt}"""
             session_id = f"strategiia_{str(uuid.uuid4())[:8]}"
             response = await llm_call(
                 ANTHROPIC_API_KEY, session_id, STRATEGIIA_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
