@@ -9,7 +9,7 @@ import {
   Clock, HardHat, Activity, Accessibility, ClipboardList, ExternalLink,
   AlertTriangle, Phone, Crosshair, ScanSearch, ShieldAlert, CircleSlash,
   Compass, Focus, RefreshCcw, HeartHandshake, Award, TrendingUp, Brain,
-  FileText, Lock, Users, BookOpen, Calculator, Search, CalendarDays
+  FileText, Lock, Users, BookOpen, Calculator, Search, CalendarDays, Bot
 } from 'lucide-react';
 import { MascotteMobileWidget } from '@/components/MascotteStrate';
 import { GoldDustOverlay } from '@/components/GoldDustOverlay';
@@ -283,6 +283,15 @@ export const HomePage = () => {
                 >
                   <Zap className="w-3 h-3" />
                   <span className="text-xs font-medium tracking-wide">Besoin urgent ?</span>
+                </button>
+                {/* Chatbot trigger — mobile only, scrolls with page */}
+                <button
+                  onClick={() => window.dispatchEvent(new Event('chatbot:open'))}
+                  className="sm:hidden flex items-center gap-2 px-3.5 py-1.5 rounded-lg border border-[#C9A84C]/20 bg-[#C9A84C]/[0.06] text-[#C9A84C]/80 hover:text-[#C9A84C] hover:border-[#C9A84C]/35 hover:bg-[#C9A84C]/[0.1] transition-all cursor-pointer"
+                  data-testid="hero-chatbot-trigger"
+                >
+                  <Bot className="w-3 h-3" />
+                  <span className="text-xs font-medium tracking-wide">Assistant IA</span>
                 </button>
               </div>
 
