@@ -53,6 +53,44 @@ const GARANTIES_ASSURANCE_DE = [
   "Autre / Je ne sais pas",
 ];
 
+const TYPES_EXPERTISE_DE = [
+  "Expertise amiable",
+  "Expertise judiciaire",
+  "Contre-expertise",
+  "Expertise CPAM (contrôle médical)",
+  "Expertise employeur",
+  "Autre",
+];
+
+const TYPES_MDPH_DE = [
+  "AAH refusée",
+  "PCH refusée",
+  "RQTH refusée",
+  "Dossier complet refusé",
+  "Carte mobilité inclusion refusée",
+  "Orientation refusée",
+  "Renouvellement refusé",
+  "Autre",
+];
+
+const TYPES_CONTESTATION_IPP_DE = [
+  "Taux IPP sous-évalué",
+  "Taux IPP refusé",
+  "Demande de révision de taux",
+  "Contestation après expertise",
+  "Autre",
+];
+
+// Mapping contextuel Dossier Express : sous-chaîne du type de dossier → config
+const getContextDE = (type) => {
+  const t = (type || '').toLowerCase();
+  if (t.includes('assurance')) return { label: "Type de garantie concernée", placeholder: "Sélectionnez la garantie...", options: GARANTIES_ASSURANCE_DE };
+  if (t.includes('mdph') || t.includes('aah')) return { label: "Type de demande MDPH", placeholder: "Sélectionnez la demande...", options: TYPES_MDPH_DE };
+  if (t.includes('expertise')) return { label: "Type d'expertise", placeholder: "Sélectionnez le type d'expertise...", options: TYPES_EXPERTISE_DE };
+  if (t.includes('contestation') || t.includes('ipp')) return { label: "Objet de la contestation", placeholder: "Sélectionnez...", options: TYPES_CONTESTATION_IPP_DE };
+  return null; // fallback → Régime standard
+};
+
 /* ── Testimonials ── */
 const TESTIMONIALS = [
   { name: "Marie L.", type: "Accident du travail", text: "Le rapport m'a permis d'identifier des droits que je ne connaissais pas. Mon dossier CPAM a été accepté grâce aux recommandations.", rating: 5 },
@@ -660,21 +698,16 @@ export const DossierExpressPage = () => {
                     </div>
                     <div className="space-y-2">
                       <Label>
-                        {(form.type_dossier || '').toLowerCase().includes('assurance') ? 'Type de garantie concernée' : 'Régime'}
+                        {getContextDE(form.type_dossier)?.label || 'Régime'}
                       </Label>
                       <Select value={form.regime} onValueChange={v => setForm(p => ({...p, regime: v}))}>
                         <SelectTrigger data-testid="de-regime-select">
                           <SelectValue placeholder={
-                            (form.type_dossier || '').toLowerCase().includes('assurance')
-                              ? "Sélectionnez la garantie..."
-                              : "Sélectionnez..."
+                            getContextDE(form.type_dossier)?.placeholder || "Sélectionnez..."
                           } />
                         </SelectTrigger>
                         <SelectContent>
-                          {(form.type_dossier || '').toLowerCase().includes('assurance')
-                            ? GARANTIES_ASSURANCE_DE.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)
-                            : REGIMES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)
-                          }
+                          {(getContextDE(form.type_dossier)?.options || REGIMES).map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>

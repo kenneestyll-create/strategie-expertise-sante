@@ -53,6 +53,51 @@ const GARANTIES_ASSURANCE = [
   { value: 'autre', label: "Autre / Je ne sais pas" },
 ];
 
+const TYPES_EXPERTISE = [
+  { value: 'amiable', label: "Expertise amiable" },
+  { value: 'judiciaire', label: "Expertise judiciaire" },
+  { value: 'contre_expertise', label: "Contre-expertise" },
+  { value: 'cpam', label: "Expertise CPAM (contrôle médical)" },
+  { value: 'employeur', label: "Expertise employeur" },
+  { value: 'autre', label: "Autre" },
+];
+
+const TYPES_MDPH = [
+  { value: 'aah_refusee', label: "AAH refusée" },
+  { value: 'pch_refusee', label: "PCH refusée" },
+  { value: 'rqth_refusee', label: "RQTH refusée" },
+  { value: 'dossier_complet_refuse', label: "Dossier complet refusé" },
+  { value: 'carte_mobilite_refusee', label: "Carte mobilité inclusion refusée" },
+  { value: 'orientation_refusee', label: "Orientation refusée" },
+  { value: 'renouvellement_refuse', label: "Renouvellement refusé" },
+  { value: 'autre', label: "Autre" },
+];
+
+const PHASES_FAUTE_INEX = [
+  { value: 'pre_contentieux', label: "Pré-contentieux (mise en demeure)" },
+  { value: 'cpam_reconnaissance', label: "CPAM — demande de reconnaissance" },
+  { value: 'tribunal', label: "Tribunal (TJ Pôle social)" },
+  { value: 'appel', label: "Appel" },
+  { value: 'autre', label: "Autre" },
+];
+
+const TYPES_RECOURS = [
+  { value: 'cra', label: "Recours amiable (CRA)" },
+  { value: 'contentieux', label: "Recours contentieux (tribunal)" },
+  { value: 'expertise_recours', label: "Expertise médicale de recours" },
+  { value: 'mediation', label: "Médiation" },
+  { value: 'autre', label: "Autre" },
+];
+
+// Mapping contextuel : type de dossier → label, placeholder, options du 2e dropdown
+const CONTEXT_MAP = {
+  assurance:   { label: "Type de garantie concernée", placeholder: "Sélectionnez la garantie", options: GARANTIES_ASSURANCE },
+  expertise:   { label: "Type d'expertise", placeholder: "Sélectionnez le type d'expertise", options: TYPES_EXPERTISE },
+  mdph:        { label: "Type de demande MDPH", placeholder: "Sélectionnez la demande", options: TYPES_MDPH },
+  faute_inex:  { label: "Phase judiciaire", placeholder: "Sélectionnez la phase", options: PHASES_FAUTE_INEX },
+  recours:     { label: "Type de recours", placeholder: "Sélectionnez le type de recours", options: TYPES_RECOURS },
+};
+
 export const StrategiIA = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { isAdminMode, adminToken } = useAdminTest();
@@ -268,9 +313,7 @@ export const StrategiIA = () => {
       const { data } = await axios.post(`${API}/strategiia/generate-pdf`, {
         analysis: premiumResult,
         type_dossier: TYPES_DOSSIER.find(t => t.value === typeDossier)?.label || typeDossier,
-        regime: typeDossier === 'assurance'
-          ? (GARANTIES_ASSURANCE.find(g => g.value === regime)?.label || regime)
-          : (REGIMES.find(r => r.value === regime)?.label || regime),
+        regime: (CONTEXT_MAP[typeDossier]?.options || REGIMES).find(o => o.value === regime)?.label || regime,
         name: email,
         premium_pdf: premiumPdf
       });
@@ -397,17 +440,14 @@ export const StrategiIA = () => {
                     </div>
                     <div className="space-y-2">
                       <Label className="font-medium">
-                        {typeDossier === 'assurance' ? 'Type de garantie concernée' : 'Régime'}
+                        {(CONTEXT_MAP[typeDossier]?.label) || 'Régime'}
                       </Label>
                       <Select value={regime} onValueChange={setRegime}>
                         <SelectTrigger data-testid="strategiia-regime-select">
-                          <SelectValue placeholder={typeDossier === 'assurance' ? "Sélectionnez la garantie" : "Sélectionnez votre régime"} />
+                          <SelectValue placeholder={(CONTEXT_MAP[typeDossier]?.placeholder) || "Sélectionnez votre régime"} />
                         </SelectTrigger>
                         <SelectContent>
-                          {typeDossier === 'assurance'
-                            ? GARANTIES_ASSURANCE.map(g => <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>)
-                            : REGIMES.map(r => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)
-                          }
+                          {(CONTEXT_MAP[typeDossier]?.options || REGIMES).map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
