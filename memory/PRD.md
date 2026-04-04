@@ -53,6 +53,14 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
   - Intégré dans StrategiIA + Dossier Express (non-bloquant)
   - Priorité : garantie > assureur détecté > fallback générique
   - Traçabilité discrète : `detected_insurer` stocké dans MongoDB
+
+### Conformite RGPD & Amelioration continue (04/04/2026)
+- Architecture RGPD : separation stricte entre donnees client (MongoDB) et base d'amelioration interne (`knowledge_patterns`)
+- DataConsentBox enrichi : section "Amelioration continue du service" depliable + checkbox opt-out client
+- Politique de Confidentialite : Section 12 ajoutee (texte juridique complet + 5 garanties essentielles + avertissement anonymisation)
+- API knowledge-patterns : CRUD admin-only, validation manuelle, patterns anonymises, limite 500 chars, usage_autorise=false par defaut
+- Champ improvement_optout : passe dans StrategiIA et DossierExpress, stocke dans les analyses MongoDB
+- Regles verrouillees : pas de fine-tuning brut, pas de recuperation automatique, pas de donnees identifiantes dans knowledge_patterns
   - 8/8 tests PASS (6 cas obligatoires + 2 bonus)
 - **Enrichissement base assurantielle : GMF VIE (Accolia n°07001)** — DONE (04/04/2026)
   - 4e assureur intégré : GMF VIE (Groupe Covéa) — contrat temporaire décès
