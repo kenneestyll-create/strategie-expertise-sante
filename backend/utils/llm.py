@@ -3,6 +3,16 @@ CONSOLIDATION_ARCHITECTURE — Fonctions LLM centralisees.
 Fournit toutes les fonctions d'appel LLM (sync, async, stream, multi-stage).
 Consomme : constants/prompts.py, config.py
 Consommateurs : routes/strategiia.py, routes/dossier_express.py
+
+# =========================================================================
+# ZONE GELEE — MOTEUR IA V1 VALIDE
+# Date de gel : 05/04/2026
+# Perimetre : Pipeline LLM complet (sync, async, stream, multi-stage).
+#   Inclut : llm_call, llm_sync_call, llm_async_call, llm_stream_call,
+#   generate_section_llmchat, generate_dossier_report_multistage.
+# Avertissement : AUCUNE modification sans ordre explicite du responsable.
+#   Toute evolution future doit suivre le protocole IA_BASELINE_V1.md.
+# =========================================================================
 """
 import os
 import asyncio

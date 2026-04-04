@@ -8,6 +8,16 @@ Sources :
 - Service-public.fr (references officielles)
 - CNSA (Caisse Nationale de Solidarite pour l'Autonomie)
 
+# =========================================================================
+# ZONE GELEE — MOTEUR IA V1 VALIDE
+# Date de gel : 05/04/2026
+# Perimetre : Base MDPH complete (AAH, PCH, RQTH, CMI, pension invalidite,
+#   maladies invalidantes, voies de recours, orientation professionnelle),
+#   helpers (get_mdph_context, detect_mdph_context).
+# Avertissement : AUCUNE modification sans ordre explicite du responsable.
+#   Toute evolution future doit suivre le protocole IA_BASELINE_V1.md.
+# =========================================================================
+
 Structure :
 - MDPH_GENERAL : presentation, missions, fonctionnement
 - AAH_ALLOCATION : conditions, montants, procedures, cumul

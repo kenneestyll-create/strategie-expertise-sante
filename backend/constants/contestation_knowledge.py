@@ -8,6 +8,16 @@ Sources :
 - Articles du Code de la Securite Sociale (R.441-10, R.441-14, L.443-1, L.454-1)
 Integre le 04/04/2026.
 
+# =========================================================================
+# ZONE GELEE — MOTEUR IA V1 VALIDE
+# Date de gel : 05/04/2026
+# Perimetre : Base CCAS RATP (procedures MP, contestation IPP, CSOM,
+#   Commission Medicale), helpers (get_contestation_context,
+#   detect_contestation_context).
+# Avertissement : AUCUNE modification sans ordre explicite du responsable.
+#   Toute evolution future doit suivre le protocole IA_BASELINE_V1.md.
+# =========================================================================
+
 Structure :
 - RATP_REGIME : architecture complete du regime special RATP
 - CONTESTATION_PROCEDURES : procedures par regime (CCAS RATP, regime general CPAM)

@@ -1,6 +1,20 @@
 """
 Scoring qualite interne pour les rapports PDF generes.
 Outil de pilotage admin — ne modifie PAS le rendu client.
+
+# =========================================================================
+# ZONE GELEE — MOTEUR IA V1 VALIDE
+# Date de gel : 05/04/2026
+# Perimetre : Outil interne officiel de pilotage qualite.
+#   Criteres : personnalisation metier (0-20), personnalisation sinistre
+#   (0-20), identification du blocage (0-15), presence des blocs premium
+#   (0-15), densite utile (0-15), faible genericite (0-10), coherence
+#   globale (0-5). Total /100.
+#   Niveaux : Excellence (80+), Premium (60+), Solide (40+), A Renforcer.
+# Avertissement : AUCUNE modification des criteres, des seuils ou des
+#   niveaux sans ordre explicite du responsable.
+#   Toute evolution future doit suivre le protocole IA_BASELINE_V1.md.
+# =========================================================================
 """
 
 import re

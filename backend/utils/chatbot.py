@@ -1,3 +1,12 @@
+# =========================================================================
+# ZONE GELEE — MOTEUR IA V1 VALIDE
+# Date de gel : 05/04/2026
+# Perimetre : Chatbot Strate, prompts systeme (SYSTEM_PROMPT_LIGHT,
+#   SYSTEM_PROMPT_FULL), FAQ_DATABASE, base TABLEAUX_MP, logique
+#   d'orientation (FAQ vs Claude), detection de complexite.
+# Avertissement : AUCUNE modification sans ordre explicite du responsable.
+#   Toute evolution future doit suivre le protocole IA_BASELINE_V1.md.
+# =========================================================================
 from typing import Optional
 import os
 import httpx

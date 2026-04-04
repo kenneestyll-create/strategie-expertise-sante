@@ -4,6 +4,16 @@ BASE DE CONNAISSANCES ASSURANTIELLE — Strategie & Expertise Sante
 Source : Notices d'information des contrats emprunteurs
 Fichier exploitable par StrategiIA pour l'analyse des litiges assurantiels.
 
+# =========================================================================
+# ZONE GELEE — MOTEUR IA V1 VALIDE
+# Date de gel : 05/04/2026
+# Perimetre : Base assurantielle complete (GENERALI, GROUPAMA, CNP),
+#   logique des garanties (ITT, ITP, IPT, IPP, PTIA, PE, Deces),
+#   helpers (get_assurance_context, detect_assurance_context).
+# Avertissement : AUCUNE modification sans ordre explicite du responsable.
+#   Toute evolution future doit suivre le protocole IA_BASELINE_V1.md.
+# =========================================================================
+
 Structure :
 - ASSURANCE_KNOWLEDGE : dictionnaire principal par assureur
 - GARANTIES_DEFINITIONS : definitions normalisees inter-assureurs

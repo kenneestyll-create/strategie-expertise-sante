@@ -4,6 +4,18 @@ SEED PATTERNS — Base de demarrage pour knowledge_patterns
 Patterns sobres, premium, credibles et utiles.
 Pas de remplissage. Enseignements abstraits non identifiants.
 A executer UNE FOIS pour initialiser la base.
+
+# =========================================================================
+# ZONE GELEE — MOTEUR IA V1 VALIDE
+# Date de gel : 05/04/2026
+# Perimetre : 14 seed patterns originaux (AT/MP/assurantiel/contestation)
+#   + 26 patterns MDPH Premium v1 (AAH/RSDAE/PCH/RQTH/CMI/invalidantes).
+#   Fonctions seed : seed_knowledge_patterns(), seed_mdph_patterns().
+# Avertissement : Ne pas modifier les patterns existants sans ordre explicite.
+#   L'ajout de NOUVEAUX patterns est autorise en suivant le protocole
+#   IA_BASELINE_V1.md (creation incrementale, validation admin, test
+#   de non-regression).
+# =========================================================================
 """
 
 SEED_PATTERNS = [
