@@ -42,6 +42,14 @@ async def seed_patterns_endpoint(admin=Depends(get_current_admin)):
     return result
 
 
+@router.post("/seed-mdph")
+async def seed_mdph_patterns_endpoint(admin=Depends(get_current_admin)):
+    """Injecte le Pack MDPH Premium v1 si pas encore en base (admin only)."""
+    from constants.seed_patterns import seed_mdph_patterns
+    result = await seed_mdph_patterns(db)
+    return result
+
+
 # =============================================================================
 # SCHEMA DE REFERENCE — knowledge_patterns
 # =============================================================================
