@@ -61,6 +61,16 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - API knowledge-patterns : CRUD admin-only, validation manuelle, patterns anonymises, limite 500 chars, usage_autorise=false par defaut
 - Champ improvement_optout : passe dans StrategiIA et DossierExpress, stocke dans les analyses MongoDB
 - Regles verrouillees : pas de fine-tuning brut, pas de recuperation automatique, pas de donnees identifiantes dans knowledge_patterns
+
+### Moteur d'enrichissement metier intelligent (04/04/2026)
+- Moteur de selection knowledge_patterns avec scoring par priorite (exact match +10, categorie +5, tags +3)
+- Limites strictes : max 5 patterns, 4 vigilances, 4 leviers (total 12)
+- Anti-hallucination : formulations conditionnelles imposees dans le contexte injecte
+- Injection dans SYSTEM prompt de StrategiIA et Dossier Express (enhanced_system)
+- Respect improvement_optout : si true, aucun pattern injecte
+- Si contexte trop faible ou base vide : aucune injection (Mission 8)
+- 14 seed patterns de demarrage (blocages, vigilances, leviers, erreurs frequentes, pieces manquantes)
+- Couverture : MP, AT, litige assurantiel, contestation IPP, multi-metiers, multi-garanties
   - 8/8 tests PASS (6 cas obligatoires + 2 bonus)
 - **Enrichissement base assurantielle : GMF VIE (Accolia n°07001)** — DONE (04/04/2026)
   - 4e assureur intégré : GMF VIE (Groupe Covéa) — contrat temporaire décès
