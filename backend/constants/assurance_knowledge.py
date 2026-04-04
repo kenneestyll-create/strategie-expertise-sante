@@ -684,7 +684,7 @@ def get_assurance_context(assureur: str = None, garantie: str = None) -> str:
                 context_parts.append(f"  Duree max : {g.get('duree_max') or g.get('duree_max_indemnisation')}")
             context_parts.append(f"  Mode evaluation : {g.get('mode_evaluation', 'Non precise')}")
             if g.get("exclusions"):
-                context_parts.append(f"  Exclusions :")
+                context_parts.append("  Exclusions :")
                 for exc in g["exclusions"]:
                     context_parts.append(f"    - {exc}")
             context_parts.append("")
@@ -739,6 +739,69 @@ def get_assurance_context(assureur: str = None, garantie: str = None) -> str:
             context_parts.append("")
 
     return "\n".join(context_parts)
+
+
+def detect_insurer_from_text(text: str) -> dict:
+    """
+    Detecte automatiquement l'assureur mentionne dans un texte libre.
+    Recherche simple par mots-cles, non bloquante.
+
+    Args:
+        text: Texte libre (situation, documents, etc.)
+
+    Returns:
+        {"assureur": "generali"|"groupama_gan_vie"|"cnp_assurances"|None,
+         "confidence": "high"|"medium"|None,
+         "matched_term": str|None}
+    """
+    if not text:
+        return {"assureur": None, "confidence": None, "matched_term": None}
+
+    text_lower = text.lower()
+
+    # Patterns de detection par assureur — ordre : specifique d'abord
+    INSURER_PATTERNS = {
+        "generali": [
+            "generali", "généréli", "generali vie", "generali iard",
+            "contrat 7270", "contrat n°7270", "ddp7270",
+        ],
+        "groupama_gan_vie": [
+            "groupama", "gan vie", "groupama gan", "gan assurance",
+            "contrat 6092", "contrat 200140",
+        ],
+        "cnp_assurances": [
+            "cnp", "cnp assurances", "bpce vie", "cnp/bpce",
+            "contrat 2252", "contrat 2253", "2252y", "2253z",
+        ],
+    }
+
+    matches = []
+    for assureur_key, patterns in INSURER_PATTERNS.items():
+        for pattern in patterns:
+            if pattern in text_lower:
+                # Confiance haute si nom exact ou reference contrat
+                confidence = "high" if len(pattern) >= 6 else "medium"
+                matches.append({
+                    "assureur": assureur_key,
+                    "confidence": confidence,
+                    "matched_term": pattern,
+                })
+                break  # Un match par assureur suffit
+
+    if not matches:
+        return {"assureur": None, "confidence": None, "matched_term": None}
+
+    # Si un seul assureur detecte : retourner directement
+    if len(matches) == 1:
+        return matches[0]
+
+    # Si plusieurs : prendre celui avec la confiance la plus haute
+    high_conf = [m for m in matches if m["confidence"] == "high"]
+    if len(high_conf) == 1:
+        return high_conf[0]
+
+    # Ambigu : retourner le premier detecte (prudent)
+    return matches[0]
 
 
 def get_all_garantie_types() -> list:

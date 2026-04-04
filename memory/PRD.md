@@ -47,7 +47,12 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - **Injection contexte assurantiel dans StrategiIA + Dossier Express** — DONE (04/04/2026)
   - Backend : injection automatique quand type_dossier = "assurance"
   - Frontend : dropdown dynamique "Régime" ↔ "Type de garantie concernée"
-  - Testé et validé : 100% (12/12 vérifications)
+- **Détecteur automatique d'assureur** (`detect_insurer_from_text()`) — DONE (04/04/2026)
+  - Détection par nom exact, variantes, acronymes, références contrat
+  - Intégré dans StrategiIA + Dossier Express (non-bloquant)
+  - Priorité : garantie > assureur détecté > fallback générique
+  - Traçabilité discrète : `detected_insurer` stocké dans MongoDB
+  - 8/8 tests PASS (6 cas obligatoires + 2 bonus)
 
 ## Animations blocs flottants (VALIDÉ — NE PAS MODIFIER)
 - Fichier : `/app/frontend/src/pages/HomePage.jsx` (style tag en fin de `<main>`)

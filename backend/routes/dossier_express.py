@@ -22,7 +22,7 @@ from constants.statuses import Service, DossierStatus, DossierDelivery, DossierS
 from constants.workflows import LLM_MAX_RETRIES, LLM_RETRY_DELAY_SECONDS, MAX_FILE_SIZE, MAX_TOTAL_SIZE, MAX_FILES
 from constants.guards import assert_valid_service, assert_premium_analyses_entry
 from constants.prompts import DOSSIER_EXPRESS_SYSTEM_PROMPT, DOSSIER_EXPRESS_PROMPT
-from constants.assurance_knowledge import get_assurance_context
+from constants.assurance_knowledge import get_assurance_context, detect_insurer_from_text
 from utils.llm import (
     has_llm_key as _has_llm_key,
     check_llm_health as _check_llm_health,
@@ -231,11 +231,23 @@ async def _process_dossier_express(dossier_id: str, email: str, name: str, situa
     type_dossier_lower = (type_dossier or "").lower()
     if "assurance" in type_dossier_lower or "litige" in type_dossier_lower:
         try:
+            # Priorité 1 : garantie sélectionnée par l'utilisateur
             garantie = regime.upper() if regime and regime.upper() in ("ITT", "ITP", "IPT", "IPP", "PTIA", "PE", "DECES") else None
-            assurance_context = "\n\nBASE DE CONNAISSANCES ASSURANTIELLE (contrats analysés : GENERALI, GROUPAMA GAN VIE, CNP ASSURANCES) :\n"
-            assurance_context += get_assurance_context(garantie=garantie)
+            # Priorité 2 : assureur détecté dans le texte (situation + documents)
+            combined_text = f"{situation} {documents_text[:3000] if documents_text else ''}"
+            detected = detect_insurer_from_text(combined_text)
+            detected_assureur = detected.get("assureur")
+            # Priorité 3 : fallback générique
+            assurance_context = "\n\nBASE DE CONNAISSANCES ASSURANTIELLE"
+            if detected_assureur:
+                assureur_label = {"generali": "GENERALI", "groupama_gan_vie": "GROUPAMA GAN VIE", "cnp_assurances": "CNP ASSURANCES"}.get(detected_assureur, detected_assureur.upper())
+                assurance_context += f" (assureur détecté : {assureur_label})"
+            else:
+                assurance_context += " (contrats analysés : GENERALI, GROUPAMA GAN VIE, CNP ASSURANCES)"
+            assurance_context += " :\n"
+            assurance_context += get_assurance_context(assureur=detected_assureur, garantie=garantie)
             assurance_context += "\nINSTRUCTION : Utilise cette base de connaissances pour identifier les exclusions, red flags, et leviers stratégiques spécifiques au contrat et à la garantie concernés. Compare les assureurs si pertinent. Cite les seuils et conditions exactes."
-            logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] Assurance context injected ({len(assurance_context)} chars, garantie={garantie})")
+            logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] Assurance context injected ({len(assurance_context)} chars, garantie={garantie}, detected_insurer={detected_assureur}, confidence={detected.get('confidence')})")
         except Exception as e:
             logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}] Assurance context injection failed (non-blocking): {e}")
 

@@ -22,7 +22,7 @@ from constants.statuses import Service, PremiumStatus, JobStatus
 from constants.workflows import LLM_MAX_RETRIES, LLM_RETRY_DELAY_SECONDS, LLM_MIN_ANALYSIS_LENGTH, STRATEGIIA_FREE_MONTHLY_QUOTA
 from constants.guards import assert_valid_service, assert_premium_analyses_entry
 from constants.prompts import STRATEGIIA_SYSTEM_PROMPT, STRATEGIIA_BASIC_PROMPT, STRATEGIIA_PREMIUM_PROMPT
-from constants.assurance_knowledge import get_assurance_context
+from constants.assurance_knowledge import get_assurance_context, detect_insurer_from_text
 from utils.llm import has_llm_key as _has_llm_key, llm_call, ANTHROPIC_API_KEY, EMERGENT_LLM_KEY
 from utils.notifications import notify_admin_incident as _notify_admin_incident
 
@@ -142,11 +142,22 @@ INSTRUCTION : Utilise cette matiere documentaire structuree pour affiner ta lect
     assurance_context = ""
     if type_dossier in ("assurance", "litige_assurantiel", "litige assurance / protection juridique"):
         try:
+            # Priorité 1 : garantie sélectionnée par l'utilisateur
             garantie = regime.upper() if regime and regime.upper() in ("ITT", "ITP", "IPT", "IPP", "PTIA", "PE", "DECES") else None
-            assurance_context = "\n\nBASE DE CONNAISSANCES ASSURANTIELLE (contrats analysés : GENERALI, GROUPAMA GAN VIE, CNP ASSURANCES) :\n"
-            assurance_context += get_assurance_context(garantie=garantie)
+            # Priorité 2 : assureur détecté automatiquement dans le texte
+            detected = detect_insurer_from_text(situation)
+            detected_assureur = detected.get("assureur")
+            # Priorité 3 : fallback générique (assureur=None → tous les assureurs)
+            assurance_context = "\n\nBASE DE CONNAISSANCES ASSURANTIELLE"
+            if detected_assureur:
+                assureur_label = {"generali": "GENERALI", "groupama_gan_vie": "GROUPAMA GAN VIE", "cnp_assurances": "CNP ASSURANCES"}.get(detected_assureur, detected_assureur.upper())
+                assurance_context += f" (assureur détecté : {assureur_label})"
+            else:
+                assurance_context += " (contrats analysés : GENERALI, GROUPAMA GAN VIE, CNP ASSURANCES)"
+            assurance_context += " :\n"
+            assurance_context += get_assurance_context(assureur=detected_assureur, garantie=garantie)
             assurance_context += "\nINSTRUCTION : Utilise cette base de connaissances pour identifier les exclusions, red flags, et leviers stratégiques spécifiques au contrat et à la garantie concernés. Compare les assureurs si pertinent. Cite les seuils et conditions exactes."
-            logger.info(f"StrategiIA {job_id}: Assurance context injected ({len(assurance_context)} chars, garantie={garantie})")
+            logger.info(f"StrategiIA {job_id}: Assurance context injected ({len(assurance_context)} chars, garantie={garantie}, detected_insurer={detected_assureur}, confidence={detected.get('confidence')}, matched={detected.get('matched_term')})")
         except Exception as e:
             logger.warning(f"StrategiIA {job_id}: Assurance context injection failed (non-blocking): {e}")
 
@@ -159,6 +170,13 @@ INSTRUCTION : Utilise cette matiere documentaire structuree pour affiner ta lect
                 ANTHROPIC_API_KEY, session_id, STRATEGIIA_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
             )
             analysis_doc = {"id": str(uuid.uuid4()), "type_dossier": type_dossier, "regime": regime, "situation": situation[:500], "analysis": response, "is_premium": is_premium, "email": email if email else "", "admin_test": is_admin_test, "job_id": job_id, "created_at": datetime.now(timezone.utc).isoformat()}
+            # Trace interne assureur détecté (non bloquant)
+            if type_dossier in ("assurance", "litige_assurantiel", "litige assurance / protection juridique"):
+                try:
+                    analysis_doc["detected_insurer"] = detected.get("assureur")
+                    analysis_doc["detected_insurer_confidence"] = detected.get("confidence")
+                except Exception:
+                    pass
             # Quality scoring interne (admin pilotage)
             try:
                 from utils.quality_scoring import score_report
