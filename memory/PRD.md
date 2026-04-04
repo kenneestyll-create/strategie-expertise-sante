@@ -113,6 +113,18 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - 22/22 tests PASS (testing agent iteration 170), zero regression AT/assurance/contestation
 - **ZERO modification** : pdf.py, frontend, prompts USER, workflows, payments
 
+### GEL OFFICIEL — MOTEUR IA V1 VALIDE (05/04/2026)
+- **Document de reference** : `/app/memory/IA_BASELINE_V1.md`
+- **Commentaires de gel** injectes dans 9 fichiers critiques (prompts.py, llm.py, chatbot.py, quality_scoring.py, assurance_knowledge.py, contestation_knowledge.py, mdph_knowledge.py, seed_patterns.py, knowledge_patterns.py)
+- **Hash MD5 de reference** des prompts geles :
+  - STRATEGIIA_BASIC_PROMPT : 8ac30044d1c9
+  - STRATEGIIA_PREMIUM_PROMPT : 994491b627fb
+  - DOSSIER_EXPRESS_PROMPT : b676aa1ceebe
+  - STRATEGIIA_SYSTEM_COMPACT : d53d54d48b99
+  - DOSSIER_EXPRESS_SYSTEM_PROMPT : 371e5478b1ac
+- **Protocole de future evolution** documente dans IA_BASELINE_V1.md (5 etapes obligatoires)
+- 36/37 tests PASS (testing agent iteration 171), zero regression, zero modification fonctionnelle
+
 ## Animations blocs flottants (VALIDÉ — NE PAS MODIFIER)
 - Fichier : `/app/frontend/src/pages/HomePage.jsx` (style tag en fin de `<main>`)
 - `heroPulse` : respiration glow doré (box-shadow + border-color, 3s, permanent)
