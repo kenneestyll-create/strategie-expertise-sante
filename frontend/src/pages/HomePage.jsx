@@ -9,7 +9,7 @@ import {
   Clock, HardHat, Activity, Accessibility, ClipboardList, ExternalLink,
   AlertTriangle, Phone, Crosshair, ScanSearch, ShieldAlert, CircleSlash,
   Compass, Focus, RefreshCcw, HeartHandshake, Award, TrendingUp, Brain,
-  FileText, Lock, Users, BookOpen, Calculator, Search, CalendarDays
+  FileText, Lock, Users, BookOpen, Calculator, Search, CalendarDays, Bot
 } from 'lucide-react';
 import { MascotteMobileWidget } from '@/components/MascotteStrate';
 import { GoldDustOverlay } from '@/components/GoldDustOverlay';
@@ -283,6 +283,16 @@ export const HomePage = () => {
                 >
                   <Zap className="w-3 h-3" />
                   <span className="text-xs font-medium tracking-wide">Besoin urgent ?</span>
+                </button>
+                {/* Chatbot trigger — mobile only, in-flow with Besoin urgent */}
+                <button
+                  onClick={() => window.dispatchEvent(new Event('chatbot:open'))}
+                  className="sm:hidden w-11 h-11 rounded-xl bg-[#0a0a08] border-2 border-[#C9A84C]/40 shadow-lg shadow-[#C9A84C]/10 flex items-center justify-center transition-all hover:border-[#C9A84C]/70 hover:shadow-[#C9A84C]/25 hover:scale-105 relative"
+                  data-testid="hero-chatbot-trigger"
+                  aria-label="Ouvrir l'assistant"
+                >
+                  <Bot className="w-5 h-5 text-[#C9A84C]" />
+                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-[#0a0a08]" />
                 </button>
               </div>
 
