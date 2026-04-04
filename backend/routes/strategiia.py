@@ -24,6 +24,7 @@ from constants.guards import assert_valid_service, assert_premium_analyses_entry
 from constants.prompts import STRATEGIIA_SYSTEM_PROMPT, STRATEGIIA_BASIC_PROMPT, STRATEGIIA_PREMIUM_PROMPT
 from constants.assurance_knowledge import get_assurance_context, detect_insurer_from_text
 from constants.contestation_knowledge import get_contestation_context, detect_contestation_context
+from constants.mdph_knowledge import get_mdph_context, detect_mdph_context
 from routes.knowledge_patterns import get_knowledge_patterns_context
 from utils.llm import has_llm_key as _has_llm_key, llm_call, ANTHROPIC_API_KEY, EMERGENT_LLM_KEY
 from utils.notifications import notify_admin_incident as _notify_admin_incident
@@ -175,6 +176,18 @@ INSTRUCTION : Utilise cette matiere documentaire structuree pour affiner ta lect
     except Exception as e:
         logger.warning(f"StrategiIA {job_id}: Contestation context injection failed (non-blocking): {e}")
 
+    # INJECTION CONTEXTE MDPH — si demande MDPH detectee
+    mdph_context = ""
+    try:
+        detected_mdph = detect_mdph_context(situation)
+        if detected_mdph or type_dossier in ("demande_mdph", "demande mdph", "mdph"):
+            demande_key = detected_mdph or "general"
+            mdph_context = "\n\n" + get_mdph_context(demande_type=demande_key)
+            mdph_context += "\nINSTRUCTION : Utilise cette base de connaissances MDPH pour orienter le beneficiaire. Cite les conditions, delais, montants, voies de recours et erreurs a eviter. Adapte tes recommandations au type de demande detecte."
+            logger.info(f"StrategiIA {job_id}: MDPH context injected ({len(mdph_context)} chars, type={demande_key})")
+    except Exception as e:
+        logger.warning(f"StrategiIA {job_id}: MDPH context injection failed (non-blocking): {e}")
+
     # INJECTION KNOWLEDGE PATTERNS — couche d'enrichissement metier (non bloquant)
     enhanced_system = STRATEGIIA_SYSTEM_PROMPT
     if not improvement_optout:
@@ -193,7 +206,7 @@ INSTRUCTION : Utilise cette matiere documentaire structuree pour affiner ta lect
     for attempt in range(3):
         try:
             analysis_prompt = STRATEGIIA_PREMIUM_PROMPT if is_premium else STRATEGIIA_BASIC_PROMPT
-            user_msg = f"""Type de dossier : {type_dossier}\nRegime : {regime}\nDescription de la situation : {situation}\n{case_context}{dossier_express_context}{assurance_context}{contestation_context}\n\n{analysis_prompt}"""
+            user_msg = f"""Type de dossier : {type_dossier}\nRegime : {regime}\nDescription de la situation : {situation}\n{case_context}{dossier_express_context}{assurance_context}{contestation_context}{mdph_context}\n\n{analysis_prompt}"""
             session_id = f"strategiia_{str(uuid.uuid4())[:8]}"
             response = await llm_call(
                 ANTHROPIC_API_KEY, session_id, enhanced_system, user_msg, "anthropic", "claude-sonnet-4-5-20250929"

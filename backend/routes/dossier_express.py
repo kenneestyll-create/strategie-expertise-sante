@@ -24,6 +24,7 @@ from constants.guards import assert_valid_service, assert_premium_analyses_entry
 from constants.prompts import DOSSIER_EXPRESS_SYSTEM_PROMPT, DOSSIER_EXPRESS_PROMPT
 from constants.assurance_knowledge import get_assurance_context, detect_insurer_from_text
 from constants.contestation_knowledge import get_contestation_context, detect_contestation_context
+from constants.mdph_knowledge import get_mdph_context, detect_mdph_context
 from routes.knowledge_patterns import get_knowledge_patterns_context
 from utils.llm import (
     has_llm_key as _has_llm_key,
@@ -266,6 +267,18 @@ async def _process_dossier_express(dossier_id: str, email: str, name: str, situa
     except Exception as e:
         logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}] Contestation context injection failed (non-blocking): {e}")
 
+    # INJECTION CONTEXTE MDPH — si demande MDPH detectee
+    mdph_context = ""
+    try:
+        detected_mdph = detect_mdph_context(all_text)
+        if detected_mdph or (type_dossier or "").lower() in ("demande_mdph", "demande mdph", "mdph"):
+            demande_key = detected_mdph or "general"
+            mdph_context = "\n\n" + get_mdph_context(demande_type=demande_key)
+            mdph_context += "\nINSTRUCTION : Utilise cette base de connaissances MDPH pour orienter le beneficiaire. Cite les conditions, delais, montants, voies de recours et erreurs a eviter."
+            logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] MDPH context injected ({len(mdph_context)} chars, type={demande_key})")
+    except Exception as e:
+        logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}] MDPH context injection failed (non-blocking): {e}")
+
     # === STEP 4: AI Generation ===
     t_llm = time.monotonic()
     await _update_dossier_step(dossier_id, "analyse_ia", "en_attente_traitement", {"progress_step": "analyzing"})
@@ -303,7 +316,7 @@ DESCRIPTION DE LA SITUATION :
 
 CONTENU DES DOCUMENTS FOURNIS :
 {documents_text[:12000] if documents_text else "(Aucun document textuel fourni)"}
-{case_context}{assurance_context}{contestation_context}
+{case_context}{assurance_context}{contestation_context}{mdph_context}
 
 {DOSSIER_EXPRESS_PROMPT}"""
 
