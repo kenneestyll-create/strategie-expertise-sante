@@ -42,6 +42,17 @@ const REGIMES = [
   "Autre"
 ];
 
+const GARANTIES_ASSURANCE_DE = [
+  "ITT — Incapacité Temporaire Totale",
+  "ITP — Incapacité Temporaire Partielle",
+  "IPT — Invalidité Permanente Totale",
+  "IPP — Invalidité Permanente Partielle",
+  "PTIA — Perte Totale et Irréversible d'Autonomie",
+  "PE — Perte d'Emploi",
+  "Décès",
+  "Autre / Je ne sais pas",
+];
+
 /* ── Testimonials ── */
 const TESTIMONIALS = [
   { name: "Marie L.", type: "Accident du travail", text: "Le rapport m'a permis d'identifier des droits que je ne connaissais pas. Mon dossier CPAM a été accepté grâce aux recommandations.", rating: 5 },
@@ -638,7 +649,7 @@ export const DossierExpressPage = () => {
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Type de dossier</Label>
-                      <Select value={form.type_dossier} onValueChange={v => setForm(p => ({...p, type_dossier: v}))}>
+                      <Select value={form.type_dossier} onValueChange={v => setForm(p => ({...p, type_dossier: v, regime: ''}))}>
                         <SelectTrigger data-testid="de-type-select">
                           <SelectValue placeholder="Sélectionnez..." />
                         </SelectTrigger>
@@ -648,13 +659,22 @@ export const DossierExpressPage = () => {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>Régime</Label>
+                      <Label>
+                        {(form.type_dossier || '').toLowerCase().includes('assurance') ? 'Type de garantie concernée' : 'Régime'}
+                      </Label>
                       <Select value={form.regime} onValueChange={v => setForm(p => ({...p, regime: v}))}>
                         <SelectTrigger data-testid="de-regime-select">
-                          <SelectValue placeholder="Sélectionnez..." />
+                          <SelectValue placeholder={
+                            (form.type_dossier || '').toLowerCase().includes('assurance')
+                              ? "Sélectionnez la garantie..."
+                              : "Sélectionnez..."
+                          } />
                         </SelectTrigger>
                         <SelectContent>
-                          {REGIMES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                          {(form.type_dossier || '').toLowerCase().includes('assurance')
+                            ? GARANTIES_ASSURANCE_DE.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)
+                            : REGIMES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)
+                          }
                         </SelectContent>
                       </Select>
                     </div>

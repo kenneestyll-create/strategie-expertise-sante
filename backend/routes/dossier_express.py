@@ -22,6 +22,7 @@ from constants.statuses import Service, DossierStatus, DossierDelivery, DossierS
 from constants.workflows import LLM_MAX_RETRIES, LLM_RETRY_DELAY_SECONDS, MAX_FILE_SIZE, MAX_TOTAL_SIZE, MAX_FILES
 from constants.guards import assert_valid_service, assert_premium_analyses_entry
 from constants.prompts import DOSSIER_EXPRESS_SYSTEM_PROMPT, DOSSIER_EXPRESS_PROMPT
+from constants.assurance_knowledge import get_assurance_context
 from utils.llm import (
     has_llm_key as _has_llm_key,
     check_llm_health as _check_llm_health,
@@ -225,6 +226,19 @@ async def _process_dossier_express(dossier_id: str, email: str, name: str, situa
 
     timings["context_prep"] = round(time.monotonic() - t_ctx, 2)
 
+    # INJECTION CONTEXTE ASSURANTIEL — si litige assurantiel
+    assurance_context = ""
+    type_dossier_lower = (type_dossier or "").lower()
+    if "assurance" in type_dossier_lower or "litige" in type_dossier_lower:
+        try:
+            garantie = regime.upper() if regime and regime.upper() in ("ITT", "ITP", "IPT", "IPP", "PTIA", "PE", "DECES") else None
+            assurance_context = "\n\nBASE DE CONNAISSANCES ASSURANTIELLE (contrats analysés : GENERALI, GROUPAMA GAN VIE, CNP ASSURANCES) :\n"
+            assurance_context += get_assurance_context(garantie=garantie)
+            assurance_context += "\nINSTRUCTION : Utilise cette base de connaissances pour identifier les exclusions, red flags, et leviers stratégiques spécifiques au contrat et à la garantie concernés. Compare les assureurs si pertinent. Cite les seuils et conditions exactes."
+            logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] Assurance context injected ({len(assurance_context)} chars, garantie={garantie})")
+        except Exception as e:
+            logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}] Assurance context injection failed (non-blocking): {e}")
+
     # === STEP 4: AI Generation ===
     t_llm = time.monotonic()
     await _update_dossier_step(dossier_id, "analyse_ia", "en_attente_traitement", {"progress_step": "analyzing"})
@@ -247,7 +261,7 @@ DESCRIPTION DE LA SITUATION :
 
 CONTENU DES DOCUMENTS FOURNIS :
 {documents_text[:12000] if documents_text else "(Aucun document textuel fourni)"}
-{case_context}
+{case_context}{assurance_context}
 
 {DOSSIER_EXPRESS_PROMPT}"""
 

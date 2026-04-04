@@ -42,6 +42,17 @@ const REGIMES = [
   { value: 'autre', label: "Autre" },
 ];
 
+const GARANTIES_ASSURANCE = [
+  { value: 'ITT', label: "ITT — Incapacité Temporaire Totale" },
+  { value: 'ITP', label: "ITP — Incapacité Temporaire Partielle" },
+  { value: 'IPT', label: "IPT — Invalidité Permanente Totale" },
+  { value: 'IPP', label: "IPP — Invalidité Permanente Partielle" },
+  { value: 'PTIA', label: "PTIA — Perte Totale et Irréversible d'Autonomie" },
+  { value: 'PE', label: "PE — Perte d'Emploi" },
+  { value: 'DECES', label: "Décès" },
+  { value: 'autre', label: "Autre / Je ne sais pas" },
+];
+
 export const StrategiIA = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { isAdminMode, adminToken } = useAdminTest();
@@ -78,6 +89,9 @@ export const StrategiIA = () => {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [analysePremium, setAnalysePremium] = useState(false);
   const [scoreData, setScoreData] = useState(null);
+
+  // Reset regime when switching type_dossier (régime ↔ garantie)
+  useEffect(() => { setRegime(''); }, [typeDossier]);
 
   // Fetch relevance score when we have results
   useEffect(() => {
@@ -254,7 +268,9 @@ export const StrategiIA = () => {
       const { data } = await axios.post(`${API}/strategiia/generate-pdf`, {
         analysis: premiumResult,
         type_dossier: TYPES_DOSSIER.find(t => t.value === typeDossier)?.label || typeDossier,
-        regime: REGIMES.find(r => r.value === regime)?.label || regime,
+        regime: typeDossier === 'assurance'
+          ? (GARANTIES_ASSURANCE.find(g => g.value === regime)?.label || regime)
+          : (REGIMES.find(r => r.value === regime)?.label || regime),
         name: email,
         premium_pdf: premiumPdf
       });
@@ -380,11 +396,18 @@ export const StrategiIA = () => {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label className="font-medium">Régime</Label>
+                      <Label className="font-medium">
+                        {typeDossier === 'assurance' ? 'Type de garantie concernée' : 'Régime'}
+                      </Label>
                       <Select value={regime} onValueChange={setRegime}>
-                        <SelectTrigger data-testid="strategiia-regime-select"><SelectValue placeholder="Sélectionnez votre régime" /></SelectTrigger>
+                        <SelectTrigger data-testid="strategiia-regime-select">
+                          <SelectValue placeholder={typeDossier === 'assurance' ? "Sélectionnez la garantie" : "Sélectionnez votre régime"} />
+                        </SelectTrigger>
                         <SelectContent>
-                          {REGIMES.map(r => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+                          {typeDossier === 'assurance'
+                            ? GARANTIES_ASSURANCE.map(g => <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>)
+                            : REGIMES.map(r => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)
+                          }
                         </SelectContent>
                       </Select>
                     </div>

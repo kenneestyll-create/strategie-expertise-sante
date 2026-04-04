@@ -22,6 +22,7 @@ from constants.statuses import Service, PremiumStatus, JobStatus
 from constants.workflows import LLM_MAX_RETRIES, LLM_RETRY_DELAY_SECONDS, LLM_MIN_ANALYSIS_LENGTH, STRATEGIIA_FREE_MONTHLY_QUOTA
 from constants.guards import assert_valid_service, assert_premium_analyses_entry
 from constants.prompts import STRATEGIIA_SYSTEM_PROMPT, STRATEGIIA_BASIC_PROMPT, STRATEGIIA_PREMIUM_PROMPT
+from constants.assurance_knowledge import get_assurance_context
 from utils.llm import has_llm_key as _has_llm_key, llm_call, ANTHROPIC_API_KEY, EMERGENT_LLM_KEY
 from utils.notifications import notify_admin_incident as _notify_admin_incident
 
@@ -137,10 +138,22 @@ INSTRUCTION : Utilise cette matiere documentaire structuree pour affiner ta lect
         except Exception as e:
             logger.warning(f"StrategiIA {job_id}: Failed to fetch Dossier Express context: {e}")
 
+    # INJECTION CONTEXTE ASSURANTIEL — si litige assurantiel, injecter la base de connaissances
+    assurance_context = ""
+    if type_dossier in ("assurance", "litige_assurantiel", "litige assurance / protection juridique"):
+        try:
+            garantie = regime.upper() if regime and regime.upper() in ("ITT", "ITP", "IPT", "IPP", "PTIA", "PE", "DECES") else None
+            assurance_context = "\n\nBASE DE CONNAISSANCES ASSURANTIELLE (contrats analysés : GENERALI, GROUPAMA GAN VIE, CNP ASSURANCES) :\n"
+            assurance_context += get_assurance_context(garantie=garantie)
+            assurance_context += "\nINSTRUCTION : Utilise cette base de connaissances pour identifier les exclusions, red flags, et leviers stratégiques spécifiques au contrat et à la garantie concernés. Compare les assureurs si pertinent. Cite les seuils et conditions exactes."
+            logger.info(f"StrategiIA {job_id}: Assurance context injected ({len(assurance_context)} chars, garantie={garantie})")
+        except Exception as e:
+            logger.warning(f"StrategiIA {job_id}: Assurance context injection failed (non-blocking): {e}")
+
     for attempt in range(3):
         try:
             analysis_prompt = STRATEGIIA_PREMIUM_PROMPT if is_premium else STRATEGIIA_BASIC_PROMPT
-            user_msg = f"""Type de dossier : {type_dossier}\nRegime : {regime}\nDescription de la situation : {situation}\n{case_context}{dossier_express_context}\n\n{analysis_prompt}"""
+            user_msg = f"""Type de dossier : {type_dossier}\nRegime : {regime}\nDescription de la situation : {situation}\n{case_context}{dossier_express_context}{assurance_context}\n\n{analysis_prompt}"""
             session_id = f"strategiia_{str(uuid.uuid4())[:8]}"
             response = await llm_call(
                 ANTHROPIC_API_KEY, session_id, STRATEGIIA_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
