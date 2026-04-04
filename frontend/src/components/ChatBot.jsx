@@ -196,15 +196,7 @@ export const ChatBot = () => {
     <>
       {/* Mascot Floating Button — Premium */}
       {!isOpen && (!isMobile || isHomePage) && (
-        <>
-          <style>{`
-            @media (max-width: 639px) {
-              [data-testid="chatbot-fab-wrapper"] {
-                bottom: calc(100dvh - 567px) !important;
-              }
-            }
-          `}</style>
-          <div className="fixed sm:bottom-6 right-4" style={{ zIndex: 'var(--z-chatbot)' }} data-testid="chatbot-fab-wrapper">
+        <div className="fixed top-[523px] sm:top-auto sm:bottom-6 right-4" style={{ zIndex: 'var(--z-chatbot)' }} data-testid="chatbot-fab-wrapper">
           <button
             onClick={() => { setIsOpen(true); }}
             className="group relative w-11 h-11 rounded-xl bg-[#0a0a08] border-2 border-[#C9A84C]/40 shadow-lg shadow-[#C9A84C]/10 flex items-center justify-center transition-all duration-300 hover:border-[#C9A84C]/70 hover:shadow-[#C9A84C]/25 hover:scale-105"
@@ -215,8 +207,7 @@ export const ChatBot = () => {
             {/* Online indicator */}
             <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-[#0a0a08]" />
           </button>
-          </div>
-        </>
+        </div>
       )}
 
       {/* Chat Window */}
