@@ -188,6 +188,7 @@ export const DossierExpressPage = () => {
   const [loading, setLoading] = useState(false);
   const { isAdminMode, adminToken } = useAdminTest();
   const [consent, setConsent] = useState(false);
+  const [improvementOptout, setImprovementOptout] = useState(false);
   const [form, setForm] = useState({
     email: '', name: '', situation: '',
     type_dossier: '', regime: '',
@@ -416,13 +417,15 @@ export const DossierExpressPage = () => {
         name: form.name, email: form.email, situation: form.situation,
         type_dossier: form.type_dossier, regime: form.regime,
         documents_text: documentsText, document_details: documentDetails,
-        original_documents: storedFiles, premium_pdf: isPremium
+        original_documents: storedFiles, premium_pdf: isPremium,
+        improvement_optout: improvementOptout
       } : {
         session_id: searchParams.get('session_id') || '',
         email: form.email, name: form.name,
         situation: form.situation, type_dossier: form.type_dossier,
         regime: form.regime, documents_text: documentsText, document_details: documentDetails,
-        original_documents: storedFiles, premium_pdf: isPremium
+        original_documents: storedFiles, premium_pdf: isPremium,
+        improvement_optout: improvementOptout
       };
       const headers = isAdminBypass ? { 'Authorization': `Bearer ${adminToken}` } : {};
       const res = await axios.post(endpoint, payload, { headers });
@@ -768,7 +771,7 @@ export const DossierExpressPage = () => {
                     />
                   </div>
 
-                  <DataConsentBox checked={consent} onChange={setConsent} className="mt-3" />
+                  <DataConsentBox checked={consent} onChange={setConsent} className="mt-3" improvementOptout={improvementOptout} onImprovementOptoutChange={setImprovementOptout} />
 
                   {/* Upsell options */}
                   <div className="space-y-2.5 pt-2">

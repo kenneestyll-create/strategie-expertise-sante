@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Shield, ChevronDown, ExternalLink } from 'lucide-react';
+import { Shield, ChevronDown, ExternalLink, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export const DataConsentBox = ({ checked, onChange, className = '', variant = 'documents' }) => {
+export const DataConsentBox = ({ checked, onChange, className = '', variant = 'documents', improvementOptout = false, onImprovementOptoutChange = null }) => {
   const [showDetails, setShowDetails] = useState(false);
+  const [showImprovement, setShowImprovement] = useState(false);
 
   const isInfoOnly = variant === 'informations';
 
@@ -24,7 +25,7 @@ export const DataConsentBox = ({ checked, onChange, className = '', variant = 'd
         </div>
       </div>
 
-      {/* Accordion */}
+      {/* Accordion — Que deviennent mes documents */}
       <button
         type="button"
         onClick={() => setShowDetails(!showDetails)}
@@ -87,6 +88,7 @@ export const DataConsentBox = ({ checked, onChange, className = '', variant = 'd
         </div>
       )}
 
+      {/* Checkbox principale — consentement */}
       <label className="flex items-start gap-2.5 cursor-pointer group" data-testid="data-consent-checkbox-label">
         <input
           type="checkbox"
@@ -102,6 +104,46 @@ export const DataConsentBox = ({ checked, onChange, className = '', variant = 'd
           }
         </span>
       </label>
+
+      {/* Bloc amelioration continue — discret, deployable */}
+      <div className="ml-7 border-t border-[#C9A84C]/10 pt-2.5 mt-1">
+        <button
+          type="button"
+          onClick={() => setShowImprovement(!showImprovement)}
+          className="flex items-center gap-1.5 text-xs text-[#1A1A1A]/50 hover:text-[#C9A84C] transition-colors font-medium"
+          data-testid="improvement-toggle"
+        >
+          <TrendingUp className="w-3 h-3" />
+          Amélioration continue du service
+          <ChevronDown className={`w-3 h-3 transition-transform ${showImprovement ? 'rotate-180' : ''}`} />
+        </button>
+
+        {showImprovement && (
+          <div className="mt-2 text-[11px] text-[#1A1A1A]/55 leading-relaxed space-y-2" data-testid="improvement-details">
+            <p>
+              Afin d'améliorer la pertinence et la qualité de ses analyses, Stratégie & Expertise Santé peut exploiter certains enseignements issus des dossiers traités, <strong>uniquement sous forme de données strictement anonymisées, agrégées et non réidentifiables</strong>, dans le respect du RGPD et des obligations de confidentialité.
+            </p>
+            <p>
+              Aucune donnée nominative, médicale ou assurantielle identifiable n'est réutilisée pour un autre dossier.
+            </p>
+            {onImprovementOptoutChange && (
+              <label className="flex items-start gap-2 cursor-pointer group mt-1.5" data-testid="improvement-optout-label">
+                <input
+                  type="checkbox"
+                  checked={improvementOptout}
+                  onChange={e => onImprovementOptoutChange(e.target.checked)}
+                  className="mt-0.5 w-3.5 h-3.5 rounded border-[#C9A84C]/30 text-[#C9A84C] focus:ring-[#C9A84C]/20 cursor-pointer"
+                  data-testid="improvement-optout-checkbox"
+                />
+                <span className="text-[11px] text-[#1A1A1A]/60 group-hover:text-[#1A1A1A]/80 transition-colors leading-relaxed">
+                  Je ne souhaite pas que des enseignements anonymisés issus de mon dossier contribuent à l'amélioration du service.
+                </span>
+              </label>
+            )}
+          </div>
+        )}
+      </div>
+
       <p className="text-[11px] text-[#1A1A1A]/50 pl-6 leading-relaxed">
         Vous restez propriétaire de vos données.{' '}
         <a href="mailto:contact@strategie-expertise-sante.fr" className="underline hover:text-[#C9A84C] transition-colors">Demander une suppression</a>.{' '}

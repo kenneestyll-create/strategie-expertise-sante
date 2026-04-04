@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
-import { Shield, Lock, Eye, Trash2, Mail, Server, FileText, Users, Cpu, Clock } from 'lucide-react';
+import { Shield, Lock, Eye, Trash2, Mail, Server, FileText, Users, Cpu, Clock, TrendingUp } from 'lucide-react';
 
 export const PolitiqueConfidentialitePage = () => {
   const sections = [
@@ -105,6 +105,18 @@ export const PolitiqueConfidentialitePage = () => {
     {
       icon: Mail, title: "11. Contact",
       content: "Pour toute question relative à la protection de vos données personnelles ou pour exercer vos droits, contactez-nous : Email : contact@strategie-expertise-sante.fr. Nous nous engageons à traiter votre demande avec diligence et confidentialité."
+    },
+    {
+      icon: TrendingUp, title: "12. Amélioration du service et réutilisation limitée de données anonymisées",
+      content: "Dans une logique d'amélioration continue de la qualité du service, Stratégie & Expertise Santé peut analyser certains schémas récurrents, tendances documentaires, logiques de blocage, motifs de refus, leviers procéduraux ou configurations de dossier, uniquement après anonymisation stricte et irréversible lorsque cela est techniquement et juridiquement possible. Les données ainsi exploitées le sont exclusivement afin de : renforcer la qualité d'analyse ; améliorer la structuration des réponses ; affiner les cas-types et matrices de lecture ; améliorer la cohérence stratégique et documentaire du service.",
+      list: [
+        "Les données identifiantes ne sont jamais réinjectées dans une base de connaissances mutualisée",
+        "Les données médicales, assurantielles ou professionnelles nominatives d'un client ne sont jamais utilisées pour un autre client",
+        "La réutilisation éventuelle repose uniquement sur des données anonymisées, agrégées, non réidentifiables et détachées du dossier d'origine",
+        "Les personnes concernées sont informées de manière claire de cette finalité d'amélioration du service",
+        "Un droit d'opposition peut être exercé lorsque cela est applicable au traitement concerné"
+      ],
+      footer: "Important : la simple suppression du nom ou du prénom d'un dossier ne constitue pas nécessairement une anonymisation suffisante. Stratégie & Expertise Santé applique une logique de minimisation, de cloisonnement, de sécurité et de non-réutilisation brute des dossiers clients."
     }
   ];
 
@@ -125,7 +137,7 @@ export const PolitiqueConfidentialitePage = () => {
             <p className="text-muted-foreground max-w-xl mx-auto">
               Protection de vos données personnelles conformément au Règlement Général sur la Protection des Données (RGPD).
             </p>
-            <p className="text-sm text-muted-foreground mt-2">Dernière mise à jour : 27 mars 2026</p>
+            <p className="text-sm text-muted-foreground mt-2">Dernière mise à jour : 4 avril 2026</p>
           </div>
 
           <div className="space-y-6">

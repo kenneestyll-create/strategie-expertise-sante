@@ -788,6 +788,7 @@ async def dossier_express_admin_bypass(request: Request):
     regime = body.get("regime", "")
     documents_text = body.get("documents_text", "")
     premium_pdf = body.get("premium_pdf", False)
+    improvement_optout = body.get("improvement_optout", False)
     email = payload.get("email", "admin@test")
 
     if not situation.strip():
@@ -809,6 +810,7 @@ async def dossier_express_admin_bypass(request: Request):
         "processing_step": "checkout_valide",
         "premium_pdf": premium_pdf,
         "admin_test": True,
+        "improvement_optout": improvement_optout,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.dossier_express.insert_one(dossier_entry)

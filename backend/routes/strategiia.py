@@ -116,7 +116,7 @@ _jobs = {}
 
 # LLM functions: imported from utils/llm.py -> llm_call, llm_sync_call, llm_stream_call, llm_async_call
 
-async def _run_analysis(job_id, type_dossier, regime, situation, is_premium, email, similar_cases, case_context, is_admin_test=False):
+async def _run_analysis(job_id, type_dossier, regime, situation, is_premium, email, similar_cases, case_context, is_admin_test=False, improvement_optout=False):
     """Background task for LLM analysis with retry."""
     last_error = ""
 
@@ -182,7 +182,7 @@ INSTRUCTION : Utilise cette matiere documentaire structuree pour affiner ta lect
             response = await llm_call(
                 ANTHROPIC_API_KEY, session_id, STRATEGIIA_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
             )
-            analysis_doc = {"id": str(uuid.uuid4()), "type_dossier": type_dossier, "regime": regime, "situation": situation[:500], "analysis": response, "is_premium": is_premium, "email": email if email else "", "admin_test": is_admin_test, "job_id": job_id, "created_at": datetime.now(timezone.utc).isoformat()}
+            analysis_doc = {"id": str(uuid.uuid4()), "type_dossier": type_dossier, "regime": regime, "situation": situation[:500], "analysis": response, "is_premium": is_premium, "email": email if email else "", "admin_test": is_admin_test, "job_id": job_id, "created_at": datetime.now(timezone.utc).isoformat(), "improvement_optout": improvement_optout}
             # Trace interne assureur détecté (non bloquant)
             if type_dossier in ("assurance", "litige_assurantiel", "litige assurance / protection juridique"):
                 try:
@@ -235,6 +235,7 @@ async def strategiia_analyze(request: Request):
     is_premium = body.get("premium", False)
     email = body.get("email", "").strip().lower()
     is_admin_test = body.get("admin_test", False)
+    improvement_optout = body.get("improvement_optout", False)
     # Check admin token manually if admin_test requested
     if is_admin_test:
         auth_header = request.headers.get("authorization", "")
@@ -269,7 +270,7 @@ async def strategiia_analyze(request: Request):
 
     job_id = str(uuid.uuid4())[:12]
     _jobs[job_id] = {"status": "pending"}
-    asyncio.create_task(_run_analysis(job_id, type_dossier, regime, situation, is_premium, email, similar_cases, case_context, is_admin_test=is_admin_test))
+    asyncio.create_task(_run_analysis(job_id, type_dossier, regime, situation, is_premium, email, similar_cases, case_context, is_admin_test=is_admin_test, improvement_optout=improvement_optout))
     return {"job_id": job_id, "status": "pending", "admin_test": is_admin_test}
 
 

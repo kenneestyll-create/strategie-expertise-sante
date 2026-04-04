@@ -10,6 +10,7 @@ from routes.misc import router as misc_router
 from routes.conseils import router as conseils_router
 from routes.tracking import router as tracking_router
 from routes.upload import router as upload_router
+from routes.knowledge_patterns import router as knowledge_patterns_router
 
 all_routers = [
     public_router,
@@ -24,4 +25,5 @@ all_routers = [
     conseils_router,
     tracking_router,
     upload_router,
+    knowledge_patterns_router,
 ]

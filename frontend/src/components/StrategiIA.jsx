@@ -130,6 +130,7 @@ export const StrategiIA = () => {
   const [remaining, setRemaining] = useState(null);
   const [registerLoading, setRegisterLoading] = useState(false);
   const [consent, setConsent] = useState(false);
+  const [improvementOptout, setImprovementOptout] = useState(false);
   const [premiumPdf, setPremiumPdf] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [analysePremium, setAnalysePremium] = useState(false);
@@ -159,7 +160,8 @@ export const StrategiIA = () => {
       if (isAdminMode && adminToken) headers['Authorization'] = `Bearer ${adminToken}`;
       const { data } = await axios.post(`${API}/strategiia/analyze`, {
         type_dossier: typeDossier, regime, situation, premium: false,
-        admin_test: isAdminMode
+        admin_test: isAdminMode,
+        improvement_optout: improvementOptout
       }, { headers });
       if (data.quota_exceeded) {
         toast.error(data.message);
@@ -258,7 +260,8 @@ export const StrategiIA = () => {
       try {
         const { data } = await axios.post(`${API}/strategiia/admin-bypass-premium`, {
           situation, type_dossier: typeDossier, regime,
-          premium_pdf: premiumPdf, analyse_premium: analysePremium
+          premium_pdf: premiumPdf, analyse_premium: analysePremium,
+          improvement_optout: improvementOptout
         }, { headers: { 'Authorization': `Bearer ${adminToken}` } });
         if (premiumPdf) setPremiumPdf(true);
         const jobId = data.job_id;
@@ -473,7 +476,7 @@ export const StrategiIA = () => {
                         data-testid="strategiia-situation-input"
                       />
                     </div>
-                    <DataConsentBox checked={consent} onChange={setConsent} variant="informations" />
+                    <DataConsentBox checked={consent} onChange={setConsent} variant="informations" improvementOptout={improvementOptout} onImprovementOptoutChange={setImprovementOptout} />
 
                     <Button onClick={handleAnalyze} className="w-full rounded-lg gap-2" disabled={!typeDossier || !situation.trim() || !consent} data-testid="strategiia-analyze-button">
                       <Brain className="w-4 h-4" /> Obtenir ma pré-analyse gratuite
