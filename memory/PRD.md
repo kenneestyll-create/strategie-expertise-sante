@@ -60,6 +60,18 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
   - Tableau comparatif étendu à 9 critères (dont restriction géographique, doublement capital)
   - Détecteur mis à jour : "gmf", "accolia", "contrat 07001", "covea"
   - 9/9 tests PASS, zéro régression
+- **Mapping contextuel dynamique du 2e dropdown** — DONE (04/04/2026)
+  - Chaque type de dossier a son propre sous-menu contextuel :
+    - AT / MP / Autre → "Régime" (conservé)
+    - Litige assurantiel → "Type de garantie" (ITT, PTIA, etc.)
+    - Expertise médicale → "Type d'expertise" (amiable, judiciaire, contre-expertise, CPAM, employeur)
+    - Demande MDPH → "Type de demande MDPH" (AAH/PCH/RQTH/CMI/orientation/renouvellement refusés)
+    - Faute inexcusable → "Phase judiciaire" (pré-contentieux, CPAM, tribunal, appel)
+    - Recours / Contestation → "Type de recours" (CRA, contentieux, expertise de recours, médiation)
+    - Contestation taux IPP (DE) → "Objet de la contestation"
+  - Implémenté dans StrategiIA + DossierExpress
+  - Reset automatique du 2e dropdown au changement de type
+  - 15/15 tests PASS, zéro régression, zéro modification backend
 
 ## Animations blocs flottants (VALIDÉ — NE PAS MODIFIER)
 - Fichier : `/app/frontend/src/pages/HomePage.jsx` (style tag en fin de `<main>`)
