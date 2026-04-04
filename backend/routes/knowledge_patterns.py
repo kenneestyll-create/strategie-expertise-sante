@@ -33,6 +33,15 @@ from utils.auth import get_current_admin
 
 router = APIRouter(prefix="/knowledge-patterns", tags=["knowledge-patterns"])
 
+
+@router.post("/seed")
+async def seed_patterns_endpoint(admin=Depends(get_current_admin)):
+    """Injecte les patterns seed si la base est vide (admin only)."""
+    from constants.seed_patterns import seed_knowledge_patterns
+    result = await seed_knowledge_patterns(db)
+    return result
+
+
 # =============================================================================
 # SCHEMA DE REFERENCE — knowledge_patterns
 # =============================================================================
@@ -152,32 +161,152 @@ async def pattern_stats(admin=Depends(get_current_admin)):
 
 
 # =============================================================================
-# HELPER — get_validated_patterns_context()
+# HELPER — MOTEUR DE SELECTION INTELLIGENT + INJECTION MAITRISEE
+# =============================================================================
+# Regles absolues (Missions 3-4-7-8) :
+# - Max 5 patterns, 4 vigilances, 4 leviers
+# - Priorite : exact match > categorie coherente > rien
+# - Anti-hallucination : formulations conditionnelles uniquement
+# - Si contexte trop flou : ne rien injecter ou 1-2 vigilances generales
+# - Uniquement usage_autorise=True
 # =============================================================================
 
-async def get_validated_patterns_context(categorie=None, metier=None, limit=20):
+async def get_knowledge_patterns_context(
+    categorie=None, metier=None, type_sinistre=None,
+    type_garantie=None, blocage=None, situation_text=None
+):
     """
-    Retourne les patterns valides pour injection dans le prompt LLM.
-    Uniquement les patterns avec usage_autorise=True.
+    Moteur de selection intelligent des patterns valides.
+    Retourne un contexte court, cible et non bavard pour injection SYSTEM.
+    Retourne "" si rien de pertinent ou base vide.
     """
-    query = {"usage_autorise": True}
-    if categorie:
-        query["categorie_dossier"] = categorie
-    if metier:
-        query["metier"] = metier
-
-    patterns = await db.knowledge_patterns.find(query, {"_id": 0, "description": 1, "pattern_type": 1, "blocage_principal": 1, "tags": 1}).sort("niveau_confiance", 1).to_list(limit)
-
-    if not patterns:
+    # Verifier qu'il y a des patterns valides
+    total_validated = await db.knowledge_patterns.count_documents({"usage_autorise": True})
+    if total_validated == 0:
         return ""
 
-    lines = ["\n=== ENSEIGNEMENTS INTERNES ANONYMISES ==="]
-    for p in patterns:
+    # Normaliser les entrees
+    def norm(v):
+        import unicodedata
+        return unicodedata.normalize("NFD", (v or "").lower().strip()).encode("ascii", "ignore").decode("ascii")
+
+    cat_n = norm(categorie)
+    met_n = norm(metier)
+    sin_n = norm(type_sinistre)
+    gar_n = norm(type_garantie)
+    blo_n = norm(blocage)
+
+    # Evaluer la richesse du contexte (Mission 8)
+    context_signals = sum(1 for v in [cat_n, met_n, sin_n, gar_n, blo_n] if v)
+    if context_signals == 0:
+        return ""
+
+    # Recuperer tous les patterns valides
+    all_patterns = await db.knowledge_patterns.find(
+        {"usage_autorise": True},
+        {"_id": 0, "description": 1, "pattern_type": 1, "categorie_dossier": 1,
+         "metier": 1, "type_sinistre": 1, "type_garantie": 1,
+         "blocage_principal": 1, "niveau_confiance": 1, "tags": 1}
+    ).to_list(100)
+
+    if not all_patterns:
+        return ""
+
+    # Scoring par priorite (Mission 4)
+    scored = []
+    for p in all_patterns:
+        score = 0
+        p_cat = norm(p.get("categorie_dossier", ""))
+        p_met = norm(p.get("metier", ""))
+        p_sin = norm(p.get("type_sinistre", ""))
+        p_gar = norm(p.get("type_garantie", ""))
+        p_blo = norm(p.get("blocage_principal", ""))
+        p_tags = [norm(t) for t in p.get("tags", [])]
+
+        # Priorite haute : exact match (+10 chacun)
+        if met_n and p_met and met_n == p_met:
+            score += 10
+        if sin_n and p_sin and sin_n == p_sin:
+            score += 10
+        if gar_n and p_gar and gar_n == p_gar:
+            score += 10
+        if blo_n and p_blo and blo_n == p_blo:
+            score += 10
+
+        # Priorite moyenne : categorie coherente (+5)
+        if cat_n and p_cat and cat_n == p_cat:
+            score += 5
+
+        # Priorite moyenne : match partiel dans tags (+3)
+        for signal in [cat_n, met_n, sin_n, gar_n, blo_n]:
+            if signal and signal in p_tags:
+                score += 3
+
+        # Priorite moyenne : metier voisin / contenu dans (+2)
+        if met_n and p_met and (met_n in p_met or p_met in met_n):
+            score += 2
+
+        # Bonus confiance elevee
+        if p.get("niveau_confiance") == "eleve":
+            score += 2
+
+        # Ignorer si aucun match (Mission 8 : pas d'injection floue)
+        if score > 0:
+            scored.append((score, p))
+
+    if not scored:
+        # Contexte trop faible : retourner rien (Mission 8)
+        return ""
+
+    # Trier par score decroissant
+    scored.sort(key=lambda x: -x[0])
+
+    # Categoriser par type (Mission 3 : limites strictes)
+    patterns_out = []   # max 5
+    vigilances_out = [] # max 4
+    leviers_out = []    # max 4
+
+    for _score, p in scored:
         ptype = p.get("pattern_type", "")
         desc = p.get("description", "")
-        blocage = p.get("blocage_principal", "")
-        prefix = {"blocage": "BLOCAGE", "levier": "LEVIER", "erreur_frequente": "ERREUR FREQUENTE", "piece_manquante": "PIECE MANQUANTE", "argument_utile": "ARGUMENT", "signal_faible": "SIGNAL", "vigilance": "VIGILANCE"}.get(ptype, ptype.upper())
-        extra = f" (blocage: {blocage})" if blocage else ""
-        lines.append(f"  [{prefix}{extra}] {desc}")
+
+        if ptype in ("vigilance", "erreur_frequente", "signal_faible"):
+            if len(vigilances_out) < 4:
+                vigilances_out.append(desc)
+        elif ptype in ("levier", "argument_utile"):
+            if len(leviers_out) < 4:
+                leviers_out.append(desc)
+        else:
+            if len(patterns_out) < 5:
+                patterns_out.append(desc)
+
+        # Limiter le total a 12 elements
+        if len(patterns_out) + len(vigilances_out) + len(leviers_out) >= 12:
+            break
+
+    # Si trop peu de resultats pertinents, retourner rien (Mission 8)
+    total_selected = len(patterns_out) + len(vigilances_out) + len(leviers_out)
+    if total_selected == 0:
+        return ""
+
+    # Construire le contexte d'injection (Mission 2 + Mission 7)
+    lines = []
+    lines.append("\n\n=== ENSEIGNEMENTS METIER VALIDES (couche d'enrichissement — ne remplace jamais les elements du dossier) ===")
+    lines.append("REGLE ABSOLUE : Ces enseignements sont des tendances observees, PAS des faits du dossier. Utilise des formulations conditionnelles : 'ce type de situation expose souvent a...', 'dans ce type de configuration, la difficulte porte frequemment sur...', 'cela peut traduire un blocage classique de...'. JAMAIS de certitude non confirmee par les pieces du dossier.")
+
+    if patterns_out:
+        lines.append("\nPatterns metier pertinents :")
+        for desc in patterns_out:
+            lines.append(f"  - {desc}")
+
+    if vigilances_out:
+        lines.append("\nVigilances recurrentes :")
+        for desc in vigilances_out:
+            lines.append(f"  - {desc}")
+
+    if leviers_out:
+        lines.append("\nLeviers recurrents valides :")
+        for desc in leviers_out:
+            lines.append(f"  - {desc}")
 
     return "\n".join(lines)

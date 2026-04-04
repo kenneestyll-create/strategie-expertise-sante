@@ -24,6 +24,7 @@ from constants.guards import assert_valid_service, assert_premium_analyses_entry
 from constants.prompts import STRATEGIIA_SYSTEM_PROMPT, STRATEGIIA_BASIC_PROMPT, STRATEGIIA_PREMIUM_PROMPT
 from constants.assurance_knowledge import get_assurance_context, detect_insurer_from_text
 from constants.contestation_knowledge import get_contestation_context, detect_contestation_context
+from routes.knowledge_patterns import get_knowledge_patterns_context
 from utils.llm import has_llm_key as _has_llm_key, llm_call, ANTHROPIC_API_KEY, EMERGENT_LLM_KEY
 from utils.notifications import notify_admin_incident as _notify_admin_incident
 
@@ -174,13 +175,28 @@ INSTRUCTION : Utilise cette matiere documentaire structuree pour affiner ta lect
     except Exception as e:
         logger.warning(f"StrategiIA {job_id}: Contestation context injection failed (non-blocking): {e}")
 
+    # INJECTION KNOWLEDGE PATTERNS — couche d'enrichissement metier (non bloquant)
+    enhanced_system = STRATEGIIA_SYSTEM_PROMPT
+    if not improvement_optout:
+        try:
+            knowledge_context = await get_knowledge_patterns_context(
+                categorie=type_dossier, metier=regime,
+                type_sinistre=type_dossier, type_garantie=regime,
+                blocage=None, situation_text=situation
+            )
+            if knowledge_context:
+                enhanced_system = STRATEGIIA_SYSTEM_PROMPT + knowledge_context
+                logger.info(f"StrategiIA {job_id}: Knowledge patterns injected ({len(knowledge_context)} chars)")
+        except Exception as e:
+            logger.warning(f"StrategiIA {job_id}: Knowledge patterns injection failed (non-blocking): {e}")
+
     for attempt in range(3):
         try:
             analysis_prompt = STRATEGIIA_PREMIUM_PROMPT if is_premium else STRATEGIIA_BASIC_PROMPT
             user_msg = f"""Type de dossier : {type_dossier}\nRegime : {regime}\nDescription de la situation : {situation}\n{case_context}{dossier_express_context}{assurance_context}{contestation_context}\n\n{analysis_prompt}"""
             session_id = f"strategiia_{str(uuid.uuid4())[:8]}"
             response = await llm_call(
-                ANTHROPIC_API_KEY, session_id, STRATEGIIA_SYSTEM_PROMPT, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
+                ANTHROPIC_API_KEY, session_id, enhanced_system, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
             )
             analysis_doc = {"id": str(uuid.uuid4()), "type_dossier": type_dossier, "regime": regime, "situation": situation[:500], "analysis": response, "is_premium": is_premium, "email": email if email else "", "admin_test": is_admin_test, "job_id": job_id, "created_at": datetime.now(timezone.utc).isoformat(), "improvement_optout": improvement_optout}
             # Trace interne assureur détecté (non bloquant)
@@ -537,6 +553,7 @@ async def strategiia_admin_bypass(request: Request):
     regime = body.get("regime", "")
     premium_pdf = body.get("premium_pdf", False)
     analyse_premium = body.get("analyse_premium", False)
+    improvement_optout_admin = body.get("improvement_optout", False)
     email = payload.get("email", "admin@test")
     if not situation.strip() or not _has_llm_key():
         raise HTTPException(status_code=400, detail="Situation requise et service IA actif")
@@ -550,7 +567,7 @@ async def strategiia_admin_bypass(request: Request):
             case_context += f"- Type: {c.get('type_dossier')}, Régime: {c.get('regime')}, Durée: {c.get('duree')}, Stratégie: {c.get('strategie')}, Résultat: {c.get('resultat')}, Score: {c.get('score_pertinence', 'N/A')}/100\n"
     job_id = str(uuid.uuid4())[:12]
     _jobs[job_id] = {"status": "pending"}
-    asyncio.create_task(_run_analysis(job_id, type_dossier, regime, situation, True, email, similar_cases, case_context, is_admin_test=True))
+    asyncio.create_task(_run_analysis(job_id, type_dossier, regime, situation, True, email, similar_cases, case_context, is_admin_test=True, improvement_optout=improvement_optout_admin))
 
     # Register in premium_analyses for admin relecture workflow
     pa_entry = {

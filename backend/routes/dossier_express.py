@@ -24,6 +24,7 @@ from constants.guards import assert_valid_service, assert_premium_analyses_entry
 from constants.prompts import DOSSIER_EXPRESS_SYSTEM_PROMPT, DOSSIER_EXPRESS_PROMPT
 from constants.assurance_knowledge import get_assurance_context, detect_insurer_from_text
 from constants.contestation_knowledge import get_contestation_context, detect_contestation_context
+from routes.knowledge_patterns import get_knowledge_patterns_context
 from utils.llm import (
     has_llm_key as _has_llm_key,
     check_llm_health as _check_llm_health,
@@ -190,7 +191,7 @@ async def _update_dossier_step(dossier_id: str, processing_step: str, delivery_s
 # _generate_section_llmchat -> imported from utils/llm.py
 # _generate_dossier_report_multistage -> imported from utils/llm.py
 
-async def _process_dossier_express(dossier_id: str, email: str, name: str, situation: str, type_dossier: str, regime: str, documents_text: str, premium_pdf: bool = False):
+async def _process_dossier_express(dossier_id: str, email: str, name: str, situation: str, type_dossier: str, regime: str, documents_text: str, premium_pdf: bool = False, improvement_optout: bool = False):
     """Full pipeline with granular step tracking, timing instrumentation, and fail-safe notifications."""
     import time
     t_start = time.monotonic()
@@ -274,6 +275,21 @@ async def _process_dossier_express(dossier_id: str, email: str, name: str, situa
     llm_path_used = "none"
 
     # PATH A: Native Anthropic SDK — single direct call, no proxy, no batching
+    # INJECTION KNOWLEDGE PATTERNS — couche d'enrichissement metier (non bloquant)
+    enhanced_de_system = DOSSIER_EXPRESS_SYSTEM_PROMPT
+    if not improvement_optout:
+        try:
+            knowledge_context = await get_knowledge_patterns_context(
+                categorie=type_dossier, metier=regime,
+                type_sinistre=type_dossier, type_garantie=regime,
+                blocage=None, situation_text=situation
+            )
+            if knowledge_context:
+                enhanced_de_system = DOSSIER_EXPRESS_SYSTEM_PROMPT + knowledge_context
+                logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] Knowledge patterns injected ({len(knowledge_context)} chars)")
+        except Exception as e:
+            logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}] Knowledge patterns injection failed (non-blocking): {e}")
+
     if ANTHROPIC_API_KEY:
         llm_path_used = "native_anthropic"
         user_msg = f"""DOSSIER EXPRESS IA - Analyse complete demandee
@@ -298,7 +314,7 @@ CONTENU DES DOCUMENTS FOURNIS :
             try:
                 session_id_llm = f"dexpress_{dossier_id[:8]}_{attempt}"
                 analysis = await llm_call(
-                    ANTHROPIC_API_KEY, session_id_llm, DOSSIER_EXPRESS_SYSTEM_PROMPT, user_msg,
+                    ANTHROPIC_API_KEY, session_id_llm, enhanced_de_system, user_msg,
                     "anthropic", "claude-sonnet-4-5-20250929", max_tokens=8000
                 )
                 logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] PATH A native reussie (tentative {attempt+1}, {len(analysis or '')} chars)")
@@ -761,6 +777,7 @@ async def admin_retry_dossier(dossier_id: str, admin: dict = Depends(get_current
         dossier.get("regime", ""),
         dossier.get("documents_text", ""),
         premium_pdf=dossier.get("premium_pdf", False),
+        improvement_optout=dossier.get("improvement_optout", False),
     ))
 
     logger.info(f"Admin retry launched for dossier {dossier_id} by {admin.get('email')}")
@@ -817,7 +834,7 @@ async def dossier_express_admin_bypass(request: Request):
 
     # Launch async pipeline
     asyncio.create_task(_process_dossier_express(
-        dossier_id, email, name, situation, type_dossier, regime, documents_text, premium_pdf=premium_pdf
+        dossier_id, email, name, situation, type_dossier, regime, documents_text, premium_pdf=premium_pdf, improvement_optout=improvement_optout
     ))
 
     logger.info(f"[DOSSIER_EXPRESS][admin-bypass][{dossier_id}] Pipeline lance par {email}")
