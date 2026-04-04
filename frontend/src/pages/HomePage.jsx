@@ -284,7 +284,18 @@ export const HomePage = () => {
                   <Zap className="w-3 h-3" />
                   <span className="text-xs font-medium tracking-wide">Besoin urgent ?</span>
                 </button>
-                {/* Chatbot trigger — mobile only, in-flow with Besoin urgent */}
+                {/* ╔═══════════════════════════════════════════════════════════╗
+                   ║  ZONE GELÉE — CHATBOT MOBILE VALIDÉ LE 04/04/2026       ║
+                   ║                                                          ║
+                   ║  Position mobile VERROUILLÉE par ordre du responsable.   ║
+                   ║  INTERDICTION ABSOLUE de modifier sans ordre explicite.  ║
+                   ║  Aucun agent Emergent ne doit toucher ce positionnement. ║
+                   ║                                                          ║
+                   ║  Éléments protégés :                                     ║
+                   ║  - Bouton dans le flex "Besoin urgent ?" (sm:hidden)     ║
+                   ║  - Style, taille, icône Bot, pastille verte              ║
+                   ║  - Event chatbot:open                                    ║
+                   ╚═══════════════════════════════════════════════════════════╝ */}
                 <button
                   onClick={() => window.dispatchEvent(new Event('chatbot:open'))}
                   className="sm:hidden w-11 h-11 rounded-xl bg-[#0a0a08] border-2 border-[#C9A84C]/40 shadow-lg shadow-[#C9A84C]/10 flex items-center justify-center transition-all hover:border-[#C9A84C]/70 hover:shadow-[#C9A84C]/25 hover:scale-105 relative"
