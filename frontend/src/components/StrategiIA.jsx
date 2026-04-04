@@ -341,6 +341,15 @@ export const StrategiIA = () => {
   const handleCopyLink = () => { navigator.clipboard.writeText(getShareUrl()); setCopied(true); setTimeout(() => setCopied(false), 2000); };
 
   const handleClose = () => setIsOpen(false);
+
+  // Verrouille le scroll du body quand le modal est ouvert
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [isOpen]);
+
   const handleReset = () => {
     setStep('form');
     setTypeDossier(''); setRegime(''); setSituation('');
