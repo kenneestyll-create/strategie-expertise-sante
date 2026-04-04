@@ -31,7 +31,7 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - FAQ : correction champ `réponse` → `reponse` (réponses réaffichées) — DONE (03/04/2026)
 - 3 blocs flottants Section 2 : animation vague au hover desktop — DONE (03/04/2026)
 - 3 blocs flottants Section 2 : pulse doré + flottement permanent mobile+desktop — DONE (03/04/2026)
-- Verrouillage Premium des 3 rapports PDF (10 missions) + Scoring qualite interne — DONE (03/04/2026)
+- Verrouillage Premium des 3 rapports PDF (10 missions) + Scoring qualité interne — DONE (03/04/2026)
 - Navigation Admin mobile : Select dropdown avec optgroups remplace tabs horizontaux (03/04/2026)
 - Audit mobile Admin Dashboard complet — corrigé 9 sections responsive (03/04/2026)
 - Upgrade Chirurgical Premium des 3 prompts PDF (4 blocs premium + ciblage métier/sinistre/blocage) — DONE (03/04/2026)
@@ -39,6 +39,15 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - Chatbot optimisé sur claude-haiku-4-5 — DONE
 - Bug PDF Unicode résolu (police LiberationSans TTF) — DONE
 - Téléchargement PDF admin : axios → fetch natif — DONE
+- **Base de connaissances assurantielle** (`assurance_knowledge.py`) — DONE (04/04/2026)
+  - 3 assureurs : GENERALI, GROUPAMA GAN VIE, CNP ASSURANCES
+  - 7 garanties normalisées : ITT, ITP, IPT, IPP, PTIA, PE, DÉCÈS
+  - Tableau comparatif inter-assureurs (7 critères)
+  - Fonction `get_assurance_context()` injectable dans les prompts
+- **Injection contexte assurantiel dans StrategiIA + Dossier Express** — DONE (04/04/2026)
+  - Backend : injection automatique quand type_dossier = "assurance"
+  - Frontend : dropdown dynamique "Régime" ↔ "Type de garantie concernée"
+  - Testé et validé : 100% (12/12 vérifications)
 
 ## Animations blocs flottants (VALIDÉ — NE PAS MODIFIER)
 - Fichier : `/app/frontend/src/pages/HomePage.jsx` (style tag en fin de `<main>`)
@@ -52,16 +61,18 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 ## P1 — À venir
 - Checklist lancement live (clés Stripe/Anthropic production)
 - Fournir identifiants AWS S3 (stockage documents persistant)
+- Enrichir la base assurantielle avec de nouveaux contrats
 
 ## P2 — Backlog
 - Intégration HubSpot CRM (en attente identifiants)
 - Google Analytics / Plausible
 - Finalisation contenu juridique
 - Vérification domaine Resend
+- Fix chatbot hallucinations (attente infos factuelles S.E.S.)
 
 ## Suggestions gardées pour plus tard
-- **Accès Professionnel B2B** — Système à 3 niveaux (Client / Pro / Admin). Dashboard Pro dédié, rapports en marque blanche, tarif mensuel. Phase 1 : rôle `pro` + dashboard. Phase 2 : personnalisation PDF. Phase 3 : facturation Stripe récurrente.
-- **Amélioration OCR** — Google Vision API pour PDF scannés/photos. Gain estimé : 72% → 93%. Gratuit 1000 pages/mois.
+- **Accès Professionnel B2B** — Système à 3 niveaux (Client / Pro / Admin). Dashboard Pro dédié, rapports en marque blanche, tarif mensuel.
+- **Amélioration OCR** — Google Vision API pour PDF scannés/photos.
 - **Enrichir le prompt chatbot** — Ajouter faits réels sur S.E.S pour éviter hallucinations.
 
 ## Identifiants de test
