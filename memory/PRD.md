@@ -40,7 +40,7 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - Bug PDF Unicode résolu (police LiberationSans TTF) — DONE
 - Téléchargement PDF admin : axios → fetch natif — DONE
 - **Base de connaissances assurantielle** (`assurance_knowledge.py`) — DONE (04/04/2026)
-- **Base de connaissances contestation IPP** (`contestation_knowledge.py`) — DONE (04/04/2026) : Procedures CCAS RATP + regime general CPAM, contestation administrative/medicale, revision post-consolidation, recours tiers. Injection automatique par detection mots-cles.
+- **Base de connaissances contestation IPP** (`contestation_knowledge.py`) — DONE (04/04/2026) : Procedures CCAS RATP + regime general CPAM. Contenu : architecture regime special RATP, procedure declaration MP (adresses GIS/PAP/ASOS B203, Medecine-conseil CH34), delais instruction (Art. R.441-10 : 30j AT, 2 mois MP, silence=reconnaissance), delai complementaire (Art. R.441-14), CSOM (taux 10-60%, accord 12/07/2024), Commission Medicale RATP (recours 2 mois, assistance medecin), Conseil de Prevoyance (31 rue Belliard), contestation CRA (G2210) vs CRAM (G1197), revision post-consolidation (L.443-1), recours tiers (L.454-1). Injection automatique par detection mots-cles.
   - 3 assureurs : GENERALI, GROUPAMA GAN VIE, CNP ASSURANCES
   - 7 garanties normalisées : ITT, ITP, IPT, IPP, PTIA, PE, DÉCÈS
   - Tableau comparatif inter-assureurs (7 critères)
