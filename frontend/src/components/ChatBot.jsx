@@ -128,13 +128,6 @@ export const ChatBot = () => {
     return () => window.removeEventListener('strate-ask-ai', handler);
   }, []);
 
-  // Listen for chatbot:open event (from Hero mobile trigger)
-  useEffect(() => {
-    const handler = () => setIsOpen(true);
-    window.addEventListener('chatbot:open', handler);
-    return () => window.removeEventListener('chatbot:open', handler);
-  }, []);
-
   // Auto-send pending question when chatbot opens
   useEffect(() => {
     if (isOpen && pendingQuestionRef.current && !loading && !quotaExceeded) {
@@ -201,9 +194,9 @@ export const ChatBot = () => {
 
   return (
     <>
-      {/* Mascot Floating Button — Desktop only (mobile trigger is in Hero) */}
-      {!isOpen && !isMobile && (
-        <div className="fixed bottom-6 right-4" style={{ zIndex: 'var(--z-chatbot)' }} data-testid="chatbot-fab-wrapper">
+      {/* Mascot Floating Button — Premium */}
+      {!isOpen && (!isMobile || isHomePage) && (
+        <div className="absolute sm:fixed bottom-16 sm:bottom-6 right-4" style={{ zIndex: 'var(--z-chatbot)' }} data-testid="chatbot-fab-wrapper">
           <button
             onClick={() => { setIsOpen(true); }}
             className="group relative w-11 h-11 rounded-xl bg-[#0a0a08] border-2 border-[#C9A84C]/40 shadow-lg shadow-[#C9A84C]/10 flex items-center justify-center transition-all duration-300 hover:border-[#C9A84C]/70 hover:shadow-[#C9A84C]/25 hover:scale-105"
