@@ -581,6 +581,124 @@ ASSURANCE_KNOWLEDGE = {
             "Pas de garantie PE dans ce contrat.",
         ],
     },
+
+    # ==========================================================================
+    # GMF VIE — Contrat ACCOLIA n°07001 (Janvier 2025)
+    # ==========================================================================
+    "gmf_vie": {
+        "assureur": "GMF VIE (Groupe Covéa)",
+        "contract_name": "ACCOLIA - Assurance Temporaire Décès",
+        "reference": "Contrat n°07001",
+        "version": "Janvier 2025",
+        "type_contrat": "Assurance temporaire décès (NON emprunteur)",
+
+        "guarantees": {
+            "DECES": {
+                "definition": "Versement d'un capital au(x) beneficiaire(s) designe(s) en cas de deces de l'assure.",
+                "conditions": [
+                    "Capital choisi entre 20 000 et 49 000 euros",
+                    "Capital DOUBLE en cas de deces par accident corporel",
+                    "Capital cumule avec autres contrats GMF Vie (hors Pretilea) pris en compte pour le delai de carence",
+                ],
+                "seuils": "Capital minimum 20 000 euros, maximum 49 000 euros. Plafond global GMF Vie : 1 000 000 euros par assure.",
+                "age_limite": "80 ans (cessation au 31 decembre suivant le 80e anniversaire)",
+                "franchise": "Delai de carence de 6 mois pour deces NON accidentel (capital cumule <= 49 000 euros). Pas de carence pour deces par accident corporel.",
+                "duree_max": "Jusqu'a 80 ans",
+                "mode_evaluation": "Sur production de l'acte de deces + certificat medical confidentiel",
+                "exclusions": [
+                    "Suicide dans la 1ere annee d'assurance",
+                    "Parachutisme, parapente, deltaplane, ULM, saut a l'elastique",
+                    "Sport de competition, acrobatie, raid aerien",
+                    "Etat d'ebriete (taux >= 0,8 g/l sang)",
+                    "Usage de stupefiants ou psychotropes non prescrits medicalement",
+                    "Actes intentionnels pour obtenir les prestations",
+                    "Participation active a guerre civile, emeutes, rixes",
+                    "Risques de guerre etrangere",
+                    "Deces hors EEE, Suisse, Etats-Unis, Canada (restriction geographique)",
+                ],
+                "pieces_justificatives": [
+                    "Acte de deces",
+                    "Carte d'identite du beneficiaire",
+                    "Certificat medical confidentiel (cause du deces)",
+                    "Acte de notoriete si beneficiaires non nommes",
+                    "Documents fiscaux Art. 806 CGI",
+                ],
+            },
+            "PTIA": {
+                "definition": "Invalidite fonctionnelle et professionnelle rendant l'assure totalement et definitivement incapable d'exercer toute activite et necessitant l'assistance d'une tierce personne pour les actes de la vie courante.",
+                "conditions": [
+                    "Doit survenir apres la date d'effet de l'adhesion",
+                    "Reconnue par le medecin conseil de GMF Vie",
+                    "Non couverte pendant le delai de carence du deces (6 mois) si capital cumule <= 49 000 euros",
+                ],
+                "seuils": "Versement du capital deces",
+                "age_limite": "65 ans (cessation au 31 decembre suivant le 65e anniversaire)",
+                "franchise": "Meme delai de carence que le deces (6 mois si capital <= 49 000 euros et cause non accidentelle)",
+                "duree_max": "Jusqu'a 65 ans",
+                "mode_evaluation": "Expertise medicale par le medecin conseil GMF Vie",
+                "exclusions": [
+                    "Memes exclusions que le deces",
+                    "PTIA hors EEE, Suisse, Etats-Unis, Canada",
+                ],
+                "pieces_justificatives": [
+                    "Certificat d'adhesion original",
+                    "Certificat medical confidentiel (nature, date, causes)",
+                    "Notification de pension d'invalidite (si applicable)",
+                ],
+            },
+        },
+
+        "red_flags": [
+            "CONTRAT DECES/PTIA UNIQUEMENT : Aucune couverture ITT, IPT, IPP, ITP, PE. Ne protege PAS les revenus en cas d'arret de travail ou d'invalidite partielle.",
+            "DELAI DE CARENCE 6 MOIS : Si deces non accidentel dans les 6 premiers mois et capital cumule <= 49 000 euros, seules les primes versees sont remboursees (pas le capital).",
+            "RESTRICTION GEOGRAPHIQUE : Deces ou PTIA hors EEE/Suisse/USA/Canada = pas de couverture. Attention aux voyages hors zone.",
+            "PTIA CESSE A 65 ANS : Couverture PTIA tres courte comparee au deces (80 ans).",
+            "CAPITAL DOUBLE ACCIDENT : Uniquement si deces par 'accident corporel'. Les AVC, infarctus, ruptures d'anevrisme sont EXCLUS de la notion d'accident corporel.",
+            "EXCLUSION ALCOOL/STUPEFIANTS : Deces sous alcool (>= 0,8 g/l) ou stupefiants = exclusion totale.",
+            "ADMISSION AGE MAX 60 ANS : Impossible de souscrire apres 60 ans.",
+            "PAS DE RACHAT D'EXCLUSIONS : Aucune option pour lever les exclusions sportives ou geographiques.",
+            "INTERDIT AUX PERSONNES EN HOSPITALISATION PSYCHIATRIQUE : L'adhesion est nulle si l'assure est en hospitalisation psychiatrique au moment de la souscription.",
+        ],
+
+        "strategic_reading": {
+            "what_to_check_first": [
+                "Verifier que le deces/PTIA a eu lieu dans la zone geographique couverte (EEE, Suisse, USA, Canada)",
+                "Verifier si le delai de carence de 6 mois est ecoule (si capital cumule <= 49 000 euros et deces non accidentel)",
+                "Verifier le capital cumule sur TOUS les contrats GMF Vie (hors Pretilea) pour determiner le regime de carence",
+                "Verifier l'age de l'assure au moment du sinistre (< 80 ans deces, < 65 ans PTIA)",
+                "Verifier que la cause du deces n'est pas un suicide dans la 1ere annee",
+            ],
+            "what_strengthens_claim": [
+                "Deces par accident corporel = capital double + pas de delai de carence",
+                "Anciennete > 1 an = couverture suicide acquise",
+                "Capital cumule > 49 000 euros = pas de delai de carence, meme pour deces non accidentel",
+                "Deces dans la zone EEE/Suisse/USA/Canada = pleine couverture geographique",
+            ],
+            "what_weakens_claim": [
+                "Deces dans les 6 premiers mois sans accident corporel (capital <= 49 000 euros) = seulement remboursement primes",
+                "Cause du deces liee a alcool (>= 0,8 g/l) ou stupefiants = exclusion",
+                "Pratique de sport extreme (parachutisme, ULM, deltaplane) au moment du deces",
+                "PTIA declaree apres 65 ans = hors garantie",
+                "Deces ou PTIA a l'etranger hors zone couverte",
+            ],
+            "common_disputes": [
+                "Contestation de la qualification 'accident corporel' vs 'maladie' (AVC, infarctus exclus de la notion d'accident)",
+                "Refus pour delai de carence non ecoule alors que le deces est accidentel",
+                "Litige sur le capital cumule pris en compte (autres contrats GMF Vie)",
+                "Refus PTIA au motif que l'assure a depasse 65 ans",
+                "Contestation de la zone geographique (sejour temporaire vs residence)",
+            ],
+        },
+
+        "global_notes": [
+            "Ce n'est PAS une assurance emprunteur. C'est un contrat d'assurance temporaire deces pur, avec PTIA en complementaire.",
+            "Aucune couverture incapacite/invalidite (ITT, IPT, IPP, ITP). Uniquement deces et PTIA.",
+            "Contrat de groupe a adhesion facultative, souscrit aupres de GMF Vie (Groupe Covea).",
+            "Capital plafonne a 49 000 euros max par adhesion, 1 000 000 euros cumul global GMF Vie.",
+            "Include une prestation 'Assistance Succession' gratuite (conseil juridique et fiscal).",
+            "Pas de valeur de rachat : les primes sont perdues en cas de resiliation.",
+        ],
+    },
 }
 
 
@@ -593,43 +711,64 @@ COMPARAISON_ASSUREURS = {
         "generali": "Hospitalisation >= 4 jours OU chirurgie",
         "groupama": "Hospitalisation > 7 jours OU chirurgie",
         "cnp": "Chirurgie UNIQUEMENT (hospitalisation ne suffit pas)",
-        "commentaire": "CNP est le plus strict, Generali le plus souple. Point de litige frequent.",
+        "gmf_vie": "N/A (contrat deces/PTIA uniquement, pas d'ITT/IPT)",
+        "commentaire": "CNP est le plus strict, Generali le plus souple. GMF Vie ne couvre pas l'incapacite/invalidite.",
     },
     "exclusion_psychique": {
         "generali": "Hospitalisation >= 5 jours en etablissement specialise",
         "groupama": "Hospitalisation psychiatrique > 15 jours",
         "cnp": "Hospitalisation > 15 jours continus OU tutelle/curatelle",
-        "commentaire": "Generali est le plus souple (5 jours). Groupama et CNP tres restrictifs (15 jours).",
+        "gmf_vie": "Adhesion nulle si assure en hospitalisation psychiatrique a la souscription",
+        "commentaire": "Generali est le plus souple (5 jours). Groupama et CNP tres restrictifs (15 jours). GMF Vie interdit l'adhesion si hospitalise en psy.",
     },
     "age_limite_itt": {
         "generali": "70 ans",
         "groupama": "65 ans",
         "cnp": "65 ans",
-        "commentaire": "Generali couvre 5 ans de plus pour l'ITT.",
+        "gmf_vie": "N/A (pas de garantie ITT)",
+        "commentaire": "Generali couvre 5 ans de plus pour l'ITT. GMF Vie ne couvre pas l'ITT.",
     },
     "age_limite_deces": {
         "generali": "85 ans",
         "groupama": "80 ans",
         "cnp": "75 ans (Formule Senior)",
-        "commentaire": "Generali offre la meilleure couverture deces dans le temps.",
+        "gmf_vie": "80 ans",
+        "commentaire": "Generali offre la meilleure couverture deces dans le temps. GMF Vie et Groupama a 80 ans.",
     },
     "franchise_itt": {
         "generali": "90 jours",
         "groupama": "90 jours",
         "cnp": "90 jours",
-        "commentaire": "Identique chez les 3 assureurs.",
+        "gmf_vie": "N/A (pas de garantie ITT)",
+        "commentaire": "Identique chez les 3 assureurs emprunteurs. GMF Vie ne couvre pas l'ITT.",
     },
     "ptia_preretraite": {
         "generali": "Non exclue",
         "groupama": "Non exclue",
         "cnp": "EXCLUE (y compris inaptitude)",
-        "commentaire": "Piege specifique a CNP. Point de vigilance majeur.",
+        "gmf_vie": "PTIA cesse a 65 ans (toute cause)",
+        "commentaire": "Piege specifique a CNP. GMF Vie a une limite d'age stricte a 65 ans.",
     },
     "garantie_pe": {
         "generali": "Oui (franchise 180 jours, 75% echeances, max 12/24 mois)",
         "groupama": "Non proposee dans ce contrat",
         "cnp": "Non proposee dans ce contrat",
+        "gmf_vie": "Non proposee (contrat deces uniquement)",
         "commentaire": "Seul Generali propose la Perte d'Emploi dans les contrats analyses.",
+    },
+    "restriction_geographique": {
+        "generali": "Non mentionnee",
+        "groupama": "Non mentionnee",
+        "cnp": "Non mentionnee",
+        "gmf_vie": "HORS EEE/Suisse/USA/Canada = pas de couverture",
+        "commentaire": "GMF Vie est le seul avec une restriction geographique stricte. Point de vigilance pour les assures voyageurs.",
+    },
+    "doublement_capital_accident": {
+        "generali": "Non mentionne dans le contrat analyse",
+        "groupama": "Non mentionne dans le contrat analyse",
+        "cnp": "Non mentionne dans le contrat analyse",
+        "gmf_vie": "OUI — Capital double en cas de deces par accident corporel (AVC/infarctus EXCLUS)",
+        "commentaire": "Specificite GMF Vie. Attention : la notion d'accident corporel exclut les causes vasculaires/circulatoires.",
     },
 }
 
@@ -772,6 +911,10 @@ def detect_insurer_from_text(text: str) -> dict:
         "cnp_assurances": [
             "cnp", "cnp assurances", "bpce vie", "cnp/bpce",
             "contrat 2252", "contrat 2253", "2252y", "2253z",
+        ],
+        "gmf_vie": [
+            "gmf vie", "gmf", "accolia", "contrat 07001",
+            "covéa", "covea",
         ],
     }
 

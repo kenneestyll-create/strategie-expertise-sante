@@ -240,10 +240,10 @@ async def _process_dossier_express(dossier_id: str, email: str, name: str, situa
             # Priorité 3 : fallback générique
             assurance_context = "\n\nBASE DE CONNAISSANCES ASSURANTIELLE"
             if detected_assureur:
-                assureur_label = {"generali": "GENERALI", "groupama_gan_vie": "GROUPAMA GAN VIE", "cnp_assurances": "CNP ASSURANCES"}.get(detected_assureur, detected_assureur.upper())
+                assureur_label = {"generali": "GENERALI", "groupama_gan_vie": "GROUPAMA GAN VIE", "cnp_assurances": "CNP ASSURANCES", "gmf_vie": "GMF VIE"}.get(detected_assureur, detected_assureur.upper())
                 assurance_context += f" (assureur détecté : {assureur_label})"
             else:
-                assurance_context += " (contrats analysés : GENERALI, GROUPAMA GAN VIE, CNP ASSURANCES)"
+                assurance_context += " (contrats analysés : GENERALI, GROUPAMA GAN VIE, CNP ASSURANCES, GMF VIE)"
             assurance_context += " :\n"
             assurance_context += get_assurance_context(assureur=detected_assureur, garantie=garantie)
             assurance_context += "\nINSTRUCTION : Utilise cette base de connaissances pour identifier les exclusions, red flags, et leviers stratégiques spécifiques au contrat et à la garantie concernés. Compare les assureurs si pertinent. Cite les seuils et conditions exactes."

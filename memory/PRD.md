@@ -53,6 +53,13 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
   - Priorité : garantie > assureur détecté > fallback générique
   - Traçabilité discrète : `detected_insurer` stocké dans MongoDB
   - 8/8 tests PASS (6 cas obligatoires + 2 bonus)
+- **Enrichissement base assurantielle : GMF VIE (Accolia n°07001)** — DONE (04/04/2026)
+  - 4e assureur intégré : GMF VIE (Groupe Covéa) — contrat temporaire décès
+  - 2 garanties : Décès (capital double si accident, carence 6 mois) + PTIA (cessation 65 ans)
+  - 9 red flags, lecture stratégique complète, notes globales
+  - Tableau comparatif étendu à 9 critères (dont restriction géographique, doublement capital)
+  - Détecteur mis à jour : "gmf", "accolia", "contrat 07001", "covea"
+  - 9/9 tests PASS, zéro régression
 
 ## Animations blocs flottants (VALIDÉ — NE PAS MODIFIER)
 - Fichier : `/app/frontend/src/pages/HomePage.jsx` (style tag en fin de `<main>`)
