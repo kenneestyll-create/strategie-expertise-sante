@@ -113,6 +113,16 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - 22/22 tests PASS (testing agent iteration 170), zero regression AT/assurance/contestation
 - **ZERO modification** : pdf.py, frontend, prompts USER, workflows, payments
 
+### Protection Anti-Copie Premium (05/04/2026)
+- **Hook** : `/app/frontend/src/hooks/useContentProtection.js` — centralisé, activable/désactivable par route
+- **CSS** : `body.content-protected` dans `index.css` — `user-select: none` ciblé, inputs/textarea/select/boutons préservés
+- **Intégration** : `ContentProtectionGuard` dans `App.js` (enfant de BrowserRouter)
+- **Pages protégées** : `/`, `/a-propos`, `/accompagnements`, `/expertise-medicale`, `/mdph`, `/seminaires`, `/entreprises`, `/protection-juridique`, `/tarifs`, `/partenaires`, `/avis`, `/ressources`, `/medecin-conseil`
+- **Pages NON protégées** : `/contact`, `/admin`, `/dossier-express`, `/espace-client`, `/forum`, `/simulateur`, `/calculatrice`, `/mentions-legales`, `/politique-confidentialite`, `/parrainage`, `/agenda`
+- **Protections actives** : clic droit, sélection texte, copier/couper, drag images, Ctrl+C/U/S/P, F12, Ctrl+Shift+I/J/C
+- **Toast discret** : "Contenu protégé" (max 1x/8s, supprimé sur mobile)
+- 21/21 tests PASS (testing agent iteration 172), zero régression frontend
+
 ### GEL OFFICIEL — MOTEUR IA V1 VALIDE (05/04/2026)
 - **Document de reference** : `/app/memory/IA_BASELINE_V1.md`
 - **Commentaires de gel** injectes dans 9 fichiers critiques (prompts.py, llm.py, chatbot.py, quality_scoring.py, assurance_knowledge.py, contestation_knowledge.py, mdph_knowledge.py, seed_patterns.py, knowledge_patterns.py)
