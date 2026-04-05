@@ -87,9 +87,19 @@ export const MentionsLegalesPage = () => {
                     est la propriété exclusive de Stratégie & Expertise Santé, sauf mention contraire.
                   </p>
                   <p>
-                    Toute reproduction, représentation, modification, publication ou adaptation 
-                    de tout ou partie des éléments du site, quel que soit le moyen ou le procédé 
-                    utilisé, est interdite sans autorisation écrite préalable.
+                    Toute reproduction, représentation, diffusion, adaptation, extraction, réutilisation, 
+                    exploitation ou transmission, totale ou partielle, sur quelque support que ce soit, 
+                    sans autorisation écrite préalable, est strictement interdite.
+                  </p>
+                  <p>
+                    Sont également protégés les cadres méthodologiques, logiques d'analyse, structures 
+                    de restitution, mécanismes d'évaluation, architectures de lecture dossier, ainsi que 
+                    les contenus à forte valeur ajoutée développés dans le cadre des services proposés 
+                    par Stratégie & Expertise Santé.
+                  </p>
+                  <p className="font-medium text-foreground/80">
+                    Toute utilisation non autorisée est susceptible d'engager la responsabilité civile 
+                    et/ou pénale de son auteur.
                   </p>
                 </CardContent>
               </Card>

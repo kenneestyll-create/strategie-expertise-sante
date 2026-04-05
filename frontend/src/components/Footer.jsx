@@ -293,6 +293,10 @@ export const Footer = () => {
             <p className="text-xs text-primary-foreground/40 text-center">
               &copy; {currentYear} Stratégie & Expertise Santé. Tous droits réservés.
             </p>
+            <p className="text-[10px] text-primary-foreground/25 text-center max-w-2xl leading-relaxed" data-testid="footer-ip-notice">
+              Les contenus, textes, méthodologies, structures d'analyse et supports de Stratégie & Expertise Santé 
+              sont protégés au titre de la propriété intellectuelle.
+            </p>
             <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
               <Link 
                 to="/mentions-legales" 
