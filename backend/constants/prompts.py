@@ -4,23 +4,19 @@ Source unique de verite pour TOUS les prompts LLM.
 Toute modification de prompt DOIT passer par ce fichier.
 
 # =========================================================================
+# PROPRIETE INTELLECTUELLE — ACTIF STRATEGIQUE SENSIBLE
+# Strategie & Expertise Sante — Tous droits reserves.
+# Ce fichier contient une architecture d'analyse, une structuration IA et
+# des actifs intellectuels proprietaires. Toute reproduction, extraction,
+# reutilisation ou transmission sans autorisation ecrite est interdite.
+#
 # ZONE GELEE — MOTEUR IA V1 VALIDE
 # Date de gel : 05/04/2026
 # Perimetre : TOUS les prompts systeme et utilisateur (StrategiIA, Dossier
 #   Express, Chatbot). Inclut : SYSTEM prompts, USER prompts, SYSTEM_COMPACT,
 #   TABLEAUX_MP.
-# Avertissement : AUCUNE modification sans ordre explicite du responsable.
+# Protocole : Aucune modification sans ordre explicite du responsable.
 #   Toute evolution future doit suivre le protocole IA_BASELINE_V1.md.
-# Composants geles :
-#   - STRATEGIIA_SYSTEM_PROMPT (168 lignes, ciblage metier/sinistre/blocage,
-#     4 blocs premium, anti-hallucination, humanisation, anti-repetition,
-#     verification croisee x3, nuance intelligente, robustesse dossiers
-#     incomplets, preuve de lecture reelle)
-#   - STRATEGIIA_BASIC_PROMPT (550 mots max, 3 sections)
-#   - STRATEGIIA_PREMIUM_PROMPT (1800-2400 mots, 12 sections)
-#   - STRATEGIIA_SYSTEM_COMPACT (appels scindes proxy)
-#   - DOSSIER_EXPRESS_SYSTEM_PROMPT (pre-expertise documentaire)
-#   - DOSSIER_EXPRESS_PROMPT (2000-2800 mots, 13 sections)
 # =========================================================================
 """
 

@@ -5,12 +5,16 @@ Source : Notices d'information des contrats emprunteurs
 Fichier exploitable par StrategiIA pour l'analyse des litiges assurantiels.
 
 # =========================================================================
+# PROPRIETE INTELLECTUELLE — ACTIF STRATEGIQUE SENSIBLE
+# Strategie & Expertise Sante — Tous droits reserves.
+# Ce fichier contient une base de connaissances metier proprietaire
+# (structuration assurantielle, logique de garanties, ciblage contextuel).
+# Toute reproduction, extraction, reutilisation ou transmission sans
+# autorisation ecrite est interdite.
+#
 # ZONE GELEE — MOTEUR IA V1 VALIDE
 # Date de gel : 05/04/2026
-# Perimetre : Base assurantielle complete (GENERALI, GROUPAMA, CNP),
-#   logique des garanties (ITT, ITP, IPT, IPP, PTIA, PE, Deces),
-#   helpers (get_assurance_context, detect_assurance_context).
-# Avertissement : AUCUNE modification sans ordre explicite du responsable.
+# Protocole : Aucune modification sans ordre explicite du responsable.
 #   Toute evolution future doit suivre le protocole IA_BASELINE_V1.md.
 # =========================================================================
 

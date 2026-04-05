@@ -4,14 +4,16 @@ KNOWLEDGE PATTERNS — Base d'amelioration interne anonymisee
 Architecture RGPD-compliant pour l'enrichissement progressif du service.
 
 # =========================================================================
+# PROPRIETE INTELLECTUELLE — ACTIF STRATEGIQUE SENSIBLE
+# Strategie & Expertise Sante — Tous droits reserves.
+# Ce fichier contient un moteur de selection intelligent proprietaire
+# (scoring contextuel, matching metier, injection de patterns, garde-fous).
+# Toute reproduction, extraction, reutilisation ou transmission sans
+# autorisation ecrite est interdite.
+#
 # ZONE GELEE — MOTEUR IA V1 VALIDE
 # Date de gel : 05/04/2026
-# Perimetre : Moteur de selection intelligent (scoring, matching, injection),
-#   CRUD admin, schema knowledge_patterns, garde-fous anti-pollution,
-#   limites strictes (max 5 patterns, 4 vigilances, 4 leviers, total 12),
-#   anti-hallucination (formulations conditionnelles obligatoires),
-#   fallback safe si contexte flou ou vide.
-# Avertissement : AUCUNE modification de la logique de scoring, des limites
+# Protocole : Aucune modification de la logique de scoring, des limites
 #   ou des garde-fous sans ordre explicite du responsable.
 #   Toute evolution future doit suivre le protocole IA_BASELINE_V1.md.
 # =========================================================================

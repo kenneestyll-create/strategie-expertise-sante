@@ -224,3 +224,104 @@ Justification :
 
 *Document cree le 05/04/2026 dans le cadre du gel officiel du Moteur IA V1.*
 *Tout futur agent ou developpeur doit lire ce document avant toute intervention sur les composants listes.*
+
+---
+
+## G. PROPRIETE INTELLECTUELLE — DECLARATION OFFICIELLE
+
+### Clause de propriete
+Les elements suivants constituent des actifs intellectuels proprietaires
+de Strategie & Expertise Sante :
+- Prompts IA (architecture d'analyse, structuration, ciblage, garde-fous)
+- Bases de connaissances metier (assurantielle, contestation, MDPH)
+- Moteur de selection de patterns (scoring, matching, injection)
+- Schemas d'analyse et patterns metier anonymises
+- Mecanismes d'evaluation qualite (criteres, seuils, grille)
+- Pipeline LLM et logique d'orchestration multi-stage
+- Cadres methodologiques, logiques d'analyse et structures de restitution
+
+Toute reproduction, representation, diffusion, adaptation, extraction,
+reutilisation, exploitation ou transmission, totale ou partielle, sur
+quelque support que ce soit, sans autorisation ecrite prealable, est
+strictement interdite.
+
+Toute utilisation non autorisee est susceptible d'engager la responsabilite
+civile et/ou penale de son auteur.
+
+### Marquage des fichiers
+Tous les fichiers sensibles portent le commentaire :
+```
+PROPRIETE INTELLECTUELLE — ACTIF STRATEGIQUE SENSIBLE
+Strategie & Expertise Sante — Tous droits reserves.
+```
+
+---
+
+## H. REGISTRE D'EMPREINTES SHA-256 — PREUVE D'INTEGRITE
+
+Date de capture : 05/04/2026
+
+### Empreintes des prompts (contenu textuel)
+
+| Prompt | SHA-256 | Longueur |
+|---|---|---|
+| STRATEGIIA_SYSTEM_PROMPT | e4cf66f998071af25a722cdb9e449e2a9a915686532621a9367b232d7cc7303b | 12253 |
+| STRATEGIIA_BASIC_PROMPT | 8e305f8191f9c0da0d1fa4eb05c8f15865a342f1a6ebbf0b3563555cbc84cecc | 1882 |
+| STRATEGIIA_PREMIUM_PROMPT | be2e9fda0d9d55760557649c5e9525f812c273c71dd19e6ab9fd3842fb22eb11 | 5902 |
+| STRATEGIIA_SYSTEM_COMPACT | 64fab7516c8ba825c8284266398237130e7cfa16e1897fccaf70e889b42b38e4 | 741 |
+| DOSSIER_EXPRESS_SYSTEM_PROMPT | 2de4b85255c51ea034b6dc06f3463dc1483ab399fc95572cecc8926f6941d4f5 | 6444 |
+| DOSSIER_EXPRESS_PROMPT | bd26872c3072152aef2c214c3b65a80c423c36bad7ee622714a078acb970bc92 | 4254 |
+| SYSTEM_PROMPT_LIGHT | a021033bfaf8dc00a195d161626ea74227c603aa42cebd389dea7b9839020963 | 380 |
+| SYSTEM_PROMPT_FULL | 008b13d881f74653a2e287f3a961b255b4a0014e53756462b27c01c214b24c47 | 430 |
+| TABLEAUX_MP | cc38ca9f0dad9bd2c415be9f366529fd8c1bd8352ee47f3b5a6775ee9ca86634 | 2447 |
+
+### Verification rapide
+```python
+import hashlib
+from constants.prompts import STRATEGIIA_BASIC_PROMPT
+h = hashlib.sha256(STRATEGIIA_BASIC_PROMPT.encode()).hexdigest()
+assert h == "8e305f8191f9c0da0d1fa4eb05c8f15865a342f1a6ebbf0b3563555cbc84cecc"
+```
+
+---
+
+## I. PROTOCOLE OBLIGATOIRE DE MODIFICATION FUTURE (VERSION FINALE)
+
+Toute modification sur un fichier marque ACTIF STRATEGIQUE SENSIBLE doit
+imperativement suivre ces 6 etapes :
+
+### 1. Identification
+- Verifier si le fichier porte le marquage IP / zone gelee
+- Si oui : ordre explicite du responsable requis avant toute modification
+
+### 2. Justification metier
+- Decrire precisement le besoin fonctionnel qui motive la modification
+- Aucune refonte implicite, aucune "amelioration" opportuniste
+
+### 3. Impact
+- Decrire l'impact attendu sur le comportement IA
+- Verifier qu'aucune brique adjacente n'est alteree
+
+### 4. Isolation
+- Ne modifier qu'un seul fichier ou composant a la fois
+- Interdire les modifications en cascade non maitrisees
+
+### 5. Test de non-regression
+- Verifier les empreintes SHA-256 des prompts non concernes (inchangees)
+- Verifier le scoring qualite (resultats coherents)
+- Verifier le moteur knowledge_patterns (injection correcte, zero pollution)
+- Verifier qu'aucun impact frontend, PDF ou paiement n'est genere
+
+### 6. Documentation
+- Mettre a jour ce fichier (IA_BASELINE_V1.md)
+- Si l'empreinte d'un prompt change : mettre a jour le registre section H
+- Archiver le resultat du test de non-regression
+
+### Exception : ajout de nouveaux patterns
+L'ajout de NOUVEAUX patterns dans seed_patterns.py est autorise sans
+modifier les patterns existants, a condition de suivre les etapes 2 a 6.
+
+---
+
+*PACK PROTECTION INTELLECTUELLE FINAL APPLIQUE — GEL STABLE*
+*Date : 05/04/2026*

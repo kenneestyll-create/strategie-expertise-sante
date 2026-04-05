@@ -125,15 +125,12 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 
 ### GEL OFFICIEL — MOTEUR IA V1 VALIDE (05/04/2026)
 - **Document de reference** : `/app/memory/IA_BASELINE_V1.md`
-- **Commentaires de gel** injectes dans 9 fichiers critiques (prompts.py, llm.py, chatbot.py, quality_scoring.py, assurance_knowledge.py, contestation_knowledge.py, mdph_knowledge.py, seed_patterns.py, knowledge_patterns.py)
-- **Hash MD5 de reference** des prompts geles :
-  - STRATEGIIA_BASIC_PROMPT : 8ac30044d1c9
-  - STRATEGIIA_PREMIUM_PROMPT : 994491b627fb
-  - DOSSIER_EXPRESS_PROMPT : b676aa1ceebe
-  - STRATEGIIA_SYSTEM_COMPACT : d53d54d48b99
-  - DOSSIER_EXPRESS_SYSTEM_PROMPT : 371e5478b1ac
-- **Protocole de future evolution** documente dans IA_BASELINE_V1.md (5 etapes obligatoires)
-- 36/37 tests PASS (testing agent iteration 171), zero regression, zero modification fonctionnelle
+- **Commentaires IP + gel** dans 9 fichiers : prompts.py, llm.py, chatbot.py, quality_scoring.py, assurance_knowledge.py, contestation_knowledge.py, mdph_knowledge.py, seed_patterns.py, knowledge_patterns.py
+- **Registre empreintes SHA-256** : 9 prompts traces dans IA_BASELINE_V1.md section H
+- **Clause propriete intellectuelle** : documentee section G de IA_BASELINE_V1.md
+- **Protocole de modification** : 6 etapes obligatoires documentees section I
+- Verification integrite 9/9 prompts INTACTS apres marquage IP
+- 36/37 tests PASS (iteration 171), zero regression, zero modification fonctionnelle
 
 ## Animations blocs flottants (VALIDÉ — NE PAS MODIFIER)
 - Fichier : `/app/frontend/src/pages/HomePage.jsx` (style tag en fin de `<main>`)

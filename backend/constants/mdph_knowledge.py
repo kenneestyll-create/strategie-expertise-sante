@@ -9,12 +9,16 @@ Sources :
 - CNSA (Caisse Nationale de Solidarite pour l'Autonomie)
 
 # =========================================================================
+# PROPRIETE INTELLECTUELLE — ACTIF STRATEGIQUE SENSIBLE
+# Strategie & Expertise Sante — Tous droits reserves.
+# Ce fichier contient une base de connaissances metier proprietaire
+# (structuration MDPH, logique AAH/PCH/RQTH, ciblage contextuel).
+# Toute reproduction, extraction, reutilisation ou transmission sans
+# autorisation ecrite est interdite.
+#
 # ZONE GELEE — MOTEUR IA V1 VALIDE
 # Date de gel : 05/04/2026
-# Perimetre : Base MDPH complete (AAH, PCH, RQTH, CMI, pension invalidite,
-#   maladies invalidantes, voies de recours, orientation professionnelle),
-#   helpers (get_mdph_context, detect_mdph_context).
-# Avertissement : AUCUNE modification sans ordre explicite du responsable.
+# Protocole : Aucune modification sans ordre explicite du responsable.
 #   Toute evolution future doit suivre le protocole IA_BASELINE_V1.md.
 # =========================================================================
 

@@ -9,12 +9,16 @@ Sources :
 Integre le 04/04/2026.
 
 # =========================================================================
+# PROPRIETE INTELLECTUELLE — ACTIF STRATEGIQUE SENSIBLE
+# Strategie & Expertise Sante — Tous droits reserves.
+# Ce fichier contient une base de connaissances metier proprietaire
+# (procedures de contestation, logique CCAS RATP, ciblage regime special).
+# Toute reproduction, extraction, reutilisation ou transmission sans
+# autorisation ecrite est interdite.
+#
 # ZONE GELEE — MOTEUR IA V1 VALIDE
 # Date de gel : 05/04/2026
-# Perimetre : Base CCAS RATP (procedures MP, contestation IPP, CSOM,
-#   Commission Medicale), helpers (get_contestation_context,
-#   detect_contestation_context).
-# Avertissement : AUCUNE modification sans ordre explicite du responsable.
+# Protocole : Aucune modification sans ordre explicite du responsable.
 #   Toute evolution future doit suivre le protocole IA_BASELINE_V1.md.
 # =========================================================================
 

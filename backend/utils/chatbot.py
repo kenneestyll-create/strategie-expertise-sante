@@ -1,10 +1,14 @@
 # =========================================================================
+# PROPRIETE INTELLECTUELLE — ACTIF STRATEGIQUE SENSIBLE
+# Strategie & Expertise Sante — Tous droits reserves.
+# Ce fichier contient une logique metier proprietaire (chatbot, prompts
+# systeme, FAQ, detection de complexite, orientation). Toute reproduction,
+# extraction, reutilisation ou transmission sans autorisation ecrite
+# est interdite.
+#
 # ZONE GELEE — MOTEUR IA V1 VALIDE
 # Date de gel : 05/04/2026
-# Perimetre : Chatbot Strate, prompts systeme (SYSTEM_PROMPT_LIGHT,
-#   SYSTEM_PROMPT_FULL), FAQ_DATABASE, base TABLEAUX_MP, logique
-#   d'orientation (FAQ vs Claude), detection de complexite.
-# Avertissement : AUCUNE modification sans ordre explicite du responsable.
+# Protocole : Aucune modification sans ordre explicite du responsable.
 #   Toute evolution future doit suivre le protocole IA_BASELINE_V1.md.
 # =========================================================================
 from typing import Optional
