@@ -136,10 +136,10 @@ export const TarifsPage = () => {
 
   const defaultPrestations = [
     { id: "analyse_dossier", icon: FileSearch, title: "Analyse de dossier", description: "Étude personnalisée du dossier médical et administratif. Identification des points forts, faiblesses et éléments manquants.", price: "150", features: ["Lecture complète du dossier", "Rapport d'analyse détaillé", "Recommandations personnalisées", "Échange téléphonique de restitution"] },
-    { id: "préparation_expertise", icon: Shield, title: "Préparation expertise médicale", description: "Accompagnement pour aborder sereinement une expertise médicale.", price: "250", popular: true, features: ["Analyse du dossier médical", "Préparation des arguments", "Simulation d'entretien", "Documents à apporter"] },
+    { id: "préparation_expertise", icon: Shield, title: "Préparation expertise médicale", description: "Accompagnement pour aborder sereinement une expertise médicale.", price: "250", popular: true, features: ["Analyse du dossier médical", "Préparation des arguments", "Simulation d'entretien", "Documents à apporter"], valueProp: "Travail ciblé à fort impact stratégique avant un moment décisif." },
     { id: "accompagnement_mdph", icon: Users, title: "Accompagnement MDPH", description: "Aide à la compréhension et structuration du dossier MDPH.", price: "200", features: ["Analyse de votre situation", "Aide au formulaire", "Conseils pièces justificatives", "Suivi de la demande"] },
     { id: "protection_juridique", icon: Shield, title: "Protection juridique", description: "Accompagnement dans l'activation de votre protection juridique.", price: "200", features: ["Identification de vos garanties", "Aide à la déclaration du litige", "Suivi échanges assureur", "Orientation avocat spécialisé"] },
-    { id: "accompagnement_complet", icon: Briefcase, title: "Accompagnement complet", description: "Suivi global des démarches administratives et médicales.", price: "500", badge: "Sur devis", features: ["Analyse complète de la situation", "Stratégie personnalisée", "Suivi des démarches", "Disponibilité continue"] },
+    { id: "accompagnement_complet", icon: Briefcase, title: "Accompagnement complet", description: "Suivi global des démarches administratives et médicales.", price: "500", badge: "Sur devis", features: ["Analyse complète de la situation", "Stratégie personnalisée", "Suivi des démarches", "Disponibilité continue"], valueProp: "Intervention globale pour les situations à fort enjeu." },
   ];
 
   const defaultUrgentes = [
@@ -304,6 +304,7 @@ export const TarifsPage = () => {
                     </Button>
                   </Link>
                   <p className="text-xs text-muted-foreground mt-2">Rapport PDF envoyé par email</p>
+                  <p className="text-[10px] text-muted-foreground/60 mt-1 italic">Lecture documentaire structurée à forte valeur de tri et d'orientation.</p>
                 </div>
               </div>
             </CardContent>
@@ -360,11 +361,16 @@ export const TarifsPage = () => {
                     ))}
                   </ul>
                 </CardContent>
-                <CardFooter className="flex gap-2 pt-0">
+                <CardFooter className="flex flex-col gap-2 pt-0">
+                  {p.valueProp && (
+                    <p className="text-[10px] text-muted-foreground/50 italic w-full text-center mb-1">{p.valueProp}</p>
+                  )}
+                  <div className="flex gap-2 w-full">
                   <Button className="flex-1 rounded-lg gap-1.5 text-xs" variant={p.popular ? "default" : "outline"} onClick={() => openPaymentModal(p)} data-testid={`pay-button-${p.id}`}>
                     <CreditCard className="w-3.5 h-3.5" />Payer en ligne
                   </Button>
                   <Link to="/contact"><Button className="rounded-lg text-xs" variant="outline">Devis</Button></Link>
+                  </div>
                 </CardFooter>
               </Card>
             ))}
@@ -460,6 +466,87 @@ export const TarifsPage = () => {
                   <Link to="/contact" className="w-full"><Button className="w-full rounded-lg" variant="outline">Nous contacter</Button></Link>
                 </CardFooter>
               </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ==================== Justification tarifaire ==================== */}
+      <section className="py-20 sm:py-24 bg-[#0c0c0c]" data-testid="tarifs-justification">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-[#f5f0e8] mb-3">Comment nos tarifs sont construits</h2>
+          <p className="text-sm sm:text-base text-[#f5f0e8]/50 mb-12 max-w-3xl leading-relaxed">
+            Nos tarifs ne sont pas définis au hasard. Ils reflètent le temps d'analyse, le niveau de technicité mobilisé,
+            la profondeur du travail réalisé et la valeur stratégique apportée à chaque dossier.
+          </p>
+
+          <div className="grid sm:grid-cols-2 gap-6">
+            {[
+              {
+                icon: "Clock",
+                title: "Temps réel mobilisé",
+                text: "Chaque dossier nécessite un niveau d'attention, de lecture, de structuration et de réflexion différent. Nos tarifs tiennent compte du temps réellement nécessaire pour produire un travail utile, sérieux et exploitable."
+              },
+              {
+                icon: "Brain",
+                title: "Niveau d'expertise",
+                text: "Nos analyses croisent les dimensions médicales, administratives, indemnitaires et stratégiques. L'objectif n'est pas de produire un simple texte, mais une lecture orientée décision."
+              },
+              {
+                icon: "Sparkles",
+                title: "Valeur concrète pour le client",
+                text: "Une bonne orientation au bon moment peut éviter une erreur de procédure, une mauvaise stratégie ou une sous-évaluation du dossier — avec parfois un impact financier majeur."
+              },
+              {
+                icon: "Scale",
+                title: "Positionnement clair",
+                text: "Nous nous situons entre l'information généraliste gratuite et l'intervention juridique spécialisée. Notre rôle : clarifier, structurer, sécuriser et faire gagner du temps."
+              }
+            ].map((item, i) => {
+              const IconComp = { Clock, Brain, Sparkles, Scale }[item.icon];
+              return (
+                <div key={i} className="p-6 rounded-2xl border border-[#C9A84C]/10 bg-[#C9A84C]/[0.03]" data-testid={`justification-card-${i}`}>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-9 h-9 rounded-xl bg-[#C9A84C]/10 flex items-center justify-center">
+                      <IconComp className="w-4 h-4 text-[#C9A84C]" strokeWidth={1.5} />
+                    </div>
+                    <h3 className="font-semibold text-[#f5f0e8] text-sm">{item.title}</h3>
+                  </div>
+                  <p className="text-xs text-[#f5f0e8]/45 leading-relaxed">{item.text}</p>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Phrase de réassurance */}
+          <div className="mt-14 relative pl-6 sm:pl-8 border-l-2 border-[#C9A84C]/30" data-testid="tarifs-reassurance">
+            <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-[#C9A84C]" />
+            <p className="text-base sm:text-lg text-[#f5f0e8]/70 leading-relaxed" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+              Vous ne payez pas pour du remplissage. Vous payez pour de la clarté, du ciblage, du temps gagné et des erreurs évitées.
+            </p>
+          </div>
+
+          {/* Mini-FAQ Tarifaire */}
+          <div className="mt-16 space-y-6" data-testid="tarifs-faq">
+            <h3 className="text-lg font-semibold text-[#f5f0e8]/80 mb-6">Questions fréquentes</h3>
+            {[
+              {
+                q: "Pourquoi vos prestations ne sont-elles pas gratuites ?",
+                a: "Parce qu'un dossier sensible ne se joue pas sur une réponse générique. Chaque prestation repose sur un vrai travail d'analyse, de lecture, de structuration et d'orientation."
+              },
+              {
+                q: "En quoi cela est-il différent d'une simple IA ?",
+                a: "L'outil ne se contente pas de reformuler. Il a été structuré pour analyser des logiques de blocage, de preuves, de stratégie et de cohérence de dossier dans des situations souvent complexes."
+              },
+              {
+                q: "Comment savoir si le prix est justifié pour mon dossier ?",
+                a: "Le bon prix n'est pas seulement celui que l'on paie aujourd'hui, mais aussi celui des erreurs, des retards ou des leviers non exploités que l'on évite demain."
+              }
+            ].map((faq, i) => (
+              <div key={i} className="border-b border-[#C9A84C]/10 pb-5" data-testid={`tarifs-faq-${i}`}>
+                <p className="text-sm font-medium text-[#f5f0e8]/70 mb-2">{faq.q}</p>
+                <p className="text-xs text-[#f5f0e8]/40 leading-relaxed">{faq.a}</p>
+              </div>
             ))}
           </div>
         </div>
