@@ -16,8 +16,10 @@ import { ForumAuthProvider } from "@/context/ForumAuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { useSearchHighlight } from "@/hooks/useSearchHighlight";
+import { useContentProtection } from "@/hooks/useContentProtection";
 
 const SearchHighlighter = () => { useSearchHighlight(); return null; };
+const ContentProtectionGuard = () => { useContentProtection(); return null; };
 const HideOnAdmin = ({ children }) => { const { pathname } = useLocation(); return pathname.startsWith('/admin') ? null : children; };
 
 const SITE_URL = process.env.REACT_APP_SITE_URL || process.env.REACT_APP_BACKEND_URL || "";
@@ -146,6 +148,7 @@ function App() {
             <BrowserRouter>
               <ScrollToTop />
               <SearchHighlighter />
+              <ContentProtectionGuard />
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                   <Route path="/" element={<><Header /><HomePage /><Footer /></>} />

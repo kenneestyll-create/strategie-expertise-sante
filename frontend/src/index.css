@@ -546,3 +546,38 @@ input, textarea, select, .select-trigger {
     box-shadow: none;
     opacity: 0.7;
 }
+
+
+/* =========================================================================
+   PROTECTION ANTI-COPIE — CSS cible (classe body.content-protected)
+   Active uniquement sur les pages vitrines via useContentProtection hook.
+   ========================================================================= */
+body.content-protected {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Preserve selection on interactive elements even when protected */
+body.content-protected input,
+body.content-protected textarea,
+body.content-protected select,
+body.content-protected [contenteditable="true"],
+body.content-protected [role="textbox"],
+body.content-protected button,
+body.content-protected a,
+body.content-protected .chatbot-container,
+body.content-protected .chatbot-container * {
+  -webkit-user-select: auto;
+  -moz-user-select: auto;
+  -ms-user-select: auto;
+  user-select: auto;
+}
+
+/* Prevent image drag on protected pages */
+body.content-protected img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  pointer-events: auto;
+}
