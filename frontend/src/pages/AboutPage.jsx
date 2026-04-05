@@ -206,6 +206,44 @@ export const AboutPage = () => {
         </div>
       </section>
 
+      {/* Bloc Positionnement Premium — Manifeste Cabinet */}
+      <section className="py-24 sm:py-32 bg-[#0c0c0c]" data-testid="positioning-manifesto">
+        <div className="max-w-3xl mx-auto px-6 sm:px-8">
+          <div className="relative pl-8 sm:pl-12 border-l-2 border-[#C9A84C]/40">
+            {/* Accent dot at top of vertical line */}
+            <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-[#C9A84C]" />
+
+            <h2
+              className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-[#f5f0e8] leading-tight tracking-tight"
+              data-testid="positioning-title"
+            >
+              Nous n'intervenons pas après l'échec.
+            </h2>
+
+            <p
+              className="mt-5 text-base sm:text-lg text-[#C9A84C]/70 leading-relaxed"
+              data-testid="positioning-subtitle"
+              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+            >
+              Nous intervenons avant qu'un dossier ne se fragilise, ne se perde ou ne s'effondre.
+            </p>
+
+            {/* Thin gold separator */}
+            <div className="mt-8 mb-8 w-16 h-px bg-[#C9A84C]/25" />
+
+            <p
+              className="text-sm sm:text-base text-[#f5f0e8]/50 leading-relaxed max-w-2xl"
+              data-testid="positioning-body"
+            >
+              Stratégie &amp; Expertise Santé intervient en amont pour analyser, structurer et renforcer un dossier avant qu'il ne soit affaibli par une mauvaise orientation, une lecture incomplète ou une perte de temps décisive.
+            </p>
+
+            {/* Accent dot at bottom of vertical line */}
+            <div className="absolute -left-[5px] bottom-0 w-2 h-2 rounded-full bg-[#C9A84C]/30" />
+          </div>
+        </div>
+      </section>
+
       {/* Why Me Section */}
       <section className="section-padding bg-card">
         <div className="max-w-7xl mx-auto">
