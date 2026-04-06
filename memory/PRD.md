@@ -160,6 +160,15 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
   - Frontend : composant `AdminV2Readiness.jsx` dans l'onglet Config du dashboard Admin
   - 100% testé (9/9 backend + frontend intégral — iteration 174)
 
+- **Systeme de retour d'experience strategique** — DONE (06/04/2026)
+  - Backend : 3 endpoints (/api/feedback POST public, GET admin, GET /stats admin)
+  - Auto-categorisation par mots-cles : juridique, medical, MDPH, assurantiel, accompagnement, incomprehension offre
+  - Widget discret dans StrategiIA (basic + premium) — 3 questions + champ libre optionnel
+  - Admin : onglet Feedback avec stats, distributions categories/clarte, liste filtrable
+  - Tutoriel admin mis a jour (9 etapes, section aide documentee)
+  - 100% teste (16/16 backend + frontend — iteration 177)
+  - Zero regression V1, zero impact parcours client existant
+
 - **V2 Predictive Dormante preinstallee** — DONE (06/04/2026)
   - Backend : module predictif complet (8 regles de fragilite, scoring robustesse 0-100)
   - Feature flag MongoDB persistent (`predictive_v2_enabled = false` par defaut)
