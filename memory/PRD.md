@@ -152,6 +152,15 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - VALIDÉ sur Samsung Internet mobile + desktop
 
 ## Completé récemment
+- **MISSION FINALE — Feedback Dossier Express + Synthese Intelligente** — DONE (06/04/2026)
+  - Widget StrategicFeedback etendu a l'Espace Client (dossiers avec statut `termine` uniquement)
+  - Endpoint GET `/api/feedback/synthesis` (admin-only) : aggregation rule-based des feedbacks
+  - Synthese structuree : Top irritants, besoins non couverts, analyse clarte, signaux forts vs bruit, recommandations strategiques auto-generees
+  - Seuil signal fort dynamique : max(2, 15% du total)
+  - UI Admin "Synthese Intelligente" avec bouton Generer, barre clarte visuelle, badges signal fort/bruit, verbatims
+  - 100% teste (8/8 backend + frontend integral — iteration 178)
+  - Zero regression, zero impact parcours client existant
+
 - **Admin V2 Readiness Status (Feu tricolore)** — DONE (06/04/2026)
   - Backend : endpoint GET `/api/knowledge-patterns/v2-readiness` avec scoring 0-100
   - Score décomposé : Volume (50pts), Diversité (20pts), Complétude (15pts), Qualité (15pts)
@@ -204,6 +213,7 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
   - Mots-clés de recherche ajoutés : v2, readiness, feu, tricolore, prédictive, score
 
 ## P1 — À venir
+- **GEL REEL DU PRODUIT** — MISSION FINALE completee. Aucun nouveau module ou feature.
 - Checklist lancement live (clés Stripe/Anthropic production)
 - Fournir identifiants AWS S3 (stockage documents persistant)
 - Enrichir la base assurantielle avec de nouveaux contrats
