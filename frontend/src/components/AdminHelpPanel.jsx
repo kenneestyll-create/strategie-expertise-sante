@@ -188,8 +188,9 @@ const HELP_SECTIONS = [
       { label: 'Tutoriel Straté', text: 'Statistiques d\'engagement du tutoriel d\'onboarding : démarrages, taux de complétion et abandon par étape. Bouton "Relancer" pour revoir le tutoriel.' },
       { label: 'Préparation Production', text: 'Purgez les données de test (contacts, analyses, dossiers, avis, chatbot) et remettez les compteurs à zéro avant le lancement. Bouton "Purge complète" pour tout supprimer d\'un coup.' },
       { label: 'Notifications Push', text: 'Statut du Service Worker et des notifications push (VAPID).' },
+      { label: 'IA V2 Readiness', text: 'Feu tricolore mesurant la progression vers l\'IA Prédictive V2. Score de 0 à 100 basé sur le volume de cas, la diversité, la complétude et la qualité. Minimum 500 cas exploitables pour le feu vert. Le graphique d\'évolution montre la progression dans le temps.' },
     ],
-    keywords: ['config', 'configuration', 'email', 'resend', 'stockage', 'compteur', 'hero', 'visiteurs', 'push', 'notification', 'tarifs', 'prix', 'promotion', 'badge', 'promo', 'chiffres', 'statistiques', 'défi', 'dossiers', 'hebdomadaire', 'semaine', 'base', 'tutoriel', 'onboarding', 'engagement', 'production', 'purge', 'nettoyage', 'supprimer', 'reset']
+    keywords: ['config', 'configuration', 'email', 'resend', 'stockage', 'compteur', 'hero', 'visiteurs', 'push', 'notification', 'tarifs', 'prix', 'promotion', 'badge', 'promo', 'chiffres', 'statistiques', 'défi', 'dossiers', 'hebdomadaire', 'semaine', 'base', 'tutoriel', 'onboarding', 'engagement', 'production', 'purge', 'nettoyage', 'supprimer', 'reset', 'v2', 'readiness', 'feu', 'tricolore', 'prédictive', 'score']
   },
   {
     id: 'notifications',

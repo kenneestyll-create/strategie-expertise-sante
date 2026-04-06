@@ -49,6 +49,11 @@ const STEPS = [
     message: 'Modifiez compteurs, tarifs, badges promo et les 4 chiffres clés de la page d\'accueil. Tout est dynamique et se met à jour instantanément.',
   },
   {
+    target: '[data-testid="v2-readiness-card"]',
+    title: 'IA V2 — Feu tricolore',
+    message: 'Cet indicateur mesure la progression vers l\'IA Prédictive V2. Rouge = collecte insuffisante, Orange = en bonne voie, Vert = prêt (minimum 500 cas). Invisible pour vos clients.',
+  },
+  {
     target: '[data-testid="admin-test-toggle"]',
     title: 'Mode Test',
     message: 'Basculez entre Admin et Client pour voir votre site comme un visiteur. Le bouton juste à côté active le mode sombre.',

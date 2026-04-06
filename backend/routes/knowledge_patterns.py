@@ -40,7 +40,7 @@ STRUCTURE :
 """
 
 from fastapi import APIRouter, HTTPException, Depends
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import uuid
 
 from config import db, logger
@@ -154,7 +154,7 @@ async def v2_readiness_endpoint(admin=Depends(get_current_admin)):
     ]
     sources = await db.case_outcomes.aggregate(source_pipeline).to_list(10)
 
-    return {
+    result = {
         "score": score,
         "status": status,
         "total_cases": total,
@@ -181,6 +181,39 @@ async def v2_readiness_endpoint(admin=Depends(get_current_admin)):
             {"source": s["_id"] or "inconnu", "count": s["count"]} for s in sources
         ],
     }
+
+    # Auto-snapshot: store max 1 per day for history tracking
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    existing_snapshot = await db.v2_readiness_history.find_one({"date": today})
+    if not existing_snapshot:
+        await db.v2_readiness_history.insert_one({
+            "date": today,
+            "score": score,
+            "status": status,
+            "total_cases": total,
+            "usable_cases": usable,
+            "volume": round(volume_score, 1),
+            "diversity": round(diversity_score, 1),
+            "completeness": round(completeness_blocage, 1),
+            "quality": round(quality_score, 1),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+
+    return result
+
+
+@router.get("/v2-readiness/history")
+async def v2_readiness_history(admin=Depends(get_current_admin)):
+    """
+    Historique du score V2 Readiness — snapshots quotidiens.
+    Retourne les 90 derniers jours maximum.
+    """
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=90)).strftime("%Y-%m-%d")
+    docs = await db.v2_readiness_history.find(
+        {"date": {"$gte": cutoff}},
+        {"_id": 0, "created_at": 0}
+    ).sort("date", 1).to_list(90)
+    return {"history": docs}
 
 
 # =============================================================================
