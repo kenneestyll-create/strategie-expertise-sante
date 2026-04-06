@@ -151,6 +151,15 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - margin-bottom utilisé pour le bloc Orientation (positionné via `bottom`, pas `top`)
 - VALIDÉ sur Samsung Internet mobile + desktop
 
+## Completé récemment
+- **Admin V2 Readiness Status (Feu tricolore)** — DONE (06/04/2026)
+  - Backend : endpoint GET `/api/knowledge-patterns/v2-readiness` avec scoring 0-100
+  - Score décomposé : Volume (50pts), Diversité (20pts), Complétude (15pts), Qualité (15pts)
+  - Statut feu tricolore : Rouge (<200 cas), Orange (200-499), Vert (>=500 cas)
+  - Règle stricte : Vert impossible avec <500 cas exploitables
+  - Frontend : composant `AdminV2Readiness.jsx` dans l'onglet Config du dashboard Admin
+  - 100% testé (9/9 backend + frontend intégral — iteration 174)
+
 ## P1 — À venir
 - Checklist lancement live (clés Stripe/Anthropic production)
 - Fournir identifiants AWS S3 (stockage documents persistant)
