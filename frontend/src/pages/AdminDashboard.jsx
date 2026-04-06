@@ -66,6 +66,7 @@ import { AdminConseilsStrate } from '@/components/AdminConseilsStrate';
 import { AdminConversionAnalytics } from '@/components/AdminConversionAnalytics';
 import { AdminPremiumReview } from '@/components/AdminPremiumReview';
 import { AdminV2Readiness } from '@/components/AdminV2Readiness';
+import { AdminPredictiveV2 } from '@/components/AdminPredictiveV2';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -3112,6 +3113,9 @@ export const AdminDashboard = () => {
 
             {/* ═══ V2 Readiness Status (Feu tricolore) ═══ */}
             <AdminV2Readiness axiosConfig={axiosConfig} />
+
+            {/* ═══ V2 Predictive Module (Dormant) ═══ */}
+            <AdminPredictiveV2 axiosConfig={axiosConfig} />
 
             {/* ═══ Préparation Production ═══ */}
             <ProductionCleanupCard axiosConfig={axiosConfig} />

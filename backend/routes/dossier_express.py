@@ -391,6 +391,23 @@ CONTENU DES DOCUMENTS FOURNIS :
             await store_case_outcome(db, "dossier_express", type_dossier, regime, features, quality_score=quality_score, improvement_optout=improvement_optout)
     except Exception as com_err:
         logger.debug(f"[DOSSIER_EXPRESS][{dossier_id}] Case outcome memory failed (non-blocking): {com_err}")
+    # V2 Predictive hook dormant — conditionne au feature flag (OFF par defaut = aucun impact)
+    try:
+        from utils.predictive_v2 import is_v2_enabled, run_predictive_analysis
+        if await is_v2_enabled(db):
+            v2_features = features if 'features' in dir() else None
+            v2_result = run_predictive_analysis(situation or "", type_dossier, regime, case_features=v2_features)
+            await db.dossier_express.update_one({"id": dossier_id}, {"$set": {
+                "v2_predictive": {
+                    "robustness_score": v2_result["robustness_score"],
+                    "robustness_level": v2_result["robustness_level"],
+                    "alert_count": v2_result["alert_count"],
+                    "version": v2_result["analysis_version"],
+                },
+            }})
+            logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] V2 robustness={v2_result['robustness_score']}/100 alerts={v2_result['alert_count']}")
+    except Exception as v2_err:
+        logger.debug(f"[DOSSIER_EXPRESS][{dossier_id}] V2 hook (non-blocking): {v2_err}")
 
     # === STEP 6: PDF Generation ===
     t_pdf = time.monotonic()

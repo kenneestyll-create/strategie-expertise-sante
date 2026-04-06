@@ -11,6 +11,7 @@ from routes.conseils import router as conseils_router
 from routes.tracking import router as tracking_router
 from routes.upload import router as upload_router
 from routes.knowledge_patterns import router as knowledge_patterns_router
+from routes.predictive_v2_admin import router as predictive_v2_router
 
 all_routers = [
     public_router,
@@ -26,4 +27,5 @@ all_routers = [
     tracking_router,
     upload_router,
     knowledge_patterns_router,
+    predictive_v2_router,
 ]

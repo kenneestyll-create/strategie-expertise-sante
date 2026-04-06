@@ -236,6 +236,21 @@ INSTRUCTION : Utilise cette matiere documentaire structuree pour affiner ta lect
                     await store_case_outcome(db, "strategiia", type_dossier, regime, features, quality_score=analysis_doc.get("quality_score"), improvement_optout=improvement_optout)
             except Exception as com_err:
                 logger.debug(f"StrategiIA {job_id}: Case outcome memory failed (non-blocking): {com_err}")
+            # V2 Predictive hook dormant — conditionne au feature flag (OFF par defaut = aucun impact)
+            try:
+                from utils.predictive_v2 import is_v2_enabled, run_predictive_analysis
+                if await is_v2_enabled(db):
+                    v2_features = features if 'features' in dir() else None
+                    v2_result = run_predictive_analysis(situation, type_dossier, regime, case_features=v2_features)
+                    analysis_doc["v2_predictive"] = {
+                        "robustness_score": v2_result["robustness_score"],
+                        "robustness_level": v2_result["robustness_level"],
+                        "alert_count": v2_result["alert_count"],
+                        "version": v2_result["analysis_version"],
+                    }
+                    logger.info(f"StrategiIA {job_id}: V2 robustness={v2_result['robustness_score']}/100 alerts={v2_result['alert_count']}")
+            except Exception as v2_err:
+                logger.debug(f"StrategiIA {job_id}: V2 hook (non-blocking): {v2_err}")
             await db.strategiia_analyses.insert_one(analysis_doc)
             # Persist analysis in premium_analyses for admin relecture
             if is_premium:
