@@ -189,8 +189,9 @@ const HELP_SECTIONS = [
       { label: 'Préparation Production', text: 'Purgez les données de test (contacts, analyses, dossiers, avis, chatbot) et remettez les compteurs à zéro avant le lancement. Bouton "Purge complète" pour tout supprimer d\'un coup.' },
       { label: 'Notifications Push', text: 'Statut du Service Worker et des notifications push (VAPID).' },
       { label: 'IA V2 Readiness', text: 'Feu tricolore mesurant la progression vers l\'IA Prédictive V2. Score de 0 à 100 basé sur le volume de cas, la diversité, la complétude et la qualité. Minimum 500 cas exploitables pour le feu vert. Le graphique d\'évolution montre la progression dans le temps.' },
+      { label: 'V2 Prédictive — Module dormant', text: 'Module préinstallé mais désactivé par défaut. Activation sécurisée (triple confirmation + saisie "ACTIVER V2") impossible sous 500 cas. Sandbox : testez l\'analyse V2 sur un texte libre sans impacter les clients. Comparateur : comparez une analyse V1 existante avec les signaux V2. Paramètres : ajustez les seuils (min cas, score requis, alertes max, prudence). Audit : journal complet de toutes les actions V2. Kill switch : désactivation instantanée vers V1 pur.' },
     ],
-    keywords: ['config', 'configuration', 'email', 'resend', 'stockage', 'compteur', 'hero', 'visiteurs', 'push', 'notification', 'tarifs', 'prix', 'promotion', 'badge', 'promo', 'chiffres', 'statistiques', 'défi', 'dossiers', 'hebdomadaire', 'semaine', 'base', 'tutoriel', 'onboarding', 'engagement', 'production', 'purge', 'nettoyage', 'supprimer', 'reset', 'v2', 'readiness', 'feu', 'tricolore', 'prédictive', 'score']
+    keywords: ['config', 'configuration', 'email', 'resend', 'stockage', 'compteur', 'hero', 'visiteurs', 'push', 'notification', 'tarifs', 'prix', 'promotion', 'badge', 'promo', 'chiffres', 'statistiques', 'défi', 'dossiers', 'hebdomadaire', 'semaine', 'base', 'tutoriel', 'onboarding', 'engagement', 'production', 'purge', 'nettoyage', 'supprimer', 'reset', 'v2', 'readiness', 'feu', 'tricolore', 'prédictive', 'score', 'dormant', 'sandbox', 'comparateur', 'kill switch', 'activation', 'audit']
   },
   {
     id: 'notifications',

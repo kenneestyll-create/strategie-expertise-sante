@@ -54,6 +54,11 @@ const STEPS = [
     message: 'Cet indicateur mesure la progression vers l\'IA Prédictive V2. Rouge = collecte insuffisante, Orange = en bonne voie, Vert = prêt (minimum 500 cas). Invisible pour vos clients.',
   },
   {
+    target: '[data-testid="v2-predictive-panel"]',
+    title: 'V2 Prédictive — Module dormant',
+    message: 'Le module V2 est préinstallé mais désactivé. Sandbox pour tester en interne, comparateur V1/V2, et activation sécurisée (triple confirmation + 5 verrous). Ne s\'active que quand le feu est vert.',
+  },
+  {
     target: '[data-testid="admin-test-toggle"]',
     title: 'Mode Test',
     message: 'Basculez entre Admin et Client pour voir votre site comme un visiteur. Le bouton juste à côté active le mode sombre.',
