@@ -123,6 +123,16 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - **Toast discret** : "Contenu protégé" (max 1x/8s, supprimé sur mobile)
 - 21/21 tests PASS (testing agent iteration 172), zero régression frontend
 
+### Case Outcome Memory — V2 Preparation (05/04/2026)
+- **Module** : `/app/backend/utils/case_outcome_memory.py` — collecte silencieuse, non bloquante
+- **Collection MongoDB** : `case_outcomes` — enregistrements anonymises (blocages, pieces_manquantes, leviers, familles, complexite)
+- **Extraction** : keyword-based (pas de LLM), 5 dictionnaires de detection (BLOCAGE, PIECE, LEVIER, FAMILLE)
+- **Injection** : `strategiia.py` et `dossier_express.py` — try/except non bloquant, après quality scoring
+- **RGPD** : respect strict de `improvement_optout` (pas de stockage si True)
+- **Admin** : `GET /api/knowledge-patterns/case-outcomes/stats` — statistiques agregees admin-only
+- **AUCUN affichage client** — aucune modification frontend, PDF ou prompts
+- 27/27 tests PASS (testing agent iteration 173)
+
 ### GEL OFFICIEL — MOTEUR IA V1 VALIDE (05/04/2026)
 - **Document de reference** : `/app/memory/IA_BASELINE_V1.md`
 - **Commentaires IP + gel** dans 9 fichiers : prompts.py, llm.py, chatbot.py, quality_scoring.py, assurance_knowledge.py, contestation_knowledge.py, mdph_knowledge.py, seed_patterns.py, knowledge_patterns.py
