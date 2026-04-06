@@ -160,6 +160,17 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
   - Frontend : composant `AdminV2Readiness.jsx` dans l'onglet Config du dashboard Admin
   - 100% testé (9/9 backend + frontend intégral — iteration 174)
 
+- **Historique hebdomadaire du score V2** — DONE (06/04/2026)
+  - Auto-snapshot quotidien dans collection `v2_readiness_history` (max 1/jour, déclenché par visite admin)
+  - Endpoint GET `/api/knowledge-patterns/v2-readiness/history` (90 jours max)
+  - Mini-graphique AreaChart (recharts) avec courbes Score /100 et Cas exploitables
+  - 100% testé (7/7 backend + frontend intégral — iteration 175)
+
+- **Mise à jour tutoriel admin** — DONE (06/04/2026)
+  - Onboarding tour : 7 étapes (ajout étape 5 "IA V2 — Feu tricolore")
+  - AdminHelpPanel : section Config enrichie avec documentation V2 Readiness
+  - Mots-clés de recherche ajoutés : v2, readiness, feu, tricolore, prédictive, score
+
 ## P1 — À venir
 - Checklist lancement live (clés Stripe/Anthropic production)
 - Fournir identifiants AWS S3 (stockage documents persistant)
