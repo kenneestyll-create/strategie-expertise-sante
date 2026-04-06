@@ -160,6 +160,18 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
   - Frontend : composant `AdminV2Readiness.jsx` dans l'onglet Config du dashboard Admin
   - 100% testé (9/9 backend + frontend intégral — iteration 174)
 
+- **Kit d'Independance Projet** — DONE (06/04/2026)
+  - 7 documents strategiques crees dans `/app/memory/`
+  - MASTER_ARCHITECTURE.md : architecture globale, briques, dependances, zones sensibles
+  - IA_SYSTEM_MAP.md : cartographie IA complete (prompts, pipeline, risques)
+  - KNOWLEDGE_SYSTEM_MAP.md : bases metier, patterns, scoring, injection
+  - ZONES_GELEES_ET_MODIFIABLES.md : garde-fou operationnel (gele/prudent/libre)
+  - FUTURE_V2_ACTIVATION_BLUEPRINT.md : plan V2 complet (6 parties A-F)
+  - FUTURE_DEV_HANDOVER.md : guide de reprise developpeur
+  - README_PROJET_STRATEGIQUE.md : vue d'ensemble non technique
+  - Zero modification de code source — mission documentation pure
+  - Zero regression — backend et frontend intacts (200/200)
+
 - **Historique hebdomadaire du score V2** — DONE (06/04/2026)
   - Auto-snapshot quotidien dans collection `v2_readiness_history` (max 1/jour, déclenché par visite admin)
   - Endpoint GET `/api/knowledge-patterns/v2-readiness/history` (90 jours max)
