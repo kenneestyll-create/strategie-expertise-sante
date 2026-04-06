@@ -36,6 +36,7 @@ import { DataConsentBox } from '@/components/DataConsentBox';
 import { ClientDocuments } from '@/components/ClientDocuments';
 import { ProgressDashboard } from '@/components/ProgressDashboard';
 import { DossierAnalysis } from '@/components/DossierAnalysis';
+import { StrategicFeedback } from '@/components/StrategicFeedback';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -624,6 +625,11 @@ const ClientDashboard = ({ token, clientName, logout }) => {
                         )}
                       </CardContent>
                     </Card>
+
+                    {/* Feedback widget — only for completed cases */}
+                    {selectedCase.status === 'termine' && (
+                      <StrategicFeedback source="dossier_express" typeDossier={selectedCase.type_dossier || selectedCase.title || ''} />
+                    )}
                   </div>
                 ) : (
                   /* Cases Grid */

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, RefreshCw, MessageCircle, AlertTriangle, HelpCircle, Briefcase, Heart, Filter } from 'lucide-react';
+import { Loader2, RefreshCw, MessageCircle, AlertTriangle, HelpCircle, Briefcase, Heart, Filter, Zap, TrendingUp, Eye, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 
@@ -31,6 +31,8 @@ export const AdminStrategicFeedback = ({ axiosConfig }) => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [synthesis, setSynthesis] = useState(null);
+  const [synthLoading, setSynthLoading] = useState(false);
 
   const fetchAll = async () => {
     try {
@@ -46,6 +48,18 @@ export const AdminStrategicFeedback = ({ axiosConfig }) => {
       toast.error("Erreur chargement feedbacks");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSynthesis = async () => {
+    setSynthLoading(true);
+    try {
+      const res = await axios.get(`${API}/feedback/synthesis`, axiosConfig);
+      setSynthesis(res.data);
+    } catch {
+      toast.error("Erreur lors de la synthese");
+    } finally {
+      setSynthLoading(false);
     }
   };
 
@@ -130,6 +144,174 @@ export const AdminStrategicFeedback = ({ axiosConfig }) => {
           )}
         </div>
       )}
+
+      {/* Synthese Intelligente */}
+      <Card data-testid="synthesis-panel">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm flex items-center gap-1.5">
+              <Zap className="w-4 h-4 text-amber-500" /> Synthese Intelligente
+            </CardTitle>
+            <Button
+              size="sm"
+              onClick={fetchSynthesis}
+              disabled={synthLoading}
+              className="h-7 text-xs gap-1.5"
+              data-testid="synthesis-generate-btn"
+            >
+              {synthLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <BarChart3 className="w-3 h-3" />}
+              {synthesis ? 'Actualiser' : 'Generer'}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {!synthesis && !synthLoading && (
+            <p className="text-xs text-muted-foreground py-4 text-center">
+              Cliquez sur "Generer" pour analyser les retours et extraire les signaux forts.
+            </p>
+          )}
+          {synthLoading && (
+            <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin" /></div>
+          )}
+          {synthesis && !synthLoading && (
+            <div className="space-y-4 mt-2">
+              {/* Meta */}
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span>{synthesis.total} retours analyses</span>
+                <span>|</span>
+                <span>Seuil signal fort : {synthesis.seuil_signal_fort}+ mentions</span>
+                {synthesis.sources && Object.keys(synthesis.sources).length > 0 && (
+                  <>
+                    <span>|</span>
+                    <span>Sources : {Object.entries(synthesis.sources).map(([k, v]) => `${k} (${v})`).join(', ')}</span>
+                  </>
+                )}
+              </div>
+
+              {/* Irritants */}
+              {synthesis.irritants?.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-semibold flex items-center gap-1.5 mb-2">
+                    <AlertTriangle className="w-3.5 h-3.5 text-red-500" /> Top irritants / freins
+                  </h4>
+                  <div className="space-y-1.5">
+                    {synthesis.irritants.map((item, i) => (
+                      <div key={i} className="flex items-start gap-2 p-2 rounded-lg border text-xs" data-testid={`synthesis-irritant-${i}`}>
+                        <Badge variant="outline" className={`text-[9px] flex-shrink-0 ${item.signal === 'fort' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                          {item.signal === 'fort' ? 'SIGNAL FORT' : 'Bruit'}
+                        </Badge>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">{item.theme}</span>
+                            <span className="text-muted-foreground">{item.count}x ({item.pct}%)</span>
+                          </div>
+                          {item.verbatims?.length > 0 && (
+                            <div className="mt-1 space-y-0.5">
+                              {item.verbatims.map((v, vi) => (
+                                <p key={vi} className="text-muted-foreground italic text-[11px] truncate">"{v}"</p>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Besoins */}
+              {synthesis.besoins?.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-semibold flex items-center gap-1.5 mb-2">
+                    <TrendingUp className="w-3.5 h-3.5 text-blue-500" /> Besoins non couverts
+                  </h4>
+                  <div className="space-y-1.5">
+                    {synthesis.besoins.map((item, i) => (
+                      <div key={i} className="flex items-start gap-2 p-2 rounded-lg border text-xs" data-testid={`synthesis-besoin-${i}`}>
+                        <Badge variant="outline" className={`text-[9px] flex-shrink-0 ${item.signal === 'fort' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                          {item.signal === 'fort' ? 'SIGNAL FORT' : 'Bruit'}
+                        </Badge>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">{item.theme}</span>
+                            <span className="text-muted-foreground">{item.count}x ({item.pct}%)</span>
+                          </div>
+                          {item.verbatims?.length > 0 && (
+                            <div className="mt-1 space-y-0.5">
+                              {item.verbatims.map((v, vi) => (
+                                <p key={vi} className="text-muted-foreground italic text-[11px] truncate">"{v}"</p>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Clarte */}
+              {synthesis.clarte && Object.keys(synthesis.clarte).length > 0 && (
+                <div>
+                  <h4 className="text-xs font-semibold flex items-center gap-1.5 mb-2">
+                    <Eye className="w-3.5 h-3.5 text-amber-500" /> Comprehension de l'offre
+                  </h4>
+                  <div className="p-3 rounded-lg border space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden flex">
+                        {synthesis.clarte.oui?.pct > 0 && (
+                          <div className="bg-emerald-500 h-full transition-all" style={{ width: `${synthesis.clarte.oui.pct}%` }} />
+                        )}
+                        {synthesis.clarte.partiellement?.pct > 0 && (
+                          <div className="bg-amber-400 h-full transition-all" style={{ width: `${synthesis.clarte.partiellement.pct}%` }} />
+                        )}
+                        {synthesis.clarte.non?.pct > 0 && (
+                          <div className="bg-red-500 h-full transition-all" style={{ width: `${synthesis.clarte.non.pct}%` }} />
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex justify-between text-[10px] text-muted-foreground">
+                      <span className="text-emerald-600">Oui : {synthesis.clarte.oui?.pct || 0}%</span>
+                      <span className="text-amber-600">Partiellement : {synthesis.clarte.partiellement?.pct || 0}%</span>
+                      <span className="text-red-600">Non : {synthesis.clarte.non?.pct || 0}%</span>
+                    </div>
+                    {synthesis.clarte.alerte && (
+                      <div className="flex items-center gap-1.5 text-[11px] text-red-600 font-medium mt-1" data-testid="synthesis-clarte-alerte">
+                        <AlertTriangle className="w-3 h-3" />
+                        Alerte : {(synthesis.clarte.non?.pct || 0) + (synthesis.clarte.partiellement?.pct || 0)}% des clients ne comprennent pas clairement l'offre
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Recommandations */}
+              {synthesis.recommandations?.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-semibold flex items-center gap-1.5 mb-2">
+                    <Zap className="w-3.5 h-3.5 text-amber-500" /> Recommandations strategiques
+                  </h4>
+                  <div className="space-y-1">
+                    {synthesis.recommandations.map((r, i) => (
+                      <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-amber-50/50 border border-amber-200/40 text-xs" data-testid={`synthesis-reco-${i}`}>
+                        <span className="text-amber-600 font-bold flex-shrink-0">{i + 1}.</span>
+                        <span>{r}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Empty state */}
+              {synthesis.irritants?.length === 0 && synthesis.besoins?.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-4">
+                  Pas assez de donnees pour extraire des signaux. Continuez a collecter des retours.
+                </p>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Filter + List */}
       <Card>
