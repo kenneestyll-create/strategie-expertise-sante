@@ -65,6 +65,13 @@ async def seed_mdph_patterns_endpoint(admin=Depends(get_current_admin)):
     return result
 
 
+@router.get("/case-outcomes/stats")
+async def case_outcome_stats_endpoint(admin=Depends(get_current_admin)):
+    """Statistiques agregees des case outcomes — admin only, V2 preparation."""
+    from utils.case_outcome_memory import get_case_outcome_stats
+    return await get_case_outcome_stats(db)
+
+
 # =============================================================================
 # SCHEMA DE REFERENCE — knowledge_patterns
 # =============================================================================

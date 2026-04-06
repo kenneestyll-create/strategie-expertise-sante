@@ -383,6 +383,15 @@ CONTENU DES DOCUMENTS FOURNIS :
     except Exception as qs_err:
         logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}] Quality scoring failed (non-blocking): {qs_err}")
 
+    # Case Outcome Memory — collecte silencieuse (V2 preparation, non bloquant)
+    try:
+        if not improvement_optout:
+            from utils.case_outcome_memory import extract_case_features, store_case_outcome
+            features = extract_case_features(analysis, type_dossier=type_dossier, regime=regime, situation=situation)
+            await store_case_outcome(db, "dossier_express", type_dossier, regime, features, quality_score=quality_score, improvement_optout=improvement_optout)
+    except Exception as com_err:
+        logger.debug(f"[DOSSIER_EXPRESS][{dossier_id}] Case outcome memory failed (non-blocking): {com_err}")
+
     # === STEP 6: PDF Generation ===
     t_pdf = time.monotonic()
     await _update_dossier_step(dossier_id, "pdf_en_cours", "en_attente_traitement", {"progress_step": "generating", "analysis": analysis[:30000]})

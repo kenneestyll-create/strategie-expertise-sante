@@ -228,6 +228,14 @@ INSTRUCTION : Utilise cette matiere documentaire structuree pour affiner ta lect
                 logger.info(f"StrategiIA {job_id}: Quality={quality['level']} ({quality['score']}/100)")
             except Exception as qs_err:
                 logger.warning(f"StrategiIA {job_id}: Quality scoring failed (non-blocking): {qs_err}")
+            # Case Outcome Memory — collecte silencieuse (V2 preparation, non bloquant)
+            try:
+                if not improvement_optout:
+                    from utils.case_outcome_memory import extract_case_features, store_case_outcome
+                    features = extract_case_features(response, type_dossier=type_dossier, regime=regime, situation=situation)
+                    await store_case_outcome(db, "strategiia", type_dossier, regime, features, quality_score=analysis_doc.get("quality_score"), improvement_optout=improvement_optout)
+            except Exception as com_err:
+                logger.debug(f"StrategiIA {job_id}: Case outcome memory failed (non-blocking): {com_err}")
             await db.strategiia_analyses.insert_one(analysis_doc)
             # Persist analysis in premium_analyses for admin relecture
             if is_premium:
