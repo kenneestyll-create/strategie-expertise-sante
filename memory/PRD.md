@@ -160,6 +160,17 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
   - Frontend : composant `AdminV2Readiness.jsx` dans l'onglet Config du dashboard Admin
   - 100% testé (9/9 backend + frontend intégral — iteration 174)
 
+- **V2 Predictive Dormante preinstallee** — DONE (06/04/2026)
+  - Backend : module predictif complet (8 regles de fragilite, scoring robustesse 0-100)
+  - Feature flag MongoDB persistent (`predictive_v2_enabled = false` par defaut)
+  - Routes admin : status, activation securisee (triple confirmation), kill switch, sandbox, comparateur V1/V2, config, audit log
+  - 5 verrous d'activation backend : 500 cas min, score >= 70, diversite >= 3, completude >= 50%, feu vert
+  - Hooks dormants dans strategiia.py et dossier_express.py (zero impact quand OFF)
+  - Frontend : panneau complet avec tabs (overview, sandbox, comparateur, parametres, audit)
+  - 4 documents de documentation dans /app/memory/ (DORMANT_SYSTEM, ACTIVATION_GUIDE, ROLLBACK_GUIDE, TECHNICAL_MAP)
+  - 100% teste (12/12 backend + frontend — iteration 176)
+  - Zero regression V1, zero impact client
+
 - **Kit d'Independance Projet** — DONE (06/04/2026)
   - 7 documents strategiques crees dans `/app/memory/`
   - MASTER_ARCHITECTURE.md : architecture globale, briques, dependances, zones sensibles
