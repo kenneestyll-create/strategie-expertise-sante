@@ -65,6 +65,7 @@ import { EmailTemplateEditor } from '@/components/EmailTemplateEditor';
 import { AdminConseilsStrate } from '@/components/AdminConseilsStrate';
 import { AdminConversionAnalytics } from '@/components/AdminConversionAnalytics';
 import { AdminPremiumReview } from '@/components/AdminPremiumReview';
+import { AdminV2Readiness } from '@/components/AdminV2Readiness';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -3108,6 +3109,9 @@ export const AdminDashboard = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* ═══ V2 Readiness Status (Feu tricolore) ═══ */}
+            <AdminV2Readiness axiosConfig={axiosConfig} />
 
             {/* ═══ Préparation Production ═══ */}
             <ProductionCleanupCard axiosConfig={axiosConfig} />

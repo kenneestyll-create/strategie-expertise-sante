@@ -72,6 +72,117 @@ async def case_outcome_stats_endpoint(admin=Depends(get_current_admin)):
     return await get_case_outcome_stats(db)
 
 
+@router.get("/v2-readiness")
+async def v2_readiness_endpoint(admin=Depends(get_current_admin)):
+    """
+    V2 Readiness Status — Feu tricolore pour l'admin.
+    Calcule un score de 0 a 100 et determine le statut (rouge/orange/vert).
+    Regle absolue : vert uniquement si >= 500 cas exploitables.
+    """
+    MINIMUM_GREEN = 500
+    MINIMUM_ORANGE = 200
+
+    total = await db.case_outcomes.count_documents({})
+    usable = await db.case_outcomes.count_documents({"utilisable_pour_apprentissage": True})
+
+    # --- Volume score (50 pts max) ---
+    volume_score = min(usable / MINIMUM_GREEN, 1.0) * 50
+
+    # --- Diversity score (20 pts max) ---
+    # Unique families
+    families_pipeline = [
+        {"$match": {"famille_situation": {"$ne": ""}}},
+        {"$group": {"_id": "$famille_situation"}},
+    ]
+    families = await db.case_outcomes.aggregate(families_pipeline).to_list(50)
+    unique_families = len(families)
+    # 8 families defined in case_outcome_memory => 8 = max diversity
+    diversity_score = min(unique_families / 8, 1.0) * 10
+
+    # Unique categories
+    categories_pipeline = [
+        {"$match": {"categorie_dossier": {"$ne": ""}}},
+        {"$group": {"_id": "$categorie_dossier"}},
+    ]
+    categories = await db.case_outcomes.aggregate(categories_pipeline).to_list(50)
+    unique_categories = len(categories)
+    diversity_score += min(unique_categories / 6, 1.0) * 10
+
+    # --- Completeness score (15 pts max) ---
+    # Cases with at least one blocage documented
+    with_blocage = await db.case_outcomes.count_documents({
+        "blocage_principal": {"$ne": ""}
+    })
+    completeness_blocage = (with_blocage / total * 15) if total > 0 else 0
+
+    # --- Quality score (15 pts max) ---
+    # Cases with quality_level not empty
+    with_quality = await db.case_outcomes.count_documents({
+        "quality_level": {"$ne": ""}
+    })
+    quality_score = (with_quality / total * 8) if total > 0 else 0
+
+    # Cases with leviers
+    with_leviers = await db.case_outcomes.count_documents({
+        "leviers_probables": {"$ne": []}
+    })
+    quality_score += (with_leviers / total * 7) if total > 0 else 0
+
+    # --- Final score ---
+    raw_score = volume_score + diversity_score + completeness_blocage + quality_score
+    score = min(round(raw_score), 100)
+
+    # --- Traffic light ---
+    if usable >= MINIMUM_GREEN and score >= 70:
+        status = "vert"
+    elif usable >= MINIMUM_ORANGE and score >= 40:
+        status = "orange"
+    else:
+        status = "rouge"
+
+    # --- Complexity distribution ---
+    complexity_pipeline = [
+        {"$group": {"_id": "$niveau_complexite", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+    ]
+    complexities = await db.case_outcomes.aggregate(complexity_pipeline).to_list(10)
+
+    # --- Source distribution ---
+    source_pipeline = [
+        {"$group": {"_id": "$source", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+    ]
+    sources = await db.case_outcomes.aggregate(source_pipeline).to_list(10)
+
+    return {
+        "score": score,
+        "status": status,
+        "total_cases": total,
+        "usable_cases": usable,
+        "minimum_green": MINIMUM_GREEN,
+        "minimum_orange": MINIMUM_ORANGE,
+        "breakdown": {
+            "volume": round(volume_score, 1),
+            "diversity": round(diversity_score, 1),
+            "completeness": round(completeness_blocage, 1),
+            "quality": round(quality_score, 1),
+        },
+        "details": {
+            "unique_families": unique_families,
+            "unique_categories": unique_categories,
+            "with_blocage": with_blocage,
+            "with_quality": with_quality,
+            "with_leviers": with_leviers,
+        },
+        "complexity_distribution": [
+            {"niveau": c["_id"] or "inconnu", "count": c["count"]} for c in complexities
+        ],
+        "source_distribution": [
+            {"source": s["_id"] or "inconnu", "count": s["count"]} for s in sources
+        ],
+    }
+
+
 # =============================================================================
 # SCHEMA DE REFERENCE — knowledge_patterns
 # =============================================================================
