@@ -172,6 +172,21 @@ const HELP_SECTIONS = [
     keywords: ['conseil', 'straté', 'mascotte', 'astuce', 'tip', 'jour', 'planifier', 'priorité']
   },
   {
+    id: 'feedback',
+    tab: 'feedback',
+    icon: MessageSquare,
+    title: 'Retours d\'expérience',
+    color: '#6366f1',
+    summary: 'Retours stratégiques des clients : freins, besoins, compréhension de l\'offre.',
+    steps: [
+      { label: 'Lecture', text: 'Consultez tous les retours d\'expérience collectés après les analyses StrategiIA et Dossier Express.' },
+      { label: 'Catégories', text: 'Les retours sont automatiquement catégorisés (juridique, médical, MDPH, assurantiel, accompagnement, etc.).' },
+      { label: 'Filtrage', text: 'Filtrez par catégorie pour repérer les récurrences et les besoins non couverts.' },
+      { label: 'Statistiques', text: 'Vue d\'ensemble : total retours, freins mentionnés, besoins exprimés, clarté de l\'offre.' },
+    ],
+    keywords: ['feedback', 'retour', 'expérience', 'frein', 'besoin', 'clarté', 'signal', 'client', 'avis stratégique']
+  },
+  {
     id: 'config',
     tab: 'config',
     icon: Settings,

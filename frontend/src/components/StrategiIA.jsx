@@ -19,6 +19,7 @@ import axios from 'axios';
 import { DataConsentBox } from '@/components/DataConsentBox';
 import { PdfCoverPreview } from '@/components/PdfCoverPreview';
 import { useAdminTest } from '@/components/AdminTestBanner';
+import { StrategicFeedback } from '@/components/StrategicFeedback';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -738,6 +739,7 @@ export const StrategiIA = () => {
                       <button onClick={handleCopyLink} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-muted hover:bg-muted/80 transition-colors" data-testid="strategiia-share-copy">{copied ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}{copied ? 'Copié !' : 'Copier'}</button>
                     </div>
                     <Button variant="ghost" onClick={handleReset} className="w-full gap-2 text-sm" data-testid="strategiia-new-analysis">Nouvelle analyse</Button>
+                    <StrategicFeedback source="strategiia_basic" typeDossier={typeDossier} />
                   </div>
                 )}
 
@@ -825,6 +827,7 @@ export const StrategiIA = () => {
                       <a href="/agenda"><Button className="w-full rounded-lg gap-2" size="sm" data-testid="strategiia-rdv">Prendre rendez-vous <ArrowRight className="w-3.5 h-3.5" /></Button></a>
                       <Button variant="ghost" onClick={handleReset} className="w-full gap-2 text-sm" data-testid="strategiia-new-premium">Nouvelle analyse</Button>
                     </div>
+                    <StrategicFeedback source="strategiia_premium" typeDossier={typeDossier} />
                   </div>
                 )}
 

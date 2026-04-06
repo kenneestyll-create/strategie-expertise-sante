@@ -59,6 +59,11 @@ const STEPS = [
     message: 'Le module V2 est préinstallé mais désactivé. Sandbox pour tester en interne, comparateur V1/V2, et activation sécurisée (triple confirmation + 5 verrous). Ne s\'active que quand le feu est vert.',
   },
   {
+    target: '[data-testid="tab-feedback"]',
+    title: 'Retours d\'expérience',
+    message: 'Les retours clients stratégiques s\'affichent ici. Ils sont collectés discrètement après chaque analyse (StrategiIA / Dossier Express) et catégorisés automatiquement. Consultez les freins, besoins et incompréhensions récurrentes.',
+  },
+  {
     target: '[data-testid="admin-test-toggle"]',
     title: 'Mode Test',
     message: 'Basculez entre Admin et Client pour voir votre site comme un visiteur. Le bouton juste à côté active le mode sombre.',

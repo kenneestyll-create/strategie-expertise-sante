@@ -67,6 +67,7 @@ import { AdminConversionAnalytics } from '@/components/AdminConversionAnalytics'
 import { AdminPremiumReview } from '@/components/AdminPremiumReview';
 import { AdminV2Readiness } from '@/components/AdminV2Readiness';
 import { AdminPredictiveV2 } from '@/components/AdminPredictiveV2';
+import { AdminStrategicFeedback } from '@/components/AdminStrategicFeedback';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -1003,6 +1004,10 @@ export const AdminDashboard = () => {
               <TabsTrigger value="conseils-strate" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-conseils-strate">
                 <Star className="w-3.5 h-3.5 text-[#C9A84C]" />
                 Straté
+              </TabsTrigger>
+              <TabsTrigger value="feedback" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-feedback">
+                <MessageSquare className="w-3.5 h-3.5 text-indigo-600" />
+                Feedback
               </TabsTrigger>
 
               <div className="w-px h-6 bg-border/60 mx-1 self-center flex-shrink-0" />
@@ -3727,6 +3732,10 @@ export const AdminDashboard = () => {
           {/* Conseils Strate Tab */}
           <TabsContent value="conseils-strate" className="space-y-6" data-testid="conseils-strate-tab-content">
             <AdminConseilsStrate axiosConfig={axiosConfig} />
+          </TabsContent>
+
+          <TabsContent value="feedback" className="space-y-6" data-testid="feedback-tab-content">
+            <AdminStrategicFeedback axiosConfig={axiosConfig} />
           </TabsContent>
         </Tabs>
       </main>
