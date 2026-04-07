@@ -152,6 +152,18 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - VALIDÉ sur Samsung Internet mobile + desktop
 
 ## Completé récemment
+- **GEL OFFICIEL DEFINITIF — HOME / RESPONSIVE / HERO** — ENREGISTRE (07/04/2026)
+  - Rendu valide definitivement sur mobile, portable, desktop grand ecran
+  - Perimetre gele : Hero, structure Home, containers, espacements, responsive, proportions image
+  - Documentation mise a jour : ZONES_GELEES_ET_MODIFIABLES.md (section A.8)
+  - AUCUNE modification visuelle autorisee sauf bug reel bloquant
+
+- **Harmonisation Desktop Grand Ecran** — DONE (07/04/2026)
+  - Hero : centrage vertical flex + max-width 1440px + image aspect-ratio 3/4 sur grands ecrans
+  - Sections globales : containers elargis (max-w-7xl→1440px, max-w-6xl→1344px, max-w-5xl→1152px)
+  - Media query ciblée : `(min-width: 1024px) and (min-height: 900px)` — zero impact portable/mobile
+  - Verifie par screenshots : 1920x1080, 1366x650, 390x844
+
 - **MISSION FINALE — Feedback Dossier Express + Synthese Intelligente** — DONE (06/04/2026)
   - Widget StrategicFeedback etendu a l'Espace Client (dossiers avec statut `termine` uniquement)
   - Endpoint GET `/api/feedback/synthesis` (admin-only) : aggregation rule-based des feedbacks

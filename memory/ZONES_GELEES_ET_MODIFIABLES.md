@@ -70,12 +70,49 @@ Ces elements constituent le coeur du produit. Toute modification non autorisee p
 
 | Element | Pourquoi gele |
 |---|---|
-| HomePage.jsx | Page d'accueil — premier contact client |
+| HomePage.jsx | Page d'accueil — GEL DEFINITIF VALIDE 07/04/2026 |
 | SimulateurPage.jsx | Tunnel StrategiIA — conversion |
 | DossierExpressPage.jsx | Tunnel Dossier Express — conversion payante |
 | TarifsPage.jsx | Tarification — impact commercial |
 | Header.jsx, Footer.jsx | Navigation globale, mentions legales |
 | StrategiIA.jsx | Rendu des rapports — readwall + sections |
+
+### A.8 HOME PAGE — GEL OFFICIEL DEFINITIF (07/04/2026)
+
+**Decision du 07/04/2026 — Validation utilisateur explicite.**
+
+Le rendu actuel de la Home est VALIDE DEFINITIVEMENT sur :
+- Mobile
+- Ordinateur portable
+- Desktop grand ecran
+
+Perimetre gele :
+- Structure generale de la Home
+- Hero (texte, image, equilibre, CTA, densite visuelle)
+- Containers et espacements valides
+- Comportement responsive (mobile, portable, grand ecran)
+- Logique de dimensionnement CSS (media queries, breakpoints)
+- Proportions image Hero (aspect-ratio)
+- Hauteurs visuelles et centrage vertical
+
+**CE QUI EST INTERDIT** (sauf bug reel bloquant) :
+- Retoucher la Home, le Hero, les proportions image
+- Retoucher les containers, hauteurs, espacements
+- Retoucher le responsive "de confort"
+- Optimisation visuelle subjective
+- Toute modification esthetique non liee a un bug
+
+**CE QUI RESTE AUTORISE** (uniquement si necessaire) :
+- Correction d'un bug reel constate
+- Correction d'un affichage casse
+- Correction d'une regression bloquante
+- Adaptation technique obligatoire liee a un changement structurel majeur
+
+Fichiers concernes :
+- `pages/HomePage.jsx` — structure, layout, CSS inline
+- `App.css` — media queries desktop grand ecran (lignes finales)
+
+**Risque si modifie** : Degradation du rendu premium valide, perte d'homogeneite entre ecrans, regression visuelle.
 
 ### A.7 Paiements
 
@@ -190,7 +227,8 @@ Ces elements peuvent etre modifies sans risque significatif pour le produit.
 │            ZONE GELEE (ROUGE)               │
 │  Prompts USER, Pipeline LLM, Scoring,       │
 │  Bases metier, Structure PDF, Paiements,     │
-│  Frontend public client                      │
+│  Frontend public client,                     │
+│  HOME PAGE + HERO + RESPONSIVE (07/04/2026) │
 ├─────────────────────────────────────────────┤
 │         ZONE PRUDENTE (ORANGE)              │
 │  Prompts SYSTEM (enrichissement),            │
@@ -206,3 +244,4 @@ Ces elements peuvent etre modifies sans risque significatif pour le produit.
 ---
 
 *Document cree le 06/04/2026 — Kit d'Independance Projet S.E.S*
+*Mis a jour le 07/04/2026 — GEL OFFICIEL HOME PAGE + RESPONSIVE DESKTOP*
