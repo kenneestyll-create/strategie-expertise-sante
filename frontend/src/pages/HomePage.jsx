@@ -191,7 +191,7 @@ export const HomePage = () => {
         <div className="absolute bottom-0 right-0 w-[400px] h-[350px] bg-[#C9A84C]/[0.035] rounded-full blur-[130px] pointer-events-none translate-y-1/4 translate-x-1/4" />
         {/* Poussière d'or — particules scintillantes */}
         <GoldDustOverlay />
-        <div className="relative max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-20 pb-4 sm:pb-6 lg:pb-1">
+        <div className="hero-wrapper relative max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-20 pb-4 sm:pb-6 lg:pb-1">
           <div className="grid lg:grid-cols-[55fr_45fr] gap-8 lg:gap-12 items-center">
 
             {/* ── COLONNE GAUCHE : Contenu ── */}
@@ -338,7 +338,7 @@ export const HomePage = () => {
 
             {/* ── COLONNE DROITE : Visuel signature ── */}
             <div className="absolute inset-0 lg:relative lg:order-2 lg:flex lg:flex-col lg:justify-center">
-              <div className="w-full h-full lg:max-w-[400px] relative lg:flex lg:flex-col">
+              <div className="hero-image-outer w-full h-full lg:max-w-[400px] relative lg:flex lg:flex-col">
                 {/* Halo doré subtil derrière l'image */}
                 <div className="absolute -inset-10 bg-[#C9A84C]/[0.04] rounded-full blur-[70px] pointer-events-none hidden lg:block" />
                 {/* Cadre image — ombre profonde + filet doré gauche */}
@@ -347,7 +347,7 @@ export const HomePage = () => {
                     <img
                       src="/hero_paris_edited.png"
                       alt="Expert en stratégie santé"
-                      className="w-full h-full lg:aspect-[4/5] object-cover object-top"
+                      className="hero-main-image w-full h-full lg:aspect-[4/5] object-cover object-top"
                       loading="eager"
                     />
                     {/* Fondu haut — intégration douce */}
@@ -992,9 +992,23 @@ export const HomePage = () => {
       </section>
 
       <style>{`
-        /* Hero plein ecran — UNIQUEMENT sur grands ecrans larges ET hauts */
+        /* ═══ HERO GRAND ECRAN — min-width:1024 + min-height:900 uniquement ═══ */
         @media (min-width: 1024px) and (min-height: 900px) {
-          .hero-fullscreen { min-height: 100vh; }
+          .hero-fullscreen {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+          }
+          .hero-wrapper {
+            max-width: 1440px;
+          }
+          .hero-image-outer {
+            max-width: 480px !important;
+          }
+          .hero-main-image {
+            aspect-ratio: 3/4 !important;
+          }
         }
         .hero-bloc-wave {
           animation: heroPulse 3s ease-in-out infinite, heroFloat 3s ease-in-out infinite;

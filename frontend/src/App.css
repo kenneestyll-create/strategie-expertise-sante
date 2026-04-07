@@ -231,3 +231,15 @@ iframe[src*="emergent"] {
   filter: blur(3px);
   pointer-events: none;
 }
+
+
+/* ═══════════════════════════════════════════════════════════
+   HARMONISATION DESKTOP GRAND ECRAN
+   Cible : ecrans larges (>=1536px) ET hauts (>=900px)
+   N'affecte PAS : mobile, tablette, portable
+   ═══════════════════════════════════════════════════════════ */
+@media (min-width: 1536px) and (min-height: 900px) {
+  [class*="max-w-7xl"] { max-width: 1440px !important; }
+  [class*="max-w-6xl"] { max-width: 1344px !important; }
+  [class*="max-w-5xl"] { max-width: 1152px !important; }
+}
