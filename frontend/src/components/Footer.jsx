@@ -265,11 +265,11 @@ export const Footer = () => {
               </li>
               <li>
                 <a 
-                  href="tel:+33600000000" 
+                  href="tel:+33759936067" 
                   className="flex items-center gap-2 text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
                 >
                   <Phone className="w-4 h-4" strokeWidth={1.5} />
-                  06 00 00 00 00
+                  07 59 93 60 67
                 </a>
               </li>
             </ul>

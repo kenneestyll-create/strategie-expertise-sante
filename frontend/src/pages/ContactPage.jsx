@@ -102,8 +102,8 @@ export const ContactPage = () => {
     {
       icon: Phone,
       title: "Téléphone",
-      value: "06 00 00 00 00",
-      link: "tel:+33600000000"
+      value: "07 59 93 60 67",
+      link: "tel:+33759936067"
     },
     {
       icon: Clock,
