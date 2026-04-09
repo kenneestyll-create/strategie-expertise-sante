@@ -267,9 +267,12 @@ class Booking(BaseModel):
     name: str
     email: str
     phone: Optional[str] = None
+    call_type: str = "decouverte"
     type_accompagnement: Optional[str] = None
     message: Optional[str] = None
     status: str = "confirme"
+    payment_session_id: Optional[str] = None
+    payment_status: str = "na"
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class BookingCreate(BaseModel):
@@ -278,6 +281,7 @@ class BookingCreate(BaseModel):
     name: str
     email: str
     phone: Optional[str] = None
+    call_type: str = "decouverte"
     type_accompagnement: Optional[str] = None
     message: Optional[str] = None
 

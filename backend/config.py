@@ -65,6 +65,7 @@ PAYMENT_PACKAGES = {
     "urgent_preparation_expertise": {"name": "Préparation expertise URGENT 48h", "amount": 400.00, "currency": "eur"},
     "urgent_accompagnement_mdph": {"name": "Accompagnement MDPH URGENT 48h", "amount": 320.00, "currency": "eur"},
     "urgent_accompagnement_complet": {"name": "Accompagnement complet URGENT 48h", "amount": 750.00, "currency": "eur"},
+    "appel_conseil": {"name": "Appel Conseil — 30 min", "amount": 75.00, "currency": "eur"},
 }
 
 # Security
@@ -79,8 +80,24 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Booking
-AVAILABLE_SLOTS = ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"]
+# Booking — Call types & slots
+CALL_TYPES = {
+    "decouverte": {
+        "name": "Appel Decouverte",
+        "duration": 10,
+        "price": 0,
+        "slots": ["09:00", "09:15"],
+        "max_per_person": 1,
+    },
+    "conseil": {
+        "name": "Appel Conseil",
+        "duration": 30,
+        "price": 75.00,
+        "slots": ["14:00", "14:30", "15:00", "15:30", "16:00", "16:30"],
+    },
+}
+
+AVAILABLE_SLOTS = ["09:00", "09:15", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30"]
 
 # Document categories
 DOCUMENT_CATEGORIES = {

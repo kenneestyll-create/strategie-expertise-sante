@@ -153,6 +153,13 @@ async def stripe_webhook(request: Request):
             if result.modified_count > 0:
                 logger.info(f"Webhook: marked {result.modified_count} dossier(s) as payment_verified for session {session_id}")
 
+            booking_result = await db.bookings.update_one(
+                {"payment_session_id": session_id, "status": "pending_payment"},
+                {"$set": {"status": "confirme", "payment_status": "paid"}}
+            )
+            if booking_result.modified_count > 0:
+                logger.info(f"Webhook: confirmed booking payment for session {session_id}")
+
     return {"received": True}
 
 

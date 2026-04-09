@@ -6,7 +6,7 @@ import os
 import re
 import uuid
 
-from config import db, PAYMENT_PACKAGES, AVAILABLE_SLOTS, RESEND_AVAILABLE, SENDER_EMAIL, NOTIFICATION_EMAIL, SITE_URL, SITEMAP_PAGES, logger
+from config import db, PAYMENT_PACKAGES, AVAILABLE_SLOTS, CALL_TYPES, RESEND_AVAILABLE, SENDER_EMAIL, NOTIFICATION_EMAIL, SITE_URL, SITEMAP_PAGES, STRIPE_API_KEY, logger
 from models import Booking, BookingCreate, SimulatorResult, AbandonedCheckout, FAQItem, AdminUser
 from utils.auth import get_current_admin, hash_password
 
@@ -20,23 +20,189 @@ router = APIRouter()
 
 # ==================== BOOKING ====================
 
+import stripe as stripe_sdk
+
+PENDING_EXPIRY_MINUTES = 15
+
+@router.get("/bookings/call-types")
+async def get_call_types():
+    """Return available call type configs for frontend."""
+    result = {}
+    for key, ct in CALL_TYPES.items():
+        result[key] = {
+            "name": ct["name"],
+            "duration": ct["duration"],
+            "price": ct["price"],
+            "slots": ct["slots"],
+        }
+    return result
+
 @router.get("/bookings/slots/{date}")
-async def get_available_slots(date: str):
-    booked = await db.bookings.find({"date": date, "status": {"$ne": "annule"}}, {"_id": 0, "time_slot": 1}).to_list(100)
+async def get_available_slots(date: str, call_type: str = "decouverte"):
+    ct = CALL_TYPES.get(call_type)
+    if not ct:
+        return {"date": date, "slots": []}
+
+    type_slots = ct["slots"]
+    cutoff = datetime.now(timezone.utc) - timedelta(minutes=PENDING_EXPIRY_MINUTES)
+    booked = await db.bookings.find(
+        {"date": date, "status": {"$ne": "annule"},
+         "$nor": [{"status": "pending_payment", "created_at": {"$lt": cutoff.isoformat()}}]},
+        {"_id": 0, "time_slot": 1}
+    ).to_list(100)
     booked_slots = {b["time_slot"] for b in booked}
-    available = [s for s in AVAILABLE_SLOTS if s not in booked_slots]
-    return {"date": date, "slots": available}
+    available = [s for s in type_slots if s not in booked_slots]
+    return {"date": date, "slots": available, "call_type": call_type}
 
 @router.post("/bookings")
 async def create_booking(data: BookingCreate):
-    existing = await db.bookings.find_one({"date": data.date, "time_slot": data.time_slot, "status": {"$ne": "annule"}}, {"_id": 0})
-    if existing:
-        raise HTTPException(status_code=409, detail="Ce créneau n'est plus disponible")
-    booking = Booking(**data.model_dump())
+    """Create a free discovery booking (direct confirmation)."""
+    if data.call_type != "decouverte":
+        raise HTTPException(status_code=400, detail="Les appels payants doivent passer par /bookings/checkout")
+
+    existing_discovery = await db.bookings.find_one(
+        {"email": data.email.lower(), "call_type": "decouverte", "status": {"$in": ["confirme", "pending_payment"]}},
+        {"_id": 0}
+    )
+    if existing_discovery:
+        raise HTTPException(status_code=409, detail="Vous avez deja utilise votre appel decouverte gratuit. Vous pouvez reserver un Appel Conseil.")
+
+    existing_slot = await db.bookings.find_one(
+        {"date": data.date, "time_slot": data.time_slot, "status": {"$ne": "annule"}},
+        {"_id": 0}
+    )
+    if existing_slot:
+        raise HTTPException(status_code=409, detail="Ce creneau n'est plus disponible")
+
+    booking = Booking(**data.model_dump(), payment_status="na")
     doc = booking.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
     await db.bookings.insert_one(doc)
-    return {"success": True, "booking_id": booking.id, "message": "Rendez-vous confirmé"}
+    return {"success": True, "booking_id": booking.id, "message": "Rendez-vous confirme"}
+
+
+@router.post("/bookings/checkout")
+async def create_booking_checkout(request: Request):
+    """Create a pending booking + Stripe checkout for paid calls."""
+    body = await request.json()
+    call_type = body.get("call_type", "conseil")
+    ct = CALL_TYPES.get(call_type)
+    if not ct or ct["price"] <= 0:
+        raise HTTPException(status_code=400, detail="Type d'appel invalide pour le paiement")
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe non configure")
+
+    date = body.get("date", "")
+    time_slot = body.get("time_slot", "")
+    name = body.get("name", "")
+    email = body.get("email", "")
+    phone = body.get("phone", "")
+    message = body.get("message", "")
+    origin_url = body.get("origin_url", "").rstrip("/")
+
+    if not date or not time_slot or not name or not email:
+        raise HTTPException(status_code=400, detail="Champs obligatoires manquants")
+
+    if time_slot not in ct["slots"]:
+        raise HTTPException(status_code=400, detail="Creneau non autorise pour ce type d'appel")
+
+    existing_slot = await db.bookings.find_one(
+        {"date": date, "time_slot": time_slot, "status": {"$in": ["confirme", "pending_payment"]}},
+        {"_id": 0}
+    )
+    cutoff = datetime.now(timezone.utc) - timedelta(minutes=PENDING_EXPIRY_MINUTES)
+    if existing_slot:
+        if existing_slot.get("status") == "pending_payment":
+            created = existing_slot.get("created_at", "")
+            if isinstance(created, str) and created > cutoff.isoformat():
+                raise HTTPException(status_code=409, detail="Ce creneau est temporairement reserve. Reessayez dans quelques minutes.")
+        else:
+            raise HTTPException(status_code=409, detail="Ce creneau n'est plus disponible")
+
+    booking = Booking(
+        date=date, time_slot=time_slot, name=name, email=email.lower(),
+        phone=phone, call_type=call_type, message=message,
+        status="pending_payment", payment_status="pending"
+    )
+    doc = booking.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.bookings.insert_one(doc)
+
+    package_id = f"appel_{call_type}"
+    PAYMENT_PACKAGES.get(package_id)  # validate exists
+
+    success_url = f"{origin_url}/agenda?payment=success&session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{origin_url}/agenda?payment=cancelled&booking_id={booking.id}"
+
+    stripe_sdk.api_key = STRIPE_API_KEY
+    try:
+        session = stripe_sdk.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": "eur",
+                    "product_data": {"name": f"{ct['name']} — {ct['duration']} min ({date} a {time_slot})"},
+                    "unit_amount": int(ct["price"] * 100),
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={"booking_id": booking.id, "call_type": call_type, "type": "booking"},
+            customer_email=email.lower(),
+        )
+
+        await db.bookings.update_one(
+            {"id": booking.id},
+            {"$set": {"payment_session_id": session.id}}
+        )
+
+        return {"url": session.url, "session_id": session.id, "booking_id": booking.id}
+    except Exception as e:
+        await db.bookings.delete_one({"id": booking.id})
+        logger.error(f"Stripe booking checkout error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erreur lors de la creation du paiement")
+
+
+@router.get("/bookings/confirm-payment/{session_id}")
+async def confirm_booking_payment(session_id: str):
+    """Verify Stripe payment and confirm booking."""
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe non configure")
+
+    booking = await db.bookings.find_one({"payment_session_id": session_id}, {"_id": 0})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Reservation non trouvee")
+    if booking.get("status") == "confirme":
+        return {"success": True, "booking_id": booking["id"], "already_confirmed": True}
+
+    stripe_sdk.api_key = STRIPE_API_KEY
+    try:
+        session = stripe_sdk.checkout.Session.retrieve(session_id)
+        if session.payment_status == "paid":
+            await db.bookings.update_one(
+                {"payment_session_id": session_id},
+                {"$set": {"status": "confirme", "payment_status": "paid"}}
+            )
+            return {"success": True, "booking_id": booking["id"],
+                    "date": booking["date"], "time_slot": booking["time_slot"],
+                    "call_type": booking.get("call_type", "conseil")}
+        else:
+            return {"success": False, "payment_status": session.payment_status}
+    except Exception as e:
+        logger.error(f"Confirm booking payment error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erreur de verification du paiement")
+
+
+@router.delete("/bookings/cancel-pending/{booking_id}")
+async def cancel_pending_booking(booking_id: str):
+    """Cancel a pending booking (payment cancelled/abandoned)."""
+    result = await db.bookings.update_one(
+        {"id": booking_id, "status": "pending_payment"},
+        {"$set": {"status": "annule"}}
+    )
+    return {"success": result.modified_count > 0}
 
 @router.get("/admin/bookings")
 async def get_admin_bookings(admin: dict = Depends(get_current_admin)):
