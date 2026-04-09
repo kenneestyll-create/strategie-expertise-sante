@@ -11,7 +11,7 @@ try:
 except ImportError:
     pass
 
-from config import db, logger, limiter, STRIPE_API_KEY, STRIPE_MODE, PAYPAL_CLIENT_ID, PAYPAL_MODE, RESEND_AVAILABLE, SENDER_EMAIL
+from config import db, logger, limiter, STRIPE_API_KEY, STRIPE_MODE, PAYPAL_CLIENT_ID, PAYPAL_MODE, RESEND_AVAILABLE, SENDER_EMAIL, NOTIFICATION_EMAIL
 from models import (
     ContactRequest, ContactRequestUpdate,
     FAQItem, FAQItemCreate,
@@ -2320,3 +2320,208 @@ async def check_storage_alerts(admin=Depends(get_current_admin)):
         "total_files": total_files,
         "enabled": True,
     }
+
+
+# ==================== WEEKLY REPORT ====================
+
+DEFAULT_WEEKLY_REPORT_CONFIG = {
+    "id": "weekly_report_config",
+    "enabled": True,
+    "day": "monday",
+    "hour": 8,
+    "email": NOTIFICATION_EMAIL or "admin@accompagn-sante.fr",
+}
+
+WEEKDAY_MAP = {"monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3, "friday": 4, "saturday": 5, "sunday": 6}
+
+
+async def _generate_weekly_report_data():
+    """Aggregate data for the last 7 days."""
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+
+    contacts_7d = await db.contacts.count_documents({"created_at": {"$gte": cutoff}})
+    analyses_7d = await db.strategiia_analyses.count_documents({"created_at": {"$gte": cutoff}})
+    dossiers_7d = await db.dossier_express.count_documents({"created_at": {"$gte": cutoff}})
+    clients_7d = await db.client_users.count_documents({"created_at": {"$gte": cutoff}})
+    bookings_7d = await db.bookings.count_documents({"created_at": {"$gte": cutoff}})
+
+    rev_pipeline = [
+        {"$match": {"payment_status": {"$in": ["completed", "paid"]}, "created_at": {"$gte": cutoff}}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}},
+    ]
+    rev_result = await db.payment_transactions.aggregate(rev_pipeline).to_list(1)
+    revenue_7d = rev_result[0]["total"] if rev_result else 0
+
+    s3_pipeline = [{"$group": {"_id": None, "total_size": {"$sum": "$size"}, "count": {"$sum": 1}}}]
+    s3_result = await db.documents.aggregate(s3_pipeline).to_list(1)
+    s3_total_size = s3_result[0]["total_size"] if s3_result else 0
+    s3_total_files = s3_result[0]["count"] if s3_result else 0
+
+    alert_config = await db.site_settings.find_one({"id": "storage_alert_config"}, {"_id": 0})
+    exceeded_thresholds = []
+    if alert_config and alert_config.get("enabled"):
+        for t in alert_config.get("thresholds", []):
+            if t.get("active") and s3_total_size >= t.get("bytes", 0):
+                exceeded_thresholds.append(t.get("label", ""))
+
+    v2_config = await db.site_settings.find_one({"id": "v2_readiness_config"}, {"_id": 0})
+    v2_status = "dormant"
+    if v2_config:
+        case_count = await db.case_outcomes.count_documents({})
+        threshold = v2_config.get("activation_threshold", 500)
+        v2_status = "actif" if case_count >= threshold else f"dormant ({case_count}/{threshold})"
+
+    chatbot_7d = await db.chatbot_sessions.count_documents({"created_at": {"$gte": cutoff}})
+
+    total_contacts = await db.contacts.count_documents({})
+    total_clients = await db.client_users.count_documents({})
+    conversion_rate = round((total_clients / total_contacts * 100), 1) if total_contacts > 0 else 0
+
+    return {
+        "period": f"{(datetime.now(timezone.utc) - timedelta(days=7)).strftime('%d/%m/%Y')} — {datetime.now(timezone.utc).strftime('%d/%m/%Y')}",
+        "contacts_7d": contacts_7d,
+        "analyses_7d": analyses_7d,
+        "dossiers_7d": dossiers_7d,
+        "clients_7d": clients_7d,
+        "bookings_7d": bookings_7d,
+        "revenue_7d": revenue_7d,
+        "chatbot_7d": chatbot_7d,
+        "s3_total_size": s3_total_size,
+        "s3_total_files": s3_total_files,
+        "s3_exceeded_thresholds": exceeded_thresholds,
+        "v2_status": v2_status,
+        "conversion_rate": conversion_rate,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+def _build_weekly_report_html(data: dict) -> str:
+    def fmt_size(b):
+        if b > 1024*1024*1024: return f"{b/(1024*1024*1024):.2f} Go"
+        if b > 1024*1024: return f"{b/(1024*1024):.1f} Mo"
+        if b > 1024: return f"{b/1024:.1f} Ko"
+        return f"{b} o"
+
+    alert_html = ""
+    if data.get("s3_exceeded_thresholds"):
+        labels = ", ".join(data["s3_exceeded_thresholds"])
+        alert_html = f'<tr><td colspan="2" style="padding:10px 16px;background:#fef2f2;color:#dc2626;font-size:13px;border-bottom:1px solid #fde8e8;">Seuil(s) S3 dépassé(s) : {labels}</td></tr>'
+
+    return f"""
+    <html><body style="font-family:'Segoe UI',Arial,sans-serif;max-width:640px;margin:0 auto;padding:0;background:#f5f0e8;">
+    <div style="background:#0a0a08;padding:28px 24px;text-align:center;">
+        <h1 style="margin:0;color:#C9A84C;font-size:20px;letter-spacing:0.05em;">Stratégie &amp; Expertise Santé</h1>
+        <p style="margin:6px 0 0;color:#999;font-size:11px;text-transform:uppercase;letter-spacing:0.15em;">Rapport hebdomadaire</p>
+    </div>
+    <div style="background:#FFFFFF;padding:0;border-left:1px solid #e5e0d6;border-right:1px solid #e5e0d6;">
+        <div style="padding:20px 24px;border-bottom:1px solid #f0ebe0;">
+            <p style="margin:0;font-size:13px;color:#888;">Période : <strong style="color:#333;">{data['period']}</strong></p>
+        </div>
+        <table style="width:100%;border-collapse:collapse;">
+            <tr style="background:#fafaf8;">
+                <td style="padding:14px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Nouveaux contacts</td>
+                <td style="padding:14px 16px;font-size:18px;font-weight:700;color:#0a0a08;text-align:right;border-bottom:1px solid #f0ebe0;">{data['contacts_7d']}</td>
+            </tr>
+            <tr>
+                <td style="padding:14px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Analyses StrategiIA</td>
+                <td style="padding:14px 16px;font-size:18px;font-weight:700;color:#0a0a08;text-align:right;border-bottom:1px solid #f0ebe0;">{data['analyses_7d']}</td>
+            </tr>
+            <tr style="background:#fafaf8;">
+                <td style="padding:14px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Dossiers Express</td>
+                <td style="padding:14px 16px;font-size:18px;font-weight:700;color:#0a0a08;text-align:right;border-bottom:1px solid #f0ebe0;">{data['dossiers_7d']}</td>
+            </tr>
+            <tr>
+                <td style="padding:14px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Clients inscrits</td>
+                <td style="padding:14px 16px;font-size:18px;font-weight:700;color:#0a0a08;text-align:right;border-bottom:1px solid #f0ebe0;">{data['clients_7d']}</td>
+            </tr>
+            <tr style="background:#fafaf8;">
+                <td style="padding:14px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Sessions chatbot</td>
+                <td style="padding:14px 16px;font-size:18px;font-weight:700;color:#0a0a08;text-align:right;border-bottom:1px solid #f0ebe0;">{data['chatbot_7d']}</td>
+            </tr>
+            <tr>
+                <td style="padding:14px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Rendez-vous agenda</td>
+                <td style="padding:14px 16px;font-size:18px;font-weight:700;color:#0a0a08;text-align:right;border-bottom:1px solid #f0ebe0;">{data['bookings_7d']}</td>
+            </tr>
+            <tr style="background:#f8f6f0;">
+                <td style="padding:14px 16px;font-size:13px;color:#C9A84C;font-weight:600;border-bottom:1px solid #f0ebe0;">Revenus</td>
+                <td style="padding:14px 16px;font-size:18px;font-weight:700;color:#C9A84C;text-align:right;border-bottom:1px solid #f0ebe0;">{data['revenue_7d']:.0f} €</td>
+            </tr>
+            <tr>
+                <td style="padding:14px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Taux de conversion</td>
+                <td style="padding:14px 16px;font-size:18px;font-weight:700;color:#0a0a08;text-align:right;border-bottom:1px solid #f0ebe0;">{data['conversion_rate']}%</td>
+            </tr>
+            <tr style="background:#fafaf8;">
+                <td style="padding:14px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Stockage S3</td>
+                <td style="padding:14px 16px;font-size:14px;font-weight:600;color:#0d9488;text-align:right;border-bottom:1px solid #f0ebe0;">{fmt_size(data['s3_total_size'])} ({data['s3_total_files']} fichiers)</td>
+            </tr>
+            {alert_html}
+            <tr>
+                <td style="padding:14px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">IA V2 Prédictive</td>
+                <td style="padding:14px 16px;font-size:14px;font-weight:600;color:#888;text-align:right;border-bottom:1px solid #f0ebe0;">{data['v2_status']}</td>
+            </tr>
+        </table>
+    </div>
+    <div style="background:#0a0a08;padding:20px 24px;text-align:center;border-top:2px solid #C9A84C;">
+        <p style="margin:0;color:#666;font-size:11px;">Stratégie &amp; Expertise Santé — Rapport automatique</p>
+        <p style="margin:4px 0 0;color:#555;font-size:9px;">Service exploité par KAPSULES KORPORATION</p>
+    </div>
+    </body></html>
+    """
+
+
+@router.get("/weekly-report/config")
+async def get_weekly_report_config(admin=Depends(get_current_admin)):
+    config = await db.site_settings.find_one({"id": "weekly_report_config"}, {"_id": 0})
+    return config or DEFAULT_WEEKLY_REPORT_CONFIG
+
+
+@router.put("/weekly-report/config")
+async def update_weekly_report_config(request: Request, admin=Depends(get_current_admin)):
+    body = await request.json()
+    doc = {
+        "id": "weekly_report_config",
+        "enabled": body.get("enabled", True),
+        "day": body.get("day", "monday"),
+        "hour": body.get("hour", 8),
+        "email": body.get("email", NOTIFICATION_EMAIL or "admin@accompagn-sante.fr"),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.site_settings.update_one({"id": "weekly_report_config"}, {"$set": doc}, upsert=True)
+    return {"success": True, "config": doc}
+
+
+@router.get("/weekly-report/preview")
+async def preview_weekly_report(admin=Depends(get_current_admin)):
+    data = await _generate_weekly_report_data()
+    return data
+
+
+@router.post("/weekly-report/send")
+async def send_weekly_report_now(admin=Depends(get_current_admin)):
+    config = await db.site_settings.find_one({"id": "weekly_report_config"}, {"_id": 0})
+    if not config:
+        config = DEFAULT_WEEKLY_REPORT_CONFIG
+    data = await _generate_weekly_report_data()
+    html = _build_weekly_report_html(data)
+    email_to = config.get("email", NOTIFICATION_EMAIL or "admin@accompagn-sante.fr")
+
+    if not RESEND_AVAILABLE:
+        return {"success": False, "error": "Service email non configuré"}
+
+    try:
+        await asyncio.to_thread(resend.Emails.send, {
+            "from": SENDER_EMAIL,
+            "to": [email_to],
+            "subject": f"Rapport hebdomadaire S.E.S. — {data['period']}",
+            "html": html,
+        })
+        await db.weekly_report_history.insert_one({
+            "sent_at": datetime.now(timezone.utc).isoformat(),
+            "email": email_to,
+            "data": data,
+            "trigger": "manual",
+        })
+        return {"success": True, "sent_to": email_to}
+    except Exception as e:
+        logger.error(f"Weekly report send error: {e}")
+        return {"success": False, "error": str(e)}

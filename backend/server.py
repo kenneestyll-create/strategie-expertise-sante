@@ -220,6 +220,9 @@ async def startup_db_client():
     # Start the data purge scheduler (runs daily at 3:00 AM)
     asyncio.create_task(_data_purge_scheduler())
 
+    # Start the weekly report scheduler (checks daily at configured hour)
+    asyncio.create_task(_weekly_report_scheduler())
+
 
 # ==================== GUIDE FOLLOWUP EMAIL TEMPLATES ====================
 
@@ -671,6 +674,56 @@ async def _daily_reminder_scheduler():
         except Exception as e:
             logger.error(f"Reminder scheduler error: {e}")
             await asyncio.sleep(600)
+
+
+async def _weekly_report_scheduler():
+    """Send weekly report email on the configured day and hour."""
+    await asyncio.sleep(120)
+    logger.info("Weekly report scheduler started")
+    while True:
+        try:
+            config = await db.site_settings.find_one({"id": "weekly_report_config"}, {"_id": 0})
+            if not config:
+                config = {"enabled": True, "day": "monday", "hour": 8, "email": ""}
+
+            if config.get("enabled"):
+                now = datetime.now(timezone.utc)
+                target_day = {"monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3, "friday": 4, "saturday": 5, "sunday": 6}.get(config.get("day", "monday"), 0)
+                target_hour = config.get("hour", 8)
+
+                if now.weekday() == target_day and now.hour == target_hour:
+                    today_str = now.strftime("%Y-%m-%d")
+                    already_sent = await db.weekly_report_history.find_one({"sent_at": {"$regex": f"^{today_str}"}}, {"_id": 0})
+                    if not already_sent:
+                        from config import RESEND_AVAILABLE, SENDER_EMAIL, NOTIFICATION_EMAIL
+                        if RESEND_AVAILABLE:
+                            from routes.admin import _generate_weekly_report_data, _build_weekly_report_html
+                            data = await _generate_weekly_report_data()
+                            html = _build_weekly_report_html(data)
+                            email_to = config.get("email") or NOTIFICATION_EMAIL or "admin@accompagn-sante.fr"
+                            try:
+                                import resend
+                                await asyncio.to_thread(resend.Emails.send, {
+                                    "from": SENDER_EMAIL,
+                                    "to": [email_to],
+                                    "subject": f"Rapport hebdomadaire S.E.S. — {data['period']}",
+                                    "html": html,
+                                })
+                                await db.weekly_report_history.insert_one({
+                                    "sent_at": now.isoformat(),
+                                    "email": email_to,
+                                    "data": data,
+                                    "trigger": "auto",
+                                })
+                                logger.info(f"Weekly report sent to {email_to}")
+                            except Exception as e:
+                                logger.error(f"Weekly report send error: {e}")
+
+            await asyncio.sleep(3600)
+        except Exception as e:
+            logger.error(f"Weekly report scheduler error: {e}")
+            await asyncio.sleep(3600)
+
 
 
 @app.on_event("shutdown")

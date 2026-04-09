@@ -578,6 +578,9 @@ export const AdminDashboard = () => {
   const [abResults, setAbResults] = useState({});
   const [creatingAb, setCreatingAb] = useState(false);
   const [showTour, setShowTour] = useState(false);
+  const [weeklyConfig, setWeeklyConfig] = useState({ enabled: true, day: 'monday', hour: 8, email: '' });
+  const [weeklyPreview, setWeeklyPreview] = useState(null);
+  const [weeklySending, setWeeklySending] = useState(false);
 
   const navigate = useNavigate();
   const { token, adminName, logout } = useAuth();
@@ -642,6 +645,7 @@ export const AdminDashboard = () => {
       axios.get(`${API}/documents/timeline`, axiosConfig).then(r => setS3Timeline(r.data)).catch(() => {});
       axios.get(`${API}/documents/storage-alerts/config`, axiosConfig).then(r => setS3AlertConfig(r.data)).catch(() => {});
       axios.get(`${API}/documents/storage-alerts/check`, axiosConfig).then(r => setS3AlertCheck(r.data)).catch(() => {});
+      axios.get(`${API}/weekly-report/config`, axiosConfig).then(r => setWeeklyConfig(r.data)).catch(() => {});
       axios.get(`${API}/admin/email/status`, axiosConfig).then(r => setEmailStatus(r.data)).catch(() => {});
       axios.get(`${API}/admin/completeness-notifications`, axiosConfig).then(r => setCompletenessNotifs(r.data)).catch(() => {});
       axios.get(`${API}/admin/relance-inactivité/history`, axiosConfig).then(r => setInactivityReminders(r.data)).catch(() => {});
@@ -3292,6 +3296,156 @@ export const AdminDashboard = () => {
                     <p className="text-xs text-muted-foreground">Les documents sont stockés de manière sécurisée dans le stockage objet cloud.</p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Rapport Hebdomadaire */}
+            <Card data-testid="config-weekly-report">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2"><FileText className="w-5 h-5 text-accent" /> Rapport hebdomadaire</CardTitle>
+                <p className="text-xs text-muted-foreground">Recevez un résumé de l'activité chaque semaine par email.</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Toggle + Config */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Envoi automatique</span>
+                  <button
+                    onClick={async () => {
+                      const newConfig = { ...weeklyConfig, enabled: !weeklyConfig.enabled };
+                      setWeeklyConfig(newConfig);
+                      try {
+                        await axios.put(`${API}/weekly-report/config`, newConfig, axiosConfig);
+                        toast.success(newConfig.enabled ? 'Rapport activé' : 'Rapport désactivé');
+                      } catch { toast.error('Erreur'); }
+                    }}
+                    className={`w-9 h-5 rounded-full transition-colors relative ${weeklyConfig.enabled ? 'bg-[#0d9488]' : 'bg-gray-300'}`}
+                    data-testid="weekly-report-toggle"
+                  >
+                    <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${weeklyConfig.enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                  </button>
+                </div>
+
+                {weeklyConfig.enabled && (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-muted-foreground uppercase tracking-wide">Jour d'envoi</label>
+                        <select
+                          value={weeklyConfig.day || 'monday'}
+                          onChange={async (e) => {
+                            const newConfig = { ...weeklyConfig, day: e.target.value };
+                            setWeeklyConfig(newConfig);
+                            await axios.put(`${API}/weekly-report/config`, newConfig, axiosConfig).catch(() => {});
+                          }}
+                          className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm"
+                          data-testid="weekly-report-day"
+                        >
+                          <option value="monday">Lundi</option>
+                          <option value="tuesday">Mardi</option>
+                          <option value="wednesday">Mercredi</option>
+                          <option value="thursday">Jeudi</option>
+                          <option value="friday">Vendredi</option>
+                          <option value="saturday">Samedi</option>
+                          <option value="sunday">Dimanche</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-muted-foreground uppercase tracking-wide">Heure (UTC)</label>
+                        <select
+                          value={weeklyConfig.hour ?? 8}
+                          onChange={async (e) => {
+                            const newConfig = { ...weeklyConfig, hour: parseInt(e.target.value) };
+                            setWeeklyConfig(newConfig);
+                            await axios.put(`${API}/weekly-report/config`, newConfig, axiosConfig).catch(() => {});
+                          }}
+                          className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm"
+                          data-testid="weekly-report-hour"
+                        >
+                          {Array.from({ length: 24 }, (_, i) => (
+                            <option key={i} value={i}>{String(i).padStart(2, '0')}:00</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-muted-foreground uppercase tracking-wide">Email destinataire</label>
+                        <input
+                          type="email"
+                          value={weeklyConfig.email || ''}
+                          onChange={(e) => setWeeklyConfig({ ...weeklyConfig, email: e.target.value })}
+                          onBlur={async () => {
+                            await axios.put(`${API}/weekly-report/config`, weeklyConfig, axiosConfig).catch(() => {});
+                          }}
+                          className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm"
+                          placeholder="admin@accompagn-sante.fr"
+                          data-testid="weekly-report-email"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5 text-xs"
+                        data-testid="weekly-report-preview"
+                        onClick={async () => {
+                          try {
+                            const r = await axios.get(`${API}/weekly-report/preview`, axiosConfig);
+                            setWeeklyPreview(r.data);
+                          } catch { toast.error('Erreur de prévisualisation'); }
+                        }}
+                      >
+                        <Eye className="w-3 h-3" /> Prévisualiser
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="gap-1.5 text-xs"
+                        disabled={weeklySending}
+                        data-testid="weekly-report-send"
+                        onClick={async () => {
+                          setWeeklySending(true);
+                          try {
+                            const r = await axios.post(`${API}/weekly-report/send`, {}, axiosConfig);
+                            if (r.data.success) toast.success(`Rapport envoyé à ${r.data.sent_to}`);
+                            else toast.error(r.data.error || 'Erreur');
+                          } catch { toast.error('Erreur d\'envoi'); }
+                          setWeeklySending(false);
+                        }}
+                      >
+                        <Send className="w-3 h-3" /> {weeklySending ? 'Envoi...' : 'Envoyer maintenant'}
+                      </Button>
+                    </div>
+
+                    {/* Preview data */}
+                    {weeklyPreview && (
+                      <div className="mt-3 p-4 rounded-lg border bg-muted/20 space-y-2" data-testid="weekly-report-preview-data">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Aperçu des données — {weeklyPreview.period}</p>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          {[
+                            { label: 'Contacts', value: weeklyPreview.contacts_7d },
+                            { label: 'Analyses', value: weeklyPreview.analyses_7d },
+                            { label: 'Dossiers', value: weeklyPreview.dossiers_7d },
+                            { label: 'Clients', value: weeklyPreview.clients_7d },
+                            { label: 'Chatbot', value: weeklyPreview.chatbot_7d },
+                            { label: 'RDV', value: weeklyPreview.bookings_7d },
+                            { label: 'Revenus', value: `${(weeklyPreview.revenue_7d || 0).toFixed(0)} €` },
+                            { label: 'Conversion', value: `${weeklyPreview.conversion_rate}%` },
+                          ].map((item, i) => (
+                            <div key={i} className="p-2 rounded border bg-background text-center">
+                              <p className="text-lg font-bold">{item.value}</p>
+                              <p className="text-[9px] text-muted-foreground uppercase">{item.label}</p>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex gap-4 text-xs text-muted-foreground mt-1">
+                          <span>S3 : {weeklyPreview.s3_total_size > 1024*1024 ? `${(weeklyPreview.s3_total_size/(1024*1024)).toFixed(1)} Mo` : `${(weeklyPreview.s3_total_size/1024).toFixed(1)} Ko`} ({weeklyPreview.s3_total_files} fichiers)</span>
+                          <span>IA V2 : {weeklyPreview.v2_status}</span>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
               </CardContent>
             </Card>
 
