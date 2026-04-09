@@ -152,6 +152,14 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - VALIDÉ sur Samsung Internet mobile + desktop
 
 ## Completé récemment
+- **Système d'alertes de stockage S3** — DONE (09/04/2026)
+  - Backend : 3 endpoints (`/api/documents/storage-alerts/config` GET/PUT, `/check` GET)
+  - Config persistante MongoDB : seuils 500 Mo, 1 Go, 5 Go (activables individuellement), toggle global
+  - Vérification automatique : statut ok/warning (≥80%)/exceeded par seuil
+  - Historique alertes : `storage_alert_history` (1 alerte/jour max si seuil dépassé)
+  - Frontend : carte "Alertes de stockage" avec toggle, barres de progression colorées (vert/orange/rouge), badges seuils cliquables, messages contextuels
+  - 100% testé (11/11 backend + frontend intégral — iteration 182), zéro régression
+
 - **Tableau de bord S3 + Mise à jour tutoriel admin** — DONE (09/04/2026)
   - Backend : endpoint `GET /api/documents/timeline` (uploads/jour, volume, types sur N jours)
   - Frontend : AreaChart "Uploads par jour" (30j), carte "Volume stocké" (Ko/Mo/Go auto), PieChart "Par type de fichier"
