@@ -152,6 +152,15 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - VALIDÉ sur Samsung Internet mobile + desktop
 
 ## Completé récemment
+- **Alignement juridique discret (KAPSULES KORPORATION / Kbis)** — DONE (09/04/2026)
+  - Mentions legales : identite complete (EI, RCS 824 339 584 Chartres, 4 Rue de la Corne du Parc 28310, resp. Laetitia GUSTAVE)
+  - CGU Article 1 : identite exploitant ajoutee
+  - Politique de confidentialite : responsable du traitement identifie
+  - Footer : ligne juridique discrète (10px, opacity 20%)
+  - Emails : mention "Service exploité par KAPSULES KORPORATION" en pied de mail (9px)
+  - KAPSULES KORPORATION visible UNIQUEMENT dans les zones juridiquement necessaires
+  - Placeholders conserves pour : hebergeur, TVA intracommunautaire
+
 - **Systeme telephonique structure + paiement avant reservation** — DONE (09/04/2026)
   - 3 types d'appels : Decouverte (gratuit, 10min, 09h00/09h15, 1 seul par personne), Conseil (75€, 30min, 14h-16h30, Stripe obligatoire), Urgence (modal existante preservee)
   - Horaires : Lun-Ven 9h-17h uniquement (week-ends/soirs bloques)

@@ -293,6 +293,9 @@ export const Footer = () => {
             <p className="text-xs text-primary-foreground/40 text-center">
               &copy; {currentYear} Stratégie & Expertise Santé. Tous droits réservés.
             </p>
+            <p className="text-[10px] text-primary-foreground/20 text-center" data-testid="footer-legal-entity">
+              Service exploité par KAPSULES KORPORATION — RCS Chartres 824 339 584
+            </p>
             <p className="text-[10px] text-primary-foreground/25 text-center max-w-2xl leading-relaxed" data-testid="footer-ip-notice">
               Les contenus, textes, méthodologies, structures d'analyse et supports de Stratégie & Expertise Santé 
               sont protégés au titre de la propriété intellectuelle.

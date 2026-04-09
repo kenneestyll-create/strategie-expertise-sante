@@ -43,23 +43,31 @@ export const MentionsLegalesPage = () => {
             <TabsContent value="mentions" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Éditeur du site</CardTitle>
+                  <CardTitle>Identité de l'exploitant</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 text-muted-foreground">
                   <p>
-                    <strong className="text-foreground">Stratégie & Expertise Santé</strong><br />
-                    Service d'accompagnement et de conseil<br />
-                    [Adresse à compléter]<br />
-                    [Code postal - Ville]
+                    <strong className="text-foreground">Stratégie & Expertise Santé</strong> est un service
+                    édité et exploité par <strong className="text-foreground">KAPSULES KORPORATION</strong>.
                   </p>
+                  <div className="space-y-1.5 text-sm">
+                    <p><strong className="text-foreground">Marque / enseigne :</strong> Stratégie & Expertise Santé</p>
+                    <p><strong className="text-foreground">Exploitant :</strong> KAPSULES KORPORATION</p>
+                    <p><strong className="text-foreground">Forme juridique :</strong> Entreprise individuelle</p>
+                    <p><strong className="text-foreground">RCS :</strong> 824 339 584 R.C.S. Chartres</p>
+                    <p><strong className="text-foreground">Date d'immatriculation :</strong> 15/12/2016</p>
+                    <p><strong className="text-foreground">Adresse du siège :</strong> 4 Rue de la Corne du Parc, 28310 Janville-en-Beauce</p>
+                  </div>
                   <p>
                     <strong className="text-foreground">Contact :</strong><br />
-                    Email : contact@strategie-expertise-sante.fr<br />
-                    Téléphone : [Numéro à compléter]
+                    Email : contact@strategie-expertise-sante.fr
                   </p>
                   <p>
                     <strong className="text-foreground">Responsable de la publication :</strong><br />
-                    [Nom du responsable à compléter]
+                    Laëtitia GUSTAVE
+                  </p>
+                  <p className="text-xs text-muted-foreground/60">
+                    N° TVA intracommunautaire : [à compléter si applicable]
                   </p>
                 </CardContent>
               </Card>
@@ -71,8 +79,20 @@ export const MentionsLegalesPage = () => {
                 <CardContent className="text-muted-foreground">
                   <p>
                     Ce site est hébergé par :<br />
-                    [Nom de l'hébergeur]<br />
-                    [Adresse de l'hébergeur]
+                    [Nom de l'hébergeur à compléter]<br />
+                    [Adresse de l'hébergeur à compléter]
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Activité déclarée</CardTitle>
+                </CardHeader>
+                <CardContent className="text-muted-foreground space-y-2 text-sm">
+                  <p>
+                    Conseil, accompagnement et assistance non réglementée pour les victimes professionnelles, 
+                    accidents du travail et litiges assuranciels, ainsi que création de contenus numériques informatifs.
                   </p>
                 </CardContent>
               </Card>
@@ -131,8 +151,9 @@ export const MentionsLegalesPage = () => {
                 <CardContent className="text-muted-foreground space-y-4">
                   <p>
                     Les présentes Conditions Générales d'Utilisation (CGU) ont pour objet de 
-                    définir les modalités d'accès et d'utilisation du site Stratégie & Expertise Santé 
-                    et des services proposés.
+                    définir les modalités d'accès et d'utilisation du site Stratégie & Expertise Santé, 
+                    service édité et exploité par KAPSULES KORPORATION (RCS 824 339 584 R.C.S. Chartres), 
+                    4 Rue de la Corne du Parc, 28310 Janville-en-Beauce.
                   </p>
                   <p>
                     L'utilisation du site implique l'acceptation pleine et entière des présentes CGU.

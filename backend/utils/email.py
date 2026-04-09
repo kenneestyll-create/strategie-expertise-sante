@@ -290,6 +290,9 @@ async def check_and_send_completeness_notification(client_id: str, completeness_
                 <p style="color:#888;font-size:11px;text-align:center;margin-top:20px;">
                     Stratégie &amp; Expertise Santé — Cet email est envoyé automatiquement.
                 </p>
+                <p style="color:#666;font-size:9px;text-align:center;margin-top:8px;">
+                    Service exploité par KAPSULES KORPORATION — RCS 824 339 584 R.C.S. Chartres
+                </p>
             </div>
             <img src="{site_url}/api/track/open/{notif_record['id']}" width="1" height="1" style="display:none;" alt="" />
         </body>
@@ -485,6 +488,9 @@ def _build_reminder_html(prenom: str, completeness_pct: int, missing_docs: list,
             <p style="color:#888;font-size:11px;text-align:center;margin-top:20px;">
                 Stratégie &amp; Expertise Santé — Cet email est envoyé automatiquement.
                 <br/>Si vous ne souhaitez plus recevoir ces relances, contactez-nous.
+            </p>
+            <p style="color:#666;font-size:9px;text-align:center;margin-top:8px;">
+                Service exploité par KAPSULES KORPORATION — RCS 824 339 584 R.C.S. Chartres
             </p>
         </div>
         <img src="{site_url}/api/track/open/{reminder_id}" width="1" height="1" style="display:none;" alt="" />

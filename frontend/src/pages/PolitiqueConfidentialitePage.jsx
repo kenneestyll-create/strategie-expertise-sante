@@ -6,7 +6,7 @@ export const PolitiqueConfidentialitePage = () => {
   const sections = [
     {
       icon: Users, title: "1. Responsable du traitement",
-      content: "Le responsable du traitement des données personnelles est Stratégie & Expertise Santé. Pour toute question relative à la protection de vos données, vous pouvez nous contacter à l'adresse : contact@strategie-expertise-sante.fr."
+      content: "Le responsable du traitement des données personnelles est Stratégie & Expertise Santé, service exploité par KAPSULES KORPORATION, entreprise individuelle immatriculée au RCS de Chartres sous le numéro 824 339 584, dont le siège est situé au 4 Rue de la Corne du Parc, 28310 Janville-en-Beauce. Pour toute question relative à la protection de vos données, vous pouvez nous contacter à l'adresse : contact@strategie-expertise-sante.fr."
     },
     {
       icon: FileText, title: "2. Données collectées",
