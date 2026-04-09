@@ -6,7 +6,7 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 ## Architecture
 - Frontend: React + Tailwind CSS + Shadcn/UI
 - Backend: FastAPI + MongoDB
-- Intégrations: Anthropic Claude (clé API native), Stripe (test), Resend (sandbox)
+- Intégrations: Anthropic Claude (clé API native), Stripe (test), Resend (sandbox), AWS S3 (ses-documents-prod)
 
 ## Ce qui est implémenté
 - Scanner de documents natif (caméra mobile `<input capture>`) — DONE
@@ -152,6 +152,15 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - VALIDÉ sur Samsung Internet mobile + desktop
 
 ## Completé récemment
+- **Intégration AWS S3 — Stockage persistant documents** — DONE (09/04/2026)
+  - Backend : `utils/storage.py` (boto3), `upload.py` (chunking + S3), endpoints admin S3
+  - Endpoints : GET `/api/documents` (liste paginée), GET `/api/documents/stats`, GET `/api/documents/{id}/url` (pre-signed URL)
+  - Frontend : Onglet Documents enrichi avec section "Documents stockés (S3)" — stats, tableau, Voir/Télécharger
+  - Bucket : `ses-documents-prod` (eu-west-3), accès public bloqué
+  - Collection MongoDB : `documents` (metadata + storage_path)
+  - 100% testé (13/13 backend + frontend intégral — iteration 180)
+  - Zero régression
+
 - **Alignement juridique discret (KAPSULES KORPORATION / Kbis)** — DONE (09/04/2026)
   - Mentions legales : identite complete (EI, RCS 824 339 584 Chartres, 4 Rue de la Corne du Parc 28310, resp. Laetitia GUSTAVE)
   - CGU Article 1 : identite exploitant ajoutee
@@ -193,60 +202,15 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
   - Zero regression, zero impact parcours client existant
 
 - **Admin V2 Readiness Status (Feu tricolore)** — DONE (06/04/2026)
-  - Backend : endpoint GET `/api/knowledge-patterns/v2-readiness` avec scoring 0-100
-  - Score décomposé : Volume (50pts), Diversité (20pts), Complétude (15pts), Qualité (15pts)
-  - Statut feu tricolore : Rouge (<200 cas), Orange (200-499), Vert (>=500 cas)
-  - Règle stricte : Vert impossible avec <500 cas exploitables
-  - Frontend : composant `AdminV2Readiness.jsx` dans l'onglet Config du dashboard Admin
-  - 100% testé (9/9 backend + frontend intégral — iteration 174)
-
 - **Systeme de retour d'experience strategique** — DONE (06/04/2026)
-  - Backend : 3 endpoints (/api/feedback POST public, GET admin, GET /stats admin)
-  - Auto-categorisation par mots-cles : juridique, medical, MDPH, assurantiel, accompagnement, incomprehension offre
-  - Widget discret dans StrategiIA (basic + premium) — 3 questions + champ libre optionnel
-  - Admin : onglet Feedback avec stats, distributions categories/clarte, liste filtrable
-  - Tutoriel admin mis a jour (9 etapes, section aide documentee)
-  - 100% teste (16/16 backend + frontend — iteration 177)
-  - Zero regression V1, zero impact parcours client existant
-
 - **V2 Predictive Dormante preinstallee** — DONE (06/04/2026)
-  - Backend : module predictif complet (8 regles de fragilite, scoring robustesse 0-100)
-  - Feature flag MongoDB persistent (`predictive_v2_enabled = false` par defaut)
-  - Routes admin : status, activation securisee (triple confirmation), kill switch, sandbox, comparateur V1/V2, config, audit log
-  - 5 verrous d'activation backend : 500 cas min, score >= 70, diversite >= 3, completude >= 50%, feu vert
-  - Hooks dormants dans strategiia.py et dossier_express.py (zero impact quand OFF)
-  - Frontend : panneau complet avec tabs (overview, sandbox, comparateur, parametres, audit)
-  - 4 documents de documentation dans /app/memory/ (DORMANT_SYSTEM, ACTIVATION_GUIDE, ROLLBACK_GUIDE, TECHNICAL_MAP)
-  - 100% teste (12/12 backend + frontend — iteration 176)
-  - Zero regression V1, zero impact client
-
 - **Kit d'Independance Projet** — DONE (06/04/2026)
-  - 7 documents strategiques crees dans `/app/memory/`
-  - MASTER_ARCHITECTURE.md : architecture globale, briques, dependances, zones sensibles
-  - IA_SYSTEM_MAP.md : cartographie IA complete (prompts, pipeline, risques)
-  - KNOWLEDGE_SYSTEM_MAP.md : bases metier, patterns, scoring, injection
-  - ZONES_GELEES_ET_MODIFIABLES.md : garde-fou operationnel (gele/prudent/libre)
-  - FUTURE_V2_ACTIVATION_BLUEPRINT.md : plan V2 complet (6 parties A-F)
-  - FUTURE_DEV_HANDOVER.md : guide de reprise developpeur
-  - README_PROJET_STRATEGIQUE.md : vue d'ensemble non technique
-  - Zero modification de code source — mission documentation pure
-  - Zero regression — backend et frontend intacts (200/200)
-
 - **Historique hebdomadaire du score V2** — DONE (06/04/2026)
-  - Auto-snapshot quotidien dans collection `v2_readiness_history` (max 1/jour, déclenché par visite admin)
-  - Endpoint GET `/api/knowledge-patterns/v2-readiness/history` (90 jours max)
-  - Mini-graphique AreaChart (recharts) avec courbes Score /100 et Cas exploitables
-  - 100% testé (7/7 backend + frontend intégral — iteration 175)
-
 - **Mise à jour tutoriel admin** — DONE (06/04/2026)
-  - Onboarding tour : 7 étapes (ajout étape 5 "IA V2 — Feu tricolore")
-  - AdminHelpPanel : section Config enrichie avec documentation V2 Readiness
-  - Mots-clés de recherche ajoutés : v2, readiness, feu, tricolore, prédictive, score
 
 ## P1 — À venir
 - **GEL REEL DU PRODUIT** — MISSION FINALE completee. Aucun nouveau module ou feature.
 - Checklist lancement live (clés Stripe/Anthropic production)
-- Fournir identifiants AWS S3 (stockage documents persistant)
 - Enrichir la base assurantielle avec de nouveaux contrats
 
 ## P2 — Backlog
