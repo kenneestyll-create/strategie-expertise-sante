@@ -10,8 +10,8 @@ from config import logger, db
 router = APIRouter(prefix="/upload", tags=["upload"])
 
 
-def _store_files_to_object_storage(assembled_files):
-    """Upload assembled files to Object Storage and return metadata."""
+def _store_files_to_object_storage(assembled_files, source="upload", user_email="", dossier_id=""):
+    """Upload assembled files to Object Storage, save metadata to MongoDB."""
     stored = []
     try:
         from utils.storage import upload_file
@@ -28,7 +28,32 @@ def _store_files_to_object_storage(assembled_files):
         try:
             raw_bytes = base64.b64decode(data_b64)
             result = upload_file("dossier-originals", name, raw_bytes, file_type)
-            result["file_id"] = str(uuid.uuid4())
+            doc_id = str(uuid.uuid4())
+            result["file_id"] = doc_id
+
+            # Persist metadata to MongoDB (sync via event loop)
+            import asyncio
+            doc_meta = {
+                "id": doc_id,
+                "original_filename": name,
+                "content_type": file_type,
+                "size": len(raw_bytes),
+                "storage_path": result.get("storage_path", ""),
+                "source": source,
+                "user_email": user_email,
+                "dossier_id": dossier_id,
+                "status": "stored",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            }
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    asyncio.ensure_future(db.documents.insert_one(doc_meta))
+                else:
+                    loop.run_until_complete(db.documents.insert_one(doc_meta))
+            except Exception:
+                pass
+
             stored.append(result)
         except Exception as e:
             logger.warning(f"Failed to store original file {name}: {e}")

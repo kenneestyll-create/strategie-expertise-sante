@@ -91,3 +91,45 @@ def delete_object(path: str) -> bool:
     except ClientError as e:
         logger.warning(f"Failed to delete S3 object {path}: {e}")
         return False
+
+
+def generate_presigned_url(path: str, expires_in: int = 3600) -> str:
+    """Generate a presigned URL for secure, temporary access to a document."""
+    try:
+        s3 = _get_s3()
+        url = s3.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": S3_BUCKET, "Key": path},
+            ExpiresIn=expires_in,
+        )
+        return url
+    except Exception as e:
+        logger.warning(f"Failed to generate presigned URL for {path}: {e}")
+        return ""
+
+
+def ensure_bucket():
+    """Create bucket if it doesn't exist, block public access."""
+    try:
+        s3 = _get_s3()
+        try:
+            s3.head_bucket(Bucket=S3_BUCKET)
+            logger.info(f"S3 bucket '{S3_BUCKET}' exists")
+        except ClientError:
+            s3.create_bucket(
+                Bucket=S3_BUCKET,
+                CreateBucketConfiguration={"LocationConstraint": S3_REGION},
+            )
+            logger.info(f"S3 bucket '{S3_BUCKET}' created")
+
+        s3.put_public_access_block(
+            Bucket=S3_BUCKET,
+            PublicAccessBlockConfiguration={
+                "BlockPublicAcls": True,
+                "IgnorePublicAcls": True,
+                "BlockPublicPolicy": True,
+                "RestrictPublicBuckets": True,
+            },
+        )
+    except Exception as e:
+        logger.warning(f"Bucket init warning: {e}")

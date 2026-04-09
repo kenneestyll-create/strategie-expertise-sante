@@ -559,6 +559,8 @@ export const AdminDashboard = () => {
   const [conversionMontant, setConversionMontant] = useState('');
   const [conversionPrestation, setConversionPrestation] = useState('');
   const [adminDocs, setAdminDocs] = useState({ documents: [], stats: {} });
+  const [s3Docs, setS3Docs] = useState({ documents: [], total: 0 });
+  const [s3Stats, setS3Stats] = useState({ total: 0, by_source: [] });
   const [emailStatus, setEmailStatus] = useState(null);
   const [docStatusFilter, setDocStatusFilter] = useState('');
   const [completenessNotifs, setCompletenessNotifs] = useState({ notifications: [], total: 0, stats: {}, by_threshold: {} });
@@ -632,6 +634,8 @@ export const AdminDashboard = () => {
       axios.get(`${API}/admin/launch-mode`, axiosConfig).then(r => setLaunchMode(r.data)).catch(() => {});
       axios.get(`${API}/admin/services-status`, axiosConfig).then(r => setServicesStatus(r.data)).catch(() => {});
       axios.get(`${API}/admin/documents`, axiosConfig).then(r => setAdminDocs(r.data)).catch(() => {});
+      axios.get(`${API}/documents`, axiosConfig).then(r => setS3Docs(r.data)).catch(() => {});
+      axios.get(`${API}/documents/stats`, axiosConfig).then(r => setS3Stats(r.data)).catch(() => {});
       axios.get(`${API}/admin/email/status`, axiosConfig).then(r => setEmailStatus(r.data)).catch(() => {});
       axios.get(`${API}/admin/completeness-notifications`, axiosConfig).then(r => setCompletenessNotifs(r.data)).catch(() => {});
       axios.get(`${API}/admin/relance-inactivité/history`, axiosConfig).then(r => setInactivityReminders(r.data)).catch(() => {});
@@ -2904,6 +2908,102 @@ export const AdminDashboard = () => {
                 </CardContent>
               </Card>
             )}
+
+            {/* Documents S3 stockés */}
+            <div className="mt-8 pt-6 border-t" data-testid="s3-documents-section">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold">Documents stockés (S3)</h3>
+                  <p className="text-xs text-muted-foreground">Fichiers uploadés et stockés durablement dans AWS S3</p>
+                </div>
+                <Button size="sm" variant="outline" onClick={async () => {
+                  try {
+                    const [d, s] = await Promise.all([
+                      axios.get(`${API}/documents`, axiosConfig),
+                      axios.get(`${API}/documents/stats`, axiosConfig),
+                    ]);
+                    setS3Docs(d.data);
+                    setS3Stats(s.data);
+                  } catch {}
+                }} className="gap-1" data-testid="s3-doc-refresh">
+                  <RefreshCw className="w-3 h-3" /> Actualiser
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                <Card><CardContent className="p-3 text-center"><p className="text-xl font-bold">{s3Stats.total || 0}</p><p className="text-[10px] text-muted-foreground uppercase">Fichiers S3</p></CardContent></Card>
+                {(s3Stats.by_source || []).slice(0, 2).map((s, i) => (
+                  <Card key={i}><CardContent className="p-3 text-center"><p className="text-xl font-bold">{s.count}</p><p className="text-[10px] text-muted-foreground uppercase">{s.source}</p></CardContent></Card>
+                ))}
+              </div>
+
+              {(s3Docs.documents || []).length === 0 ? (
+                <Card><CardContent className="py-12 text-center text-muted-foreground">Aucun document stocké dans S3 pour le moment</CardContent></Card>
+              ) : (
+                <Card>
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead className="bg-muted/30 border-b"><tr>
+                          <th className="py-2 px-3 text-left font-medium text-muted-foreground">Fichier</th>
+                          <th className="py-2 px-3 text-left font-medium text-muted-foreground">Source</th>
+                          <th className="py-2 px-3 text-left font-medium text-muted-foreground">Type</th>
+                          <th className="py-2 px-3 text-left font-medium text-muted-foreground">Taille</th>
+                          <th className="py-2 px-3 text-left font-medium text-muted-foreground">Date</th>
+                          <th className="py-2 px-3 text-left font-medium text-muted-foreground">Actions</th>
+                        </tr></thead>
+                        <tbody>
+                          {(s3Docs.documents || []).map((doc) => (
+                            <tr key={doc.id} className="border-b last:border-0 hover:bg-muted/20" data-testid={`s3-doc-${doc.id}`}>
+                              <td className="py-2 px-3">
+                                <p className="font-medium truncate max-w-[200px]">{doc.original_filename}</p>
+                                {doc.user_email && <p className="text-[10px] text-muted-foreground">{doc.user_email}</p>}
+                                {doc.dossier_id && <p className="text-[10px] text-muted-foreground">Dossier: {doc.dossier_id.slice(0, 8)}...</p>}
+                              </td>
+                              <td className="py-2 px-3"><Badge variant="outline" className="text-[10px]">{doc.source || 'upload'}</Badge></td>
+                              <td className="py-2 px-3 text-muted-foreground text-xs">{doc.content_type?.split('/')[1] || doc.content_type}</td>
+                              <td className="py-2 px-3 text-muted-foreground text-xs">{doc.size ? `${(doc.size / 1024).toFixed(1)} Ko` : '-'}</td>
+                              <td className="py-2 px-3 text-muted-foreground text-xs">{doc.created_at ? new Date(doc.created_at).toLocaleDateString('fr-FR') : ''}</td>
+                              <td className="py-2 px-3">
+                                <div className="flex gap-1">
+                                  <Button size="sm" variant="ghost" className="h-7 px-2 text-xs"
+                                    onClick={async () => {
+                                      try {
+                                        const res = await axios.get(`${API}/documents/${doc.id}/url`, axiosConfig);
+                                        if (res.data.url) window.open(res.data.url, '_blank');
+                                      } catch { toast.error('Erreur de chargement du document'); }
+                                    }}
+                                    data-testid={`s3-view-${doc.id}`}
+                                  >
+                                    <Eye className="w-3 h-3 mr-1" /> Voir
+                                  </Button>
+                                  <Button size="sm" variant="ghost" className="h-7 px-2 text-xs"
+                                    onClick={async () => {
+                                      try {
+                                        const res = await axios.get(`${API}/documents/${doc.id}/url`, axiosConfig);
+                                        if (res.data.url) {
+                                          const a = document.createElement('a');
+                                          a.href = res.data.url;
+                                          a.download = res.data.filename || doc.original_filename;
+                                          a.click();
+                                        }
+                                      } catch { toast.error('Erreur de téléchargement'); }
+                                    }}
+                                    data-testid={`s3-download-${doc.id}`}
+                                  >
+                                    <Download className="w-3 h-3 mr-1" /> Télécharger
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </TabsContent>
 
           {/* Config Tab */}

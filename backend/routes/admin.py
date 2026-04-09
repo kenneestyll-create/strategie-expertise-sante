@@ -2149,3 +2149,53 @@ async def get_quality_scores(admin: dict = Depends(get_current_admin)):
     }
 
     return {"scores": scores[:30], "stats": stats}
+
+
+# ==================== DOCUMENTS S3 ====================
+
+@router.get("/documents")
+async def admin_list_documents(
+    page: int = 1,
+    per_page: int = 20,
+    source: str = "",
+    admin=Depends(get_current_admin),
+):
+    """List all stored documents with metadata."""
+    query = {}
+    if source:
+        query["source"] = source
+    skip = (page - 1) * per_page
+    total = await db.documents.count_documents(query)
+    docs = await db.documents.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(per_page).to_list(per_page)
+    return {"documents": docs, "total": total, "page": page, "per_page": per_page}
+
+
+@router.get("/documents/{doc_id}/url")
+async def admin_get_document_url(doc_id: str, admin=Depends(get_current_admin)):
+    """Generate a presigned URL for secure document access."""
+    doc = await db.documents.find_one({"id": doc_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document non trouve")
+    storage_path = doc.get("storage_path", "")
+    if not storage_path:
+        raise HTTPException(status_code=404, detail="Chemin de stockage manquant")
+    from utils.storage import generate_presigned_url
+    url = generate_presigned_url(storage_path, expires_in=3600)
+    if not url:
+        raise HTTPException(status_code=500, detail="Impossible de generer l'URL signee")
+    return {"url": url, "filename": doc.get("original_filename", ""), "content_type": doc.get("content_type", "")}
+
+
+@router.get("/documents/stats")
+async def admin_documents_stats(admin=Depends(get_current_admin)):
+    """Get document storage statistics."""
+    total = await db.documents.count_documents({})
+    pipeline = [
+        {"$group": {"_id": "$source", "count": {"$sum": 1}, "total_size": {"$sum": "$size"}}},
+        {"$sort": {"count": -1}},
+    ]
+    by_source = await db.documents.aggregate(pipeline).to_list(20)
+    return {
+        "total": total,
+        "by_source": [{"source": s["_id"] or "inconnu", "count": s["count"], "total_size": s["total_size"]} for s in by_source],
+    }

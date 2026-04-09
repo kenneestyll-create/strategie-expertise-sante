@@ -150,7 +150,22 @@ async def extract_document_text(request: Request):
                 fname = file_info.get("name", "unknown")
                 ftype = file_info.get("type", "application/octet-stream")
                 result = storage_upload("dossier-originals", fname, raw_bytes, ftype)
-                result["file_id"] = str(uuid.uuid4())
+                doc_id = str(uuid.uuid4())
+                result["file_id"] = doc_id
+
+                doc_meta = {
+                    "id": doc_id,
+                    "original_filename": fname,
+                    "content_type": ftype,
+                    "size": len(raw_bytes),
+                    "storage_path": result.get("storage_path", ""),
+                    "source": "dossier_express",
+                    "user_email": "",
+                    "dossier_id": "",
+                    "status": "stored",
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                }
+                await db.documents.insert_one(doc_meta)
                 stored_files.append(result)
             except Exception:
                 pass

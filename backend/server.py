@@ -173,9 +173,10 @@ async def startup_db_client():
 
     # Initialize object storage
     try:
-        from utils.storage import init_storage
+        from utils.storage import init_storage, ensure_bucket
         init_storage()
-        logger.info("Object storage initialized")
+        ensure_bucket()
+        logger.info("Object storage initialized, bucket verified")
     except Exception as e:
         logger.warning(f"Object storage init failed (will use DB fallback): {e}")
 
