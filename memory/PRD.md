@@ -152,6 +152,16 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - VALIDÉ sur Samsung Internet mobile + desktop
 
 ## Completé récemment
+- **Systeme telephonique structure + paiement avant reservation** — DONE (09/04/2026)
+  - 3 types d'appels : Decouverte (gratuit, 10min, 09h00/09h15, 1 seul par personne), Conseil (75€, 30min, 14h-16h30, Stripe obligatoire), Urgence (modal existante preservee)
+  - Horaires : Lun-Ven 9h-17h uniquement (week-ends/soirs bloques)
+  - Paiement Stripe avant confirmation (creneaux pending auto-expires apres 15min)
+  - Garde-fous : 1 decouverte/email, appels payants rejetes sans checkout, conflit creneaux gere
+  - UI premium : 3 cartes, calendrier, creneaux filtres, formulaire, recap, flux Stripe
+  - Webhook Stripe mis a jour pour confirmer bookings payes
+  - Note : Cle Stripe placeholder (sk_test_emergent) — necessite cle reelle pour production
+  - 100% teste (11/11 backend + frontend integral — iteration 179)
+
 - **GEL OFFICIEL DEFINITIF — HOME / RESPONSIVE / HERO** — ENREGISTRE (07/04/2026)
   - Rendu valide definitivement sur mobile, portable, desktop grand ecran
   - Perimetre gele : Hero, structure Home, containers, espacements, responsive, proportions image
