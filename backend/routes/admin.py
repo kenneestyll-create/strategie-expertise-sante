@@ -2234,3 +2234,89 @@ async def admin_documents_timeline(days: int = 30, admin=Depends(get_current_adm
     type_distribution = [{"type": t, "count": c} for t, c in sorted(by_type.items(), key=lambda x: -x[1])]
 
     return {"timeline": timeline, "total_size": total_size, "total_files": len(docs), "by_type": type_distribution}
+
+
+# ==================== STORAGE ALERTS ====================
+
+DEFAULT_STORAGE_ALERT_CONFIG = {
+    "id": "storage_alert_config",
+    "enabled": True,
+    "thresholds": [
+        {"label": "500 Mo", "bytes": 500 * 1024 * 1024, "active": True},
+        {"label": "1 Go", "bytes": 1024 * 1024 * 1024, "active": True},
+        {"label": "5 Go", "bytes": 5 * 1024 * 1024 * 1024, "active": True},
+    ],
+    "notify_email": True,
+}
+
+
+@router.get("/documents/storage-alerts/config")
+async def get_storage_alert_config(admin=Depends(get_current_admin)):
+    config = await db.site_settings.find_one({"id": "storage_alert_config"}, {"_id": 0})
+    return config or DEFAULT_STORAGE_ALERT_CONFIG
+
+
+@router.put("/documents/storage-alerts/config")
+async def update_storage_alert_config(request: Request, admin=Depends(get_current_admin)):
+    body = await request.json()
+    doc = {
+        "id": "storage_alert_config",
+        "enabled": body.get("enabled", True),
+        "thresholds": body.get("thresholds", DEFAULT_STORAGE_ALERT_CONFIG["thresholds"]),
+        "notify_email": body.get("notify_email", True),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.site_settings.update_one({"id": "storage_alert_config"}, {"$set": doc}, upsert=True)
+    return {"success": True, "config": doc}
+
+
+@router.get("/documents/storage-alerts/check")
+async def check_storage_alerts(admin=Depends(get_current_admin)):
+    """Check current storage against configured thresholds."""
+    config = await db.site_settings.find_one({"id": "storage_alert_config"}, {"_id": 0})
+    if not config:
+        config = DEFAULT_STORAGE_ALERT_CONFIG
+    if not config.get("enabled"):
+        return {"alerts": [], "current_size": 0, "enabled": False}
+
+    pipeline = [{"$group": {"_id": None, "total_size": {"$sum": "$size"}, "count": {"$sum": 1}}}]
+    result = await db.documents.aggregate(pipeline).to_list(1)
+    current_size = result[0]["total_size"] if result else 0
+    total_files = result[0]["count"] if result else 0
+
+    alerts = []
+    for threshold in config.get("thresholds", []):
+        if not threshold.get("active", True):
+            continue
+        t_bytes = threshold.get("bytes", 0)
+        if t_bytes <= 0:
+            continue
+        pct = round((current_size / t_bytes) * 100, 1) if t_bytes > 0 else 0
+        status = "exceeded" if current_size >= t_bytes else ("warning" if pct >= 80 else "ok")
+        alerts.append({
+            "label": threshold.get("label", ""),
+            "threshold_bytes": t_bytes,
+            "current_pct": min(pct, 999),
+            "status": status,
+        })
+
+    # Record alert if any threshold is exceeded (max 1 alert per day)
+    exceeded = [a for a in alerts if a["status"] == "exceeded"]
+    if exceeded:
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        existing = await db.storage_alert_history.find_one({"date": today}, {"_id": 0})
+        if not existing:
+            await db.storage_alert_history.insert_one({
+                "date": today,
+                "current_size": current_size,
+                "total_files": total_files,
+                "exceeded_thresholds": [a["label"] for a in exceeded],
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            })
+
+    return {
+        "alerts": alerts,
+        "current_size": current_size,
+        "total_files": total_files,
+        "enabled": True,
+    }
