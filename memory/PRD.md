@@ -152,6 +152,13 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - VALIDÉ sur Samsung Internet mobile + desktop
 
 ## Completé récemment
+- **Tableau de bord S3 + Mise à jour tutoriel admin** — DONE (09/04/2026)
+  - Backend : endpoint `GET /api/documents/timeline` (uploads/jour, volume, types sur N jours)
+  - Frontend : AreaChart "Uploads par jour" (30j), carte "Volume stocké" (Ko/Mo/Go auto), PieChart "Par type de fichier"
+  - Onboarding tour : étape 7/10 "Documents stockés (S3)" ajoutée (cible `s3-documents-section`)
+  - AdminHelpPanel : section Documents enrichie (5 étapes détaillées : documents clients, S3, Voir/Télécharger, tableau de bord, actualiser)
+  - 100% testé (10/11 backend + frontend intégral — iteration 181), zéro régression
+
 - **Intégration AWS S3 — Stockage persistant documents** — DONE (09/04/2026)
   - Backend : `utils/storage.py` (boto3), `upload.py` (chunking + S3), endpoints admin S3
   - Endpoints : GET `/api/documents` (liste paginée), GET `/api/documents/stats`, GET `/api/documents/{id}/url` (pre-signed URL)
