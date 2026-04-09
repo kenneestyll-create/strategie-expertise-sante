@@ -561,6 +561,7 @@ export const AdminDashboard = () => {
   const [adminDocs, setAdminDocs] = useState({ documents: [], stats: {} });
   const [s3Docs, setS3Docs] = useState({ documents: [], total: 0 });
   const [s3Stats, setS3Stats] = useState({ total: 0, by_source: [] });
+  const [s3Timeline, setS3Timeline] = useState({ timeline: [], total_size: 0, total_files: 0, by_type: [] });
   const [emailStatus, setEmailStatus] = useState(null);
   const [docStatusFilter, setDocStatusFilter] = useState('');
   const [completenessNotifs, setCompletenessNotifs] = useState({ notifications: [], total: 0, stats: {}, by_threshold: {} });
@@ -636,6 +637,7 @@ export const AdminDashboard = () => {
       axios.get(`${API}/admin/documents`, axiosConfig).then(r => setAdminDocs(r.data)).catch(() => {});
       axios.get(`${API}/documents`, axiosConfig).then(r => setS3Docs(r.data)).catch(() => {});
       axios.get(`${API}/documents/stats`, axiosConfig).then(r => setS3Stats(r.data)).catch(() => {});
+      axios.get(`${API}/documents/timeline`, axiosConfig).then(r => setS3Timeline(r.data)).catch(() => {});
       axios.get(`${API}/admin/email/status`, axiosConfig).then(r => setEmailStatus(r.data)).catch(() => {});
       axios.get(`${API}/admin/completeness-notifications`, axiosConfig).then(r => setCompletenessNotifs(r.data)).catch(() => {});
       axios.get(`${API}/admin/relance-inactivité/history`, axiosConfig).then(r => setInactivityReminders(r.data)).catch(() => {});
@@ -2918,12 +2920,14 @@ export const AdminDashboard = () => {
                 </div>
                 <Button size="sm" variant="outline" onClick={async () => {
                   try {
-                    const [d, s] = await Promise.all([
+                    const [d, s, t] = await Promise.all([
                       axios.get(`${API}/documents`, axiosConfig),
                       axios.get(`${API}/documents/stats`, axiosConfig),
+                      axios.get(`${API}/documents/timeline`, axiosConfig),
                     ]);
                     setS3Docs(d.data);
                     setS3Stats(s.data);
+                    setS3Timeline(t.data);
                   } catch {}
                 }} className="gap-1" data-testid="s3-doc-refresh">
                   <RefreshCw className="w-3 h-3" /> Actualiser
@@ -2936,6 +2940,87 @@ export const AdminDashboard = () => {
                   <Card key={i}><CardContent className="p-3 text-center"><p className="text-xl font-bold">{s.count}</p><p className="text-[10px] text-muted-foreground uppercase">{s.source}</p></CardContent></Card>
                 ))}
               </div>
+
+              {/* S3 Dashboard — Graphiques */}
+              {(s3Timeline.timeline || []).length > 0 && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4" data-testid="s3-dashboard-charts">
+                  {/* AreaChart — Uploads par jour */}
+                  <Card className="lg:col-span-2">
+                    <CardContent className="p-4">
+                      <p className="text-sm font-semibold mb-1">Uploads par jour</p>
+                      <p className="text-[10px] text-muted-foreground mb-3">Évolution des documents stockés sur les 30 derniers jours</p>
+                      <div className="h-[180px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={s3Timeline.timeline} margin={{ top: 5, right: 5, left: -10, bottom: 5 }}>
+                            <defs>
+                              <linearGradient id="s3UploadGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#0d9488" stopOpacity={0.4} />
+                                <stop offset="95%" stopColor="#0d9488" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                            <XAxis dataKey="date" tickFormatter={(v) => v.slice(5)} tick={{ fontSize: 9 }} interval="preserveStartEnd" />
+                            <YAxis tick={{ fontSize: 9 }} allowDecimals={false} />
+                            <Tooltip labelFormatter={(v) => `Date: ${v}`} formatter={(v) => [v, 'Fichiers']} />
+                            <Area type="monotone" dataKey="count" stroke="#0d9488" fill="url(#s3UploadGrad)" strokeWidth={2} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Stats + Répartition par type */}
+                  <Card>
+                    <CardContent className="p-4">
+                      <p className="text-sm font-semibold mb-3">Volume stocké</p>
+                      <div className="text-center mb-4">
+                        <p className="text-3xl font-bold text-[#0d9488]">
+                          {s3Timeline.total_size > 1024 * 1024
+                            ? `${(s3Timeline.total_size / (1024 * 1024)).toFixed(1)} Mo`
+                            : s3Timeline.total_size > 1024
+                              ? `${(s3Timeline.total_size / 1024).toFixed(1)} Ko`
+                              : `${s3Timeline.total_size || 0} o`}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground uppercase mt-1">{s3Timeline.total_files || 0} fichiers au total</p>
+                      </div>
+                      {(s3Timeline.by_type || []).length > 0 && (
+                        <>
+                          <p className="text-xs font-medium mb-2 text-muted-foreground">Par type de fichier</p>
+                          <div className="h-[90px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <PieChart>
+                                <Pie
+                                  data={s3Timeline.by_type}
+                                  dataKey="count"
+                                  nameKey="type"
+                                  cx="50%"
+                                  cy="50%"
+                                  innerRadius={20}
+                                  outerRadius={38}
+                                  paddingAngle={3}
+                                >
+                                  {(s3Timeline.by_type || []).map((_, idx) => (
+                                    <Cell key={idx} fill={['#0d9488', '#C9A84C', '#6366f1', '#ef4444', '#3b82f6', '#f59e0b'][idx % 6]} />
+                                  ))}
+                                </Pie>
+                                <Tooltip formatter={(v, name) => [v, name]} />
+                              </PieChart>
+                            </ResponsiveContainer>
+                          </div>
+                          <div className="flex flex-wrap gap-2 mt-1 justify-center">
+                            {(s3Timeline.by_type || []).slice(0, 4).map((t, i) => (
+                              <span key={i} className="text-[9px] flex items-center gap-1">
+                                <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: ['#0d9488', '#C9A84C', '#6366f1', '#ef4444'][i % 4] }} />
+                                {t.type} ({t.count})
+                              </span>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
 
               {(s3Docs.documents || []).length === 0 ? (
                 <Card><CardContent className="py-12 text-center text-muted-foreground">Aucun document stocké dans S3 pour le moment</CardContent></Card>

@@ -149,12 +149,15 @@ const HELP_SECTIONS = [
     icon: FileText,
     title: 'Documents',
     color: '#0d9488',
-    summary: 'Gérez les documents FAQ et les ressources du site.',
+    summary: 'Gérez les documents clients et consultez les fichiers stockés dans AWS S3.',
     steps: [
-      { label: 'FAQ', text: 'Ajoutez, modifiez ou supprimez les questions fréquentes affichées sur le site.' },
-      { label: 'Ressources', text: 'Gérez les documents et guides disponibles pour les utilisateurs.' },
+      { label: 'Documents clients', text: 'Tableau des documents uploadés par les clients via l\'espace client. Validez ou marquez comme illisibles.' },
+      { label: 'Documents S3', text: 'Section "Documents stockés (S3)" : tous les fichiers uploadés via StrategiIA et Dossier Express, stockés durablement dans AWS S3.' },
+      { label: 'Voir / Télécharger', text: 'Cliquez "Voir" pour ouvrir un document via une URL sécurisée temporaire (pre-signed URL, valide 1h). "Télécharger" pour le sauvegarder localement.' },
+      { label: 'Tableau de bord S3', text: 'Graphiques d\'évolution : uploads par jour, volume total stocké (Mo/Go), répartition par source et type de fichier.' },
+      { label: 'Actualiser', text: 'Le bouton "Actualiser" recharge les données S3 en temps réel.' },
     ],
-    keywords: ['documents', 'faq', 'questions', 'ressources', 'guide', 'fichier']
+    keywords: ['documents', 'faq', 'questions', 'ressources', 'guide', 'fichier', 's3', 'stockage', 'aws', 'upload', 'pre-signed', 'url', 'télécharger', 'voir']
   },
   {
     id: 'conseils-strate',

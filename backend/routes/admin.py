@@ -2199,3 +2199,38 @@ async def admin_documents_stats(admin=Depends(get_current_admin)):
         "total": total,
         "by_source": [{"source": s["_id"] or "inconnu", "count": s["count"], "total_size": s["total_size"]} for s in by_source],
     }
+
+
+@router.get("/documents/timeline")
+async def admin_documents_timeline(days: int = 30, admin=Depends(get_current_admin)):
+    """Get daily document upload counts and volume for the last N days."""
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    docs = await db.documents.find(
+        {"created_at": {"$gte": cutoff}},
+        {"_id": 0, "created_at": 1, "size": 1, "source": 1, "content_type": 1}
+    ).to_list(5000)
+
+    by_day = {}
+    by_type = {}
+    for d in docs:
+        day = str(d.get("created_at", ""))[:10]
+        if not day:
+            continue
+        if day not in by_day:
+            by_day[day] = {"date": day, "count": 0, "size": 0}
+        by_day[day]["count"] += 1
+        by_day[day]["size"] += d.get("size", 0)
+        ct = (d.get("content_type") or "").split("/")[-1] or "autre"
+        by_type[ct] = by_type.get(ct, 0) + 1
+
+    # Fill missing days
+    for i in range(days):
+        day = (datetime.now(timezone.utc) - timedelta(days=days - 1 - i)).strftime("%Y-%m-%d")
+        if day not in by_day:
+            by_day[day] = {"date": day, "count": 0, "size": 0}
+
+    timeline = sorted(by_day.values(), key=lambda x: x["date"])
+    total_size = sum(d.get("size", 0) for d in docs)
+    type_distribution = [{"type": t, "count": c} for t, c in sorted(by_type.items(), key=lambda x: -x[1])]
+
+    return {"timeline": timeline, "total_size": total_size, "total_files": len(docs), "by_type": type_distribution}
