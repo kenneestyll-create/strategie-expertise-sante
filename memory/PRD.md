@@ -152,6 +152,15 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - VALIDÉ sur Samsung Internet mobile + desktop
 
 ## Completé récemment
+- **Rapport hebdomadaire automatique par email** — DONE (09/04/2026)
+  - Backend : 4 endpoints (`/api/weekly-report/config` GET/PUT, `/preview` GET, `/send` POST)
+  - Données agrégées : contacts, analyses, dossiers, clients, chatbot, RDV, revenus, conversion, stockage S3, alertes S3, état V2
+  - Scheduler backend : vérifie chaque heure, envoie max 1 rapport/jour au jour/heure configuré
+  - Email HTML premium : branding S.E.S. (header noir, accent doré #C9A84C), tableau de métriques
+  - Frontend Admin (Config tab) : carte "Rapport hebdomadaire" avec toggle, sélecteurs jour/heure, email, prévisualisation (8 cartes métriques), envoi manuel
+  - Collection MongoDB : `weekly_report_history` (historique des envois, trigger auto/manual)
+  - 100% testé (10/10 backend + frontend intégral — iteration 183), zéro régression
+
 - **Système d'alertes de stockage S3** — DONE (09/04/2026)
   - Backend : 3 endpoints (`/api/documents/storage-alerts/config` GET/PUT, `/check` GET)
   - Config persistante MongoDB : seuils 500 Mo, 1 Go, 5 Go (activables individuellement), toggle global
