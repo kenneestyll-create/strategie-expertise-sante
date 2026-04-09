@@ -64,10 +64,10 @@ export const MentionsLegalesPage = () => {
                   </p>
                   <p>
                     <strong className="text-foreground">Responsable de la publication :</strong><br />
-                    Laëtitia GUSTAVE
+                    KAPSULES KORPORATION
                   </p>
                   <p className="text-xs text-muted-foreground/60">
-                    N° TVA intracommunautaire : [à compléter si applicable]
+                    N° TVA intracommunautaire : FR78824339584
                   </p>
                 </CardContent>
               </Card>
