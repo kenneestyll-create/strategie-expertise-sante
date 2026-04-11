@@ -24,7 +24,8 @@ Plateforme de conseil en santé offrant des services payants (consultations, ana
 - [x] Dashboard Admin (S3 metrics, config email, alertes)
 
 ## En Cours / Non Terminé
-- [ ] P1 : Correction TTS Mascotte Straté (voix anglaise au lieu de française)
+- [x] P1 : Correction TTS Mascotte Straté (voix anglaise au lieu de française) — RÉSOLU
+- [x] Bug overlay PostHog/PayPal corrigé (filtre erreurs tiers dans index.html)
 - [ ] P1 : Dashboard Admin gestion conseils Mascotte (CRUD, planification)
 - [ ] P1 : Configuration URL Webhook Stripe (côté Dashboard Stripe utilisateur)
 - [ ] P2 : Intégration HubSpot CRM (en attente identifiants)

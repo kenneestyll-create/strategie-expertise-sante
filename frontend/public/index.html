@@ -24,7 +24,7 @@
 
         <!-- Structured Data injected via react-helmet-async in App.js -->
 
-        <script>window.addEventListener("error",function(e){if(e.error instanceof DOMException&&e.error.name==="DataCloneError"&&e.message&&e.message.includes("PerformanceServerTiming")){e.stopImmediatePropagation();e.preventDefault()}},true);</script>
+        <script>window.addEventListener("error",function(e){if(e.error instanceof DOMException&&e.error.name==="DataCloneError"&&e.message&&e.message.includes("PerformanceServerTiming")){e.stopImmediatePropagation();e.preventDefault();return}var msg=(e.message||"")+(e.filename||"");if(msg.indexOf("posthog")!==-1||msg.indexOf("childNodes")!==-1||msg.indexOf("paypal.com/sdk")!==-1){e.stopImmediatePropagation();e.preventDefault()}},true);window.addEventListener("unhandledrejection",function(e){var r=(e.reason&&e.reason.message)||"";if(r.indexOf("posthog")!==-1||r.indexOf("childNodes")!==-1||r.indexOf("paypal")!==-1){e.stopImmediatePropagation();e.preventDefault()}},true);</script>
         <script>
             // Cleanup stale service workers from old preview URLs
             if ('serviceWorker' in navigator) {
