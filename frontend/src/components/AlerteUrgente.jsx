@@ -3,8 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { X, Zap, Phone, Clock, Send, CheckCircle } from 'lucide-react';
+import { X, Zap, Phone, Clock, Send, CheckCircle, CreditCard, Loader2 } from 'lucide-react';
 import axios from 'axios';
+import { useSearchParams } from 'react-router-dom';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -16,12 +17,53 @@ export const AlerteUrgente = () => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+  const [confirmedFormule, setConfirmedFormule] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     const onOpen = () => setIsOpen(true);
     window.addEventListener('alerte-urgente:open', onOpen);
     return () => window.removeEventListener('alerte-urgente:open', onOpen);
+  }, []);
+
+  // Handle Stripe return
+  useEffect(() => {
+    const urgentPayment = searchParams.get('urgent_payment');
+    const sessionId = searchParams.get('session_id');
+    const alertId = searchParams.get('alert_id');
+
+    if (urgentPayment === 'success' && sessionId) {
+      setIsOpen(true);
+      setSending(true);
+      axios.get(`${API}/alerte-urgente/confirm-payment/${sessionId}`)
+        .then(res => {
+          if (res.data.success) {
+            setConfirmed(true);
+            setConfirmedFormule(res.data.formule || '2h');
+            toast.success('Paiement confirmé ! Votre demande urgente est enregistrée.');
+          } else {
+            toast.error('Le paiement n\'a pas été finalisé.');
+          }
+        })
+        .catch(() => toast.error('Erreur de vérification du paiement.'))
+        .finally(() => {
+          setSending(false);
+          const newParams = new URLSearchParams(searchParams);
+          newParams.delete('urgent_payment');
+          newParams.delete('session_id');
+          setSearchParams(newParams, { replace: true });
+        });
+    } else if (urgentPayment === 'cancelled') {
+      toast.error('Paiement annulé. La demande n\'a pas été envoyée.');
+      if (alertId) {
+        axios.delete(`${API}/alerte-urgente/cancel/${alertId}`).catch(() => {});
+      }
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('urgent_payment');
+      newParams.delete('alert_id');
+      setSearchParams(newParams, { replace: true });
+    }
   }, []);
 
   const handleSubmit = async (e) => {
@@ -32,20 +74,28 @@ export const AlerteUrgente = () => {
     }
     setSending(true);
     try {
-      await axios.post(`${API}/alerte-urgente`, { nom, telephone, email, message, formule });
-      setSent(true);
-      toast.success('Demande urgente envoyée ! Nous vous rappelons très vite.');
-    } catch {
-      toast.error("Erreur lors de l'envoi. Réessayez.");
-    } finally {
+      const res = await axios.post(`${API}/alerte-urgente`, {
+        nom, telephone, email, message, formule,
+        origin_url: window.location.origin,
+      });
+      if (res.data.url) {
+        window.location.href = res.data.url;
+      } else {
+        toast.error('Erreur lors de la redirection vers le paiement.');
+        setSending(false);
+      }
+    } catch (err) {
+      const detail = err.response?.data?.detail || "Erreur lors de la création du paiement.";
+      toast.error(detail);
       setSending(false);
     }
   };
 
   const handleClose = () => {
     setIsOpen(false);
-    if (sent) {
-      setSent(false);
+    if (confirmed) {
+      setConfirmed(false);
+      setConfirmedFormule('');
       setNom('');
       setTelephone('');
       setEmail('');
@@ -56,13 +106,10 @@ export const AlerteUrgente = () => {
 
   return (
     <>
-      {/* Modal */}
       {isOpen && (
         <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-chatbot)' }}>
-          {/* Backdrop */}
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleClose} />
 
-          {/* Panel */}
           <div className="relative w-full max-w-md bg-background border border-border rounded-2xl shadow-2xl overflow-hidden" data-testid="alerte-urgente-modal">
             {/* Header */}
             <div className="flex items-center justify-between p-5 bg-orange-500 text-white">
@@ -80,25 +127,35 @@ export const AlerteUrgente = () => {
               </button>
             </div>
 
-            {sent ? (
-              /* Success state */
+            {/* Confirming payment state */}
+            {sending && !confirmed && (
+              <div className="p-8 text-center" data-testid="alerte-urgente-confirming">
+                <Loader2 className="w-12 h-12 text-orange-500 mx-auto mb-4 animate-spin" />
+                <p className="text-sm text-muted-foreground">Vérification du paiement en cours...</p>
+              </div>
+            )}
+
+            {/* Confirmed state */}
+            {confirmed && (
               <div className="p-8 text-center" data-testid="alerte-urgente-success">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="w-8 h-8 text-green-600" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Demande envoyée !</h3>
+                <h3 className="text-xl font-semibold mb-2">Paiement confirmé !</h3>
                 <p className="text-muted-foreground text-sm mb-1">
-                  Nous avons bien reçu votre demande urgente.
+                  Votre demande urgente a été enregistrée et payée.
                 </p>
                 <p className="text-sm font-medium text-accent">
-                  {formule === '30min' ? 'Rappel sous 30 minutes garanti.' : 'Réponse garantie sous 2 heures.'}
+                  {confirmedFormule === '30min' ? 'Nous vous rappelons sous 30 minutes.' : 'Réponse garantie sous 2 heures.'}
                 </p>
                 <Button onClick={handleClose} className="mt-6 rounded-full" data-testid="alerte-urgente-close-success">
                   Fermer
                 </Button>
               </div>
-            ) : (
-              /* Form */
+            )}
+
+            {/* Form */}
+            {!confirmed && !sending && (
               <form onSubmit={handleSubmit} className="p-5 space-y-4" data-testid="alerte-urgente-form">
                 {/* Formule selection */}
                 <div className="grid grid-cols-2 gap-3">
@@ -163,7 +220,7 @@ export const AlerteUrgente = () => {
                   />
                 </div>
 
-                {/* Email (optional) */}
+                {/* Email */}
                 <div className="space-y-1.5">
                   <Label htmlFor="alerte-email" className="text-sm font-medium">Email *</Label>
                   <Input
@@ -172,6 +229,7 @@ export const AlerteUrgente = () => {
                     onChange={e => setEmail(e.target.value)}
                     placeholder="votre@email.fr"
                     type="email"
+                    required
                     data-testid="alerte-email-input"
                   />
                 </div>
@@ -195,21 +253,20 @@ export const AlerteUrgente = () => {
                   className="w-full rounded-lg gap-2 bg-orange-500 hover:bg-orange-600 text-white"
                   data-testid="alerte-submit-button"
                 >
-                  {sending ? (
-                    'Envoi en cours...'
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4" />
-                      Envoyer ma demande urgente
-                    </>
-                  )}
+                  <CreditCard className="w-4 h-4" />
+                  Payer et envoyer ma demande ({formule === '30min' ? '80€' : '50€'})
                 </Button>
+
+                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                  <CreditCard className="w-3 h-3" />
+                  <span>Paiement sécurisé par Stripe</span>
+                </div>
 
                 <p className="text-xs text-muted-foreground text-center">
                   <Phone className="w-3 h-3 inline mr-1" />
                   {formule === '30min'
-                    ? 'Nous vous rappelons sous 30 minutes.'
-                    : 'Réponse garantie sous 2 heures.'}
+                    ? 'Nous vous rappelons sous 30 minutes après confirmation du paiement.'
+                    : 'Réponse garantie sous 2 heures après confirmation du paiement.'}
                 </p>
               </form>
             )}

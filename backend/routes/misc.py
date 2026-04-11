@@ -274,20 +274,121 @@ async def get_calculator_weekly_count():
 
 # ==================== URGENT ALERTS ====================
 
+URGENT_PRICES = {"2h": 5000, "30min": 8000}  # centimes
+
 @router.post("/alerte-urgente")
-async def create_urgent_alert(request: Request):
+async def create_urgent_alert_checkout(request: Request):
+    """Create a pending urgent alert + Stripe checkout session."""
     body = await request.json()
-    if not body.get("nom") or not body.get("telephone"):
-        raise HTTPException(status_code=400, detail="Nom et téléphone requis")
-    alert = {"id": str(uuid.uuid4()), "nom": body["nom"], "telephone": body["telephone"], "email": body.get("email", ""), "message": body.get("message", ""), "formule": body.get("formule", "2h"), "created_at": datetime.now(timezone.utc).isoformat(), "status": "nouveau", "traite": False}
+    if not body.get("nom") or not body.get("telephone") or not body.get("email"):
+        raise HTTPException(status_code=400, detail="Nom, téléphone et email requis")
+
+    formule = body.get("formule", "2h")
+    if formule not in URGENT_PRICES:
+        raise HTTPException(status_code=400, detail="Formule invalide")
+
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe non configuré")
+
+    alert = {
+        "id": str(uuid.uuid4()),
+        "nom": body["nom"],
+        "telephone": body["telephone"],
+        "email": body.get("email", ""),
+        "message": body.get("message", ""),
+        "formule": formule,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "status": "pending_payment",
+        "payment_status": "pending",
+        "traite": False,
+    }
     await db.urgent_alerts.insert_one(alert)
-    if RESEND_AVAILABLE and os.environ.get('RESEND_API_KEY') and NOTIFICATION_EMAIL:
-        try:
-            prix = "80€" if alert["formule"] == "30min" else "50€"
-            await asyncio.to_thread(resend.Emails.send, {"from": SENDER_EMAIL, "to": [NOTIFICATION_EMAIL], "subject": f"ALERTE URGENTE - {alert['nom']} ({prix})", "html": f"""<h2 style="color:red;">Demande urgente !</h2><p><strong>Formule:</strong> Réponse sous {alert['formule']} — {prix}</p><p><strong>Nom:</strong> {alert['nom']}</p><p><strong>Téléphone:</strong> {alert['telephone']}</p><p><strong>Email:</strong> {alert.get('email', 'Non renseigné')}</p><p><strong>Message:</strong> {alert.get('message', 'Aucun')}</p>"""})
-        except Exception as e:
-            logger.error(f"Urgent alert email error: {e}")
-    return {"success": True, "id": alert["id"]}
+
+    prix_label = "80€" if formule == "30min" else "50€"
+    delai_label = "30 minutes" if formule == "30min" else "2 heures"
+    origin_url = body.get("origin_url", "").rstrip("/")
+    success_url = f"{origin_url}/?urgent_payment=success&session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{origin_url}/?urgent_payment=cancelled&alert_id={alert['id']}"
+
+    stripe_sdk.api_key = STRIPE_API_KEY
+    try:
+        session = stripe_sdk.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": "eur",
+                    "product_data": {"name": f"Question urgente — Réponse sous {delai_label} ({prix_label})"},
+                    "unit_amount": URGENT_PRICES[formule],
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={"alert_id": alert["id"], "formule": formule, "type": "alerte_urgente"},
+            customer_email=body["email"].lower(),
+        )
+        await db.urgent_alerts.update_one(
+            {"id": alert["id"]},
+            {"$set": {"payment_session_id": session.id}}
+        )
+        return {"url": session.url, "session_id": session.id, "alert_id": alert["id"]}
+    except Exception as e:
+        await db.urgent_alerts.delete_one({"id": alert["id"]})
+        logger.error(f"Stripe urgent alert checkout error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erreur lors de la création du paiement")
+
+
+@router.get("/alerte-urgente/confirm-payment/{session_id}")
+async def confirm_urgent_alert_payment(session_id: str):
+    """Verify Stripe payment and confirm urgent alert + send notification."""
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe non configuré")
+
+    alert = await db.urgent_alerts.find_one({"payment_session_id": session_id}, {"_id": 0})
+    if not alert:
+        raise HTTPException(status_code=404, detail="Alerte non trouvée")
+    if alert.get("payment_status") == "paid":
+        return {"success": True, "alert_id": alert["id"], "already_confirmed": True}
+
+    stripe_sdk.api_key = STRIPE_API_KEY
+    try:
+        session = stripe_sdk.checkout.Session.retrieve(session_id)
+        if session.payment_status == "paid":
+            await db.urgent_alerts.update_one(
+                {"payment_session_id": session_id},
+                {"$set": {"status": "nouveau", "payment_status": "paid"}}
+            )
+            # Send notification email to admin
+            if RESEND_AVAILABLE and os.environ.get('RESEND_API_KEY') and NOTIFICATION_EMAIL:
+                try:
+                    prix = "80€" if alert["formule"] == "30min" else "50€"
+                    await asyncio.to_thread(resend.Emails.send, {
+                        "from": SENDER_EMAIL,
+                        "to": [NOTIFICATION_EMAIL],
+                        "subject": f"ALERTE URGENTE PAYÉE - {alert['nom']} ({prix})",
+                        "html": f"""<h2 style="color:red;">Demande urgente — PAIEMENT CONFIRMÉ</h2>
+                        <p><strong>Formule:</strong> Réponse sous {alert['formule']} — {prix}</p>
+                        <p><strong>Nom:</strong> {alert['nom']}</p>
+                        <p><strong>Téléphone:</strong> {alert['telephone']}</p>
+                        <p><strong>Email:</strong> {alert.get('email', 'Non renseigné')}</p>
+                        <p><strong>Message:</strong> {alert.get('message', 'Aucun')}</p>
+                        <hr/><p style="color:green;font-weight:bold;">Paiement reçu via Stripe.</p>"""
+                    })
+                except Exception as e:
+                    logger.error(f"Urgent alert email error: {e}")
+            return {"success": True, "alert_id": alert["id"], "formule": alert["formule"]}
+        else:
+            return {"success": False, "payment_status": session.payment_status}
+    except Exception as e:
+        logger.error(f"Confirm urgent payment error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erreur de vérification du paiement")
+
+@router.delete("/alerte-urgente/cancel/{alert_id}")
+async def cancel_pending_urgent_alert(alert_id: str):
+    """Cancel a pending urgent alert (payment cancelled/abandoned)."""
+    await db.urgent_alerts.delete_one({"id": alert_id, "payment_status": "pending"})
+    return {"success": True}
 
 @router.get("/admin/alertes-urgentes")
 async def get_urgent_alerts(admin: dict = Depends(get_current_admin)):
