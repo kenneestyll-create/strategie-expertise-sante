@@ -78,8 +78,8 @@ async def create_checkout_session(request_data: CreateCheckoutRequest, request: 
         if request_data.customer_email:
             await db.client_history.update_one(
                 {"email": request_data.customer_email.lower()},
-                {"$inc": {"orders_count": 1}, "$set": {"last_order_at": datetime.now(timezone.utc).isoformat(), "name": request_data.customer_name},
-                 "$setOnInsert": {"id": str(uuid.uuid4()), "created_at": datetime.now(timezone.utc).isoformat()}},
+                {"$set": {"last_checkout_at": datetime.now(timezone.utc).isoformat(), "name": request_data.customer_name},
+                 "$setOnInsert": {"id": str(uuid.uuid4()), "created_at": datetime.now(timezone.utc).isoformat(), "orders_count": 0}},
                 upsert=True
             )
 
@@ -159,6 +159,15 @@ async def stripe_webhook(request: Request):
             )
             if booking_result.modified_count > 0:
                 logger.info(f"Webhook: confirmed booking payment for session {session_id}")
+
+            # Increment loyalty counter ONLY after confirmed payment
+            tx = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0, "email": 1})
+            if tx and tx.get("email"):
+                await db.client_history.update_one(
+                    {"email": tx["email"].lower()},
+                    {"$inc": {"orders_count": 1}, "$set": {"last_order_at": now}},
+                )
+                logger.info(f"Webhook: incremented loyalty for {tx['email']}")
 
     return {"received": True}
 
