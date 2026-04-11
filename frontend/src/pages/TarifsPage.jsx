@@ -633,45 +633,43 @@ export const TarifsPage = () => {
                 {referralValid === false && <p className="text-xs text-destructive">Code invalide ou expiré</p>}
               </div>
             )}
-            <div className="space-y-2">
-              <Label>Mode de paiement</Label>
-            </div>
           </div>
 
           <DialogFooter className="flex-col gap-3 sm:flex-col">
-            <Button onClick={handlePayment} disabled={loading || !customerInfo.email} className="w-full gap-2 h-12 text-base" data-testid="confirm-payment-button">
-              {loading ? <><Loader2 className="w-4 h-4 animate-spin" />Redirection...</> : <><CreditCard className="w-4 h-4" />Payer {getDiscountedPrice(selectedPackage?.price) || selectedPackage?.price} € par carte bancaire</>}
-            </Button>
-            <div className="w-full" data-testid="paypal-buttons-container">
-              {!customerInfo.email ? (
-                <p className="text-sm text-center text-muted-foreground py-2">Entrez votre email pour activer PayPal.</p>
-              ) : (
-                <PayPalScriptProvider options={{ clientId: process.env.REACT_APP_PAYPAL_CLIENT_ID || 'sb', currency: 'EUR' }}>
-                  <PayPalButtons
-                    style={{ layout: 'horizontal', color: 'blue', shape: 'rect', label: 'pay', height: 48 }}
-                    createOrder={async (data, actions) => {
-                      const res = await axios.post(`${API}/paypal/calculate`, { package_id: selectedPackage.id, customer_email: customerInfo.email, customer_name: customerInfo.name, referral_code: referralValid ? customerInfo.referralCode : null });
-                      return actions.order.create({ purchase_units: [{ amount: { currency_code: 'EUR', value: res.data.final_amount.toFixed(2) }, description: res.data.package_name }] });
-                    }}
-                    onApprove={async (data, actions) => {
-                      const details = await actions.order.capture();
-                      await axios.post(`${API}/paypal/record`, { order_id: details.id, package_id: selectedPackage.id, customer_email: customerInfo.email, customer_name: customerInfo.name, amount: parseFloat(getDiscountedPrice(selectedPackage?.price) || selectedPackage?.price), referral_code: referralValid ? customerInfo.referralCode : null });
-                      setShowPaymentModal(false);
-                      setPaymentDetails({ amount: getDiscountedPrice(selectedPackage?.price) || selectedPackage?.price, metadata: { package_name: selectedPackage?.title } });
-                      setShowSuccessModal(true);
-                      toast.success("Paiement PayPal réussi !");
-                    }}
-                    onError={() => toast.error("Erreur PayPal")}
-                    onCancel={() => toast.info("Paiement annulé")}
-                  />
-                </PayPalScriptProvider>
-              )}
+            <div className="grid grid-cols-2 gap-3 w-full">
+              <Button onClick={handlePayment} disabled={loading || !customerInfo.email} className="gap-2 h-11" data-testid="confirm-payment-button">
+                {loading ? <><Loader2 className="w-4 h-4 animate-spin" />Chargement...</> : <><CreditCard className="w-4 h-4" />{getDiscountedPrice(selectedPackage?.price) || selectedPackage?.price} € — Carte</>}
+              </Button>
+              <div data-testid="paypal-buttons-container" className="h-11">
+                {!customerInfo.email ? (
+                  <div className="h-full flex items-center justify-center border rounded-md bg-muted/30">
+                    <span className="text-xs text-muted-foreground">PayPal — Saisir email</span>
+                  </div>
+                ) : (
+                  <PayPalScriptProvider options={{ clientId: process.env.REACT_APP_PAYPAL_CLIENT_ID || 'sb', currency: 'EUR' }}>
+                    <PayPalButtons
+                      style={{ layout: 'horizontal', color: 'blue', shape: 'rect', label: 'pay', height: 44, tagline: false }}
+                      createOrder={async (data, actions) => {
+                        const res = await axios.post(`${API}/paypal/calculate`, { package_id: selectedPackage.id, customer_email: customerInfo.email, customer_name: customerInfo.name, referral_code: referralValid ? customerInfo.referralCode : null });
+                        return actions.order.create({ purchase_units: [{ amount: { currency_code: 'EUR', value: res.data.final_amount.toFixed(2) }, description: res.data.package_name }] });
+                      }}
+                      onApprove={async (data, actions) => {
+                        const details = await actions.order.capture();
+                        await axios.post(`${API}/paypal/record`, { order_id: details.id, package_id: selectedPackage.id, customer_email: customerInfo.email, customer_name: customerInfo.name, amount: parseFloat(getDiscountedPrice(selectedPackage?.price) || selectedPackage?.price), referral_code: referralValid ? customerInfo.referralCode : null });
+                        setShowPaymentModal(false);
+                        setPaymentDetails({ amount: getDiscountedPrice(selectedPackage?.price) || selectedPackage?.price, metadata: { package_name: selectedPackage?.title } });
+                        setShowSuccessModal(true);
+                        toast.success("Paiement PayPal réussi !");
+                      }}
+                      onError={() => toast.error("Erreur PayPal")}
+                      onCancel={() => toast.info("Paiement annulé")}
+                    />
+                  </PayPalScriptProvider>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground justify-center">
-              <Shield className="w-3 h-3" />
-              <span>Paiements sécurisés — Stripe (PCI DSS) & PayPal</span>
-            </div>
-            <Button variant="ghost" className="w-full text-muted-foreground" onClick={() => handleModalClose(false)}>Annuler</Button>
+            <p className="text-[11px] text-muted-foreground/60 text-center">Paiements sécurisés — Stripe & PayPal</p>
+            <Button variant="ghost" size="sm" className="text-muted-foreground/60 hover:text-muted-foreground" onClick={() => handleModalClose(false)}>Annuler</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
