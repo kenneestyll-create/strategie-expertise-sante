@@ -152,6 +152,15 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - VALIDÉ sur Samsung Internet mobile + desktop
 
 ## Completé récemment
+- **Fix : Paiement Stripe obligatoire avant demande urgente** — DONE (11/04/2026)
+  - Défaut identifié : le modal "Besoin urgent ?" enregistrait la demande SANS paiement malgré les prix affichés (50€/80€)
+  - Correction : flux Stripe Checkout obligatoire avant enregistrement
+  - Endpoints : `POST /api/alerte-urgente` (crée alerte pending + session Stripe), `GET /api/alerte-urgente/confirm-payment/{session_id}` (confirme après paiement), `DELETE /api/alerte-urgente/cancel/{alert_id}` (annulation)
+  - Frontend : bouton "Payer et envoyer ma demande (50€/80€)", mention "Paiement sécurisé par Stripe", icône CreditCard, message de garantie conditionné au paiement
+  - Notification admin envoyée UNIQUEMENT après paiement confirmé
+  - Note : nécessite clé Stripe réelle pour fonctionner en production
+  - 100% testé (12/12 backend + frontend — iteration 184), zéro régression
+
 - **Rapport hebdomadaire automatique par email** — DONE (09/04/2026)
   - Backend : 4 endpoints (`/api/weekly-report/config` GET/PUT, `/preview` GET, `/send` POST)
   - Données agrégées : contacts, analyses, dossiers, clients, chatbot, RDV, revenus, conversion, stockage S3, alertes S3, état V2
