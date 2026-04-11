@@ -152,6 +152,14 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - VALIDÉ sur Samsung Internet mobile + desktop
 
 ## Completé récemment
+- **Fix : Scanner de documents — Worker manquant** — DONE (11/04/2026)
+  - Bug : `Uncaught SyntaxError: Unexpected token '<'` + "Initialisation du scanner..." en boucle infinie
+  - Cause : fichier `/workers/scanner.worker.js` inexistant, le serveur renvoyait du HTML
+  - Correction chirurgicale : création de `scanner.worker.js` (OffscreenCanvas, filtres N&B/Contraste+, rotation, multi-pages)
+  - 1 fichier créé, 0 fichier modifié, zéro régression
+  - Badge passe de "Initialisation du scanner..." (bloqué) à "Mode avancé — filtres, rotation, multi-pages" (vert)
+  - Testé pratiquement : Worker `ready` signal reçu, scanner ouvert sans erreur console
+
 - **Fix : Paiement Stripe obligatoire avant demande urgente** — DONE (11/04/2026)
   - Défaut identifié : le modal "Besoin urgent ?" enregistrait la demande SANS paiement malgré les prix affichés (50€/80€)
   - Correction : flux Stripe Checkout obligatoire avant enregistrement
