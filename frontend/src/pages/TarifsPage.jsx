@@ -631,7 +631,7 @@ export const TarifsPage = () => {
             <div className="space-y-2">
               <Label>Mode de paiement</Label>
               <div className="grid grid-cols-2 gap-3">
-                <button type="button" onClick={() => setPaymentMethod('stripe')} className={`flex items-center gap-2 p-3 rounded-lg border text-sm font-medium transition-all ${paymentMethod === 'stripe' ? 'border-accent bg-accent/10 text-accent' : 'border-border hover:border-accent/50'}`} data-testid="payment-method-stripe"><CreditCard className="w-4 h-4" /> Carte bancaire</button>
+                <button type="button" onClick={() => setPaymentMethod('stripe')} className={`flex items-center gap-2 p-3 rounded-lg border text-sm font-medium transition-all ${paymentMethod === 'stripe' ? 'border-accent bg-accent/10 text-accent' : 'border-border hover:border-accent/50'}`} data-testid="payment-method-stripe"><CreditCard className="w-4 h-4" /> Stripe</button>
                 <button type="button" onClick={() => setPaymentMethod('paypal')} className={`flex items-center gap-2 p-3 rounded-lg border text-sm font-medium transition-all ${paymentMethod === 'paypal' ? 'border-[#0070ba] bg-[#0070ba]/10 text-[#0070ba]' : 'border-border hover:border-[#0070ba]/50'}`} data-testid="payment-method-paypal"><Wallet className="w-4 h-4" /> PayPal</button>
               </div>
             </div>

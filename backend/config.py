@@ -7,7 +7,7 @@ import os
 import logging
 
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+load_dotenv(ROOT_DIR / '.env', override=True)
 
 # Rate limiter — SECURITY FIX V2
 limiter = Limiter(key_func=get_remote_address)
