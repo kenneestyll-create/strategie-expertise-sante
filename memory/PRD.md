@@ -152,6 +152,22 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - VALIDÉ sur Samsung Internet mobile + desktop
 
 ## Completé récemment
+- **Mise en conformité juridique complète (CGV/CGU/RGPD)** — DONE (11/04/2026)
+  - CGV : 11 articles complets (identification KAPSULES KORPORATION, services, tarifs TTC, paiement Stripe/PayPal, délais, rétractation L.221-28, remboursement, responsabilité, données RGPD, litiges/médiation, force majeure)
+  - CGU : 6 articles enrichis (objet, services, inscription, forum, tarifs/paiement, rétractation)
+  - Mentions légales : identité complète (RCS, TVA, siège, activité déclarée, propriété intellectuelle)
+  - Confidentialité : RGPD complet (collecte, finalité, conservation, droits, cookies, sécurité)
+  - Clause de non-responsabilité : avertissement renforcé (distinction expertise officielle/accompagnement, absence conseil juridique/médical, outils IA)
+  - Case de consentement obligatoire : non pré-cochée, bloquante, avant tout paiement (AlerteUrgente + AgendaPage)
+  - Texte : "J'accepte les CGV et renonce à mon droit de rétractation (art. L.221-28 C. conso.)"
+  - Lien cliquable vers CGV dans la case de consentement
+  - Case absente pour les services gratuits (Appel Découverte)
+  - Backend : `POST /api/consent-log` — enregistre email, service, cgv_accepted, retractation_waived, cgv_version, IP, user_agent, date
+  - Collection MongoDB : `consent_logs` (preuve en cas de litige)
+  - Footer : 4 liens séparés (Mentions légales, CGV, CGU, Confidentialité)
+  - Route `/cgv` ajoutée
+  - 100% testé (7/7 backend + frontend intégral — iteration 186), zéro régression
+
 - **Stripe Live activé** — DONE (11/04/2026)
   - Clé secrète `sk_live_` configurée dans backend `.env` (remplace placeholder `sk_test_emergent`)
   - Mode automatiquement détecté comme `live` par le code existant (`config.py` ligne 48)
