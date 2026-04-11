@@ -19,6 +19,7 @@ export const AlerteUrgente = () => {
   const [sending, setSending] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [confirmedFormule, setConfirmedFormule] = useState('');
+  const [showRecap, setShowRecap] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
@@ -66,12 +67,16 @@ export const AlerteUrgente = () => {
     }
   }, []);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (!nom.trim() || !telephone.trim() || !email.trim() || !email.includes('@')) {
       toast.error('Veuillez renseigner votre nom, téléphone et email');
       return;
     }
+    setShowRecap(true);
+  };
+
+  const handlePay = async () => {
     setSending(true);
     try {
       const res = await axios.post(`${API}/alerte-urgente`, {
@@ -93,6 +98,7 @@ export const AlerteUrgente = () => {
 
   const handleClose = () => {
     setIsOpen(false);
+    setShowRecap(false);
     if (confirmed) {
       setConfirmed(false);
       setConfirmedFormule('');
@@ -154,8 +160,77 @@ export const AlerteUrgente = () => {
               </div>
             )}
 
+            {/* Recap before payment */}
+            {showRecap && !confirmed && !sending && (
+              <div className="p-5 space-y-4" data-testid="alerte-urgente-recap">
+                <div className="text-center mb-2">
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Récapitulatif</p>
+                </div>
+
+                <div className="rounded-xl border-2 border-orange-200 bg-orange-50/50 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Formule</span>
+                    <span className="text-sm font-semibold flex items-center gap-1.5">
+                      {formule === '30min' ? <Zap className="w-3.5 h-3.5 text-orange-600" /> : <Clock className="w-3.5 h-3.5 text-orange-600" />}
+                      Réponse sous {formule === '30min' ? '30 minutes' : '2 heures'}
+                    </span>
+                  </div>
+                  <hr className="border-orange-200/60" />
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Nom</span>
+                    <span className="text-sm font-medium">{nom}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Téléphone</span>
+                    <span className="text-sm font-medium">{telephone}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Email</span>
+                    <span className="text-sm font-medium text-xs">{email}</span>
+                  </div>
+                  {message && (
+                    <>
+                      <hr className="border-orange-200/60" />
+                      <div>
+                        <span className="text-xs text-muted-foreground">Message</span>
+                        <p className="text-sm mt-0.5 line-clamp-2">{message}</p>
+                      </div>
+                    </>
+                  )}
+                  <hr className="border-orange-200/60" />
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold">Total à payer</span>
+                    <span className="text-2xl font-bold text-orange-600">{formule === '30min' ? '80€' : '50€'}</span>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handlePay}
+                  className="w-full rounded-lg gap-2 bg-orange-500 hover:bg-orange-600 text-white"
+                  data-testid="alerte-recap-pay-button"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  Confirmer et payer ({formule === '30min' ? '80€' : '50€'})
+                </Button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowRecap(false)}
+                  className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-1"
+                  data-testid="alerte-recap-back"
+                >
+                  Modifier ma demande
+                </button>
+
+                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                  <CreditCard className="w-3 h-3" />
+                  <span>Paiement sécurisé par Stripe</span>
+                </div>
+              </div>
+            )}
+
             {/* Form */}
-            {!confirmed && !sending && (
+            {!confirmed && !sending && !showRecap && (
               <form onSubmit={handleSubmit} className="p-5 space-y-4" data-testid="alerte-urgente-form">
                 {/* Formule selection */}
                 <div className="grid grid-cols-2 gap-3">
