@@ -188,7 +188,7 @@ export const Footer = () => {
             </Link>
             <p className="text-primary-foreground/70 text-sm leading-relaxed max-w-md">
               Conseil et accompagnement pour les victimes de maladies professionnelles, 
-              accidents du travail et litiges assurantiels. Une aide humaine et experte, 
+              accidents du travail, litiges assurantiels, expertises médicales et démarches MDPH. Une aide humaine et experte, 
               née d'une expérience vécue.
             </p>
           </div>
