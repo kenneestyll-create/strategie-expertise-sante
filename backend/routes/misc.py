@@ -712,3 +712,26 @@ async def robots_txt():
     return PlainTextResponse(content=content)
 
 
+# ==================== CONSENT LOG ====================
+
+@router.post("/consent-log")
+async def log_consent(request: Request):
+    """Log CGV/retractation consent before payment — legally required."""
+    body = await request.json()
+    if not body.get("email") or not body.get("service"):
+        raise HTTPException(status_code=400, detail="Email et service requis")
+    consent = {
+        "id": str(uuid.uuid4()),
+        "email": body["email"].lower().strip(),
+        "service": body["service"],
+        "cgv_accepted": body.get("cgv_accepted", False),
+        "retractation_waived": body.get("retractation_waived", False),
+        "cgv_version": "2026-04-11",
+        "ip_address": request.client.host if request.client else "",
+        "user_agent": request.headers.get("user-agent", ""),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.consent_logs.insert_one(consent)
+    return {"success": True, "consent_id": consent["id"]}
+
+

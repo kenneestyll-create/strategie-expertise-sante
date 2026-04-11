@@ -166,6 +166,7 @@ function App() {
                   <Route path="/ressources" element={<><Header /><ResourcesPage /><Footer /></>} />
                   <Route path="/contact" element={<><Header /><ContactPage /><Footer /></>} />
                   <Route path="/mentions-legales" element={<><Header /><MentionsLegalesPage /><Footer /></>} />
+                  <Route path="/cgv" element={<><Header /><MentionsLegalesPage /><Footer /></>} />
                   <Route path="/politique-confidentialite" element={<><Header /><PolitiqueConfidentialitePage /><Footer /></>} />
                   <Route path="/parrainage" element={<><Header /><ReferralPage /><Footer /></>} />
                   <Route path="/agenda" element={<><Header /><AgendaPage /><Footer /></>} />

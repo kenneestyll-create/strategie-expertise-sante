@@ -20,6 +20,7 @@ export const AlerteUrgente = () => {
   const [confirmed, setConfirmed] = useState(false);
   const [confirmedFormule, setConfirmedFormule] = useState('');
   const [showRecap, setShowRecap] = useState(false);
+  const [cgvAccepted, setCgvAccepted] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
@@ -77,8 +78,15 @@ export const AlerteUrgente = () => {
   };
 
   const handlePay = async () => {
+    if (!cgvAccepted) {
+      toast.error('Veuillez accepter les CGV et la renonciation au droit de rétractation.');
+      return;
+    }
     setSending(true);
     try {
+      await axios.post(`${API}/consent-log`, {
+        email, service: `question_urgente_${formule}`, cgv_accepted: true, retractation_waived: true,
+      });
       const res = await axios.post(`${API}/alerte-urgente`, {
         nom, telephone, email, message, formule,
         origin_url: window.location.origin,
@@ -204,9 +212,29 @@ export const AlerteUrgente = () => {
                   </div>
                 </div>
 
+                <div className="flex items-start gap-2 mt-1">
+                  <input
+                    type="checkbox"
+                    id="cgv-urgent"
+                    checked={cgvAccepted}
+                    onChange={(e) => setCgvAccepted(e.target.checked)}
+                    className="mt-0.5 rounded border-gray-300 text-accent focus:ring-accent"
+                    data-testid="cgv-consent-checkbox"
+                  />
+                  <label htmlFor="cgv-urgent" className="text-[10px] text-muted-foreground leading-relaxed cursor-pointer">
+                    J'accepte les{' '}
+                    <a href="/mentions-legales?tab=cgv" target="_blank" rel="noopener" className="text-accent underline">
+                      Conditions Générales de Vente
+                    </a>{' '}
+                    et je renonce expressément à mon droit de rétractation conformément à l'article L.221-28 du Code de la consommation,
+                    la prestation étant exécutée immédiatement après le paiement.
+                  </label>
+                </div>
+
                 <Button
                   onClick={handlePay}
-                  className="w-full rounded-lg gap-2 bg-orange-500 hover:bg-orange-600 text-white"
+                  disabled={!cgvAccepted || sending}
+                  className="w-full rounded-lg gap-2 bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50"
                   data-testid="alerte-recap-pay-button"
                 >
                   <CreditCard className="w-4 h-4" />

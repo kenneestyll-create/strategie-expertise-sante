@@ -305,7 +305,20 @@ export const Footer = () => {
                 to="/mentions-legales" 
                 className="text-xs text-primary-foreground/50 hover:text-primary-foreground/70 transition-colors"
               >
-                Mentions légales & CGU
+                Mentions légales
+              </Link>
+              <Link 
+                to="/mentions-legales?tab=cgv" 
+                className="text-xs text-primary-foreground/50 hover:text-primary-foreground/70 transition-colors"
+                data-testid="footer-cgv-link"
+              >
+                CGV
+              </Link>
+              <Link 
+                to="/mentions-legales?tab=cgu" 
+                className="text-xs text-primary-foreground/50 hover:text-primary-foreground/70 transition-colors"
+              >
+                CGU
               </Link>
               <Link 
                 to="/politique-confidentialite" 

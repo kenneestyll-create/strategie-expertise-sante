@@ -83,6 +83,7 @@ export const AgendaPage = () => {
   const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' });
   const [paymentConfirming, setPaymentConfirming] = useState(false);
   const [paymentResult, setPaymentResult] = useState(null);
+  const [cgvAccepted, setCgvAccepted] = useState(false);
 
   const formatDateStr = (date) => {
     const y = date.getFullYear();
@@ -182,6 +183,14 @@ export const AgendaPage = () => {
         setBooked(true);
         toast.success("Rendez-vous confirmé !");
       } else {
+        if (!cgvAccepted) {
+          toast.error('Veuillez accepter les CGV et la renonciation au droit de rétractation.');
+          setSubmitting(false);
+          return;
+        }
+        await axios.post(`${API}/consent-log`, {
+          email: form.email, service: `booking_${callType}`, cgv_accepted: true, retractation_waived: true,
+        });
         const res = await axios.post(`${API}/bookings/checkout`, {
           ...payload,
           origin_url: window.location.origin,
@@ -550,10 +559,30 @@ export const AgendaPage = () => {
                         </div>
                       )}
 
+                      {callType !== 'decouverte' && (
+                        <div className="flex items-start gap-2">
+                          <input
+                            type="checkbox"
+                            id="cgv-booking"
+                            checked={cgvAccepted}
+                            onChange={(e) => setCgvAccepted(e.target.checked)}
+                            className="mt-0.5 rounded border-gray-300 text-accent focus:ring-accent"
+                            data-testid="cgv-consent-checkbox-booking"
+                          />
+                          <label htmlFor="cgv-booking" className="text-[10px] text-muted-foreground leading-relaxed cursor-pointer">
+                            J'accepte les{' '}
+                            <a href="/mentions-legales?tab=cgv" target="_blank" rel="noopener" className="text-accent underline">
+                              CGV
+                            </a>{' '}
+                            et renonce à mon droit de rétractation (art. L.221-28 C. conso.), la prestation étant exécutée immédiatement après paiement.
+                          </label>
+                        </div>
+                      )}
+
                       <Button
                         type="submit"
                         className="w-full rounded-lg gap-2"
-                        disabled={submitting || !selectedDate || !selectedSlot}
+                        disabled={submitting || !selectedDate || !selectedSlot || (callType !== 'decouverte' && !cgvAccepted)}
                         data-testid="confirm-booking-button"
                       >
                         {submitting ? (
