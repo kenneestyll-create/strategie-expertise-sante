@@ -152,6 +152,15 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - VALIDÉ sur Samsung Internet mobile + desktop
 
 ## Completé récemment
+- **Stripe Live activé** — DONE (11/04/2026)
+  - Clé secrète `sk_live_` configurée dans backend `.env` (remplace placeholder `sk_test_emergent`)
+  - Mode automatiquement détecté comme `live` par le code existant (`config.py` ligne 48)
+  - 2 flux de paiement testés en live :
+    - Alerte urgente (50€/80€) → Session `cs_live_...` créée → Redirection Stripe Checkout confirmée
+    - Booking Conseil (75€) → Session `cs_live_...` créée
+  - Stripe Checkout affiche : S.E.S, montant en EUR, Visa/MC/Amex/JCB, Pay with Link
+  - Données de test nettoyées après vérification
+
 - **Fix : CTA Tarifs "Première consultation gratuite" → Agenda Découverte** — DONE (11/04/2026)
   - Bug : le CTA "Nous contacter" redirigeait vers `/contact` (formulaire générique) au lieu de `/agenda` avec Appel Découverte
   - Correction : lien changé vers `/agenda?type=decouverte`, texte changé en "Réserver mon appel gratuit"
