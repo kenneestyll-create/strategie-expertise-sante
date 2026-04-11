@@ -575,9 +575,9 @@ export const TarifsPage = () => {
             Chaque situation est unique. Avant tout engagement, je vous propose un premier
             échange téléphonique gratuit de 10 minutes.
           </p>
-          <Link to="/contact">
+          <Link to="/agenda?type=decouverte">
             <Button size="lg" className="rounded-full px-8 gap-2" data-testid="tarifs-cta">
-              Nous contacter <ArrowRight className="w-4 h-4" />
+              Réserver mon appel gratuit <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
         </div>

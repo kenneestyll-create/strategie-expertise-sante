@@ -96,6 +96,14 @@ export const AgendaPage = () => {
     const payment = searchParams.get('payment');
     const sessionId = searchParams.get('session_id');
     const bookingId = searchParams.get('booking_id');
+    const typeParam = searchParams.get('type');
+
+    if (typeParam === 'decouverte' && !payment) {
+      selectCallType('decouverte');
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('type');
+      setSearchParams(newParams, { replace: true });
+    }
 
     if (payment === 'success' && sessionId) {
       setPaymentConfirming(true);

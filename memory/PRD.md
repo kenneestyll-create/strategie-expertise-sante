@@ -152,6 +152,13 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
 - VALIDÉ sur Samsung Internet mobile + desktop
 
 ## Completé récemment
+- **Fix : CTA Tarifs "Première consultation gratuite" → Agenda Découverte** — DONE (11/04/2026)
+  - Bug : le CTA "Nous contacter" redirigeait vers `/contact` (formulaire générique) au lieu de `/agenda` avec Appel Découverte
+  - Correction : lien changé vers `/agenda?type=decouverte`, texte changé en "Réserver mon appel gratuit"
+  - AgendaPage : lecture du param `type=decouverte` → pré-sélection automatique de l'Appel Découverte + nettoyage URL
+  - 2 fichiers modifiés (TarifsPage.jsx ligne 578, AgendaPage.jsx useEffect), zéro régression
+  - Testé pratiquement : clic CTA → page Agenda avec calendrier + "Appel Découverte 10 min — Gratuit" pré-sélectionné
+
 - **Fix : Scanner de documents — Worker manquant** — DONE (11/04/2026)
   - Bug : `Uncaught SyntaxError: Unexpected token '<'` + "Initialisation du scanner..." en boucle infinie
   - Cause : fichier `/workers/scanner.worker.js` inexistant, le serveur renvoyait du HTML
