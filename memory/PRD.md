@@ -157,6 +157,7 @@ Application web premium de conseil en maladies professionnelles. Objectifs : sca
   - Correction : flux Stripe Checkout obligatoire avant enregistrement
   - Endpoints : `POST /api/alerte-urgente` (crée alerte pending + session Stripe), `GET /api/alerte-urgente/confirm-payment/{session_id}` (confirme après paiement), `DELETE /api/alerte-urgente/cancel/{alert_id}` (annulation)
   - Frontend : bouton "Payer et envoyer ma demande (50€/80€)", mention "Paiement sécurisé par Stripe", icône CreditCard, message de garantie conditionné au paiement
+  - Écran récapitulatif avant paiement : formule, nom, tél, email, message, total à payer, bouton "Confirmer et payer", lien "Modifier ma demande" (retour au formulaire avec champs conservés)
   - Notification admin envoyée UNIQUEMENT après paiement confirmé
   - Note : nécessite clé Stripe réelle pour fonctionner en production
   - 100% testé (12/12 backend + frontend — iteration 184), zéro régression
