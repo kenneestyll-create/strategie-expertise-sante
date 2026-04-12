@@ -165,6 +165,52 @@ async def create_booking_checkout(request: Request):
         raise HTTPException(status_code=500, detail="Erreur lors de la creation du paiement")
 
 
+@router.post("/bookings/paypal")
+async def record_booking_paypal(request: Request):
+    """Record a PayPal payment for booking."""
+    body = await request.json()
+    order_id = body.get("order_id", "")
+    call_type = body.get("call_type", "conseil")
+    ct = CALL_TYPES.get(call_type)
+    if not ct:
+        raise HTTPException(status_code=400, detail="Type d'appel invalide")
+
+    date = body.get("date", "")
+    time_slot = body.get("time_slot", "")
+    name = body.get("name", "")
+    email = body.get("email", "")
+    phone = body.get("phone", "")
+    message = body.get("message", "")
+    amount = body.get("amount", ct["price"])
+
+    booking = Booking(
+        date=date, time_slot=time_slot, name=name, email=email.lower(),
+        phone=phone, call_type=call_type, message=message,
+        status="confirme", payment_status="paid"
+    )
+    doc = booking.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['payment_method'] = 'paypal'
+    doc['payment_order_id'] = order_id
+    await db.bookings.insert_one(doc)
+
+    from models import PaymentTransaction
+    tx = PaymentTransaction(
+        session_id=order_id, package_id=f"appel_{call_type}",
+        package_name=f"{ct['name']} — {ct['duration']} min",
+        amount=amount, currency="eur", email=email.lower(), customer_name=name,
+        status="completed", payment_status="paid",
+        metadata={"payment_method": "paypal", "booking_id": booking.id, "call_type": call_type}
+    )
+    tx_doc = tx.model_dump()
+    tx_doc['created_at'] = tx_doc['created_at'].isoformat()
+    tx_doc['updated_at'] = tx_doc['updated_at'].isoformat()
+    await db.payment_transactions.insert_one(tx_doc)
+
+    logger.info(f"Booking PayPal recorded: {booking.id} for {email}")
+    return {"success": True, "booking_id": booking.id}
+
+
 @router.get("/bookings/confirm-payment/{session_id}")
 async def confirm_booking_payment(session_id: str):
     """Verify Stripe payment and confirm booking."""
@@ -389,6 +435,45 @@ async def cancel_pending_urgent_alert(alert_id: str):
     """Cancel a pending urgent alert (payment cancelled/abandoned)."""
     await db.urgent_alerts.delete_one({"id": alert_id, "payment_status": "pending"})
     return {"success": True}
+
+@router.post("/alerte-urgente/paypal")
+async def record_urgent_paypal(request: Request):
+    """Record a PayPal payment for urgent questions."""
+    body = await request.json()
+    order_id = body.get("order_id", "")
+    nom = body.get("nom", "")
+    telephone = body.get("telephone", "")
+    email = body.get("email", "")
+    message = body.get("message", "")
+    formule = body.get("formule", "2h")
+    amount = body.get("amount", 50)
+
+    alert_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    await db.urgent_alerts.insert_one({
+        "id": alert_id, "nom": nom, "telephone": telephone, "email": email,
+        "message": message, "formule": formule, "payment_method": "paypal",
+        "payment_order_id": order_id, "payment_status": "paid", "amount": amount,
+        "traite": False, "status": "nouveau", "created_at": now,
+    })
+
+    # Record payment transaction
+    from models import PaymentTransaction
+    tx = PaymentTransaction(
+        session_id=order_id, package_id=f"urgent_{formule}",
+        package_name=f"Question urgente — {'30 min' if formule == '30min' else '2h'}",
+        amount=amount, currency="eur", email=email, customer_name=nom,
+        status="completed", payment_status="paid",
+        metadata={"payment_method": "paypal", "formule": formule}
+    )
+    doc = tx.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['updated_at'] = doc['updated_at'].isoformat()
+    await db.payment_transactions.insert_one(doc)
+
+    logger.info(f"Urgent alert PayPal recorded: {alert_id} for {email} ({formule})")
+    return {"success": True, "alert_id": alert_id}
+
 
 @router.get("/admin/alertes-urgentes")
 async def get_urgent_alerts(admin: dict = Depends(get_current_admin)):

@@ -3,9 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { X, Zap, Phone, Clock, Send, CheckCircle, CreditCard, Loader2 } from 'lucide-react';
+import { X, Zap, Phone, Clock, Send, CheckCircle, CreditCard, Loader2, Shield } from 'lucide-react';
 import axios from 'axios';
 import { useSearchParams } from 'react-router-dom';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -212,16 +213,16 @@ export const AlerteUrgente = () => {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2 mt-1">
+                <div className="flex items-start gap-3 mt-1">
                   <input
                     type="checkbox"
                     id="cgv-urgent"
                     checked={cgvAccepted}
                     onChange={(e) => setCgvAccepted(e.target.checked)}
-                    className="mt-0.5 rounded border-gray-300 text-accent focus:ring-accent"
+                    className="mt-0.5 w-5 h-5 min-w-[20px] rounded border-gray-300 text-accent focus:ring-accent cursor-pointer"
                     data-testid="cgv-consent-checkbox"
                   />
-                  <label htmlFor="cgv-urgent" className="text-[10px] text-muted-foreground leading-relaxed cursor-pointer">
+                  <label htmlFor="cgv-urgent" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
                     J'accepte les{' '}
                     <a href="/mentions-legales?tab=cgv" target="_blank" rel="noopener" className="text-accent underline">
                       Conditions Générales de Vente
@@ -231,15 +232,51 @@ export const AlerteUrgente = () => {
                   </label>
                 </div>
 
-                <Button
-                  onClick={handlePay}
-                  disabled={!cgvAccepted || sending}
-                  className="w-full rounded-lg gap-2 bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50"
-                  data-testid="alerte-recap-pay-button"
-                >
-                  <CreditCard className="w-4 h-4" />
-                  Confirmer et payer ({formule === '30min' ? '80€' : '50€'})
-                </Button>
+                {cgvAccepted && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      onClick={handlePay}
+                      disabled={sending}
+                      className="gap-2 h-11 bg-orange-500 hover:bg-orange-600 text-white"
+                      data-testid="alerte-recap-pay-button"
+                    >
+                      {sending ? <><Loader2 className="w-4 h-4 animate-spin" /> Chargement...</> : <><CreditCard className="w-4 h-4" />{formule === '30min' ? '80€' : '50€'} — Carte</>}
+                    </Button>
+                    <div className="h-11" data-testid="alerte-paypal-container">
+                      <PayPalScriptProvider options={{ clientId: process.env.REACT_APP_PAYPAL_CLIENT_ID || 'sb', currency: 'EUR' }}>
+                        <PayPalButtons
+                          style={{ layout: 'horizontal', color: 'blue', shape: 'rect', label: 'pay', height: 44, tagline: false }}
+                          createOrder={async (data, actions) => {
+                            const amount = formule === '30min' ? '80.00' : '50.00';
+                            const desc = formule === '30min' ? 'Question urgente — Réponse sous 30 min' : 'Question urgente — Réponse sous 2h';
+                            return actions.order.create({ purchase_units: [{ amount: { currency_code: 'EUR', value: amount }, description: desc }] });
+                          }}
+                          onApprove={async (data, actions) => {
+                            const details = await actions.order.capture();
+                            const amount = formule === '30min' ? 80 : 50;
+                            try {
+                              await axios.post(`${API}/consent-log`, { email, service: `question_urgente_${formule}`, cgv_accepted: true, retractation_waived: true });
+                              await axios.post(`${API}/alerte-urgente/paypal`, { order_id: details.id, nom, telephone, email, message, formule, amount });
+                              setShowRecap(false);
+                              setConfirmed(true);
+                              setConfirmedFormule(formule);
+                              toast.success('Paiement PayPal confirmé !');
+                            } catch { toast.error("Erreur lors de l'enregistrement PayPal"); }
+                          }}
+                          onError={() => toast.error("Erreur PayPal")}
+                          onCancel={() => toast.info("Paiement annulé")}
+                        />
+                      </PayPalScriptProvider>
+                    </div>
+                  </div>
+                )}
+
+                {!cgvAccepted && (
+                  <Button disabled className="w-full rounded-lg gap-2 opacity-50" data-testid="alerte-recap-pay-disabled">
+                    <CreditCard className="w-4 h-4" />
+                    Acceptez les CGV pour payer
+                  </Button>
+                )}
 
                 <button
                   type="button"
@@ -250,10 +287,7 @@ export const AlerteUrgente = () => {
                   Modifier ma demande
                 </button>
 
-                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                  <CreditCard className="w-3 h-3" />
-                  <span>Paiement sécurisé par Stripe</span>
-                </div>
+                <p className="text-[11px] text-muted-foreground/60 text-center">Paiements sécurisés — Stripe & PayPal</p>
               </div>
             )}
 

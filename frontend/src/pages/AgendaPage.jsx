@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { SEO } from '@/components/SEO';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -560,16 +561,16 @@ export const AgendaPage = () => {
                       )}
 
                       {callType !== 'decouverte' && (
-                        <div className="flex items-start gap-2">
+                        <div className="flex items-start gap-3">
                           <input
                             type="checkbox"
                             id="cgv-booking"
                             checked={cgvAccepted}
                             onChange={(e) => setCgvAccepted(e.target.checked)}
-                            className="mt-0.5 rounded border-gray-300 text-accent focus:ring-accent"
+                            className="mt-0.5 w-5 h-5 min-w-[20px] rounded border-gray-300 text-accent focus:ring-accent cursor-pointer"
                             data-testid="cgv-consent-checkbox-booking"
                           />
-                          <label htmlFor="cgv-booking" className="text-[10px] text-muted-foreground leading-relaxed cursor-pointer">
+                          <label htmlFor="cgv-booking" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
                             J'accepte les{' '}
                             <a href="/mentions-legales?tab=cgv" target="_blank" rel="noopener" className="text-accent underline">
                               CGV
@@ -579,25 +580,60 @@ export const AgendaPage = () => {
                         </div>
                       )}
 
-                      <Button
-                        type="submit"
-                        className="w-full rounded-lg gap-2"
-                        disabled={submitting || !selectedDate || !selectedSlot || (callType !== 'decouverte' && !cgvAccepted)}
-                        data-testid="confirm-booking-button"
-                      >
-                        {submitting ? (
-                          <><Loader2 className="w-4 h-4 animate-spin" />Traitement...</>
-                        ) : callType === 'decouverte' ? (
-                          <><CalendarIcon className="w-4 h-4" />Confirmer le rendez-vous</>
-                        ) : (
-                          <><CreditCard className="w-4 h-4" />Payer et réserver — 75 €</>
-                        )}
-                      </Button>
+                      {callType === 'decouverte' ? (
+                        <Button
+                          type="submit"
+                          className="w-full rounded-lg gap-2"
+                          disabled={submitting || !selectedDate || !selectedSlot}
+                          data-testid="confirm-booking-button"
+                        >
+                          {submitting ? <><Loader2 className="w-4 h-4 animate-spin" />Traitement...</> : <><CalendarIcon className="w-4 h-4" />Confirmer le rendez-vous</>}
+                        </Button>
+                      ) : cgvAccepted ? (
+                        <div className="grid grid-cols-2 gap-3">
+                          <Button
+                            type="submit"
+                            className="gap-2 h-11"
+                            disabled={submitting || !selectedDate || !selectedSlot}
+                            data-testid="confirm-booking-button"
+                          >
+                            {submitting ? <><Loader2 className="w-4 h-4 animate-spin" />Chargement...</> : <><CreditCard className="w-4 h-4" />75 € — Carte</>}
+                          </Button>
+                          <div className="h-11" data-testid="booking-paypal-container">
+                            <PayPalScriptProvider options={{ clientId: process.env.REACT_APP_PAYPAL_CLIENT_ID || 'sb', currency: 'EUR' }}>
+                              <PayPalButtons
+                                style={{ layout: 'horizontal', color: 'blue', shape: 'rect', label: 'pay', height: 44, tagline: false }}
+                                createOrder={async (data, actions) => {
+                                  return actions.order.create({ purchase_units: [{ amount: { currency_code: 'EUR', value: '75.00' }, description: 'Appel Conseil — 30 min' }] });
+                                }}
+                                onApprove={async (data, actions) => {
+                                  const details = await actions.order.capture();
+                                  try {
+                                    await axios.post(`${API}/consent-log`, { email: form.email, service: 'booking_conseil', cgv_accepted: true, retractation_waived: true });
+                                    await axios.post(`${API}/bookings/paypal`, {
+                                      order_id: details.id, date: formatDateStr(selectedDate), time_slot: selectedSlot,
+                                      name: form.name, email: form.email, phone: form.phone, message: form.message, call_type: callType, amount: 75,
+                                    });
+                                    setBooked(true);
+                                    toast.success('Paiement PayPal confirmé ! Rendez-vous réservé.');
+                                  } catch { toast.error("Erreur lors de l'enregistrement PayPal"); }
+                                }}
+                                onError={() => toast.error("Erreur PayPal")}
+                                onCancel={() => toast.info("Paiement annulé")}
+                              />
+                            </PayPalScriptProvider>
+                          </div>
+                        </div>
+                      ) : (
+                        <Button disabled className="w-full rounded-lg gap-2 opacity-50" data-testid="confirm-booking-button">
+                          <CreditCard className="w-4 h-4" />Acceptez les CGV pour payer
+                        </Button>
+                      )}
 
                       <p className="text-xs text-muted-foreground text-center">
                         {callType === 'decouverte'
                           ? CALL_INFO.decouverte.note
-                          : <>Paiement sécurisé par Stripe. Le créneau est confirmé uniquement après paiement.</>
+                          : 'Paiements sécurisés — Stripe & PayPal'
                         }
                       </p>
                     </form>
