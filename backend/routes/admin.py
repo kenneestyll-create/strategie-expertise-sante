@@ -287,6 +287,115 @@ async def get_analytics(period: str = "30d", admin: dict = Depends(get_current_a
     }
 
 
+# ==================== PURGE TRANSACTIONS ====================
+
+@router.delete("/admin/transactions/purge")
+async def purge_test_transactions(admin: dict = Depends(get_current_admin)):
+    """Delete all payment transactions that were NOT confirmed (test/abandoned data)."""
+    result = await db.payment_transactions.delete_many({
+        "payment_status": {"$nin": ["paid", "completed"]}
+    })
+    # Also clean client_history entries with 0 orders
+    await db.client_history.delete_many({"orders_count": {"$lte": 0}})
+    logger.info(f"Admin purge: deleted {result.deleted_count} non-confirmed transactions")
+    return {"success": True, "deleted_count": result.deleted_count}
+
+
+@router.delete("/admin/transactions/purge-all")
+async def purge_all_transactions(admin: dict = Depends(get_current_admin)):
+    """Delete ALL payment transactions (full reset). Use with extreme caution."""
+    result = await db.payment_transactions.delete_many({})
+    await db.client_history.update_many({}, {"$set": {"orders_count": 0}})
+    logger.info(f"Admin purge ALL: deleted {result.deleted_count} transactions")
+    return {"success": True, "deleted_count": result.deleted_count}
+
+
+# ==================== COMPTABILITÉ ====================
+
+@router.get("/admin/accounting")
+async def get_accounting(period: str = "month", admin: dict = Depends(get_current_admin)):
+    """Accounting data for a given period: day, week, month, quarter, semester, year."""
+    now = datetime.now(timezone.utc)
+
+    period_map = {
+        "day": 1, "week": 7, "month": 30, "quarter": 90, "semester": 180, "year": 365,
+    }
+    days = period_map.get(period, 30)
+    cutoff = (now - timedelta(days=days)).isoformat()
+    prev_cutoff_start = (now - timedelta(days=days * 2)).isoformat()
+    prev_cutoff_end = cutoff
+
+    # Current period
+    current_txs = await db.payment_transactions.find(
+        {"created_at": {"$gte": cutoff}, "payment_status": {"$in": ["paid", "completed"]}},
+        {"_id": 0, "amount": 1, "package_name": 1, "created_at": 1, "email": 1, "payment_status": 1}
+    ).to_list(5000)
+
+    total_ca = sum(t.get("amount", 0) for t in current_txs)
+    total_tx = len(current_txs)
+    avg_basket = round(total_ca / total_tx, 2) if total_tx > 0 else 0
+
+    # Previous period for evolution
+    prev_pipeline = [
+        {"$match": {"created_at": {"$gte": prev_cutoff_start, "$lt": prev_cutoff_end}, "payment_status": {"$in": ["paid", "completed"]}}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}, "count": {"$sum": 1}}}
+    ]
+    prev_result = await db.payment_transactions.aggregate(prev_pipeline).to_list(1)
+    prev_ca = prev_result[0]["total"] if prev_result else 0
+    prev_tx = prev_result[0]["count"] if prev_result else 0
+    evolution_ca = round(((total_ca - prev_ca) / prev_ca) * 100, 1) if prev_ca > 0 else (100 if total_ca > 0 else 0)
+    evolution_tx = round(((total_tx - prev_tx) / prev_tx) * 100, 1) if prev_tx > 0 else (100 if total_tx > 0 else 0)
+
+    # Breakdown by prestation
+    breakdown = {}
+    for t in current_txs:
+        name = t.get("package_name") or "Inconnu"
+        if name not in breakdown:
+            breakdown[name] = {"name": name, "count": 0, "revenue": 0}
+        breakdown[name]["count"] += 1
+        breakdown[name]["revenue"] += t.get("amount", 0)
+    prestations = sorted(breakdown.values(), key=lambda x: x["revenue"], reverse=True)
+
+    # Timeseries — group by appropriate bucket
+    if days <= 7:
+        bucket_fmt = "%Y-%m-%d"
+    elif days <= 90:
+        bucket_fmt = "%Y-%m-%d"
+    else:
+        bucket_fmt = "%Y-%m"
+
+    ts_map = {}
+    for t in current_txs:
+        try:
+            dt_str = t.get("created_at", "")
+            if "T" in dt_str:
+                bucket = dt_str[:10] if bucket_fmt == "%Y-%m-%d" else dt_str[:7]
+            else:
+                bucket = dt_str[:10] if bucket_fmt == "%Y-%m-%d" else dt_str[:7]
+        except Exception:
+            continue
+        if bucket not in ts_map:
+            ts_map[bucket] = {"date": bucket, "revenue": 0, "transactions": 0}
+        ts_map[bucket]["revenue"] += t.get("amount", 0)
+        ts_map[bucket]["transactions"] += 1
+
+    timeseries = sorted(ts_map.values(), key=lambda x: x["date"])
+
+    return {
+        "period": period,
+        "kpis": {
+            "total_ca": round(total_ca, 2),
+            "total_transactions": total_tx,
+            "avg_basket": avg_basket,
+            "evolution_ca": evolution_ca,
+            "evolution_tx": evolution_tx,
+            "prev_ca": round(prev_ca, 2),
+        },
+        "prestations": prestations,
+        "timeseries": timeseries,
+    }
+
+
 # ==================== FAQ ADMIN ====================
 
 @router.post("/admin/faq", response_model=FAQItem)

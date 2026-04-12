@@ -90,8 +90,27 @@ const KpiCard = ({ label, value, sub, color = 'text-foreground' }) => (
   </Card>
 );
 
-const AnalyticsTab = ({ data, period, onPeriodChange }) => {
+const AnalyticsTab = ({ data, period, onPeriodChange, axiosConfig }) => {
   const { kpis, time_series, packages, analyse_types } = data;
+  const [purgeStep, setPurgeStep] = useState(null); // null | 'confirm1' | 'confirm2' | 'purging'
+  const [purgeType, setPurgeType] = useState(null); // 'test' | 'all'
+  const [purgeResult, setPurgeResult] = useState(null);
+
+  const handlePurge = async () => {
+    setPurgeStep('purging');
+    try {
+      const endpoint = purgeType === 'all' ? '/admin/transactions/purge-all' : '/admin/transactions/purge';
+      const res = await axios.delete(`${API}${endpoint}`, axiosConfig);
+      setPurgeResult(res.data.deleted_count);
+      toast.success(`${res.data.deleted_count} transaction(s) supprimée(s)`);
+      setPurgeStep(null);
+      setPurgeType(null);
+      onPeriodChange(period); // refresh data
+    } catch {
+      toast.error("Erreur lors de la purge");
+      setPurgeStep(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -287,6 +306,195 @@ const AnalyticsTab = ({ data, period, onPeriodChange }) => {
           </CardContent>
         </Card>
       )}
+
+      {/* Purge actions */}
+      <div className="flex gap-3 justify-end">
+        <Button variant="outline" size="sm" className="text-xs gap-1.5 text-amber-600 border-amber-200 hover:bg-amber-50" onClick={() => { setPurgeType('test'); setPurgeStep('confirm1'); }} data-testid="purge-test-btn">
+          <Trash2 className="w-3.5 h-3.5" /> Purger les tests
+        </Button>
+        <Button variant="outline" size="sm" className="text-xs gap-1.5 text-red-600 border-red-200 hover:bg-red-50" onClick={() => { setPurgeType('all'); setPurgeStep('confirm1'); }} data-testid="purge-all-btn">
+          <Trash2 className="w-3.5 h-3.5" /> Purger toutes les transactions
+        </Button>
+      </div>
+
+      {/* Purge double confirmation dialog */}
+      <Dialog open={purgeStep === 'confirm1'} onOpenChange={(open) => { if (!open) { setPurgeStep(null); setPurgeType(null); } }}>
+        <DialogContent data-testid="purge-confirm1-dialog">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="w-5 h-5" />
+              {purgeType === 'all' ? 'Supprimer TOUTES les transactions ?' : 'Supprimer les transactions de test ?'}
+            </DialogTitle>
+            <DialogDescription>
+              {purgeType === 'all'
+                ? 'Cette action supprimera définitivement TOUTES les transactions (payées et non payées). Les compteurs de fidélité seront réinitialisés.'
+                : 'Cette action supprimera les transactions non confirmées (abandonnées, en attente). Les paiements confirmés seront conservés.'
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => { setPurgeStep(null); setPurgeType(null); }}>Annuler</Button>
+            <Button variant="destructive" onClick={() => setPurgeStep('confirm2')} data-testid="purge-step1-confirm">
+              Continuer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={purgeStep === 'confirm2'} onOpenChange={(open) => { if (!open) { setPurgeStep(null); setPurgeType(null); } }}>
+        <DialogContent data-testid="purge-confirm2-dialog">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">Confirmation finale</DialogTitle>
+            <DialogDescription>
+              Tapez <strong className="text-foreground">{purgeType === 'all' ? 'SUPPRIMER TOUT' : 'PURGER'}</strong> mentalement et confirmez. Cette action est irréversible.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => { setPurgeStep(null); setPurgeType(null); }}>Annuler</Button>
+            <Button variant="destructive" onClick={handlePurge} disabled={purgeStep === 'purging'} data-testid="purge-step2-confirm">
+              {purgeStep === 'purging' ? <><Loader2 className="w-4 h-4 animate-spin" /> Suppression...</> : 'Confirmer la suppression'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+
+const PERIOD_LABELS = {
+  day: "Aujourd'hui", week: 'Cette semaine', month: 'Ce mois',
+  quarter: 'Ce trimestre', semester: 'Ce semestre', year: "Cette année",
+};
+
+const AccountingTab = ({ axiosConfig }) => {
+  const [period, setPeriod] = useState('month');
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    axios.get(`${API}/admin/accounting?period=${period}`, axiosConfig)
+      .then(res => { if (!cancelled) setData(res.data); })
+      .catch(() => { if (!cancelled) toast.error("Erreur chargement comptabilité"); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [period]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (loading) return <div className="flex items-center justify-center py-16"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>;
+  if (!data) return null;
+
+  const { kpis, prestations, timeseries } = data;
+
+  return (
+    <div className="space-y-6" data-testid="accounting-section">
+      {/* Period selector */}
+      <div className="flex flex-wrap gap-1 bg-muted rounded-lg p-1" data-testid="accounting-period-selector">
+        {Object.entries(PERIOD_LABELS).map(([k, l]) => (
+          <button key={k} onClick={() => setPeriod(k)}
+            className={`px-3 py-1.5 text-xs rounded-md transition-colors ${period === k ? 'bg-background shadow text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+            data-testid={`accounting-period-${k}`}
+          >{l}</button>
+        ))}
+      </div>
+
+      {/* KPIs */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card data-testid="accounting-ca">
+          <CardContent className="py-4 px-5">
+            <p className="text-xs text-muted-foreground uppercase">Chiffre d'affaires</p>
+            <p className="text-2xl font-bold mt-1 text-emerald-600">{formatEuro(kpis.total_ca)}</p>
+            <p className={`text-xs mt-0.5 font-medium ${kpis.evolution_ca >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+              {kpis.evolution_ca >= 0 ? '+' : ''}{kpis.evolution_ca}% vs période précédente
+            </p>
+          </CardContent>
+        </Card>
+        <Card data-testid="accounting-tx">
+          <CardContent className="py-4 px-5">
+            <p className="text-xs text-muted-foreground uppercase">Transactions</p>
+            <p className="text-2xl font-bold mt-1">{kpis.total_transactions}</p>
+            <p className={`text-xs mt-0.5 font-medium ${kpis.evolution_tx >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+              {kpis.evolution_tx >= 0 ? '+' : ''}{kpis.evolution_tx}% vs période précédente
+            </p>
+          </CardContent>
+        </Card>
+        <Card data-testid="accounting-basket">
+          <CardContent className="py-4 px-5">
+            <p className="text-xs text-muted-foreground uppercase">Panier moyen</p>
+            <p className="text-2xl font-bold mt-1">{formatEuro(kpis.avg_basket)}</p>
+          </CardContent>
+        </Card>
+        <Card data-testid="accounting-prev">
+          <CardContent className="py-4 px-5">
+            <p className="text-xs text-muted-foreground uppercase">Période précédente</p>
+            <p className="text-2xl font-bold mt-1 text-muted-foreground">{formatEuro(kpis.prev_ca)}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Revenue chart */}
+      {timeseries.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Revenus — {PERIOD_LABELS[period]}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64" data-testid="accounting-chart">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={timeseries} margin={{ top: 5, right: 5, left: -10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                  <XAxis dataKey="date" tickFormatter={(d) => { if (!d) return ''; const p = d.split('-'); return p.length === 3 ? `${p[2]}/${p[1]}` : p.length === 2 ? `${p[1]}/${p[0].slice(2)}` : d; }} tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}€`} />
+                  <Tooltip formatter={(v, name) => [name === 'revenue' ? `${v}€` : v, name === 'revenue' ? 'Revenus' : 'Transactions']} labelFormatter={(v) => `${v}`} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Bar dataKey="revenue" name="Revenus (€)" fill="#b8860b" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="transactions" name="Transactions" fill="#1a1a2e" radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Breakdown table */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium">Détail par prestation — {PERIOD_LABELS[period]}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm" data-testid="accounting-table">
+              <thead>
+                <tr className="border-b text-left text-muted-foreground">
+                  <th className="pb-2 font-medium">Prestation</th>
+                  <th className="pb-2 font-medium text-center">Transactions</th>
+                  <th className="pb-2 font-medium text-right">Revenus</th>
+                </tr>
+              </thead>
+              <tbody>
+                {prestations.map((p, i) => (
+                  <tr key={i} className="border-b last:border-0">
+                    <td className="py-2">{p.name}</td>
+                    <td className="py-2 text-center">{p.count}</td>
+                    <td className="py-2 text-right font-medium">{formatEuro(p.revenue)}</td>
+                  </tr>
+                ))}
+                {prestations.length === 0 && (
+                  <tr><td colSpan={3} className="py-6 text-center text-muted-foreground">Aucune transaction sur cette période</td></tr>
+                )}
+                {prestations.length > 0 && (
+                  <tr className="font-semibold">
+                    <td className="pt-3">Total</td>
+                    <td className="pt-3 text-center">{prestations.reduce((s, p) => s + p.count, 0)}</td>
+                    <td className="pt-3 text-right text-emerald-600">{formatEuro(prestations.reduce((s, p) => s + p.revenue, 0))}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
@@ -537,6 +745,7 @@ export const AdminDashboard = () => {
   const [servicesStatus, setServicesStatus] = useState(null);
   const [analyticsData, setAnalyticsData] = useState(null);
   const [analyticsPeriod, setAnalyticsPeriod] = useState('30d');
+  const [analyticsSubTab, setAnalyticsSubTab] = useState('analytics');
   const [newCas, setNewCas] = useState({ type_dossier: '', regime: '', duree: '', strategie: '', resultat: '', score_pertinence: 0, notes: '' });
   const [editCas, setEditCas] = useState(null);
   const [casFilter, setCasFilter] = useState('');
@@ -2792,24 +3001,47 @@ export const AdminDashboard = () => {
 
           {/* Analytics Tab */}
           <TabsContent value="analytics" className="space-y-6" data-testid="analytics-tab-content">
-            {analyticsData ? (
-              <AnalyticsTab 
-                data={analyticsData} 
-                period={analyticsPeriod} 
-                onPeriodChange={async (p) => {
-                  setAnalyticsPeriod(p);
-                  try {
-                    const res = await axios.get(`${API}/admin/analytics?period=${p}`, axiosConfig);
-                    setAnalyticsData(res.data);
-                  } catch {}
-                }} 
-              />
-            ) : (
-              <Card><CardContent className="py-12 text-center text-muted-foreground">Chargement des analytiques...</CardContent></Card>
+            {/* Sub-tabs: Analytique / Comptabilité */}
+            <div className="flex gap-2 border-b" data-testid="analytics-subtabs">
+              <button onClick={() => setAnalyticsSubTab('analytics')}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${(!analyticsSubTab || analyticsSubTab === 'analytics') ? 'border-[#C9A84C] text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                data-testid="subtab-analytics">
+                Analytique
+              </button>
+              <button onClick={() => setAnalyticsSubTab('comptabilite')}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${analyticsSubTab === 'comptabilite' ? 'border-[#C9A84C] text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                data-testid="subtab-comptabilite">
+                Comptabilité
+              </button>
+            </div>
+
+            {(!analyticsSubTab || analyticsSubTab === 'analytics') && (
+              <>
+                {analyticsData ? (
+                  <AnalyticsTab 
+                    data={analyticsData} 
+                    period={analyticsPeriod}
+                    axiosConfig={axiosConfig}
+                    onPeriodChange={async (p) => {
+                      setAnalyticsPeriod(p);
+                      try {
+                        const res = await axios.get(`${API}/admin/analytics?period=${p}`, axiosConfig);
+                        setAnalyticsData(res.data);
+                      } catch {}
+                    }} 
+                  />
+                ) : (
+                  <Card><CardContent className="py-12 text-center text-muted-foreground">Chargement des analytiques...</CardContent></Card>
+                )}
+
+                {/* Conversion Analytics — Origine des leads */}
+                <AdminConversionAnalytics axiosConfig={axiosConfig} />
+              </>
             )}
 
-            {/* Conversion Analytics — Origine des leads */}
-            <AdminConversionAnalytics axiosConfig={axiosConfig} />
+            {analyticsSubTab === 'comptabilite' && (
+              <AccountingTab axiosConfig={axiosConfig} />
+            )}
           </TabsContent>
 
           {/* Admin Documents Tab */}

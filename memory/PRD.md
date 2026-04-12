@@ -1,52 +1,45 @@
 # Stratégie & Expertise Santé (S.E.S) — PRD
 
 ## Problème Original
-Plateforme de conseil en santé offrant des services payants. Nécessite paiements sécurisés, conformité légale stricte (CGV/RGPD), stockage S3 persistant, et UX fluide.
+Plateforme de conseil en santé offrant des services payants. Paiements sécurisés, conformité légale stricte (CGV/RGPD), stockage S3, UX fluide.
 
 ## Architecture
-- **Frontend**: React (Shadcn UI)
-- **Backend**: FastAPI + MongoDB
-- **Paiements**: Stripe (LIVE) + PayPal (LIVE)
-- **Stockage**: AWS S3 (eu-west-3)
-- **Email**: Resend
-- **IA**: Claude Sonnet 4.5 (Emergent Key)
-- **Recherche**: Algolia
+- Frontend: React (Shadcn UI) | Backend: FastAPI + MongoDB
+- Paiements: Stripe (LIVE) + PayPal (LIVE)
+- Stockage: AWS S3 (eu-west-3) | Email: Resend | IA: Claude Sonnet 4.5 | Recherche: Algolia
+- Hébergement: Vercel
 
 ## Fonctionnalités Implémentées
-- [x] Stripe Checkout LIVE (load_dotenv override=True pour forcer clé .env)
-- [x] PayPal LIVE
-- [x] Conformité légale : CGV, RGPD, cases à cocher obligatoires, consent-log
-- [x] AWS S3 : upload, pre-signed URLs, métriques Admin, alertes seuil
-- [x] Rapport KPI hebdomadaire automatisé (Resend + APScheduler)
-- [x] Scanner de documents (OffscreenCanvas Web Worker)
-- [x] Mentions Légales complètes (CGV/CGU/RGPD - Stripe + PayPal mentionnés)
-- [x] Système de parrainage et fidélité (corrigé: compteur uniquement après paiement confirmé via webhook)
-- [x] Overlay PostHog/PayPal erreur supprimé (webpack overlay disabled)
-- [x] Label paiement: "Carte bancaire (Stripe)" + "PayPal"
+- [x] Stripe + PayPal Live (modal simplifiée 2 boutons)
+- [x] Conformité légale CGV/RGPD/L.221-28 + consent-log
+- [x] AWS S3 + Admin metrics + alertes seuil
+- [x] Rapport KPI hebdomadaire (Resend + APScheduler)
+- [x] Scanner documents (Web Worker)
+- [x] Mentions Légales complètes (hébergeur Vercel renseigné)
+- [x] Fidélité (-15%) corrigée : compteur uniquement après webhook paiement
+- [x] Dashboard Admin Conseils Mascotte (CRUD + analytics)
+- [x] Email unique: contact@strategie-expertise-sante.fr
+- [x] Purge transactions (tests / tout) avec double confirmation
+- [x] Comptabilité multi-périodes (jour/semaine/mois/trimestre/semestre/année)
 
-## Corrections Récentes (11 avril 2026)
-- [x] PayPal Live configuré (CLIENT_ID + SECRET)
-- [x] Bug overlay PostHog/PayPal corrigé
-- [x] Clé Stripe: load_dotenv(override=True) pour contourner sk_test_emergent système
-- [x] BUG CRITIQUE: orders_count incrémenté seulement après webhook paiement confirmé (pas à la tentative)
-- [x] DB nettoyée: tous les faux compteurs fidélité remis à 0
+## Corrections Récentes (11-12 avril 2026)
+- [x] PayPal Live configuré
+- [x] Bug overlay PostHog/PayPal corrigé (webpack overlay disabled)
+- [x] Clé Stripe: load_dotenv(override=True)
+- [x] BUG CRITIQUE fidélité: orders_count seulement après webhook
+- [x] Modal paiement simplifiée (2 boutons alignés)
+- [x] IDs frontend sans accents (preparation_expertise)
+- [x] Email définitif implanté partout
+- [x] Hébergeur Vercel dans mentions légales
+- [x] Purge + Comptabilité dans Admin Analytique
 
 ## En Cours / Non Terminé
-- [ ] P1 : Dashboard Admin gestion conseils Mascotte (CRUD, planification)
-- [ ] P1 : Configuration URL Webhook Stripe (côté Dashboard Stripe utilisateur)
+- [ ] P1 : Configuration URL Webhook Stripe (en attente whsec_ utilisateur)
 - [ ] P2 : Intégration HubSpot CRM (en attente identifiants)
 
 ## Backlog
 - [ ] P2 : IA Prédictive V2
 - [ ] P3 : Module Devis personnalisé
-
-## Schéma DB Clé
-- `consent_log`: email, service, cgv_accepted, retractation_waived, cgv_version, ip_address, created_at
-- `documents`: filename, s3_key, size, source, uploaded_at
-- `bookings`: call_type, date, time, status, payment_intent_id
-- `conseils_strate` (PENDING): text, category, active, startDate, endDate, priority
-- `payment_transactions`: session_id, package_id, amount, currency, email, status, payment_status
-- `client_history`: email, orders_count (incrémenté UNIQUEMENT via webhook après paiement confirmé)
 
 ## Credentials Admin
 - Admin: admin@accompagn-sante.fr / Admin2024!
