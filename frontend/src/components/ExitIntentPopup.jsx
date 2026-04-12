@@ -22,14 +22,23 @@ export const ExitIntentPopup = () => {
   const close = useCallback(() => setVisible(false), []);
 
   useEffect(() => {
-    // Desktop only: mouse leaves viewport toward top (exit intent)
+    // Exit intent: mouse leaves the HTML element (works in iframes & modern browsers)
+    const html = document.documentElement;
     const onMouseLeave = (e) => {
-      if (e.clientY <= 0) show();
+      // Only trigger when leaving toward the top (not scrollbar/bottom)
+      if (e.clientY <= 5) show();
     };
 
-    document.addEventListener('mouseleave', onMouseLeave);
+    // Fallback: visibilitychange — user switches tab or minimizes
+    const onVisChange = () => {
+      if (document.visibilityState === 'hidden') show();
+    };
+
+    html.addEventListener('mouseleave', onMouseLeave);
+    document.addEventListener('visibilitychange', onVisChange);
     return () => {
-      document.removeEventListener('mouseleave', onMouseLeave);
+      html.removeEventListener('mouseleave', onMouseLeave);
+      document.removeEventListener('visibilitychange', onVisChange);
     };
   }, [show]);
 
