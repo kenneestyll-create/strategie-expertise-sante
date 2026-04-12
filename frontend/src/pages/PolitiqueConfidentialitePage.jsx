@@ -69,7 +69,7 @@ export const PolitiqueConfidentialitePage = () => {
       content: "Vos données personnelles sont accessibles uniquement à l'équipe restreinte de Stratégie & Expertise Santé dans le cadre de votre accompagnement. Elles ne sont jamais vendues ni cédées. Les sous-traitants techniques suivants peuvent y avoir accès dans le cadre strict de la fourniture du service :",
       list: [
         "Anthropic (États-Unis) : traitement du texte extrait pour la génération des rapports d'analyse IA",
-        "Service d'hébergement et de stockage sécurisé : hébergement de l'application et stockage des rapports générés",
+        "Vercel Inc. (États-Unis) : hébergement de l'application web",
         "Resend : envoi des emails transactionnels (confirmation, livraison de rapport)",
         "Stripe : traitement sécurisé des paiements (Stripe ne reçoit aucune donnée médicale)"
       ],

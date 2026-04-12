@@ -85,8 +85,9 @@ export const MentionsLegalesPage = () => {
                 <CardContent className="text-muted-foreground">
                   <p>
                     Ce site est hébergé par :<br />
-                    [Nom de l'hébergeur à compléter]<br />
-                    [Adresse de l'hébergeur à compléter]
+                    <strong className="text-foreground">Vercel Inc.</strong><br />
+                    340 S Lemon Ave #4133, Walnut, CA 91789, États-Unis<br />
+                    <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">https://vercel.com</a>
                   </p>
                 </CardContent>
               </Card>
