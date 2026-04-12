@@ -48,7 +48,7 @@ Pour en savoir plus : [Voir tous nos tarifs](/tarifs)"""
 Vous pouvez me contacter pour un premier echange gratuit et sans engagement :
 
 - **Par le formulaire de contact** sur notre site
-- **Par email** : contact@accompagn-sante.fr
+- **Par email** : contact@strategie-expertise-sante.fr
 - **Par telephone** : 06 00 00 00 00
 
 Je vous repondrai dans les 24 a 48 heures.

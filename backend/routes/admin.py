@@ -2329,7 +2329,7 @@ DEFAULT_WEEKLY_REPORT_CONFIG = {
     "enabled": True,
     "day": "monday",
     "hour": 8,
-    "email": NOTIFICATION_EMAIL or "admin@accompagn-sante.fr",
+    "email": NOTIFICATION_EMAIL or "contact@strategie-expertise-sante.fr",
 }
 
 WEEKDAY_MAP = {"monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3, "friday": 4, "saturday": 5, "sunday": 6}
@@ -2483,7 +2483,7 @@ async def update_weekly_report_config(request: Request, admin=Depends(get_curren
         "enabled": body.get("enabled", True),
         "day": body.get("day", "monday"),
         "hour": body.get("hour", 8),
-        "email": body.get("email", NOTIFICATION_EMAIL or "admin@accompagn-sante.fr"),
+        "email": body.get("email", NOTIFICATION_EMAIL or "contact@strategie-expertise-sante.fr"),
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.site_settings.update_one({"id": "weekly_report_config"}, {"$set": doc}, upsert=True)
@@ -2503,7 +2503,7 @@ async def send_weekly_report_now(admin=Depends(get_current_admin)):
         config = DEFAULT_WEEKLY_REPORT_CONFIG
     data = await _generate_weekly_report_data()
     html = _build_weekly_report_html(data)
-    email_to = config.get("email", NOTIFICATION_EMAIL or "admin@accompagn-sante.fr")
+    email_to = config.get("email", NOTIFICATION_EMAIL or "contact@strategie-expertise-sante.fr")
 
     if not RESEND_AVAILABLE:
         return {"success": False, "error": "Service email non configuré"}

@@ -700,7 +700,7 @@ async def _weekly_report_scheduler():
                             from routes.admin import _generate_weekly_report_data, _build_weekly_report_html
                             data = await _generate_weekly_report_data()
                             html = _build_weekly_report_html(data)
-                            email_to = config.get("email") or NOTIFICATION_EMAIL or "admin@accompagn-sante.fr"
+                            email_to = config.get("email") or NOTIFICATION_EMAIL or "contact@strategie-expertise-sante.fr"
                             try:
                                 import resend
                                 await asyncio.to_thread(resend.Emails.send, {

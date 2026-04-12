@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 VAPID_PRIVATE_KEY = os.environ.get("VAPID_PRIVATE_KEY", "").replace("\\n", "\n")
 VAPID_PUBLIC_KEY = os.environ.get("VAPID_PUBLIC_KEY", "")
-VAPID_SUBJECT = os.environ.get("VAPID_SUBJECT", "mailto:admin@accompagn-sante.fr")
+VAPID_SUBJECT = os.environ.get("VAPID_SUBJECT", "mailto:contact@strategie-expertise-sante.fr")
 
 
 def send_push_notification(subscription_info: dict, title: str, body: str, url: str = "/espace-client", tag: str = "default") -> bool:

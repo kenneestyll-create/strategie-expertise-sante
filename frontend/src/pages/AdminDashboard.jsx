@@ -3258,7 +3258,7 @@ export const AdminDashboard = () => {
                       <p className="text-xs text-muted-foreground">Pour envoyer des emails depuis votre propre domaine (au lieu de onboarding@resend.dev), suivez ces étapes :</p>
                       <ol className="text-xs text-muted-foreground space-y-1 list-decimal ml-4">
                         <li>Connectez-vous sur <a href="https://resend.com/domains" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">resend.com/domains</a></li>
-                        <li>Ajoutez votre domaine (ex: accompagn-santé.fr)</li>
+                        <li>Ajoutez votre domaine (ex: strategie-expertise-sante.fr)</li>
                         <li>Ajoutez les enregistrements DNS (SPF, DKIM, DMARC) fournis par Resend</li>
                         <li>Attendez la vérification (quelques minutes à 24h)</li>
                         <li>Mettez à jour SENDER_EMAIL dans la configuration backend</li>
@@ -3267,7 +3267,7 @@ export const AdminDashboard = () => {
                     <Button size="sm" variant="outline" className="gap-2"
                       onClick={async () => {
                         try {
-                          const res = await axios.post(`${API}/admin/email/test`, { email: emailStatus.notification_email || 'admin@accompagn-santé.fr' }, axiosConfig);
+                          const res = await axios.post(`${API}/admin/email/test`, { email: emailStatus.notification_email || 'contact@strategie-expertise-sante.fr' }, axiosConfig);
                           if (res.data.success) toast.success('Email test envoyé');
                           else toast.error(res.data.message);
                         } catch { toast.error('Erreur envoi test'); }
@@ -3376,7 +3376,7 @@ export const AdminDashboard = () => {
                             await axios.put(`${API}/weekly-report/config`, weeklyConfig, axiosConfig).catch(() => {});
                           }}
                           className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm"
-                          placeholder="admin@accompagn-sante.fr"
+                          placeholder="contact@strategie-expertise-sante.fr"
                           data-testid="weekly-report-email"
                         />
                       </div>

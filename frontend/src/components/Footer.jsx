@@ -77,7 +77,7 @@ export const Footer = () => {
                   <Linkedin className="w-4 h-4" strokeWidth={1.5} />
                 </a>
                 <a
-                  href="mailto:partenaires@strategie-expertise-sante.fr"
+                  href="mailto:contact@strategie-expertise-sante.fr"
                   className="w-9 h-9 rounded-full border border-primary-foreground/15 flex items-center justify-center text-primary-foreground/50 hover:text-accent hover:border-accent/40 transition-all"
                   title="Email partenariat"
                   data-testid="partner-email-icon"
