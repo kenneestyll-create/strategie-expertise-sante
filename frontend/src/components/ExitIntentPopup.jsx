@@ -22,27 +22,14 @@ export const ExitIntentPopup = () => {
   const close = useCallback(() => setVisible(false), []);
 
   useEffect(() => {
-    // Desktop: mouse leaves viewport toward top
+    // Desktop only: mouse leaves viewport toward top (exit intent)
     const onMouseLeave = (e) => {
       if (e.clientY <= 0) show();
     };
 
-    // Mobile: rapid scroll up (delta > 300px in < 300ms)
-    let lastY = 0;
-    let lastT = 0;
-    const onScroll = () => {
-      const y = window.scrollY;
-      const t = Date.now();
-      if (lastT && t - lastT < 300 && lastY - y > 300) show();
-      lastY = y;
-      lastT = t;
-    };
-
     document.addEventListener('mouseleave', onMouseLeave);
-    window.addEventListener('scroll', onScroll, { passive: true });
     return () => {
       document.removeEventListener('mouseleave', onMouseLeave);
-      window.removeEventListener('scroll', onScroll);
     };
   }, [show]);
 
