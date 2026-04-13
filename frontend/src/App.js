@@ -119,6 +119,8 @@ const ForumCategoryPage = lazy(() => import("@/pages/ForumCategoryPage").then(m 
 const ForumTopicPage = lazy(() => import("@/pages/ForumTopicPage").then(m => ({ default: m.ForumTopicPage })));
 const ForumNewTopicPage = lazy(() => import("@/pages/ForumNewTopicPage").then(m => ({ default: m.ForumNewTopicPage })));
 const MedecinConseilPage = lazy(() => import("@/pages/MedecinConseilPage"));
+const GuidePage = lazy(() => import("@/pages/GuidePage"));
+const GuidesPratiquesPage = lazy(() => import("@/pages/GuidesPratiquesPage"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -184,6 +186,8 @@ function App() {
                   <Route path="/forum/nouveau" element={<><Header /><ForumNewTopicPage /><Footer /></>} />
                   <Route path="/forum/tous" element={<><Header /><ForumCategoryPage /><Footer /></>} />
                   <Route path="/medecin-conseil" element={<><Header /><MedecinConseilPage /><Footer /></>} />
+                  <Route path="/guide/:slug" element={<><Header /><GuidePage /><Footer /></>} />
+                  <Route path="/guides-pratiques" element={<><Header /><GuidesPratiquesPage /><Footer /></>} />
                   <Route path="/admin/login" element={<AdminLoginPage />} />
                   <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
                 </Routes>

@@ -788,6 +788,12 @@ async def sitemap_xml():
     urls = ""
     for path, priority, freq in SITEMAP_PAGES:
         urls += f"""  <url>\n    <loc>{SITE_URL}{path}</loc>\n    <lastmod>{today}</lastmod>\n    <changefreq>{freq}</changefreq>\n    <priority>{priority}</priority>\n  </url>\n"""
+    # Add dynamic SEO guide pages
+    seo_pages = await db.seo_pages.find({"active": True}, {"_id": 0, "slug": 1}).to_list(500)
+    for page in seo_pages:
+        urls += f"""  <url>\n    <loc>{SITE_URL}/guide/{page['slug']}</loc>\n    <lastmod>{today}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>\n"""
+    if seo_pages:
+        urls += f"""  <url>\n    <loc>{SITE_URL}/guides-pratiques</loc>\n    <lastmod>{today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.6</priority>\n  </url>\n"""
     xml = f"""<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{urls}</urlset>"""
     return Response(content=xml, media_type="application/xml")
 

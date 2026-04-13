@@ -220,6 +220,11 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/guides-pratiques" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                  Guides pratiques
+                </Link>
+              </li>
+              <li>
                 <Link to="/contact" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
                   Contact
                 </Link>
