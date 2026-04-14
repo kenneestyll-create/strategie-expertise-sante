@@ -38,7 +38,7 @@ const CountUpNumber = ({ value, unit = '', duration = 1200, started }) => {
 };
 
 export const HomePage = () => {
-  const [visitorCount, setVisitorCount] = useState(0);
+  const [visitorCount, setVisitorCount] = useState(1000);
   const [dossierCount, setDossierCount] = useState(0);
   const [countStarted, setCountStarted] = useState(false);
   const countSectionRef = useRef(null);
