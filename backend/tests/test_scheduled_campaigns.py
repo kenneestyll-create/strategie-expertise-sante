@@ -11,8 +11,7 @@ import os
 from datetime import datetime, timedelta, timezone
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
-ADMIN_EMAIL = "admin@accompagn-sante.fr"
-ADMIN_PASSWORD = "Admin2024!"
+from tests.test_config import ADMIN_EMAIL, ADMIN_PASSWORD
 
 
 @pytest.fixture(scope="module")

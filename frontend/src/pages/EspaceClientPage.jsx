@@ -189,7 +189,7 @@ const ClientDashboard = ({ token, clientName, logout }) => {
       }
       sessionStorage.setItem('dossier_prev_score', String(newScore));
       setNavScore(res.data);
-    } catch {}
+    } catch (e) { console.warn('Nav score fetch failed'); }
   };
 
   useEffect(() => { fetchData(); fetchNavScore(); }, []);
@@ -226,7 +226,7 @@ const ClientDashboard = ({ token, clientName, logout }) => {
       await axios.patch(`${API}/client/notifications/read-all`, {}, { headers });
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       setUnreadCount(0);
-    } catch {}
+    } catch (e) { console.warn('Mark all read failed'); }
   };
 
   const markRead = async (notifId) => {
@@ -234,7 +234,7 @@ const ClientDashboard = ({ token, clientName, logout }) => {
       await axios.patch(`${API}/client/notifications/${notifId}/read`, {}, { headers });
       setNotifications(prev => prev.map(n => n.id === notifId ? { ...n, read: true } : n));
       setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch {}
+    } catch (e) { console.warn('Mark read failed'); }
   };
 
   const saveNotifSettings = async (key, value) => {

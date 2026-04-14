@@ -19,10 +19,8 @@ import os
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
 # Test credentials
-ADMIN_EMAIL = "admin@accompagn-sante.fr"
-ADMIN_PASSWORD = "Admin2024!"
-CLIENT_EMAIL = "demo@test.com"
-CLIENT_PASSWORD = "Password123!"
+from tests.test_config import ADMIN_EMAIL, ADMIN_PASSWORD
+from tests.test_config import CLIENT_EMAIL, CLIENT_PASSWORD
 
 
 class TestPredictiveV2Status:

@@ -18,8 +18,7 @@ BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 TEST_DOSSIER_ID = "5e4aa1ee-084b-44bb-90e3-2977989de0d1"
 
 # Admin credentials
-ADMIN_EMAIL = "admin@accompagn-sante.fr"
-ADMIN_PASSWORD = "Admin2024!"
+from tests.test_config import ADMIN_EMAIL, ADMIN_PASSWORD
 
 
 class TestAdminAuth:

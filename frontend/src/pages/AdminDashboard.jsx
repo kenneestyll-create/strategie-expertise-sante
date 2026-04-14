@@ -866,7 +866,7 @@ export const AdminDashboard = () => {
         setAbTests(r.data.tests || []);
         const results = {};
         for (const t of (r.data.tests || []).slice(0, 5)) {
-          try { const res = await axios.get(`${API}/admin/ab-tests/${t.id}/results`, axiosConfig); results[t.id] = res.data; } catch {}
+          try { const res = await axios.get(`${API}/admin/ab-tests/${t.id}/results`, axiosConfig); results[t.id] = res.data; } catch (e) { /* silent */ }
         }
         setAbResults(results);
       }).catch(() => {});
@@ -3027,7 +3027,7 @@ export const AdminDashboard = () => {
                       try {
                         const res = await axios.get(`${API}/admin/analytics?period=${p}`, axiosConfig);
                         setAnalyticsData(res.data);
-                      } catch {}
+                      } catch (e) { /* silent */ }
                     }} 
                   />
                 ) : (
@@ -3057,7 +3057,7 @@ export const AdminDashboard = () => {
                       const params = e.target.value ? `?status=${e.target.value}` : '';
                       const res = await axios.get(`${API}/admin/documents${params}`, axiosConfig);
                       setAdminDocs(res.data);
-                    } catch {}
+                    } catch (e) { /* silent */ }
                   }}
                   className="h-8 text-xs border rounded-lg px-2 bg-background"
                   data-testid="admin-doc-status-filter"
@@ -3068,7 +3068,7 @@ export const AdminDashboard = () => {
                   <option value="illisible">Illisibles</option>
                 </select>
                 <Button size="sm" variant="outline" onClick={async () => {
-                  try { const r = await axios.get(`${API}/admin/documents`, axiosConfig); setAdminDocs(r.data); } catch {}
+                  try { const r = await axios.get(`${API}/admin/documents`, axiosConfig); setAdminDocs(r.data); } catch (e) { /* silent */ }
                 }} className="gap-1" data-testid="admin-doc-refresh">
                   <RefreshCw className="w-3 h-3" /> Actualiser
                 </Button>
@@ -3170,7 +3170,7 @@ export const AdminDashboard = () => {
                     setS3Stats(s.data);
                     setS3Timeline(t.data);
                     setS3AlertCheck(ac.data);
-                  } catch {}
+                  } catch (e) { /* silent */ }
                 }} className="gap-1" data-testid="s3-doc-refresh">
                   <RefreshCw className="w-3 h-3" /> Actualiser
                 </Button>
@@ -3364,7 +3364,7 @@ export const AdminDashboard = () => {
                                 await axios.put(`${API}/documents/storage-alerts/config`, newConfig, axiosConfig);
                                 const r = await axios.get(`${API}/documents/storage-alerts/check`, axiosConfig);
                                 setS3AlertCheck(r.data);
-                              } catch {}
+                              } catch (e) { /* silent */ }
                             }}
                             className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
                               t.active 
@@ -4132,7 +4132,7 @@ export const AdminDashboard = () => {
                           setLastReminderResults(r.data.results);
                           const h = await axios.get(`${API}/admin/relance-inactivité/history`, { headers: { Authorization: `Bearer ${adminToken}` } });
                           setInactivityReminders(h.data);
-                        } catch {}
+                        } catch (e) { /* silent */ }
                         setRunningReminders(false);
                       }}
                     >

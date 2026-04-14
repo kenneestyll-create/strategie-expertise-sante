@@ -16,10 +16,8 @@ from datetime import datetime, timedelta
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://mascot-tips-admin.preview.emergentagent.com').rstrip('/')
 
 # Test credentials from review request
-ADMIN_EMAIL = "admin@accompagn-sante.fr"
-ADMIN_PASSWORD = "Admin2024!"
-CLIENT_EMAIL = "demo@test.com"
-CLIENT_PASSWORD = "Password123!"
+from tests.test_config import ADMIN_EMAIL, ADMIN_PASSWORD
+from tests.test_config import CLIENT_EMAIL, CLIENT_PASSWORD
 
 
 class TestPublicRoutes:

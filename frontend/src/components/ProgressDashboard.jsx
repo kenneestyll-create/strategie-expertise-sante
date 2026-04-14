@@ -37,7 +37,7 @@ export const ProgressDashboard = ({ token }) => {
       try {
         const res = await axios.get(`${API}/client/progress`, { headers: { Authorization: `Bearer ${token}` } });
         setData(res.data);
-      } catch {}
+      } catch (e) { /* silent */ }
       setLoading(false);
     };
     fetchProgress();

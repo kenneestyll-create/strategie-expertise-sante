@@ -9,8 +9,7 @@ import os
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
 # Test credentials
-ADMIN_EMAIL = "admin@accompagn-sante.fr"
-ADMIN_PASSWORD = "Admin2024!"
+from tests.test_config import ADMIN_EMAIL, ADMIN_PASSWORD
 
 # Known test dossier ID from context
 TEST_DOSSIER_ID = "fed52f8f-39b1-4727-b036-90ced5861569"

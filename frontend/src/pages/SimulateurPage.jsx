@@ -518,7 +518,7 @@ export const SimulateurPage = () => {
       setShowEmailStep(false);
       setShowResults(true);
       toast.success("Rapport enregistré !");
-    } catch {
+    } catch (e) {
       toast.error("Erreur lors de l'enregistrement");
     } finally {
       setSaving(false);

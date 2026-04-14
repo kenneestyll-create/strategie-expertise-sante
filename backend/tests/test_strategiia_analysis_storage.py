@@ -26,8 +26,7 @@ KNOWN_PREMIUM_ANALYSES_ID = "c64897f3-8ffe-4149-b251-4f2d9a2ebcc4"
 KNOWN_JOB_ID = "4a60398e-4ba"
 
 # Admin credentials
-ADMIN_EMAIL = "admin@accompagn-sante.fr"
-ADMIN_PASSWORD = "Admin2024!"
+from tests.test_config import ADMIN_EMAIL, ADMIN_PASSWORD
 
 
 @pytest.fixture(scope="module")

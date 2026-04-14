@@ -18,8 +18,7 @@ import os
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://mascot-tips-admin.preview.emergentagent.com')
 
 # Test credentials
-ADMIN_EMAIL = "admin@accompagn-sante.fr"
-ADMIN_PASSWORD = "Admin2024!"
+from tests.test_config import ADMIN_EMAIL, ADMIN_PASSWORD
 
 # Existing completed dossier IDs for GET tests
 COMPLETED_DOSSIER_ID_1 = "bfc7d774-b9c5-4134-962d-65a3934ae940"

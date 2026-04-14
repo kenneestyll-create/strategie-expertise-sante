@@ -174,7 +174,7 @@ export async function extractTextFromFiles(files, existingOcrText = '', onProgre
             console.warn('Async extraction error:', pollRes.data.error);
             break;
           }
-        } catch { /* poll retry */ }
+        } catch (e) { /* poll retry */ }
       }
       if (pollResult) {
         combinedText = pollResult.extracted_text || '';

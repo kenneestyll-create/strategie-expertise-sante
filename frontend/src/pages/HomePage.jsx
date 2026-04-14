@@ -60,7 +60,7 @@ export const HomePage = () => {
         if (visitRes.status === 'fulfilled') setVisitorCount(visitRes.value.data.count);
         if (dossierRes.status === 'fulfilled') setDossierCount(dossierRes.value.data.count);
       } catch {
-        try { const res = await axios.get(`${API}/visitors/count`); setVisitorCount(res.data.count); } catch {}
+        try { const res = await axios.get(`${API}/visitors/count`); setVisitorCount(res.data.count); } catch (e) { console.warn('Visitor count unavailable'); }
       }
     };
     fetchData();

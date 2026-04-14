@@ -20,8 +20,7 @@ BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 INTERNAL_URL = "http://localhost:8001"  # For CORS internal testing
 
 # Test credentials
-ADMIN_EMAIL = "admin@accompagn-sante.fr"
-ADMIN_PASSWORD = "Admin2024!"
+from tests.test_config import ADMIN_EMAIL, ADMIN_PASSWORD
 
 class TestJWTSecretFromEnv:
     """P1: Verify JWT_SECRET is loaded from environment and tokens work"""

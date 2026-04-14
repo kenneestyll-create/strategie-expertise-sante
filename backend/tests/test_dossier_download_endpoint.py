@@ -18,8 +18,7 @@ from datetime import datetime, timezone
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
 
 # Test credentials
-ADMIN_EMAIL = "admin@accompagn-sante.fr"
-ADMIN_PASSWORD = "Admin2024!"
+from tests.test_config import ADMIN_EMAIL, ADMIN_PASSWORD
 KNOWN_DOSSIER_ID = "91dbe566-cd80-4cab-be2c-96e27daa1e73"
 
 

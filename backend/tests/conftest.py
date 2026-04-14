@@ -9,6 +9,9 @@ from server import app
 
 API = "/api"
 
+TEST_ADMIN_EMAIL = os.environ.get("TEST_ADMIN_EMAIL", "admin@accompagn-sante.fr")
+TEST_ADMIN_PASSWORD = os.environ.get("TEST_ADMIN_PASSWORD", "Admin2024!")
+
 
 @pytest.fixture(scope="session")
 def client():
@@ -18,7 +21,7 @@ def client():
 
 @pytest.fixture(scope="session")
 def admin_token(client):
-    resp = client.post(f"{API}/auth/login", json={"email": "admin@accompagn-sante.fr", "password": "Admin2024!"})
+    resp = client.post(f"{API}/auth/login", json={"email": TEST_ADMIN_EMAIL, "password": TEST_ADMIN_PASSWORD})
     assert resp.status_code == 200
     return resp.json()["access_token"]
 
