@@ -994,10 +994,6 @@ export const HomePage = () => {
       <style>{`
         /* ═══ HERO PETIT ECRAN DESKTOP — hauteur limitée ═══ */
         @media (min-width: 1024px) and (max-height: 800px) {
-          .hero-wrapper {
-            padding-top: 2.5rem !important;
-            padding-bottom: 0 !important;
-          }
           .hero-fullscreen {
             min-height: calc(100vh - 1px);
           }
