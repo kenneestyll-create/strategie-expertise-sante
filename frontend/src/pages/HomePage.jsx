@@ -211,13 +211,13 @@ export const HomePage = () => {
               </div>
 
               {/* Sous-titre métier — clarification immédiate */}
-              <p className="text-[12px] sm:text-[13px] uppercase tracking-[0.22em] text-[#f5f0e8]/35 mb-2 sm:mb-3 lg:mb-1.5" data-testid="hero-metier-subtitle">
+              <p className="text-[12px] sm:text-[13px] uppercase tracking-[0.22em] text-[#f5f0e8]/35 mb-2 sm:mb-3 lg:mb-1" data-testid="hero-metier-subtitle">
                 Conseil en droits MDPH, AT/MP et litiges assuranciels
               </p>
 
               {/* Titre — noble et respirant */}
               <h1
-                className="text-[1.75rem] sm:text-[2rem] lg:text-[2.1rem] xl:text-[2.3rem] font-bold text-[#f5f0e8] leading-[1.22] mb-3 lg:mb-2"
+                className="text-[1.75rem] sm:text-[2rem] lg:text-[2.1rem] xl:text-[2.3rem] font-bold text-[#f5f0e8] leading-[1.22] mb-2 lg:mb-1.5"
                 style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
                 data-testid="hero-title"
               >
@@ -228,7 +228,7 @@ export const HomePage = () => {
               </h1>
 
               {/* Sous-titre */}
-              <p className="text-xs sm:text-[13px] text-[#f5f0e8]/50 leading-[1.8] mb-3 lg:mb-2 max-w-xl" data-testid="hero-subtitle">
+              <p className="text-xs sm:text-[13px] text-[#f5f0e8]/50 leading-[1.8] mb-2 lg:mb-1.5 max-w-xl" data-testid="hero-subtitle">
                 Analysez votre situation, identifiez vos leviers, comprenez vos droits et accédez à un accompagnement stratégique humain en cas de{' '}
                 <strong className="text-[#f5f0e8]/70">maladie professionnelle</strong>,{' '}
                 <strong className="text-[#f5f0e8]/70">accident du travail</strong>,{' '}
@@ -237,7 +237,7 @@ export const HomePage = () => {
               </p>
 
               {/* 3 points clés */}
-              <div className="space-y-2 lg:space-y-1.5 mb-3 lg:mb-2">
+              <div className="space-y-2 lg:space-y-1 mb-2 lg:mb-1.5">
                 {[
                   { icon: HeartHandshake, text: "Expertise née d'un vécu concret" },
                   { icon: Crosshair, text: "Méthode stratégique & personnalisée" },
@@ -253,13 +253,13 @@ export const HomePage = () => {
               </div>
 
               {/* Micro-ligne IA — pont de conversion */}
-              <p className="text-[13px] text-[#C9A84C]/65 tracking-[0.04em] mb-3 lg:mb-2 border-l-2 border-[#C9A84C]/20 pl-3" data-testid="hero-ia-availability">
+              <p className="text-[13px] text-[#C9A84C]/65 tracking-[0.04em] mb-2 lg:mb-1.5 border-l-2 border-[#C9A84C]/20 pl-3" data-testid="hero-ia-availability">
                 <Zap className="w-3 h-3 inline-block mr-1.5 -mt-px text-[#C9A84C]/50" />
                 Vos deux agents IA vous répondent immédiatement, à toute heure.
               </p>
 
               {/* Preuve sociale + CTA Urgent intégré */}
-              <div className="flex flex-wrap items-center gap-5 sm:gap-6 mb-3 lg:mb-2">
+              <div className="flex flex-wrap items-center gap-5 sm:gap-6 mb-2 lg:mb-1.5">
                 {visitorCount > 0 && (
                   <div className="flex items-center gap-2">
                     <div className="flex -space-x-1.5">
@@ -308,7 +308,7 @@ export const HomePage = () => {
               </div>
 
               {/* CTAs */}
-              <div className="flex flex-col sm:flex-row gap-3.5 mb-2 lg:mb-1">
+              <div className="flex flex-col sm:flex-row gap-3.5 mb-1 lg:mb-0.5">
                 <Button
                   size="lg"
                   onClick={() => window.dispatchEvent(new Event('strategiia:open'))}
