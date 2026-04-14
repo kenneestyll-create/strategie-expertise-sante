@@ -995,7 +995,7 @@ export const HomePage = () => {
         /* ═══ HERO GRAND ECRAN — min-width:1024 + min-height:900 uniquement ═══ */
         @media (min-width: 1024px) and (min-height: 900px) {
           .hero-fullscreen {
-            min-height: calc(100vh - 2rem);
+            min-height: calc(100vh - 5rem);
             display: flex;
             flex-direction: column;
             justify-content: center;
