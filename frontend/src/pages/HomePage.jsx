@@ -191,7 +191,7 @@ export const HomePage = () => {
         <div className="absolute bottom-0 right-0 w-[400px] h-[350px] bg-[#C9A84C]/[0.035] rounded-full blur-[130px] pointer-events-none translate-y-1/4 translate-x-1/4" />
         {/* Poussière d'or — particules scintillantes */}
         <GoldDustOverlay />
-        <div className="hero-wrapper relative max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-14 pb-4 sm:pb-6 lg:pb-1">
+        <div className="hero-wrapper relative max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-20 pb-4 sm:pb-6 lg:pb-1">
           <div className="grid lg:grid-cols-[55fr_45fr] gap-8 lg:gap-12 items-center">
 
             {/* ── COLONNE GAUCHE : Contenu ── */}
@@ -995,7 +995,7 @@ export const HomePage = () => {
         /* ═══ HERO GRAND ECRAN — min-width:1024 + min-height:900 uniquement ═══ */
         @media (min-width: 1024px) and (min-height: 900px) {
           .hero-fullscreen {
-            min-height: calc(100vh - 5rem);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
