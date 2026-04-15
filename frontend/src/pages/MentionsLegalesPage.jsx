@@ -2,6 +2,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, Shield, Scale, AlertTriangle, ShoppingCart } from 'lucide-react';
+import { SEO } from '@/components/SEO';
 
 export const MentionsLegalesPage = () => {
   const [searchParams] = useSearchParams();
@@ -9,6 +10,7 @@ export const MentionsLegalesPage = () => {
 
   return (
     <main className="page-transition pt-20">
+      <SEO title="Mentions légales, CGV et politique de confidentialité" description="Consultez les mentions légales, conditions générales de vente (CGV), politique de confidentialité et informations RGPD de Stratégie & Expertise Santé." path="/mentions-legales" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-4xl mx-auto">

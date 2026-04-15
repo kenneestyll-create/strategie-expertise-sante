@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { SEO } from '@/components/SEO';
 import { 
   ArrowRight, 
   Building2, 
@@ -46,6 +47,7 @@ export const EntreprisesPage = () => {
 
   return (
     <main className="page-transition pt-20">
+      <SEO title="Entreprises — Sensibilisation AT/MP et maladies professionnelles" description="Formations et sensibilisation pour les entreprises : gestion des accidents du travail, maladies professionnelles, prévention des risques. Formats adaptés à vos équipes." path="/entreprises" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
