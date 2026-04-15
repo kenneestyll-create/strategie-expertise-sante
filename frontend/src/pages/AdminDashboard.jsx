@@ -63,6 +63,7 @@ import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Cart
 import { BarChart3, BellRing, Download, FlaskConical, PenTool, FileSearch, QrCode, Globe, BadgeCheck, Tag } from 'lucide-react';
 import { EmailTemplateEditor } from '@/components/EmailTemplateEditor';
 import { AdminConseilsStrate } from '@/components/AdminConseilsStrate';
+import { AdminSettingsTab } from '@/components/AdminSettingsTab';
 import { AdminConversionAnalytics } from '@/components/AdminConversionAnalytics';
 import { AdminPremiumReview } from '@/components/AdminPremiumReview';
 import { AdminV2Readiness } from '@/components/AdminV2Readiness';
@@ -1158,6 +1159,7 @@ export const AdminDashboard = () => {
                 <option value="config">Config</option>
                 <option value="notifications">Notifications</option>
                 <option value="templates">Templates</option>
+                <option value="settings">Paramètres</option>
               </optgroup>
             </select>
           </div>
@@ -1246,6 +1248,10 @@ export const AdminDashboard = () => {
               <TabsTrigger value="templates" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-templates">
                 <PenTool className="w-3.5 h-3.5 text-violet-500" />
                 Templates
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-settings">
+                <Settings className="w-3.5 h-3.5 text-gray-500" />
+                Paramètres
               </TabsTrigger>
             </TabsList>
           </div>
@@ -4431,6 +4437,10 @@ export const AdminDashboard = () => {
 
           <TabsContent value="feedback" className="space-y-6" data-testid="feedback-tab-content">
             <AdminStrategicFeedback axiosConfig={axiosConfig} />
+          </TabsContent>
+
+          <TabsContent value="settings" className="space-y-6" data-testid="settings-tab-content">
+            <AdminSettingsTab axiosConfig={axiosConfig} />
           </TabsContent>
         </Tabs>
       </main>

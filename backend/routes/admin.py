@@ -18,10 +18,71 @@ from models import (
     Avis, AvisUpdate,
     TokenResponse, AdminLogin
 )
-from utils.auth import get_current_admin, verify_password, create_token
+from utils.auth import get_current_admin, verify_password, create_token, hash_password
 from utils.email import create_client_notification
 
 router = APIRouter()
+
+
+
+# ==================== GESTION MOT DE PASSE & COMPTES ADMIN ====================
+
+@router.put("/admin/change-password")
+async def change_admin_password(request: Request, admin: dict = Depends(get_current_admin)):
+    """Change password for the currently logged-in admin."""
+    body = await request.json()
+    old_password = body.get("old_password", "")
+    new_password = body.get("new_password", "")
+    confirm_password = body.get("confirm_password", "")
+
+    if not old_password or not new_password or not confirm_password:
+        raise HTTPException(status_code=400, detail="Tous les champs sont requis")
+    if new_password != confirm_password:
+        raise HTTPException(status_code=400, detail="Les nouveaux mots de passe ne correspondent pas")
+    if len(new_password) < 8:
+        raise HTTPException(status_code=400, detail="Le mot de passe doit contenir au moins 8 caractères")
+
+    admin_doc = await db.admins.find_one({"email": admin["email"]}, {"_id": 0})
+    if not admin_doc or not verify_password(old_password, admin_doc["password_hash"]):
+        raise HTTPException(status_code=403, detail="Ancien mot de passe incorrect")
+
+    new_hash = hash_password(new_password)
+    await db.admins.update_one({"email": admin["email"]}, {"$set": {"password_hash": new_hash}})
+    logger.info(f"Admin password changed for {admin['email']}")
+    return {"success": True, "message": "Mot de passe modifié avec succès"}
+
+
+@router.post("/admin/create-admin")
+async def create_secondary_admin(request: Request, admin: dict = Depends(get_current_admin)):
+    """Create a secondary admin account (backup)."""
+    body = await request.json()
+    email = body.get("email", "").strip().lower()
+    password = body.get("password", "")
+    nom = body.get("nom", "Administrateur")
+
+    if not email or not password:
+        raise HTTPException(status_code=400, detail="Email et mot de passe requis")
+    if len(password) < 8:
+        raise HTTPException(status_code=400, detail="Le mot de passe doit contenir au moins 8 caractères")
+
+    existing = await db.admins.find_one({"email": email}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=409, detail="Un administrateur avec cet email existe déjà")
+
+    from models import AdminUser
+    new_admin = AdminUser(email=email, password_hash=hash_password(password), nom=nom)
+    doc = new_admin.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.admins.insert_one(doc)
+    logger.info(f"Secondary admin created: {email} by {admin['email']}")
+    return {"success": True, "message": f"Compte administrateur {email} créé avec succès"}
+
+
+@router.get("/admin/list-admins")
+async def list_admin_accounts(admin: dict = Depends(get_current_admin)):
+    """List all admin accounts (email and nom only)."""
+    admins = await db.admins.find({}, {"_id": 0, "email": 1, "nom": 1, "created_at": 1}).to_list(50)
+    return admins
 
 
 # ==================== COMPTEUR HERO ====================
