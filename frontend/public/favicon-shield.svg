@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- Shield shape - dark fill with gold border -->
-  <path d="M32 2 C32 2 6 10 6 10 L6 30 C6 48 32 62 32 62 C32 62 58 48 58 30 L58 10 C58 10 32 2 32 2 Z" fill="#000000" stroke="#C9A84C" stroke-width="3"/>
-  <!-- Inner gold border -->
-  <path d="M32 7 C32 7 11 13.5 11 13.5 L11 30 C11 45 32 57 32 57 C32 57 53 45 53 30 L53 13.5 C53 13.5 32 7 32 7 Z" fill="none" stroke="#C9A84C" stroke-width="1"/>
+  <!-- Shield shape - hexagonal top, pointed bottom like the original -->
+  <path d="M32 3 L8 13 L8 28 C8 46 32 61 32 61 C32 61 56 46 56 28 L56 13 Z" fill="#000000" stroke="#C9A84C" stroke-width="2.8"/>
+  <!-- Inner border -->
+  <path d="M32 8 L13 16 L13 28 C13 43 32 55.5 32 55.5 C32 55.5 51 43 51 28 L51 16 Z" fill="none" stroke="#C9A84C" stroke-width="0.8"/>
   <!-- Vertical dividing line -->
-  <line x1="32" y1="18" x2="32" y2="48" stroke="#C9A84C" stroke-width="1.2"/>
-  <!-- Letter F -->
-  <text x="21.5" y="38" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#C9A84C" text-anchor="middle">F</text>
-  <!-- Letter S -->
-  <text x="42.5" y="38" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#C9A84C" text-anchor="middle">S</text>
+  <line x1="32" y1="17" x2="32" y2="46" stroke="#C9A84C" stroke-width="1.2"/>
+  <!-- Letter F - raised -->
+  <text x="22" y="35" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#C9A84C" text-anchor="middle">F</text>
+  <!-- Letter S - raised -->
+  <text x="42" y="35" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#C9A84C" text-anchor="middle">S</text>
 </svg>
