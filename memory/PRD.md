@@ -55,7 +55,7 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - Sitemap dynamique incluant les 15 pages
 
 ## En Cours / Non Terminé
-- [ ] P1 : Configuration URL Webhook Stripe (en attente whsec_)
+- [x] P1 : Configuration Webhook Stripe (whsec_ configuré et vérifié)
 - [ ] P2 : Intégration HubSpot CRM (en attente identifiants)
 
 ## Backlog
