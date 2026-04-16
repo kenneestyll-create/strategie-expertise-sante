@@ -1,20 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- Shield with black fill - everything outside the shield path is transparent -->
-  <defs>
-    <clipPath id="shield-clip">
-      <path d="M32 1 L2 11 L2 29 C2 51 32 64 32 64 C32 64 62 51 62 29 L62 11 Z"/>
-    </clipPath>
-  </defs>
-  <!-- Black fill ONLY inside the shield shape -->
-  <path d="M32 1 L2 11 L2 29 C2 51 32 64 32 64 C32 64 62 51 62 29 L62 11 Z" fill="#000000"/>
-  <!-- Gold border on the shield edge -->
-  <path d="M32 1 L2 11 L2 29 C2 51 32 64 32 64 C32 64 62 51 62 29 L62 11 Z" fill="none" stroke="#C9A84C" stroke-width="2.5"/>
-  <!-- Inner gold border -->
-  <path d="M32 6.5 L7 15 L7 29 C7 48 32 59 32 59 C32 59 57 48 57 29 L57 15 Z" fill="none" stroke="#C9A84C" stroke-width="0.7"/>
-  <!-- Vertical dividing line -->
-  <line x1="32" y1="18" x2="32" y2="50" stroke="#C9A84C" stroke-width="1.2"/>
-  <!-- Letter F -->
-  <text x="19.5" y="39" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" fill="#C9A84C" text-anchor="middle">F</text>
-  <!-- Letter S -->
-  <text x="44.5" y="39" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" fill="#C9A84C" text-anchor="middle">S</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 68" width="64" height="68">
+  <!-- Shield fills entire viewBox edge to edge -->
+  <path d="M32 0 L0 10 L0 30 C0 52 32 68 32 68 C32 68 64 52 64 30 L64 10 Z" fill="#000000"/>
+  <path d="M32 0 L0 10 L0 30 C0 52 32 68 32 68 C32 68 64 52 64 30 L64 10 Z" fill="none" stroke="#C9A84C" stroke-width="2.5"/>
+  <path d="M32 5.5 L5 14 L5 30 C5 49 32 62.5 32 62.5 C32 62.5 59 49 59 30 L59 14 Z" fill="none" stroke="#C9A84C" stroke-width="0.7"/>
+  <line x1="32" y1="17" x2="32" y2="52" stroke="#C9A84C" stroke-width="1.2"/>
+  <text x="19" y="40" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="bold" fill="#C9A84C" text-anchor="middle">F</text>
+  <text x="45" y="40" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="bold" fill="#C9A84C" text-anchor="middle">S</text>
 </svg>
