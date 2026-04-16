@@ -49,8 +49,8 @@ const GuidePage = () => {
 
   const handleCtaClick = () => {
     axios.post(`${API}/guide/${slug}/cta-click`).catch(() => {});
-    const dest = page?.cta_type === 'accompagnement' ? '/agenda?type=conseil' : '/dossier-express';
-    window.location.href = `${dest}?source=seo&page=${slug}`;
+    const dest = page?.cta_type === 'accompagnement' ? '/agenda?type=conseil&' : '/dossier-express?';
+    window.location.href = `${dest}source=seo&page=${slug}`;
   };
 
   if (loading) {
