@@ -134,7 +134,7 @@ PAGES = [
             "Si l'expertise est judiciaire, demandez au tribunal une contre-expertise avec un autre expert ou une expertise complémentaire.",
             "Rassemblez les attestations de votre entourage et de vos soignants décrivant l'impact réel de vos séquelles sur votre quotidien."
         ],
-        "reassurance": "Une expertise défavorable n'est jamais une fin de parcours. Les dires, rapports critiques et contre-expertises permettent régulièrement de rétablir une évaluation juste. Le rapport d'expertise est un avis technique, pas un jugement. Avec les bons arguments médicaux et une stratégie documentaire solide, il est possible de faire réviser des conclusions qui ne reflètent pas votre réalité.",
+        "reassurance": "Une expertise défavorable n'est jamais une fin de parcours. Les dires, rapports critiques et contre-expertises permettent régulièrement de rétablir une évaluation juste. Le rapport d'expertise est un avis technique, pas un jugement. Avec les bons arguments médicaux et une stratégie documentaire solide, il est possible de faire réviser des conclusions qui ne reflètent pas votre réalité. De nombreuses victimes obtiennent une réévaluation significative après avoir structuré un dossier contradictoire rigoureux. Le temps investi dans la préparation de la contestation est toujours rentabilisé par l'amélioration de l'indemnisation finale.",
         "maillage": [
             {"slug": "taux-ipp-5-pourcent-contester", "text": "Taux d'IPP sous-évalué : stratégie de contestation"},
             {"slug": "comment-preparer-expertise-medicale", "text": "Comment préparer une expertise médicale : les clés d'un dossier solide"},
@@ -180,7 +180,7 @@ PAGES = [
             "Adressez une mise en demeure à votre employeur par courrier recommandé, rappelant son obligation de déclaration et les sanctions encourues.",
             "Si la CPAM refuse la prise en charge, contestez devant la Commission de Recours Amiable (CRA) dans les 2 mois."
         ],
-        "reassurance": "La non-déclaration par l'employeur est un problème que nous rencontrons régulièrement. La loi vous protège pleinement : vous pouvez déclarer l'accident vous-même, et les tribunaux sont très vigilants sur ce type de situation. Un dossier bien préparé, déposé dans les temps, aboutit très majoritairement à la reconnaissance du caractère professionnel.",
+        "reassurance": "La non-déclaration par l'employeur est un problème que nous rencontrons régulièrement. La loi vous protège pleinement : vous pouvez déclarer l'accident vous-même, et les tribunaux sont très vigilants sur ce type de situation. Un dossier bien préparé, déposé dans les temps, aboutit très majoritairement à la reconnaissance du caractère professionnel. N'oubliez pas que la CPAM dispose d'un délai de 30 jours pour statuer sur votre demande de prise en charge. Le silence à l'issue de ce délai vaut acceptation.",
         "maillage": [
             {"slug": "faute-inexcusable-employeur", "text": "Faute inexcusable de l'employeur : une indemnisation complémentaire possible"},
             {"slug": "refus-maladie-professionnelle-cpam-recours", "text": "Refus de maladie professionnelle par la CPAM : vos recours"},
