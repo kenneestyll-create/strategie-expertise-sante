@@ -11,8 +11,10 @@ import {
   CheckCircle,
   Target,
   Lightbulb,
-  Shield
+  Shield,
+  ChevronDown
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export const EntreprisesPage = () => {
   const enjeux = [
@@ -158,6 +160,54 @@ export const EntreprisesPage = () => {
         </div>
       </section>
 
+      {/* SEO Content Section */}
+      <section className="section-padding" data-testid="entreprises-seo-content">
+        <div className="max-w-3xl mx-auto">
+          <div className="prose prose-sm max-w-none text-foreground/80 space-y-4">
+            <p>
+              Les entreprises sont de plus en plus confrontées à des situations complexes liées aux maladies professionnelles et aux accidents du travail.
+            </p>
+            <p>
+              Entre les obligations légales, les expertises médicales et les enjeux financiers, chaque dossier nécessite une analyse rigoureuse et une stratégie adaptée.
+            </p>
+            <p>
+              Stratégie Expertise Santé accompagne les entreprises dans la compréhension et la gestion de ces situations sensibles.
+            </p>
+            <p className="font-medium text-foreground">Nous intervenons notamment pour :</p>
+            <ul className="space-y-2 list-none pl-0">
+              <li className="flex items-start gap-2 text-sm">
+                <span className="text-accent mt-0.5">–</span>
+                <span>analyser les dossiers médicaux et administratifs</span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <span className="text-accent mt-0.5">–</span>
+                <span>préparer les expertises médicales contradictoires</span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <span className="text-accent mt-0.5">–</span>
+                <span>anticiper les risques liés aux reconnaissances de maladies professionnelles</span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <span className="text-accent mt-0.5">–</span>
+                <span>accompagner les décisions stratégiques en lien avec les enjeux humains et financiers</span>
+              </li>
+            </ul>
+            <p>
+              Notre approche permet aux entreprises de sécuriser leurs démarches, de mieux comprendre les enjeux médico-légaux et d'adopter une position claire face aux situations litigieuses.
+            </p>
+            <p>
+              Chaque situation étant unique, nous proposons un accompagnement personnalisé et confidentiel, adapté aux besoins spécifiques de l'entreprise.
+            </p>
+            <p>
+              Pour toute demande, nous vous invitons à <Link to="/contact" className="text-accent hover:underline">nous contacter</Link> afin d'échanger sur votre situation.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <EntreprisesFAQ />
+
       {/* CTA Section */}
       <section className="section-padding bg-foreground text-primary-foreground">
         <div className="max-w-4xl mx-auto text-center">
@@ -182,5 +232,70 @@ export const EntreprisesPage = () => {
         </div>
       </section>
     </main>
+  );
+};
+
+const entreprisesFaqData = [
+  {
+    question: "Une entreprise peut-elle contester une maladie professionnelle ?",
+    answer: "Oui, il est possible de contester une reconnaissance de maladie professionnelle, notamment en apportant des éléments médicaux et techniques précis."
+  },
+  {
+    question: "Pourquoi préparer une expertise médicale côté entreprise ?",
+    answer: "Une préparation en amont permet d'anticiper les enjeux, de structurer les arguments et d'éviter les décisions défavorables."
+  },
+  {
+    question: "Quels sont les risques pour l'entreprise ?",
+    answer: "Les enjeux peuvent être financiers, organisationnels et humains, notamment en cas de reconnaissance d'une maladie professionnelle ou d'un accident du travail."
+  }
+];
+
+const EntreprisesFAQ = () => {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  useEffect(() => {
+    const existing = document.getElementById('entreprises-faq-schema');
+    if (existing) existing.remove();
+    const script = document.createElement('script');
+    script.id = 'entreprises-faq-schema';
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": entreprisesFaqData.map(f => ({
+        "@type": "Question",
+        "name": f.question,
+        "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+      }))
+    });
+    document.head.appendChild(script);
+    return () => { const el = document.getElementById('entreprises-faq-schema'); if (el) el.remove(); };
+  }, []);
+
+  return (
+    <section className="section-padding bg-card" data-testid="entreprises-faq">
+      <div className="max-w-3xl mx-auto">
+        <h2 className="text-2xl font-semibold mb-6">Questions fréquentes</h2>
+        <div className="space-y-3">
+          {entreprisesFaqData.map((faq, i) => (
+            <div key={i} className="border border-border rounded-xl overflow-hidden">
+              <button
+                onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/30 transition-colors"
+                data-testid={`entreprises-faq-${i}`}
+              >
+                <span className="font-medium text-sm text-foreground pr-4">{faq.question}</span>
+                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
+              </button>
+              {openIndex === i && (
+                <div className="px-4 pb-4">
+                  <p className="text-sm text-muted-foreground leading-relaxed">{faq.answer}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 };

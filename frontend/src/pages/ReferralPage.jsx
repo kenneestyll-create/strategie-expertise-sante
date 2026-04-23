@@ -13,9 +13,11 @@ import {
   Users, 
   Percent,
   Share2,
-  Loader2
+  Loader2,
+  ChevronDown
 } from 'lucide-react';
 import axios from 'axios';
+import { useEffect } from 'react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -240,6 +242,55 @@ export const ReferralPage = () => {
         </div>
       </section>
 
+      {/* SEO Content Section */}
+      <section className="section-padding" data-testid="parrainage-seo-content">
+        <div className="max-w-3xl mx-auto">
+          <div className="prose prose-sm max-w-none text-foreground/80 space-y-4">
+            <p>
+              Le parrainage permet de recommander Stratégie Expertise Santé à une personne de votre entourage confrontée à une maladie professionnelle, un accident du travail ou une situation d'expertise médicale complexe.
+            </p>
+            <p>
+              De nombreuses personnes rencontrent des difficultés pour faire valoir leurs droits face à des situations administratives et médicales souvent difficiles à comprendre.
+            </p>
+            <p>
+              En partageant notre contact, vous permettez à ces personnes de bénéficier d'un accompagnement personnalisé, adapté à leur situation.
+            </p>
+            <p className="font-medium text-foreground">Le parrainage repose sur une démarche simple :</p>
+            <ul className="space-y-2 list-none pl-0">
+              <li className="flex items-start gap-2 text-sm">
+                <span className="text-accent mt-0.5">–</span>
+                <span>vous recommandez Stratégie Expertise Santé à une personne concernée</span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <span className="text-accent mt-0.5">–</span>
+                <span>cette personne prend contact avec notre cabinet</span>
+              </li>
+              <li className="flex items-start gap-2 text-sm">
+                <span className="text-accent mt-0.5">–</span>
+                <span>nous analysons sa situation et proposons un accompagnement adapté</span>
+              </li>
+            </ul>
+            <p>
+              Notre priorité reste la qualité de l'accompagnement et la compréhension des enjeux spécifiques à chaque dossier.
+            </p>
+            <p>
+              Chaque situation étant unique, nous étudions chaque demande avec attention et confidentialité.
+            </p>
+            <p>
+              Pour toute recommandation ou demande d'information, vous pouvez <Link to="/contact" className="text-accent hover:underline">nous contacter directement</Link>.
+            </p>
+            <div className="mt-6 p-4 bg-accent/5 rounded-xl border border-accent/10">
+              <p className="text-sm text-foreground">
+                <strong>Rappel des avantages :</strong> votre filleul bénéficie de <strong>10% de réduction</strong> sur sa première prestation grâce à votre code parrainage. De plus, tous nos clients bénéficient de <strong>15% de réduction de fidélité</strong> dès leur deuxième prestation.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <ParrainageFAQ />
+
       {/* CTA */}
       <section className="section-padding bg-foreground text-primary-foreground">
         <div className="max-w-4xl mx-auto text-center">
@@ -262,5 +313,71 @@ export const ReferralPage = () => {
         </div>
       </section>
     </main>
+  );
+};
+
+
+const parrainageFaqData = [
+  {
+    question: "À qui s'adresse le parrainage ?",
+    answer: "Le parrainage s'adresse à toute personne souhaitant recommander un accompagnement dans le cadre d'une maladie professionnelle ou d'un accident du travail."
+  },
+  {
+    question: "Le parrainage est-il obligatoire pour être accompagné ?",
+    answer: "Non, toute personne peut contacter directement Stratégie Expertise Santé sans passer par un parrain."
+  },
+  {
+    question: "Quels sont les avantages du parrainage ?",
+    answer: "Le principal avantage est de permettre à une personne en difficulté d'être orientée vers un accompagnement adapté et spécialisé. Le filleul bénéficie de 10% de réduction sur sa première prestation, et tous les clients profitent de 15% de réduction de fidélité dès leur deuxième prestation."
+  }
+];
+
+const ParrainageFAQ = () => {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  useEffect(() => {
+    const existing = document.getElementById('parrainage-faq-schema');
+    if (existing) existing.remove();
+    const script = document.createElement('script');
+    script.id = 'parrainage-faq-schema';
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": parrainageFaqData.map(f => ({
+        "@type": "Question",
+        "name": f.question,
+        "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+      }))
+    });
+    document.head.appendChild(script);
+    return () => { const el = document.getElementById('parrainage-faq-schema'); if (el) el.remove(); };
+  }, []);
+
+  return (
+    <section className="section-padding bg-card" data-testid="parrainage-faq">
+      <div className="max-w-3xl mx-auto">
+        <h2 className="text-2xl font-semibold mb-6">Questions fréquentes</h2>
+        <div className="space-y-3">
+          {parrainageFaqData.map((faq, i) => (
+            <div key={i} className="border border-border rounded-xl overflow-hidden">
+              <button
+                onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/30 transition-colors"
+                data-testid={`parrainage-faq-${i}`}
+              >
+                <span className="font-medium text-sm text-foreground pr-4">{faq.question}</span>
+                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
+              </button>
+              {openIndex === i && (
+                <div className="px-4 pb-4">
+                  <p className="text-sm text-muted-foreground leading-relaxed">{faq.answer}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 };
