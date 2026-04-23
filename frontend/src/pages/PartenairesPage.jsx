@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { SEO } from '@/components/SEO';
 import { 
   ArrowRight, 
   Stethoscope, 
@@ -48,6 +49,7 @@ export const PartenairesPage = () => {
 
   return (
     <main className="page-transition pt-20">
+      <SEO title="Partenaires — Réseau de professionnels" description="Découvrez notre réseau de partenaires : avocats, médecins de recours, experts médicaux. Un réseau de confiance pour accompagner vos démarches." path="/partenaires" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">

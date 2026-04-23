@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { SEO } from '@/components/SEO';
 import { toast } from 'sonner';
 import { 
   Gift, 
@@ -75,6 +76,7 @@ export const ReferralPage = () => {
 
   return (
     <main className="page-transition pt-20">
+      <SEO title="Parrainage — Recommandez Stratégie Expertise Santé" description="Parrainez vos proches et offrez-leur 10% de réduction sur leur première prestation. Programme de parrainage simple et gratuit." path="/parrainage" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">

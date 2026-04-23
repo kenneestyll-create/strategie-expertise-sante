@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, FileText, Scale, Stethoscope, HardHat, BriefcaseBusiness } from 'lucide-react';
+import { SEO } from '../components/SEO';
 import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL + '/api';
@@ -34,6 +35,7 @@ const GuidesPratiquesPage = () => {
 
   return (
     <main className="min-h-screen bg-background" data-testid="guides-hub">
+      <SEO title="Guides pratiques — Maladie professionnelle, AT/MP, MDPH" description="Guides concrets et actionnables : refus MDPH, contestation taux IPP, maladie professionnelle, expertise médicale. Solutions et stratégies pour faire valoir vos droits." path="/guides-pratiques" />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-8" data-testid="guides-breadcrumb">

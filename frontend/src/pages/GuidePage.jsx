@@ -25,6 +25,19 @@ const GuidePage = () => {
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) metaDesc.setAttribute('content', page.meta_description || '');
 
+    // Canonical URL — production domain
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', `https://strategie-expertise-sante.fr/guide/${slug}`);
+
+    // Open Graph URL
+    let ogUrl = document.querySelector('meta[property="og:url"]');
+    if (ogUrl) ogUrl.setAttribute('content', `https://strategie-expertise-sante.fr/guide/${slug}`);
+
     // Schema.org FAQPage structured data
     const faq = page.content?.faq;
     if (faq && faq.length > 0) {
@@ -45,7 +58,7 @@ const GuidePage = () => {
       document.head.appendChild(script);
       return () => { const el = document.getElementById('faq-schema'); if (el) el.remove(); };
     }
-  }, [page]);
+  }, [page, slug]);
 
   const handleCtaClick = () => {
     axios.post(`${API}/guide/${slug}/cta-click`).catch(() => {});

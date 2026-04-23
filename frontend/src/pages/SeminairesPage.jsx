@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { SEO } from '@/components/SEO';
 import { 
   ArrowRight, 
   Users, 
@@ -36,6 +37,7 @@ export const SeminairesPage = () => {
 
   return (
     <main className="page-transition pt-20">
+      <SEO title="Séminaires et formations — AT/MP, expertise médicale" description="Séminaires et sessions d'information sur les accidents du travail, maladies professionnelles et expertises médicales. Formats adaptés aux professionnels." path="/seminaires" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
