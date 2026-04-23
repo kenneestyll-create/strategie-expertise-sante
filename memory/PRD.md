@@ -24,6 +24,8 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - [x] Admin UI changement mot de passe + création admin secondaire
 - [x] SEO Fundamentals (Title, Meta, OG, Canonical, Sitemap dynamique)
 - [x] Favicon transparent SVG/PNG Shield
+- [x] SEO /entreprises : contenu texte + FAQ Schema.org FAQPage
+- [x] SEO /parrainage : contenu texte + FAQ Schema.org FAQPage (10% parrainage + 15% fidélité)
 
 ## SEO Phase 2 — 15 Pages Guides Actives (COMPLET)
 ### Bloc A — 5 Pages existantes étoffées (800-1200 mots)
