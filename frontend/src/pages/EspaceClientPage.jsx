@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SEO } from '@/components/SEO';
 import { toast } from 'sonner';
 import {
   User,
@@ -91,6 +92,7 @@ const LoginForm = ({ onLogin }) => {
 
   return (
     <main className="page-transition pt-20 min-h-screen flex items-center justify-center px-4">
+      <SEO title="Espace client" description="Accédez à votre espace client pour suivre vos dossiers." path="/espace-client" noindex={true} />
       <Card className="w-full max-w-md border-border" data-testid="client-auth-card">
         <CardHeader className="text-center">
           <div className="w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -263,6 +265,7 @@ const ClientDashboard = ({ token, clientName, logout }) => {
 
   return (
     <main className="page-transition pt-20 min-h-screen bg-background">
+      <SEO title="Espace client" description="Suivez vos dossiers en cours." path="/espace-client" noindex={true} />
       {/* Header Bar */}
       <div className="bg-foreground text-primary-foreground py-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex items-center justify-between">

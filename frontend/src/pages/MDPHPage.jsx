@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
+import { useState, useEffect } from 'react';
 import { 
   ArrowRight, 
   Home, 
@@ -11,7 +12,8 @@ import {
   CheckCircle,
   FileText,
   Heart,
-  Compass
+  Compass,
+  ChevronDown
 } from 'lucide-react';
 
 export const MDPHPage = () => {
@@ -121,6 +123,27 @@ export const MDPHPage = () => {
         </div>
       </section>
 
+      {/* SEO Content */}
+      <section className="section-padding" data-testid="mdph-seo-content">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-xl font-semibold mb-4">Comprendre le rôle de la MDPH</h2>
+          <div className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+            <p>
+              La Maison Départementale des Personnes Handicapées (MDPH) est un guichet unique présent dans chaque département. Elle centralise les demandes liées au handicap et oriente les personnes vers les aides et prestations auxquelles elles peuvent prétendre : AAH, RQTH, carte mobilité inclusion, aide humaine, orientation professionnelle.
+            </p>
+            <p>
+              La demande auprès de la MDPH passe par le dépôt d'un dossier comprenant un formulaire Cerfa, un certificat médical détaillé et un projet de vie. Ce dossier est ensuite évalué par une équipe pluridisciplinaire qui émet un avis transmis à la CDAPH pour décision.
+            </p>
+            <p>
+              La qualité du dossier est déterminante : un certificat médical trop succinct, un projet de vie absent ou mal rédigé, des pièces justificatives incomplètes sont les causes les plus fréquentes de refus ou de sous-évaluation du taux d'incapacité. Un accompagnement en amont permet de structurer le dossier pour maximiser les chances d'obtenir les droits auxquels vous pouvez prétendre.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <MDPHPageFAQ />
+
       {/* Accompagnement Section */}
       <section className="section-padding bg-foreground text-primary-foreground">
         <div className="max-w-4xl mx-auto">
@@ -162,5 +185,71 @@ export const MDPHPage = () => {
         </div>
       </section>
     </main>
+  );
+};
+
+
+const mdphFaqData = [
+  {
+    question: "Combien de temps prend le traitement d'un dossier MDPH ?",
+    answer: "Le délai légal est de 4 mois à compter du dépôt du dossier complet. En pratique, les délais varient selon les départements et peuvent atteindre 6 à 12 mois. Un dossier complet et bien structuré réduit les risques de demande de pièces complémentaires et accélère le traitement."
+  },
+  {
+    question: "Peut-on contester une décision MDPH ?",
+    answer: "Oui, vous disposez de 2 mois après la notification pour déposer un recours administratif préalable obligatoire (RAPO) auprès de la MDPH, puis de 2 mois supplémentaires pour saisir le tribunal judiciaire si le RAPO est rejeté."
+  },
+  {
+    question: "Le projet de vie est-il obligatoire ?",
+    answer: "Le projet de vie n'est pas juridiquement obligatoire, mais il est fortement recommandé. C'est le seul document où vous pouvez décrire concrètement l'impact du handicap sur votre quotidien. Son absence affaiblit significativement le dossier, notamment pour la reconnaissance de la RSDAE."
+  }
+];
+
+const MDPHPageFAQ = () => {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  useEffect(() => {
+    const existing = document.getElementById('mdph-faq-schema');
+    if (existing) existing.remove();
+    const script = document.createElement('script');
+    script.id = 'mdph-faq-schema';
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": mdphFaqData.map(f => ({
+        "@type": "Question",
+        "name": f.question,
+        "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+      }))
+    });
+    document.head.appendChild(script);
+    return () => { const el = document.getElementById('mdph-faq-schema'); if (el) el.remove(); };
+  }, []);
+
+  return (
+    <section className="section-padding bg-card" data-testid="mdph-faq">
+      <div className="max-w-3xl mx-auto">
+        <h2 className="text-lg font-semibold mb-4">Questions fréquentes sur la MDPH</h2>
+        <div className="space-y-2">
+          {mdphFaqData.map((faq, i) => (
+            <div key={i} className="border border-border rounded-xl overflow-hidden">
+              <button
+                onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/30 transition-colors"
+                data-testid={`mdph-faq-${i}`}
+              >
+                <span className="font-medium text-sm text-foreground pr-4">{faq.question}</span>
+                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
+              </button>
+              {openIndex === i && (
+                <div className="px-4 pb-4">
+                  <p className="text-sm text-muted-foreground leading-relaxed">{faq.answer}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 };

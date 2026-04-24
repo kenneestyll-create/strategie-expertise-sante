@@ -11,7 +11,8 @@ import {
   FileSearch, Upload, Mail, Clock, Shield, CheckCircle,
   ArrowRight, Loader2, FileText, Zap, Brain, AlertTriangle,
   ChevronRight, Sparkles, CreditCard, Crown, Star,
-  Users, Lock, RefreshCw, ShieldCheck, Award, TrendingUp
+  Users, Lock, RefreshCw, ShieldCheck, Award, TrendingUp,
+  ChevronDown
 } from 'lucide-react';
 import axios from 'axios';
 import { SEO } from '@/components/SEO';
@@ -181,6 +182,71 @@ const ValueReminder = ({ weeklyCount }) => (
     </Card>
   </div>
 );
+
+const dossierFaqData = [
+  {
+    question: "Combien de temps faut-il pour recevoir le rapport ?",
+    answer: "Le rapport est livré par email sous 2 heures après le paiement et la soumission de vos informations. Il est envoyé au format PDF directement dans votre boîte mail."
+  },
+  {
+    question: "Le Dossier Express remplace-t-il un avocat ou un médecin ?",
+    answer: "Non. Le Dossier Express IA fournit une analyse documentaire et stratégique. Il ne constitue pas un avis juridique, médical ou une expertise officielle. Il vous aide à comprendre votre situation et à préparer vos démarches."
+  },
+  {
+    question: "Quels types de dossiers peuvent être analysés ?",
+    answer: "Le service couvre les accidents du travail, les maladies professionnelles, les litiges avec les assurances ou la protection juridique, et les demandes MDPH/AAH. Chaque analyse est personnalisée à votre situation spécifique."
+  }
+];
+
+const DossierExpressFAQ = () => {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  useEffect(() => {
+    const existing = document.getElementById('dossier-faq-schema');
+    if (existing) existing.remove();
+    const script = document.createElement('script');
+    script.id = 'dossier-faq-schema';
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": dossierFaqData.map(f => ({
+        "@type": "Question",
+        "name": f.question,
+        "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+      }))
+    });
+    document.head.appendChild(script);
+    return () => { const el = document.getElementById('dossier-faq-schema'); if (el) el.remove(); };
+  }, []);
+
+  return (
+    <section className="section-padding bg-card" data-testid="dossier-faq">
+      <div className="max-w-3xl mx-auto">
+        <h2 className="text-lg font-semibold mb-4">Questions fréquentes</h2>
+        <div className="space-y-2">
+          {dossierFaqData.map((faq, i) => (
+            <div key={i} className="border border-border rounded-xl overflow-hidden">
+              <button
+                onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/30 transition-colors"
+                data-testid={`dossier-faq-${i}`}
+              >
+                <span className="font-medium text-sm text-foreground pr-4">{faq.question}</span>
+                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
+              </button>
+              {openIndex === i && (
+                <div className="px-4 pb-4">
+                  <p className="text-sm text-muted-foreground leading-relaxed">{faq.answer}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
 
 export const DossierExpressPage = () => {
   const [searchParams] = useSearchParams();
@@ -611,6 +677,33 @@ export const DossierExpressPage = () => {
             </div>
           </div>
         </section>
+
+        {/* SEO Content */}
+        <section className="section-padding" data-testid="dossier-seo-content">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-xl font-semibold mb-4">Qu'est-ce que le Dossier Express IA ?</h2>
+            <div className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+              <p>
+                Le Dossier Express IA est un service d'analyse documentaire proposé par Stratégie Expertise Santé. Il permet d'obtenir, en moins de 2 heures, un rapport complet et personnalisé sur votre situation en matière de maladie professionnelle, accident du travail, litige assurance ou demande MDPH.
+              </p>
+              <p>
+                L'analyse croise vos documents avec les jurisprudences récentes, les barèmes officiels et les cas similaires pour identifier vos droits, évaluer la solidité de votre dossier et proposer une stratégie concrète. Le rapport est livré par email au format PDF.
+              </p>
+              <p className="font-medium text-foreground">À qui s'adresse ce service :</p>
+              <ul className="space-y-1.5 list-none pl-0">
+                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Victimes d'accident du travail ou de maladie professionnelle souhaitant connaître leurs droits</span></li>
+                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Personnes en désaccord avec une décision CPAM, MDPH ou assurance</span></li>
+                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Toute personne souhaitant une analyse rapide et fiable avant d'engager des démarches</span></li>
+              </ul>
+              <p>
+                Le Dossier Express IA ne remplace pas un avis juridique ou médical officiel. Il constitue un outil d'aide à la décision qui vous permet de comprendre votre situation et de préparer vos prochaines étapes avec des éléments concrets.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <DossierExpressFAQ />
 
         {/* Final CTA */}
         <section className="section-padding">

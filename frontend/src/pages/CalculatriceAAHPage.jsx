@@ -22,7 +22,8 @@ import {
   Phone,
   Copy,
   Check,
-  Eye
+  Eye,
+  ChevronDown
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -412,6 +413,33 @@ export const CalculatriceAAHPage = () => {
             </div>
           </div>
 
+          {/* SEO Content */}
+          <section className="mt-12 space-y-6" data-testid="aah-seo-content">
+            <h2 className="text-xl font-semibold">Qu'est-ce que l'AAH ?</h2>
+            <div className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+              <p>
+                L'Allocation aux Adultes Handicapés (AAH) est une aide financière versée par la CAF ou la MSA aux personnes en situation de handicap. Elle vise à garantir un revenu minimum aux personnes dont le handicap limite l'accès à l'emploi. Son montant maximal est de {AAH_MAX} € par mois (barème en vigueur).
+              </p>
+              <p className="font-medium text-foreground">Conditions d'éligibilité :</p>
+              <ul className="space-y-1.5 list-none pl-0">
+                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Avoir un taux d'incapacité reconnu d'au moins 80%, ou entre 50% et 79% avec une restriction substantielle et durable d'accès à l'emploi (RSDAE)</span></li>
+                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Résider en France de manière stable et régulière</span></li>
+                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Ne pas dépasser un plafond de ressources annuel (variable selon la situation familiale)</span></li>
+                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Avoir au moins 20 ans (ou 16 ans si vous n'êtes plus à charge de vos parents)</span></li>
+              </ul>
+              <p>
+                La demande d'AAH s'effectue auprès de la MDPH de votre département. C'est la CDAPH (Commission des Droits et de l'Autonomie des Personnes Handicapées) qui statue sur l'attribution. Le montant est calculé en fonction de vos ressources et de votre situation familiale.
+              </p>
+              <p className="font-medium text-foreground">Comment utiliser cette calculatrice :</p>
+              <p>
+                Renseignez votre taux d'incapacité, votre situation familiale, le nombre d'enfants à charge et vos revenus mensuels nets. L'outil calcule automatiquement une estimation de votre AAH mensuelle en appliquant les barèmes officiels et les plafonds de ressources en vigueur. Ce résultat est indicatif et ne remplace pas l'évaluation officielle de la CDAPH.
+              </p>
+            </div>
+          </section>
+
+          {/* FAQ */}
+          <AAHCalculatriceFAQ />
+
           {/* CTA */}
           <div className="mt-12 p-8 bg-foreground text-primary-foreground rounded-2xl text-center" data-testid="aah-cta">
             <h2 className="text-2xl font-semibold mb-3">
@@ -439,5 +467,69 @@ export const CalculatriceAAHPage = () => {
         </div>
       </section>
     </main>
+  );
+};
+
+
+const aahFaqData = [
+  {
+    question: "L'AAH est-elle cumulable avec un salaire ?",
+    answer: "Oui, l'AAH peut être cumulée partiellement avec des revenus d'activité. Les règles de cumul dépendent du montant de vos revenus et de votre taux d'incapacité. Un abattement est appliqué sur vos revenus pour le calcul de l'AAH différentielle."
+  },
+  {
+    question: "Quelle est la différence entre un taux de 80% et un taux entre 50% et 79% ?",
+    answer: "Avec un taux d'au moins 80%, l'AAH est attribuée sans restriction de durée. Avec un taux entre 50% et 79%, l'attribution est limitée à 1 à 5 ans et nécessite la reconnaissance d'une restriction substantielle et durable d'accès à l'emploi (RSDAE) par la CDAPH."
+  },
+  {
+    question: "Comment est fixé le montant de l'AAH ?",
+    answer: "Le montant de l'AAH dépend de vos ressources. Si vous n'avez aucun revenu, vous percevez le montant maximal. Si vous avez des revenus, l'AAH est calculée en différentiel : plafond de ressources moins vos revenus annuels, divisé par 12, plafonné au montant maximal."
+  }
+];
+
+const AAHCalculatriceFAQ = () => {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  useEffect(() => {
+    const existing = document.getElementById('aah-faq-schema');
+    if (existing) existing.remove();
+    const script = document.createElement('script');
+    script.id = 'aah-faq-schema';
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": aahFaqData.map(f => ({
+        "@type": "Question",
+        "name": f.question,
+        "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+      }))
+    });
+    document.head.appendChild(script);
+    return () => { const el = document.getElementById('aah-faq-schema'); if (el) el.remove(); };
+  }, []);
+
+  return (
+    <section className="mt-8" data-testid="aah-faq">
+      <h2 className="text-lg font-semibold mb-4">Questions fréquentes sur l'AAH</h2>
+      <div className="space-y-2">
+        {aahFaqData.map((faq, i) => (
+          <div key={i} className="border border-border rounded-xl overflow-hidden">
+            <button
+              onClick={() => setOpenIndex(openIndex === i ? null : i)}
+              className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/30 transition-colors"
+              data-testid={`aah-faq-${i}`}
+            >
+              <span className="font-medium text-sm text-foreground pr-4">{faq.question}</span>
+              <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
+            </button>
+            {openIndex === i && (
+              <div className="px-4 pb-4">
+                <p className="text-sm text-muted-foreground leading-relaxed">{faq.answer}</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
   );
 };
