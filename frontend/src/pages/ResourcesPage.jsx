@@ -309,26 +309,26 @@ export const ResourcesPage = () => {
           </div>
 
           <Tabs defaultValue="tableaux" className="w-full" data-testid="encyclopedia-tabs">
-            <TabsList className="w-full flex flex-wrap h-auto gap-1.5 sm:gap-2 bg-muted/50 p-2 rounded-xl mb-8">
-              <TabsTrigger value="tableaux" className="flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-[100px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-tableaux">
+            <TabsList className="w-full flex flex-nowrap sm:flex-wrap h-auto gap-1.5 sm:gap-2 bg-muted/50 p-2 rounded-xl mb-8 overflow-x-auto">
+              <TabsTrigger value="tableaux" className="shrink-0 sm:flex-1 min-w-fit sm:min-w-[100px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-tableaux">
                 <Table2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Tableaux MP
               </TabsTrigger>
-              <TabsTrigger value="horstableau" className="flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-[100px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-horstableau">
+              <TabsTrigger value="horstableau" className="shrink-0 sm:flex-1 min-w-fit sm:min-w-[100px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-horstableau">
                 <Scale className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Hors tableau
               </TabsTrigger>
-              <TabsTrigger value="ipp" className="flex-1 min-w-[calc(33%-0.5rem)] sm:min-w-[70px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-ipp">
+              <TabsTrigger value="ipp" className="shrink-0 sm:flex-1 min-w-fit sm:min-w-[70px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-ipp">
                 <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> IPP
               </TabsTrigger>
-              <TabsTrigger value="ip" className="flex-1 min-w-[calc(33%-0.5rem)] sm:min-w-[70px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-ip">
+              <TabsTrigger value="ip" className="shrink-0 sm:flex-1 min-w-fit sm:min-w-[70px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-ip">
                 <Briefcase className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> IP
               </TabsTrigger>
-              <TabsTrigger value="pgpf" className="flex-1 min-w-[calc(33%-0.5rem)] sm:min-w-[70px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-pgpf">
+              <TabsTrigger value="pgpf" className="shrink-0 sm:flex-1 min-w-fit sm:min-w-[70px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-pgpf">
                 <TrendingDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> PGPF
               </TabsTrigger>
-              <TabsTrigger value="mdph" className="flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-[70px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-mdph">
+              <TabsTrigger value="mdph" className="shrink-0 sm:flex-1 min-w-fit sm:min-w-[70px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-mdph">
                 <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> MDPH
               </TabsTrigger>
-              <TabsTrigger value="aides" className="flex-1 min-w-[calc(50%-0.5rem)] sm:min-w-[70px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-aides">
+              <TabsTrigger value="aides" className="shrink-0 sm:flex-1 min-w-fit sm:min-w-[70px] gap-1 sm:gap-1.5 rounded-lg text-xs sm:text-sm" data-testid="enc-tab-aides">
                 <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Aides MDPH
               </TabsTrigger>
             </TabsList>
