@@ -27,6 +27,10 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - [x] SEO /entreprises : contenu texte + FAQ Schema.org FAQPage
 - [x] SEO /parrainage : contenu texte + FAQ Schema.org FAQPage (10% parrainage + 15% fidélité)
 - [x] Fix Canonical URLs : production domain hardcodé, canonical dynamique sur toutes les pages, vercel.json trailingSlash:false
+- [x] SEO /calculatrice-aah : explication AAH, conditions, guide utilisation + FAQ Schema.org
+- [x] SEO /dossier-express : description service, cible, processus + FAQ Schema.org
+- [x] SEO /mdph : rôle MDPH, dossier, accompagnement + FAQ Schema.org
+- [x] /espace-client : noindex ajouté (page privée, pas d'indexation)
 
 ## SEO Phase 2 — 15 Pages Guides Actives (COMPLET)
 ### Bloc A — 5 Pages existantes étoffées (800-1200 mots)
