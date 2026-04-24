@@ -24,6 +24,12 @@ const GuideCard = ({ guide }) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const isAdmin = !!localStorage.getItem('admin_token');
+
+  const handleAdminDownload = () => {
+    window.open(`${API}/resources/pdf/${guide.id}`, '_blank');
+    toast.success("Téléchargement lancé");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -78,6 +84,18 @@ const GuideCard = ({ guide }) => {
               <Brain className="w-3.5 h-3.5 flex-shrink-0" />
               Analyse plus précise ? Lancez StratégiIA
             </button>
+          </div>
+        ) : isAdmin ? (
+          <div className="mt-4 pt-4 border-t border-border">
+            <Button
+              onClick={handleAdminDownload}
+              size="sm"
+              className="w-full gap-2 rounded-lg h-9 text-xs"
+              data-testid={`guide-admin-download-${guide.id}`}
+            >
+              <Download className="w-3.5 h-3.5" />
+              Télécharger (admin)
+            </Button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="mt-4 pt-4 border-t border-border space-y-2.5">
