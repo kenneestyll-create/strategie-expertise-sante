@@ -108,6 +108,25 @@ const GuidePage = () => {
           {page.title}
         </h1>
 
+        {/* Bloc Réponse Rapide (conditionnel) */}
+        {c.reponse_rapide && (
+          <section className="mb-10" data-testid="guide-reponse-rapide">
+            <div className="p-5 rounded-xl bg-[#1a1a2e]/[0.03] border border-[#C9A84C]/20">
+              <h2 className="font-semibold text-base mb-3 text-foreground flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-[#C9A84C]" />
+                Que faire en cas de refus MDPH ?
+              </h2>
+              <p className="text-sm leading-relaxed text-foreground/80 mb-4">{c.reponse_rapide}</p>
+              <Link to="/agenda?type=conseil&source=seo&page=refus-mdph">
+                <Button size="sm" className="bg-[#C9A84C] hover:bg-[#b8960f] text-[#1a1a2e] font-semibold gap-2 rounded-lg" data-testid="guide-reponse-rapide-cta">
+                  Se faire accompagner
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Button>
+              </Link>
+            </div>
+          </section>
+        )}
+
         {/* BLOC 1 — Contexte rapide / Situation */}
         {(c.contexte || c.situation) && (
           <section className="mb-8" data-testid="guide-contexte">
