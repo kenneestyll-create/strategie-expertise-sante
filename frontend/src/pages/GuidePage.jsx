@@ -6,6 +6,8 @@ import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL + '/api';
 
+const CURRENT_YEAR = new Date().getFullYear();
+
 const GuidePage = () => {
   const { slug } = useParams();
   const [page, setPage] = useState(null);
@@ -21,7 +23,8 @@ const GuidePage = () => {
 
   useEffect(() => {
     if (!page) return;
-    document.title = `${page.title} — Stratégie & Expertise Santé`;
+    const titleWithYear = `${page.title} en ${CURRENT_YEAR}`;
+    document.title = `${titleWithYear} — Stratégie & Expertise Santé`;
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) metaDesc.setAttribute('content', page.meta_description || '');
 
@@ -105,7 +108,7 @@ const GuidePage = () => {
 
         {/* H1 */}
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight mb-10 text-foreground" data-testid="guide-title">
-          {page.title}
+          {page.title} en {CURRENT_YEAR}
         </h1>
 
         {/* Bloc Réponse Rapide (conditionnel) */}
@@ -114,12 +117,12 @@ const GuidePage = () => {
             <div className="p-5 rounded-xl bg-[#1a1a2e]/[0.03] border border-[#C9A84C]/20">
               <h2 className="font-semibold text-base mb-3 text-foreground flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-[#C9A84C]" />
-                Que faire en cas de refus MDPH ?
+                {c.reponse_rapide_titre || page.title}
               </h2>
               <p className="text-sm leading-relaxed text-foreground/80 mb-4">{c.reponse_rapide}</p>
-              <Link to="/agenda?type=conseil&source=seo&page=refus-mdph">
+              <Link to={`${page.cta_type === 'accompagnement' ? '/agenda?type=conseil' : '/dossier-express'}?source=seo&page=${slug}`}>
                 <Button size="sm" className="bg-[#C9A84C] hover:bg-[#b8960f] text-[#1a1a2e] font-semibold gap-2 rounded-lg" data-testid="guide-reponse-rapide-cta">
-                  Se faire accompagner
+                  {page.cta_label || 'Se faire accompagner'}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Button>
               </Link>

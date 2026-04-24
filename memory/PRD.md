@@ -60,6 +60,9 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - Maillage interne (2-3 liens par page)
 - Schema.org FAQPage JSON-LD (2 questions/réponses par page)
 - Sitemap dynamique incluant les 15 pages
+- Titles SEO optimisés < 60 caractères + année automatique (GuidePage.jsx)
+- Meta descriptions < 155 caractères orientées CTR
+- Bloc "réponse rapide" conditionnel (4 pages à forte intention de recherche)
 
 ## En Cours / Non Terminé
 - [x] P1 : Configuration Webhook Stripe (whsec_ configuré et vérifié)

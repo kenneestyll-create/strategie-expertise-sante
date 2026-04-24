@@ -10,7 +10,7 @@ PAGES = [
 # ═══════════════════════════════════════════════════════════════
 {
     "slug": "refus-mdph-aah-que-faire",
-    "title": "Refus MDPH AAH : que faire en 2026 ? Recours, délais et solutions",
+    "title": "Refus MDPH AAH : que faire ? Recours, délais et solutions",
     "meta_description": "Refus MDPH ou AAH ? Découvrez les recours possibles, les erreurs à éviter et les solutions pour défendre vos droits efficacement.",
     "category": "mdph",
     "intention": "refus_droits",
@@ -18,6 +18,7 @@ PAGES = [
     "cta_type": "dossier_express",
     "cta_label": "Faire analyser mon dossier MDPH",
     "content": {
+        "reponse_rapide_titre": "Que faire en cas de refus MDPH ?",
         "reponse_rapide": "En cas de refus MDPH pour l'AAH, vous disposez de 2 mois pour déposer un recours administratif préalable obligatoire (RAPO) auprès de la MDPH. Ce recours est gratuit. Pour qu'il aboutisse, il faut renforcer votre dossier : certificats médicaux détaillés décrivant vos limitations fonctionnelles, projet de vie structuré, et pièces justificatives cohérentes. Si le RAPO est rejeté, vous pouvez saisir le tribunal judiciaire (pôle social) dans un nouveau délai de 2 mois. Plus de 40% des recours aboutissent favorablement lorsque le dossier est correctement restructuré.",
         "contexte": "L'Allocation aux Adultes Handicapés (AAH) est attribuée par la Commission des Droits et de l'Autonomie des Personnes Handicapées (CDAPH), sur avis de l'équipe pluridisciplinaire de la MDPH. Pour en bénéficier, il faut justifier d'un taux d'incapacité d'au moins 80%, ou d'un taux compris entre 50% et 79% assorti d'une restriction substantielle et durable pour l'accès à l'emploi (RSDAE). Le refus MDPH survient quand l'un de ces critères n'est pas reconnu par l'équipe d'évaluation. Ce refus n'est pas définitif : vous disposez de voies de recours clairement encadrées par la loi.",
         "limites": "Après un refus MDPH, que faire concrètement ? Les sites institutionnels (Ameli, Service-public.fr, MDPH) vous expliquent les conditions d'éligibilité et la procédure de recours. Ce qu'ils ne vous disent pas, c'est pourquoi votre dossier a échoué alors que votre handicap est réel. La MDPH évalue sur pièces, dans un temps limité, avec des critères qui privilégient les preuves médicales objectives aux réalités de terrain. Un certificat médical qui mentionne une pathologie sans décrire ses conséquences fonctionnelles quotidiennes n'a quasiment aucun poids. Le projet de vie — document pourtant central — est négligé par la majorité des demandeurs, alors qu'il constitue souvent le facteur déterminant pour la RSDAE.",
@@ -57,14 +58,16 @@ PAGES = [
 },
 {
     "slug": "taux-ipp-5-pourcent-contester",
-    "title": "Taux d'IPP fixé à 5% alors que vous ne pouvez plus travailler : comment contester efficacement ?",
-    "meta_description": "Votre taux d'IPP est sous-évalué malgré des séquelles importantes ? Découvrez les mécanismes réels de fixation du taux et la stratégie pour obtenir une réévaluation juste.",
+    "title": "Taux IPP 5% : comment contester ? Recours et stratégie",
+    "meta_description": "Taux d'IPP sous-évalué à 5% ? Découvrez comment contester efficacement, les erreurs à éviter et la stratégie pour obtenir une réévaluation juste.",
     "category": "indemnisation",
     "intention": "contestation",
     "priority": "p0",
     "cta_type": "dossier_express",
     "cta_label": "Analyser mon taux d'IPP",
     "content": {
+        "reponse_rapide_titre": "Comment contester un taux d'IPP sous-évalué ?",
+        "reponse_rapide": "Vous avez 2 mois à compter de la notification pour saisir la Commission Médicale de Recours Amiable (CMRA) par courrier recommandé. Comparez votre taux avec le barème AT/MP officiel. Faites-vous accompagner par un médecin de recours lors de l'expertise — c'est l'investissement qui change le résultat. Vérifiez que le coefficient professionnel a bien été appliqué. Si la CMRA rejette, saisissez le tribunal judiciaire (pôle social) dans les 2 mois.",
         "contexte": "Le taux d'Incapacité Permanente Partielle (IPP) est fixé par le médecin conseil de la CPAM à la consolidation de votre état de santé, suite à un accident du travail ou une maladie professionnelle. Ce taux détermine directement votre indemnisation : en dessous de 10%, vous percevez un capital forfaitaire unique. Au-dessus de 10%, vous avez droit à une rente viagère. La différence financière entre 9% et 10% se chiffre en dizaines de milliers d'euros sur une vie. Le taux est fixé sur la base du barème indicatif des accidents du travail et maladies professionnelles, mais l'application de ce barème laisse une marge d'appréciation importante au médecin conseil.",
         "limites": "Le barème indicatif AT/MP est public et consultable. Les sites officiels vous expliquent que le taux est fixé en fonction des séquelles fonctionnelles et qu'un coefficient professionnel peut être appliqué. Ce qu'ils ne vous disent pas, c'est que l'examen médical dure rarement plus de 15 à 20 minutes, que le médecin conseil défend les intérêts financiers de l'organisme, et que le coefficient professionnel — qui peut faire basculer un taux de 7% à 12% — est régulièrement sous-évalué ou simplement omis. Le taux médical seul reflète les séquelles anatomiques, pas l'impact réel sur votre capacité à exercer votre métier.",
         "blocages": [
@@ -103,8 +106,8 @@ PAGES = [
 },
 {
     "slug": "expertise-medicale-defavorable-recours",
-    "title": "Expertise médicale défavorable : vos séquelles ont été minimisées, quels sont vos recours concrets ?",
-    "meta_description": "L'expert a sous-évalué vos séquelles ? Découvrez les mécanismes de contestation et la stratégie pour obtenir une expertise contradictoire efficace.",
+    "title": "Expertise médicale défavorable : recours et contestation",
+    "meta_description": "L'expert a minimisé vos séquelles ? Découvrez les recours concrets pour contester un rapport d'expertise médicale défavorable.",
     "category": "expertise",
     "intention": "desaccord_medical",
     "priority": "p0",
@@ -149,14 +152,16 @@ PAGES = [
 },
 {
     "slug": "accident-travail-non-declare-employeur",
-    "title": "Accident du travail non déclaré par l'employeur : comment protéger vos droits et obtenir réparation ?",
-    "meta_description": "Votre employeur refuse ou oublie de déclarer votre accident du travail ? Découvrez vos droits réels, les blocages fréquents et la stratégie pour obtenir la prise en charge.",
+    "title": "Accident du travail non déclaré : droits et recours",
+    "meta_description": "Votre employeur refuse de déclarer votre accident du travail ? Vos droits, les erreurs à éviter et la stratégie pour obtenir la prise en charge.",
     "category": "accident_travail",
     "intention": "urgence",
     "priority": "p0",
     "cta_type": "dossier_express",
     "cta_label": "Faire analyser ma situation",
     "content": {
+        "reponse_rapide_titre": "Que faire si l'employeur ne déclare pas votre AT ?",
+        "reponse_rapide": "Vous pouvez déclarer vous-même l'accident auprès de votre CPAM par courrier recommandé, dans un délai de 2 ans. Consultez un médecin immédiatement pour obtenir un certificat médical initial (CMI). Rassemblez les preuves (témoignages, SMS, photos). L'employeur s'expose à des sanctions pour non-déclaration. La CPAM dispose de 30 jours pour statuer — le silence vaut acceptation.",
         "contexte": "L'employeur a l'obligation légale de déclarer tout accident du travail à la CPAM dans les 48 heures suivant sa connaissance des faits (article L.441-2 du Code de la Sécurité sociale). Cette déclaration conditionne votre prise en charge : soins remboursés à 100% sans avance de frais, indemnités journalières majorées (sans délai de carence), et reconnaissance officielle de l'origine professionnelle de votre accident. Sans déclaration, vous êtes traité comme un arrêt maladie ordinaire — avec toutes les conséquences financières et juridiques que cela implique.",
         "limites": "Les textes officiels vous disent que l'employeur doit déclarer et que vous pouvez le faire vous-même à défaut. Ce qu'ils ne vous expliquent pas, c'est pourquoi l'employeur ne déclare pas et comment réagir stratégiquement. Le refus de déclaration n'est jamais anodin : il peut viser à éviter une hausse du taux de cotisation AT/MP de l'entreprise, à contester le caractère professionnel de l'accident, ou à masquer des conditions de travail dangereuses. Comprendre la motivation de l'employeur permet d'adapter votre stratégie.",
         "blocages": [
@@ -195,14 +200,16 @@ PAGES = [
 },
 {
     "slug": "refus-maladie-professionnelle-cpam-recours",
-    "title": "Refus de maladie professionnelle par la CPAM : vous avez 2 mois pour agir, voici comment",
-    "meta_description": "La CPAM refuse de reconnaître votre maladie professionnelle ? Comprenez les véritables raisons du refus et la stratégie pour obtenir la reconnaissance.",
+    "title": "Refus maladie professionnelle CPAM : recours et délais",
+    "meta_description": "La CPAM refuse votre maladie professionnelle ? Découvrez les recours possibles, les délais stricts et la stratégie pour obtenir la reconnaissance.",
     "category": "accident_travail",
     "intention": "urgence",
     "priority": "p0",
     "cta_type": "dossier_express",
     "cta_label": "Analyser mon dossier de refus",
     "content": {
+        "reponse_rapide_titre": "Que faire après un refus de maladie professionnelle ?",
+        "reponse_rapide": "Saisissez la Commission de Recours Amiable (CRA) de votre CPAM dans les 2 mois par courrier recommandé — c'est gratuit. Identifiez le motif précis du refus dans la notification. Demandez l'accès complet à votre dossier CPAM. Si une condition du tableau n'est pas remplie, la voie du CRRMP reste ouverte. En cas de rejet par la CRA, saisissez le tribunal judiciaire (pôle social) dans les 2 mois.",
         "contexte": "La reconnaissance d'une maladie professionnelle suit une procédure stricte définie par le Code de la Sécurité sociale. Si votre pathologie figure dans l'un des tableaux de maladies professionnelles et que toutes les conditions sont remplies (délai de prise en charge, durée d'exposition, travaux effectués), la reconnaissance est en principe automatique — c'est la présomption d'origine professionnelle. Lorsque la CPAM refuse, c'est qu'elle estime qu'une condition du tableau n'est pas remplie, ou que la maladie ne figure pas dans les tableaux. Le refus déclenche un délai de recours de 2 mois qui court à compter de la notification.",
         "limites": "Les sites institutionnels vous expliquent les conditions des tableaux et la procédure de recours. Ce qu'ils ne vous montrent pas, c'est la complexité réelle de la preuve. Les tableaux de maladies professionnelles sont rédigés dans un langage technique qui laisse place à l'interprétation. La CPAM peut considérer que votre poste ne figure pas dans la « liste limitative des travaux » du tableau, que votre durée d'exposition est insuffisante, ou que le délai de prise en charge est dépassé — alors même que votre maladie est directement liée à votre activité. Par ailleurs, pour les pathologies hors tableau, la procédure CRRMP est méconnue et sous-utilisée.",
         "blocages": [
@@ -244,8 +251,8 @@ PAGES = [
 # ═══════════════════════════════════════════════════════════════
 {
     "slug": "faute-inexcusable-employeur",
-    "title": "Faute inexcusable de l'employeur : comment agir concrètement pour obtenir une indemnisation complémentaire",
-    "meta_description": "Votre employeur connaissait le danger et n'a rien fait ? Découvrez les conditions réelles de la faute inexcusable et la stratégie pour obtenir une réparation intégrale.",
+    "title": "Faute inexcusable employeur : conditions et indemnisation",
+    "meta_description": "Votre employeur connaissait le danger ? Découvrez les conditions de la faute inexcusable et comment obtenir une indemnisation complémentaire.",
     "category": "accident_travail",
     "intention": "perte_financiere",
     "priority": "p0",
@@ -290,8 +297,8 @@ PAGES = [
 },
 {
     "slug": "inaptitude-travail-droits-recours",
-    "title": "Inaptitude au travail : vos droits réels, les blocages et les recours face à l'employeur",
-    "meta_description": "Déclaré inapte par le médecin du travail ? Découvrez vos droits concrets, les obligations réelles de l'employeur et les recours en cas de blocage.",
+    "title": "Inaptitude au travail : droits, licenciement et recours",
+    "meta_description": "Déclaré inapte par le médecin du travail ? Vos droits concrets, les obligations de l'employeur et les recours en cas de licenciement.",
     "category": "emploi",
     "intention": "urgence",
     "priority": "p0",
@@ -336,8 +343,8 @@ PAGES = [
 },
 {
     "slug": "rente-accident-travail-calcul-contestation",
-    "title": "Rente accident du travail : comprendre le calcul réel, ses limites et les moyens de contestation",
-    "meta_description": "Votre rente AT semble trop basse ? Découvrez comment le calcul est réellement effectué, les erreurs fréquentes et la stratégie pour obtenir une réévaluation.",
+    "title": "Rente accident du travail : calcul, montant et contestation",
+    "meta_description": "Votre rente AT semble trop basse ? Comprenez le calcul réel, les erreurs fréquentes et la stratégie pour obtenir une réévaluation.",
     "category": "indemnisation",
     "intention": "perte_financiere",
     "priority": "p0",
@@ -382,8 +389,8 @@ PAGES = [
 },
 {
     "slug": "recours-tribunal-judiciaire-pole-social",
-    "title": "Recours devant le tribunal judiciaire pôle social : comprendre la procédure et les enjeux réels",
-    "meta_description": "Vous devez saisir le tribunal pour contester une décision CPAM ou MDPH ? Découvrez la procédure réelle, les délais et la stratégie pour maximiser vos chances.",
+    "title": "Tribunal judiciaire pôle social : procédure et recours",
+    "meta_description": "Vous devez saisir le tribunal pour contester une décision CPAM ou MDPH ? La procédure, les délais et la stratégie pour maximiser vos chances.",
     "category": "indemnisation",
     "intention": "contestation",
     "priority": "p0",
@@ -428,8 +435,8 @@ PAGES = [
 },
 {
     "slug": "delai-prescription-maladie-professionnelle",
-    "title": "Délai de prescription maladie professionnelle : les erreurs qui vous font perdre définitivement vos droits",
-    "meta_description": "Les délais en maladie professionnelle sont stricts et souvent mal compris. Découvrez les pièges fréquents et la stratégie pour préserver vos droits.",
+    "title": "Délai prescription maladie professionnelle : vos droits",
+    "meta_description": "Les délais en maladie professionnelle sont stricts. Découvrez les pièges fréquents et la stratégie pour préserver vos droits à temps.",
     "category": "accident_travail",
     "intention": "urgence",
     "priority": "p0",
@@ -477,8 +484,8 @@ PAGES = [
 # ═══════════════════════════════════════════════════════════════
 {
     "slug": "comment-preparer-expertise-medicale",
-    "title": "Comment se préparer à une expertise médicale : les clés d'un dossier solide et d'un examen maîtrisé",
-    "meta_description": "Expertise médicale prochaine ? Découvrez comment préparer votre dossier, vous comporter lors de l'examen et éviter les erreurs qui affaiblissent votre évaluation.",
+    "title": "Préparer une expertise médicale : guide complet",
+    "meta_description": "Expertise médicale prochaine ? Comment préparer votre dossier, vous comporter lors de l'examen et éviter les erreurs courantes.",
     "category": "expertise",
     "intention": "urgence",
     "priority": "p0",
@@ -523,8 +530,8 @@ PAGES = [
 },
 {
     "slug": "comment-demander-rqth-strategic",
-    "title": "RQTH : au-delà de la demande administrative, la stratégie d'accès aux droits",
-    "meta_description": "La RQTH n'est pas qu'une formalité. Découvrez comment cette reconnaissance ouvre concrètement des droits et comment structurer votre demande pour maximiser son impact.",
+    "title": "Demande RQTH : stratégie et démarches complètes",
+    "meta_description": "La RQTH ouvre des droits concrets. Découvrez comment structurer votre demande pour maximiser vos chances auprès de la MDPH.",
     "category": "mdph",
     "intention": "refus_droits",
     "priority": "p1",
@@ -569,8 +576,8 @@ PAGES = [
 },
 {
     "slug": "comment-faire-reconnaitre-maladie-professionnelle",
-    "title": "Comment faire reconnaître une maladie professionnelle : la stratégie au-delà de la simple déclaration",
-    "meta_description": "La reconnaissance d'une maladie professionnelle ne se résume pas à remplir un formulaire. Découvrez la stratégie documentaire pour maximiser vos chances.",
+    "title": "Faire reconnaître une maladie professionnelle : guide",
+    "meta_description": "La reconnaissance de maladie professionnelle ne se résume pas à un formulaire. Découvrez la stratégie pour maximiser vos chances.",
     "category": "accident_travail",
     "intention": "refus_droits",
     "priority": "p0",
@@ -615,8 +622,8 @@ PAGES = [
 },
 {
     "slug": "maladie-professionnelle-definition-droits",
-    "title": "Maladie professionnelle : ce que la définition officielle ne vous dit pas sur vos droits réels",
-    "meta_description": "Qu'est-ce qu'une maladie professionnelle au-delà de la définition administrative ? Découvrez vos droits concrets et les pièges à éviter dans la procédure.",
+    "title": "Maladie professionnelle : définition, droits et démarches",
+    "meta_description": "Qu'est-ce qu'une maladie professionnelle ? Vos droits concrets, les pièges à éviter et la procédure de reconnaissance expliquée simplement.",
     "category": "accident_travail",
     "intention": "refus_droits",
     "priority": "p1",
@@ -661,8 +668,8 @@ PAGES = [
 },
 {
     "slug": "ptia-definition-droits-strategie",
-    "title": "PTIA (Perte Totale et Irréversible d'Autonomie) : comprendre vos droits et la stratégie de reconnaissance",
-    "meta_description": "La PTIA est souvent mal comprise et mal évaluée. Découvrez ce que recouvre réellement cette notion, vos droits concrets et les blocages fréquents.",
+    "title": "PTIA : définition, droits et stratégie de reconnaissance",
+    "meta_description": "La PTIA est souvent mal évaluée par les assureurs. Vos droits concrets, les blocages fréquents et la stratégie pour obtenir la reconnaissance.",
     "category": "indemnisation",
     "intention": "perte_financiere",
     "priority": "p1",
