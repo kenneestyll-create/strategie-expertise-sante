@@ -46,33 +46,6 @@ const professionalServiceSchema = {
   }
 };
 
-const faqPageSchema = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "Comment faire reconnaître une maladie professionnelle ?",
-      "acceptedAnswer": { "@type": "Answer", "text": "La reconnaissance d'une maladie professionnelle passe par une déclaration auprès de la CPAM avec un certificat médical initial. La maladie doit figurer dans un tableau de maladies professionnelles ou être reconnue par le CRRMP." }
-    },
-    {
-      "@type": "Question",
-      "name": "Qu'est-ce que le taux d'IPP ?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Le taux d'Incapacité Permanente Partielle (IPP) évalue les séquelles définitives d'un accident du travail ou d'une maladie professionnelle. Il détermine le montant de l'indemnisation versée par la CPAM." }
-    },
-    {
-      "@type": "Question",
-      "name": "Comment constituer un dossier MDPH ?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Le dossier MDPH nécessite le formulaire Cerfa, un certificat médical récent, des justificatifs d'identité et de domicile, ainsi que tout document médical pertinent. Un accompagnement professionnel peut optimiser vos chances." }
-    },
-    {
-      "@type": "Question",
-      "name": "Combien coûte un accompagnement en maladie professionnelle ?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Les tarifs varient de la pré-analyse gratuite assistée par StratégiIA au Dossier Express IA à 97€, jusqu'à l'accompagnement complet à 500€. Première consultation téléphonique gratuite — 10 minutes pour évaluer votre situation." }
-    }
-  ]
-};
-
 const webSiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
@@ -130,7 +103,7 @@ const PageLoader = () => (
 
 function App() {
   useEffect(() => {
-    const schemas = [professionalServiceSchema, faqPageSchema, webSiteSchema];
+    const schemas = [professionalServiceSchema, webSiteSchema];
     const scriptElements = schemas.map(schema => {
       const script = document.createElement('script');
       script.type = 'application/ld+json';
