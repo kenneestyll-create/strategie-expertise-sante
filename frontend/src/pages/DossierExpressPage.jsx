@@ -21,6 +21,7 @@ import { DataConsentBox } from '@/components/DataConsentBox';
 import { PdfCoverPreview } from '@/components/PdfCoverPreview';
 import { DocumentUploader } from '@/components/DocumentUploader';
 import { useAdminTest } from '@/components/AdminTestBanner';
+import { useVip } from '@/context/VipContext';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -253,6 +254,7 @@ export const DossierExpressPage = () => {
   const [step, setStep] = useState('landing');
   const [loading, setLoading] = useState(false);
   const { isAdminMode, adminToken } = useAdminTest();
+  const { isVip, vipName } = useVip();
   const [consent, setConsent] = useState(false);
   const [improvementOptout, setImprovementOptout] = useState(false);
   const [form, setForm] = useState({
@@ -357,7 +359,7 @@ export const DossierExpressPage = () => {
   }, [dossierId, step]);
 
   const handleCheckout = async () => {
-    if (!isAdminMode && (!form.email || !form.name)) {
+    if (!isAdminMode && !isVip && (!form.email || !form.name)) {
       toast.error("Veuillez renseigner votre nom et email");
       return;
     }
@@ -368,6 +370,15 @@ export const DossierExpressPage = () => {
       sessionStorage.setItem('dossier_express_admin_bypass', '1');
       setAdminPaid(true);
       toast.success("Mode Admin : paiement bypass — complétez le dossier puis lancez l'analyse.");
+      return;
+    }
+    // VIP bypass: skip payment like admin
+    if (isVip) {
+      sessionStorage.setItem('dossier_express_form', JSON.stringify(form));
+      sessionStorage.setItem('dossier_express_premium_pdf', premiumPdf ? '1' : '0');
+      sessionStorage.setItem('dossier_express_admin_bypass', '1');
+      setAdminPaid(true);
+      toast.success(`Accès Partenaire VIP (${vipName}) : paiement offert.`);
       return;
     }
     sessionStorage.setItem('dossier_express_form', JSON.stringify(form));
@@ -900,7 +911,7 @@ export const DossierExpressPage = () => {
                       size="lg"
                       className="w-full rounded-xl gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold shadow-lg shadow-amber-500/15 hover:shadow-amber-500/25 transition-all"
                       onClick={handleSubmitDossier}
-                      disabled={loading || !form.situation.trim() || (!isAdminMode && (!form.email || !consent))}
+                      disabled={loading || !form.situation.trim() || (!isAdminMode && !isVip && (!form.email || !consent))}
                       data-testid="de-submit-button"
                     >
                       {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi et analyse en cours...</> : <><Brain className="w-5 h-5" /> Lancer l'analyse Dossier Express IA</>}
@@ -910,10 +921,10 @@ export const DossierExpressPage = () => {
                       size="lg"
                       className="w-full rounded-xl gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold shadow-lg shadow-amber-500/15 hover:shadow-amber-500/25 transition-all"
                       onClick={handleCheckout}
-                      disabled={loading || (!isAdminMode && (!form.email || !form.name || !consent))}
+                      disabled={loading || (!isAdminMode && !isVip && (!form.email || !form.name || !consent))}
                       data-testid="de-checkout-button"
                     >
-                      {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection vers le paiement...</> : <><CreditCard className="w-5 h-5" /> {adminPaid ? 'Mode Admin — Paiement validé' : `Payer ${totalAmount} € — Analyse sous 2h`}</>}
+                      {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection vers le paiement...</> : isVip ? <><CreditCard className="w-5 h-5" /> Accès Partenaire — Lancer l'analyse</> : <><CreditCard className="w-5 h-5" /> {adminPaid ? 'Mode Admin — Paiement validé' : `Payer ${totalAmount} € — Analyse sous 2h`}</>}
                     </Button>
                   )}
 

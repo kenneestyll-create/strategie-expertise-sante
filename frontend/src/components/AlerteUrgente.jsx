@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { X, Zap, Phone, Clock, Send, CheckCircle, CreditCard, Loader2, Shield } from 'lucide-react';
 import axios from 'axios';
 import { useSearchParams } from 'react-router-dom';
+import { useVip } from '@/context/VipContext';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -13,6 +14,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 export const AlerteUrgente = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [formule, setFormule] = useState('2h');
+  const { isVip, vipName } = useVip();
   const [nom, setNom] = useState('');
   const [telephone, setTelephone] = useState('');
   const [email, setEmail] = useState('');
@@ -79,8 +81,22 @@ export const AlerteUrgente = () => {
   };
 
   const handlePay = async () => {
-    if (!cgvAccepted) {
+    if (!isVip && !cgvAccepted) {
       toast.error('Veuillez accepter les CGV et la renonciation au droit de rétractation.');
+      return;
+    }
+    // VIP bypass
+    if (isVip) {
+      setSending(true);
+      try {
+        await axios.post(`${API}/alerte-urgente/vip`, { nom, telephone, email, message, formule });
+        setConfirmed(true);
+        setConfirmedFormule(formule);
+        toast.success(`Accès Partenaire VIP (${vipName}) : alerte envoyée sans paiement.`);
+      } catch {
+        toast.error("Erreur lors de l'envoi de l'alerte.");
+      }
+      setSending(false);
       return;
     }
     setSending(true);

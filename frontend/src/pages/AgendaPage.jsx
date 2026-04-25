@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { SEO } from '@/components/SEO';
+import { useVip } from '@/context/VipContext';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -85,6 +86,7 @@ export const AgendaPage = () => {
   const [paymentConfirming, setPaymentConfirming] = useState(false);
   const [paymentResult, setPaymentResult] = useState(null);
   const [cgvAccepted, setCgvAccepted] = useState(false);
+  const { isVip, vipName } = useVip();
 
   const formatDateStr = (date) => {
     const y = date.getFullYear();
@@ -183,6 +185,10 @@ export const AgendaPage = () => {
         await axios.post(`${API}/bookings`, payload);
         setBooked(true);
         toast.success("Rendez-vous confirmé !");
+      } else if (isVip) {
+        await axios.post(`${API}/bookings`, payload);
+        setBooked(true);
+        toast.success(`Accès Partenaire VIP (${vipName}) : réservation offerte.`);
       } else {
         if (!cgvAccepted) {
           toast.error('Veuillez accepter les CGV et la renonciation au droit de rétractation.');

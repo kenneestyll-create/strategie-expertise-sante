@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { PremiumAnalysisRenderer } from '@/components/PremiumAnalysisRenderer';
+import { AdminVipTab } from '@/components/AdminVipTab';
 import { 
   Heart, 
   LogOut, 
@@ -60,7 +61,7 @@ import { AdminOnboardingTour, TOUR_KEY } from '@/components/AdminOnboardingTour'
 import { TarifsEditor, ChiffresClesEditor } from '@/components/ConfigEditors';
 import axios from 'axios';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { BarChart3, BellRing, Download, FlaskConical, PenTool, FileSearch, QrCode, Globe, BadgeCheck, Tag } from 'lucide-react';
+import { BarChart3, BellRing, Download, FlaskConical, PenTool, FileSearch, QrCode, Globe, BadgeCheck, Tag, ShieldCheck } from 'lucide-react';
 import { EmailTemplateEditor } from '@/components/EmailTemplateEditor';
 import { AdminConseilsStrate } from '@/components/AdminConseilsStrate';
 import { AdminSettingsTab } from '@/components/AdminSettingsTab';
@@ -1252,6 +1253,10 @@ export const AdminDashboard = () => {
               <TabsTrigger value="settings" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-settings">
                 <Settings className="w-3.5 h-3.5 text-gray-500" />
                 Paramètres
+              </TabsTrigger>
+              <TabsTrigger value="vip-guests" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-vip-guests">
+                <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
+                Invités VIP
               </TabsTrigger>
             </TabsList>
           </div>
@@ -4441,6 +4446,9 @@ export const AdminDashboard = () => {
 
           <TabsContent value="settings" className="space-y-6" data-testid="settings-tab-content">
             <AdminSettingsTab axiosConfig={axiosConfig} />
+          </TabsContent>
+          <TabsContent value="vip-guests" className="space-y-6" data-testid="vip-guests-tab-content">
+            <AdminVipTab axiosConfig={axiosConfig} />
           </TabsContent>
         </Tabs>
       </main>

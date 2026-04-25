@@ -14,6 +14,7 @@ from routes.knowledge_patterns import router as knowledge_patterns_router
 from routes.predictive_v2_admin import router as predictive_v2_router
 from routes.feedback import router as feedback_router
 from routes.seo_pages import router as seo_pages_router
+from routes.vip_guests import router as vip_guests_router
 
 all_routers = [
     public_router,
@@ -32,4 +33,5 @@ all_routers = [
     predictive_v2_router,
     feedback_router,
     seo_pages_router,
+    vip_guests_router,
 ]

@@ -11,6 +11,7 @@ import { MascotteStrate } from "@/components/MascotteStrate";
 import { ExitIntentPopup } from "@/components/ExitIntentPopup";
 import { StrategiIA } from "@/components/StrategiIA";
 import { AuthProvider } from "@/context/AuthContext";
+import { VipProvider } from "@/context/VipContext";
 import { AdminTestProvider } from "@/components/AdminTestBanner";
 import { ForumAuthProvider } from "@/context/ForumAuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -94,6 +95,7 @@ const ForumNewTopicPage = lazy(() => import("@/pages/ForumNewTopicPage").then(m 
 const MedecinConseilPage = lazy(() => import("@/pages/MedecinConseilPage"));
 const GuidePage = lazy(() => import("@/pages/GuidePage"));
 const GuidesPratiquesPage = lazy(() => import("@/pages/GuidesPratiquesPage"));
+const VipAccessPage = lazy(() => import("@/pages/VipAccessPage"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -118,6 +120,7 @@ function App() {
     <HelmetProvider>
       <div className="App grain-texture">
         <AuthProvider>
+          <VipProvider>
           <AdminTestProvider>
           <ForumAuthProvider>
             <BrowserRouter>
@@ -161,6 +164,7 @@ function App() {
                   <Route path="/medecin-conseil" element={<><Header /><MedecinConseilPage /><Footer /></>} />
                   <Route path="/guide/:slug" element={<><Header /><GuidePage /><Footer /></>} />
                   <Route path="/guides-pratiques" element={<><Header /><GuidesPratiquesPage /><Footer /></>} />
+                  <Route path="/acces-invite" element={<><Header /><VipAccessPage /><Footer /></>} />
                   <Route path="/admin/login" element={<AdminLoginPage />} />
                   <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
                 </Routes>
@@ -176,6 +180,7 @@ function App() {
             </BrowserRouter>
           </ForumAuthProvider>
           </AdminTestProvider>
+          </VipProvider>
         </AuthProvider>
       </div>
     </HelmetProvider>

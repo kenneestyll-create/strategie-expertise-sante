@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown, Phone, Zap } from 'lucide-react';
+import { Menu, X, ChevronDown, Phone, Zap, ShieldCheck, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LogoFull } from '@/components/Logo';
+import { useVip } from '@/context/VipContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +26,7 @@ export const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(null);
   const location = useLocation();
+  const { isVip, vipName, vipLogout } = useVip();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -185,7 +187,18 @@ export const Header = () => {
           </div>
 
           {/* ═══ CTA Header — Statutaire ═══ */}
-          <div className="hidden lg:flex items-center">
+          <div className="hidden lg:flex items-center gap-2">
+            {isVip && (
+              <div className="flex items-center gap-2" data-testid="vip-badge-desktop">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[11px] font-medium">
+                  <ShieldCheck className="w-3 h-3" />
+                  {vipName}
+                </span>
+                <button onClick={vipLogout} className="p-1.5 text-[#f5f0e8]/40 hover:text-red-400 transition-colors" title="Déconnexion VIP" data-testid="vip-logout-desktop">
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
             <Link to="/agenda">
               <Button
                 size="sm"
@@ -287,6 +300,15 @@ export const Header = () => {
 
               {/* Mobile CTA */}
               <div className="px-4 pt-4 pb-3 border-t border-[#C9A84C]/8 mt-3">
+                {isVip && (
+                  <div className="flex items-center justify-between mb-3" data-testid="vip-badge-mobile">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[11px] font-medium">
+                      <ShieldCheck className="w-3 h-3" />
+                      {vipName}
+                    </span>
+                    <button onClick={vipLogout} className="text-[11px] text-red-400/70 hover:text-red-400" data-testid="vip-logout-mobile">Déconnexion</button>
+                  </div>
+                )}
                 <Link to="/agenda">
                   <Button
                     className="w-full rounded-lg bg-transparent border border-[#C9A84C]/40 text-[#C9A84C] hover:bg-[#C9A84C]/10 font-medium gap-2 text-sm tracking-wide"
