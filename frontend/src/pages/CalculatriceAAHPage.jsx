@@ -490,8 +490,10 @@ const AAHCalculatriceFAQ = () => {
   const [openIndex, setOpenIndex] = useState(null);
 
   useEffect(() => {
-    const existing = document.getElementById('aah-faq-schema');
-    if (existing) existing.remove();
+    // Remove ALL existing FAQPage schemas to prevent duplicates
+    document.querySelectorAll('script[type="application/ld+json"]').forEach(s => {
+      try { if (JSON.parse(s.textContent)['@type'] === 'FAQPage') s.remove(); } catch {}
+    });
     const script = document.createElement('script');
     script.id = 'aah-faq-schema';
     script.type = 'application/ld+json';

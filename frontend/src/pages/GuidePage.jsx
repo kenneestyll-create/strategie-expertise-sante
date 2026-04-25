@@ -44,8 +44,9 @@ const GuidePage = () => {
     // Schema.org FAQPage structured data
     const faq = page.content?.faq;
     if (faq && faq.length > 0) {
-      const existing = document.getElementById('faq-schema');
-      if (existing) existing.remove();
+      document.querySelectorAll('script[type="application/ld+json"]').forEach(s => {
+        try { if (JSON.parse(s.textContent)['@type'] === 'FAQPage') s.remove(); } catch {}
+      });
       const script = document.createElement('script');
       script.id = 'faq-schema';
       script.type = 'application/ld+json';

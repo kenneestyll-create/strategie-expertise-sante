@@ -208,8 +208,9 @@ const MDPHPageFAQ = () => {
   const [openIndex, setOpenIndex] = useState(null);
 
   useEffect(() => {
-    const existing = document.getElementById('mdph-faq-schema');
-    if (existing) existing.remove();
+    document.querySelectorAll('script[type="application/ld+json"]').forEach(s => {
+      try { if (JSON.parse(s.textContent)['@type'] === 'FAQPage') s.remove(); } catch {}
+    });
     const script = document.createElement('script');
     script.id = 'mdph-faq-schema';
     script.type = 'application/ld+json';

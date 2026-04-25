@@ -254,8 +254,9 @@ const EntreprisesFAQ = () => {
   const [openIndex, setOpenIndex] = useState(null);
 
   useEffect(() => {
-    const existing = document.getElementById('entreprises-faq-schema');
-    if (existing) existing.remove();
+    document.querySelectorAll('script[type="application/ld+json"]').forEach(s => {
+      try { if (JSON.parse(s.textContent)['@type'] === 'FAQPage') s.remove(); } catch {}
+    });
     const script = document.createElement('script');
     script.id = 'entreprises-faq-schema';
     script.type = 'application/ld+json';
