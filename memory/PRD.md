@@ -65,8 +65,36 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - Bloc "réponse rapide" conditionnel (4 pages à forte intention de recherche)
 
 ## En Cours / Non Terminé
-- [x] P1 : Configuration Webhook Stripe (whsec_ configuré et vérifié)
+- [x] Système Accès Invité VIP (token sécurisé + cookie httpOnly + bypass paiement + admin dashboard)
 - [ ] P2 : Intégration HubSpot CRM (en attente identifiants)
+
+## Guide Admin — Invités VIP
+
+### Comment inviter un partenaire :
+1. Connectez-vous à `/admin` avec vos identifiants admin
+2. Cliquez sur l'onglet **"Invités VIP"** (icône bouclier dorée)
+3. Cliquez **"Nouvel invité"**
+4. Renseignez : **Nom complet**, **Email**, **Motif** (ex: Partenaire médical), **Durée** (90 jours par défaut)
+5. Cliquez **"Créer et copier le lien"** → le lien est copié automatiquement
+6. Envoyez ce lien à votre invité (WhatsApp, email, SMS)
+
+### Ce que voit l'invité :
+- Il clique sur le lien → page de connexion sécurisée
+- Il saisit son email (doit correspondre exactement à celui que vous avez entré)
+- Accès activé → badge "Partenaire VIP" visible → tous les services débloqués sans paiement
+
+### Gérer les accès :
+- **Désactiver** : cliquez le toggle vert → accès coupé immédiatement
+- **Réactiver** : cliquez le toggle gris → accès rétabli
+- **Supprimer** : cliquez la corbeille → suppression définitive
+- **Copier le lien** : cliquez l'icône copie pour renvoyer le lien
+
+### Sécurité :
+- Token unique non devinable (cryptographique)
+- Cookie httpOnly (non accessible par JavaScript)
+- Vérification email obligatoire à chaque connexion
+- Expiration automatique configurable
+- Aucun accès admin pour les invités
 
 ## Backlog
 - [ ] P2 : IA Prédictive V2
