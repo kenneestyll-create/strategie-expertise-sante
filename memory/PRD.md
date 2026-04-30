@@ -100,6 +100,19 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - [ ] P2 : IA Prédictive V2
 - [ ] P3 : Module Devis personnalisé
 
+## Calendrier SEO — Rappels Phases
+### Phase 1 (FAIT) :
+- [x] Optimisation `/calculatrice-ipp` (title "Calcul IPP", bloc SEO, FAQ Schema.org)
+- [x] Enrichissement `/guide/refus-mdph-aah-que-faire` (cas "renouvellement AAH refusé")
+
+### Phase 2 (MI-MAI 2026 — dans 2-3 semaines) :
+- [ ] Vérifier dans Search Console : impressions "calcul IPP", "simulateur rente IPP", "renouvellement aah refusé"
+- [ ] Si les positions montent → passer à Phase 3
+- [ ] Si stagnation → renforcer encore les pages existantes
+
+### Phase 3 (JUIN 2026 — après validation Phase 2) :
+- [ ] Créer `/guide/tableau-57-maladie-professionnelle` (guide complet, fort potentiel)
+
 ## Credentials Admin
 - Admin: admin@accompagn-sante.fr / Admin2024!
 - Backup Admin: backup@strategie-expertise-sante.fr / AdminSecours2026!

@@ -25,7 +25,8 @@ import {
   Eye,
   Briefcase,
   TrendingDown,
-  ChevronRight
+  ChevronRight,
+  ChevronDown
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -149,14 +150,14 @@ export const CalculatriceIPPPage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Calculatrice IPP" description="Estimez votre taux d'Incapacité Permanente Partielle (IPP) et le montant de votre indemnisation." path="/calculatrice-ipp" />
+      <SEO title="Calcul IPP : simulateur rente et indemnisation AT/MP" description="Calculez votre taux d'IPP et estimez le montant de votre rente accident du travail. Simulateur gratuit basé sur le barème AT/MP officiel." path="/calculatrice-ipp" />
       {/* Hero */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-3xl">
             <span className="text-sm font-medium text-accent uppercase tracking-wider">Outil de simulation</span>
             <h1 className="text-4xl sm:text-5xl font-semibold mt-2 mb-6" data-testid="ipp-calculator-title">
-              Calculatrice de taux IPP
+              Calcul IPP — Simulateur rente et indemnisation
             </h1>
             <p className="text-lg text-muted-foreground">
               Estimez votre indemnisation potentielle selon le barème AT/MP en fonction
@@ -402,6 +403,34 @@ export const CalculatriceIPPPage = () => {
             </p>
           </div>
 
+          {/* SEO Content */}
+          <section className="mt-12 space-y-6" data-testid="ipp-seo-content">
+            <h2 className="text-xl font-semibold">Comprendre le calcul de l'IPP</h2>
+            <div className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+              <p>
+                Le taux d'Incapacité Permanente Partielle (IPP) est fixé par le médecin conseil de la CPAM à la date de consolidation, après un accident du travail ou une maladie professionnelle. Ce taux conditionne directement votre indemnisation : en dessous de 10%, vous recevez un capital forfaitaire unique. À partir de 10%, vous avez droit à une rente viagère versée chaque trimestre.
+              </p>
+              <p className="font-medium text-foreground">Comment utiliser ce simulateur :</p>
+              <ul className="space-y-1.5 list-none pl-0">
+                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Renseignez votre taux d'IPP tel qu'il figure sur la notification de la CPAM</span></li>
+                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Indiquez votre salaire annuel de référence (figurant sur votre attestation de salaire)</span></li>
+                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Le simulateur calcule le capital ou la rente selon le barème officiel AT/MP</span></li>
+              </ul>
+              <p className="font-medium text-foreground">Erreurs fréquentes à éviter :</p>
+              <ul className="space-y-1.5 list-none pl-0">
+                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Ne pas vérifier si le coefficient professionnel a été appliqué — il peut augmenter significativement votre taux</span></li>
+                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Accepter le taux sans le comparer au barème indicatif AT/MP — de nombreux taux sont sous-évalués</span></li>
+                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Laisser passer le délai de 2 mois pour contester — passé ce délai, le taux est définitif</span></li>
+              </ul>
+              <p>
+                Ce simulateur de rente IPP fournit une estimation indicative basée sur les barèmes en vigueur. Il ne remplace pas l'évaluation officielle du médecin conseil. Pour une analyse précise de votre situation, un accompagnement professionnel est recommandé.
+              </p>
+            </div>
+          </section>
+
+          {/* FAQ */}
+          <IPPCalculatriceFAQ />
+
           {/* CTA */}
           <div className="mt-12 p-8 bg-foreground text-primary-foreground rounded-2xl text-center" data-testid="ipp-cta">
             <h2 className="text-2xl font-semibold mb-3">
@@ -429,5 +458,70 @@ export const CalculatriceIPPPage = () => {
         </div>
       </section>
     </main>
+  );
+};
+
+
+const ippFaqData = [
+  {
+    question: "Comment est calculée la rente IPP ?",
+    answer: "La rente est calculée à partir de votre salaire annuel de référence et de votre taux d'IPP. Le taux est divisé en deux tranches : la partie jusqu'à 50% est divisée par 2, la partie au-delà de 50% est multipliée par 1,5. Le résultat, appelé taux utile, est multiplié par le salaire de référence pour obtenir le montant annuel de la rente."
+  },
+  {
+    question: "Quelle est la différence entre capital et rente ?",
+    answer: "En dessous de 10% d'IPP, vous recevez un capital forfaitaire versé en une seule fois (de 500€ à 5000€ environ selon le taux). À partir de 10%, vous percevez une rente viagère versée trimestriellement, calculée sur votre salaire et votre taux. La rente est nettement plus avantageuse sur le long terme."
+  },
+  {
+    question: "Peut-on contester un taux d'IPP ?",
+    answer: "Oui, vous disposez de 2 mois à compter de la notification pour saisir la Commission Médicale de Recours Amiable (CMRA). Il est fortement conseillé de comparer votre taux avec le barème indicatif AT/MP et de vous faire accompagner par un médecin de recours pour l'expertise."
+  }
+];
+
+const IPPCalculatriceFAQ = () => {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  useEffect(() => {
+    document.querySelectorAll('script[type="application/ld+json"]').forEach(s => {
+      try { if (JSON.parse(s.textContent)['@type'] === 'FAQPage') s.remove(); } catch {}
+    });
+    const script = document.createElement('script');
+    script.id = 'ipp-faq-schema';
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": ippFaqData.map(f => ({
+        "@type": "Question",
+        "name": f.question,
+        "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+      }))
+    });
+    document.head.appendChild(script);
+    return () => { const el = document.getElementById('ipp-faq-schema'); if (el) el.remove(); };
+  }, []);
+
+  return (
+    <section className="mt-8" data-testid="ipp-faq">
+      <h2 className="text-lg font-semibold mb-4">Questions fréquentes sur le calcul IPP</h2>
+      <div className="space-y-2">
+        {ippFaqData.map((faq, i) => (
+          <div key={i} className="border border-border rounded-xl overflow-hidden">
+            <button
+              onClick={() => setOpenIndex(openIndex === i ? null : i)}
+              className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/30 transition-colors"
+              data-testid={`ipp-faq-${i}`}
+            >
+              <span className="font-medium text-sm text-foreground pr-4">{faq.question}</span>
+              <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
+            </button>
+            {openIndex === i && (
+              <div className="px-4 pb-4">
+                <p className="text-sm text-muted-foreground leading-relaxed">{faq.answer}</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
   );
 };

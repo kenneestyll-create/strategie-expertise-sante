@@ -11,7 +11,7 @@ PAGES = [
 {
     "slug": "refus-mdph-aah-que-faire",
     "title": "Refus MDPH AAH : que faire ? Recours, délais et solutions",
-    "meta_description": "Refus MDPH ou AAH ? Découvrez les recours possibles, les erreurs à éviter et les solutions pour défendre vos droits efficacement.",
+    "meta_description": "Refus MDPH, AAH ou renouvellement refusé ? Recours possibles, délais stricts et solutions concrètes pour défendre vos droits.",
     "category": "mdph",
     "intention": "refus_droits",
     "priority": "p0",
@@ -20,11 +20,12 @@ PAGES = [
     "content": {
         "reponse_rapide_titre": "Que faire en cas de refus MDPH ?",
         "reponse_rapide": "En cas de refus MDPH pour l'AAH, vous disposez de 2 mois pour déposer un recours administratif préalable obligatoire (RAPO) auprès de la MDPH. Ce recours est gratuit. Pour qu'il aboutisse, il faut renforcer votre dossier : certificats médicaux détaillés décrivant vos limitations fonctionnelles, projet de vie structuré, et pièces justificatives cohérentes. Si le RAPO est rejeté, vous pouvez saisir le tribunal judiciaire (pôle social) dans un nouveau délai de 2 mois. Plus de 40% des recours aboutissent favorablement lorsque le dossier est correctement restructuré.",
-        "contexte": "L'Allocation aux Adultes Handicapés (AAH) est attribuée par la Commission des Droits et de l'Autonomie des Personnes Handicapées (CDAPH), sur avis de l'équipe pluridisciplinaire de la MDPH. Pour en bénéficier, il faut justifier d'un taux d'incapacité d'au moins 80%, ou d'un taux compris entre 50% et 79% assorti d'une restriction substantielle et durable pour l'accès à l'emploi (RSDAE). Le refus MDPH survient quand l'un de ces critères n'est pas reconnu par l'équipe d'évaluation. Ce refus n'est pas définitif : vous disposez de voies de recours clairement encadrées par la loi.",
+        "contexte": "L'Allocation aux Adultes Handicapés (AAH) est attribuée par la Commission des Droits et de l'Autonomie des Personnes Handicapées (CDAPH), sur avis de l'équipe pluridisciplinaire de la MDPH. Pour en bénéficier, il faut justifier d'un taux d'incapacité d'au moins 80%, ou d'un taux compris entre 50% et 79% assorti d'une restriction substantielle et durable pour l'accès à l'emploi (RSDAE). Le refus MDPH survient lors d'une première demande ou lors d'un renouvellement AAH — dans les deux cas, les voies de recours sont identiques. Le renouvellement AAH refusé est particulièrement fréquent lorsque le taux d'incapacité est réévalué à la baisse ou que la RSDAE n'est plus reconnue, même si votre état de santé n'a pas évolué. Ce refus n'est pas définitif : vous disposez de voies de recours clairement encadrées par la loi.",
         "limites": "Après un refus MDPH, que faire concrètement ? Les sites institutionnels (Ameli, Service-public.fr, MDPH) vous expliquent les conditions d'éligibilité et la procédure de recours. Ce qu'ils ne vous disent pas, c'est pourquoi votre dossier a échoué alors que votre handicap est réel. La MDPH évalue sur pièces, dans un temps limité, avec des critères qui privilégient les preuves médicales objectives aux réalités de terrain. Un certificat médical qui mentionne une pathologie sans décrire ses conséquences fonctionnelles quotidiennes n'a quasiment aucun poids. Le projet de vie — document pourtant central — est négligé par la majorité des demandeurs, alors qu'il constitue souvent le facteur déterminant pour la RSDAE.",
         "blocages": [
             "Le certificat médical est trop succinct : il mentionne un diagnostic mais pas les limitations fonctionnelles précises (difficultés à la marche, à la concentration, à la station debout prolongée, etc.). L'équipe pluridisciplinaire ne peut pas évaluer ce qu'elle ne peut pas lire.",
             "Le projet de vie est absent ou rédigé en quelques lignes : c'est pourtant le seul document où vous pouvez décrire concrètement l'impact de votre handicap sur votre quotidien. Sans lui, la CDAPH ne dispose que du certificat médical pour statuer.",
+            "Lors d'un renouvellement AAH, le dossier est simplement reconduit à l'identique sans actualisation. La MDPH réévalue à chaque demande : des certificats médicaux anciens ou un projet de vie inchangé donnent l'impression que votre situation a évolué favorablement, même si ce n'est pas le cas.",
             "Les pièces justificatives manquent de cohérence : des rapports de spécialistes contradictoires, des dates incohérentes, ou des bilans trop anciens affaiblissent le dossier. La MDPH cherche une image claire et actualisée de votre situation.",
             "La RSDAE est mal argumentée : pour un taux entre 50% et 79%, il ne suffit pas de dire que vous ne travaillez pas. Il faut démontrer que vos limitations empêchent structurellement l'accès à un emploi durable, avec des éléments médicaux et professionnels à l'appui.",
             "Le recours reproduit le dossier initial : renvoyer les mêmes pièces au RAPO sans modification ni renforcement conduit mécaniquement au même refus."
@@ -52,7 +53,8 @@ PAGES = [
         ],
         "faq": [
             {"question": "Quel est le délai pour contester un refus MDPH ?", "answer": "Vous disposez de 2 mois à compter de la notification de refus pour déposer un recours administratif préalable obligatoire (RAPO) auprès de la MDPH, puis de 2 mois supplémentaires pour saisir le tribunal judiciaire si le RAPO est rejeté."},
-            {"question": "Peut-on obtenir l'AAH avec un taux entre 50% et 79% ?", "answer": "Oui, à condition de démontrer une restriction substantielle et durable pour l'accès à l'emploi (RSDAE). Cela nécessite des preuves médicales détaillées et un projet de vie argumenté."}
+            {"question": "Peut-on obtenir l'AAH avec un taux entre 50% et 79% ?", "answer": "Oui, à condition de démontrer une restriction substantielle et durable pour l'accès à l'emploi (RSDAE). Cela nécessite des preuves médicales détaillées et un projet de vie argumenté."},
+            {"question": "Mon renouvellement AAH a été refusé, que faire ?", "answer": "Le refus de renouvellement AAH suit la même procédure de recours qu'un refus initial : RAPO dans les 2 mois, puis tribunal. L'erreur la plus courante est de redéposer le même dossier sans l'actualiser. Fournissez des certificats médicaux récents décrivant l'évolution ou la persistance de vos limitations, et mettez à jour votre projet de vie."}
         ]
     },
 },
