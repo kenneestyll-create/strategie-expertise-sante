@@ -404,28 +404,108 @@ export const CalculatriceIPPPage = () => {
           </div>
 
           {/* SEO Content */}
-          <section className="mt-12 space-y-6" data-testid="ipp-seo-content">
-            <h2 className="text-xl font-semibold">Comprendre le calcul de l'IPP</h2>
-            <div className="text-sm text-muted-foreground space-y-3 leading-relaxed">
-              <p>
-                Le taux d'Incapacité Permanente Partielle (IPP) est fixé par le médecin conseil de la CPAM à la date de consolidation, après un accident du travail ou une maladie professionnelle. Ce taux conditionne directement votre indemnisation : en dessous de 10%, vous recevez un capital forfaitaire unique. À partir de 10%, vous avez droit à une rente viagère versée chaque trimestre.
-              </p>
-              <p className="font-medium text-foreground">Comment utiliser ce simulateur :</p>
-              <ul className="space-y-1.5 list-none pl-0">
-                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Renseignez votre taux d'IPP tel qu'il figure sur la notification de la CPAM</span></li>
-                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Indiquez votre salaire annuel de référence (figurant sur votre attestation de salaire)</span></li>
-                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Le simulateur calcule le capital ou la rente selon le barème officiel AT/MP</span></li>
-              </ul>
-              <p className="font-medium text-foreground">Erreurs fréquentes à éviter :</p>
-              <ul className="space-y-1.5 list-none pl-0">
-                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Ne pas vérifier si le coefficient professionnel a été appliqué — il peut augmenter significativement votre taux</span></li>
-                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Accepter le taux sans le comparer au barème indicatif AT/MP — de nombreux taux sont sous-évalués</span></li>
-                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Laisser passer le délai de 2 mois pour contester — passé ce délai, le taux est définitif</span></li>
-              </ul>
-              <p>
-                Ce simulateur de rente IPP fournit une estimation indicative basée sur les barèmes en vigueur. Il ne remplace pas l'évaluation officielle du médecin conseil. Pour une analyse précise de votre situation, un accompagnement professionnel est recommandé.
-              </p>
+          <section className="mt-12 space-y-8" data-testid="ipp-seo-content">
+            {/* Explication du calcul IPP */}
+            <div>
+              <h2 className="text-xl font-semibold mb-3">Comprendre le calcul de l'IPP</h2>
+              <div className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+                <p>
+                  Le taux d'Incapacité Permanente Partielle (IPP) est fixé par le médecin conseil de la CPAM à la date de consolidation, après un accident du travail ou une maladie professionnelle. Ce taux conditionne directement votre indemnisation AT/MP : en dessous de 10%, vous recevez un capital forfaitaire unique. À partir de 10%, vous avez droit à une rente viagère.
+                </p>
+                <p className="font-medium text-foreground">Comment utiliser ce simulateur de rente IPP :</p>
+                <ul className="space-y-1.5 list-none pl-0">
+                  <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Renseignez votre taux d'IPP tel qu'il figure sur la notification de la CPAM</span></li>
+                  <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Indiquez votre salaire annuel de référence (figurant sur votre attestation de salaire)</span></li>
+                  <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Le simulateur calcule le capital ou la rente selon le barème officiel AT/MP</span></li>
+                </ul>
+              </div>
             </div>
+
+            {/* Différence rente / capital */}
+            <div>
+              <h2 className="text-lg font-semibold mb-3">Rente viagère ou capital forfaitaire ?</h2>
+              <div className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+                <p>
+                  Le seuil de <strong className="text-foreground">10% d'IPP</strong> constitue la frontière entre les deux régimes d'indemnisation. En dessous, vous percevez un capital versé en une seule fois. À partir de 10%, vous percevez une rente versée trimestriellement (ou mensuellement si le taux dépasse 50%). La rente est exonérée d'impôt sur le revenu et revalorisée chaque année.
+                </p>
+              </div>
+            </div>
+
+            {/* Tableau barème capital */}
+            <div>
+              <h2 className="text-lg font-semibold mb-3">Barème du capital forfaitaire IPP (taux inférieur à 10%)</h2>
+              <p className="text-xs text-muted-foreground mb-3">Montants indicatifs en vigueur au 1er avril 2026, susceptibles de revalorisation annuelle par arrêté. Source : Code de la Sécurité sociale, articles L.434-1 et D.434-1.</p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
+                  <thead>
+                    <tr className="bg-muted/50">
+                      <th className="text-left p-3 font-medium text-foreground">Taux d'IPP</th>
+                      <th className="text-right p-3 font-medium text-foreground">Capital forfaitaire</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-muted-foreground">
+                    <tr className="border-t border-border"><td className="p-3">1%</td><td className="text-right p-3">479,56 €</td></tr>
+                    <tr className="border-t border-border bg-muted/20"><td className="p-3">2%</td><td className="text-right p-3">779,49 €</td></tr>
+                    <tr className="border-t border-border"><td className="p-3">3%</td><td className="text-right p-3">1 139,06 €</td></tr>
+                    <tr className="border-t border-border bg-muted/20"><td className="p-3">4%</td><td className="text-right p-3">1 797,86 €</td></tr>
+                    <tr className="border-t border-border"><td className="p-3">5%</td><td className="text-right p-3">2 277,57 €</td></tr>
+                    <tr className="border-t border-border bg-muted/20"><td className="p-3">6%</td><td className="text-right p-3">2 816,99 €</td></tr>
+                    <tr className="border-t border-border"><td className="p-3">7%</td><td className="text-right p-3">3 416,09 €</td></tr>
+                    <tr className="border-t border-border bg-muted/20"><td className="p-3">8%</td><td className="text-right p-3">4 075,64 €</td></tr>
+                    <tr className="border-t border-border"><td className="p-3">9%</td><td className="text-right p-3">4 794,84 €</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">Salaire annuel de référence : minimum 21 498,18 € / maximum 171 985,40 € (seuils 2026).</p>
+            </div>
+
+            {/* Cas concrets */}
+            <div>
+              <h2 className="text-lg font-semibold mb-3">Cas concrets d'indemnisation</h2>
+              <div className="space-y-4">
+                <div className="p-4 rounded-xl bg-muted/30 border border-border">
+                  <p className="font-medium text-sm text-foreground mb-2">Cas 1 — Maladie professionnelle (tableau 57, lombalgie)</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Un salarié reconnu en maladie professionnelle pour une lombalgie (tableau 57 — affections péri-articulaires) se voit attribuer un taux d'IPP de <strong className="text-foreground">15%</strong> avec un salaire annuel de référence de <strong className="text-foreground">24 000 €</strong>. Le taux utile est de 15% ÷ 2 = 7,5%. Sa rente annuelle s'élève à 24 000 × 7,5% = <strong className="text-foreground">1 800 €/an</strong>, soit 450 € par trimestre, versée à vie et exonérée d'impôt.
+                  </p>
+                </div>
+                <div className="p-4 rounded-xl bg-muted/30 border border-border">
+                  <p className="font-medium text-sm text-foreground mb-2">Cas 2 — Accident du travail (fracture, taux élevé)</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Un ouvrier victime d'un accident du travail (chute de hauteur, fractures multiples) obtient un taux d'IPP de <strong className="text-foreground">60%</strong> avec un salaire de référence de <strong className="text-foreground">30 000 €</strong>. Le calcul : tranche jusqu'à 50% → 50% ÷ 2 = 25%. Tranche au-delà de 50% → 10% × 1,5 = 15%. Taux utile total = 40%. Rente annuelle : 30 000 × 40% = <strong className="text-foreground">12 000 €/an</strong>, soit 1 000 €/mois, versée mensuellement.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Faute inexcusable */}
+            <div>
+              <h2 className="text-lg font-semibold mb-3">Majoration pour faute inexcusable de l'employeur</h2>
+              <div className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+                <p>
+                  Si votre accident du travail ou maladie professionnelle résulte d'une faute inexcusable de l'employeur — c'est-à-dire s'il avait ou aurait dû avoir conscience du danger sans prendre les mesures de prévention nécessaires — votre rente peut être <strong className="text-foreground">majorée à son taux maximum</strong>. Vous pouvez également obtenir la réparation de préjudices complémentaires : souffrances endurées, préjudice esthétique, préjudice d'agrément et perte de chance professionnelle.
+                </p>
+                <p>
+                  Cette procédure se fait devant le tribunal judiciaire (pôle social) et nécessite de démontrer que l'employeur connaissait le risque. L'accompagnement par un professionnel est fortement recommandé pour constituer le dossier.
+                </p>
+              </div>
+            </div>
+
+            {/* Erreurs fréquentes */}
+            <div>
+              <h2 className="text-lg font-semibold mb-3">Erreurs fréquentes après fixation du taux IPP</h2>
+              <ul className="space-y-2 list-none pl-0 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span><strong className="text-foreground">Accepter un taux trop faible sans recours</strong> — de nombreux taux sont sous-évalués par rapport au barème indicatif AT/MP. Comparez systématiquement votre taux avec le barème avant d'accepter.</span></li>
+                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span><strong className="text-foreground">Dépasser le délai de 2 mois</strong> — vous disposez de 2 mois à compter de la notification pour saisir la Commission Médicale de Recours Amiable (CMRA). Passé ce délai, le taux est définitif.</span></li>
+                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span><strong className="text-foreground">Ne pas demander d'expertise contradictoire</strong> — se présenter seul face au médecin conseil de la CPAM, sans médecin de recours, réduit considérablement les chances de réévaluation.</span></li>
+                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span><strong className="text-foreground">Ne pas conserver les justificatifs médicaux</strong> — imagerie, comptes-rendus opératoires, bilans fonctionnels : ces documents sont indispensables en cas de contestation.</span></li>
+                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span><strong className="text-foreground">Ignorer le coefficient professionnel</strong> — il tient compte de l'impact de l'incapacité sur votre emploi et peut augmenter significativement votre taux. Il est souvent omis dans l'évaluation initiale.</span></li>
+              </ul>
+            </div>
+
+            <p className="text-xs text-muted-foreground italic">
+              Ce simulateur de rente IPP fournit une estimation indicative basée sur les barèmes en vigueur. Les montants sont susceptibles de revalorisation annuelle par arrêté. Il ne remplace pas l'évaluation officielle du médecin conseil de la CPAM. Pour une analyse précise de votre situation et une stratégie de contestation adaptée, un accompagnement professionnel est recommandé.
+            </p>
           </section>
 
           {/* FAQ */}
@@ -469,11 +549,19 @@ const ippFaqData = [
   },
   {
     question: "Quelle est la différence entre capital et rente ?",
-    answer: "En dessous de 10% d'IPP, vous recevez un capital forfaitaire versé en une seule fois (de 500€ à 5000€ environ selon le taux). À partir de 10%, vous percevez une rente viagère versée trimestriellement, calculée sur votre salaire et votre taux. La rente est nettement plus avantageuse sur le long terme."
+    answer: "En dessous de 10% d'IPP, vous recevez un capital forfaitaire versé en une seule fois (de 479€ à 4 794€ selon le taux, barème 2026). À partir de 10%, vous percevez une rente viagère versée trimestriellement ou mensuellement, calculée sur votre salaire et votre taux. La rente est nettement plus avantageuse sur le long terme."
   },
   {
     question: "Peut-on contester un taux d'IPP ?",
     answer: "Oui, vous disposez de 2 mois à compter de la notification pour saisir la Commission Médicale de Recours Amiable (CMRA). Il est fortement conseillé de comparer votre taux avec le barème indicatif AT/MP et de vous faire accompagner par un médecin de recours pour l'expertise."
+  },
+  {
+    question: "La rente IPP est-elle imposable ?",
+    answer: "Non. La rente d'incapacité permanente versée par la Sécurité sociale au titre d'un accident du travail ou d'une maladie professionnelle est totalement exonérée d'impôt sur le revenu, de CSG et de CRDS. Elle ne doit pas être déclarée dans vos revenus."
+  },
+  {
+    question: "Peut-on cumuler rente IPP et salaire ?",
+    answer: "Oui. La rente d'incapacité permanente est cumulable avec un salaire. Elle compense la perte de capacité de gain liée aux séquelles, et non l'impossibilité de travailler. Vous pouvez donc reprendre une activité professionnelle tout en continuant à percevoir votre rente."
   }
 ];
 

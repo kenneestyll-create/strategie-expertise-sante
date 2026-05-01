@@ -102,7 +102,7 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 
 ## Calendrier SEO — Rappels Phases
 ### Phase 1 (FAIT) :
-- [x] Optimisation `/calculatrice-ipp` (title "Calcul IPP", bloc SEO, FAQ Schema.org)
+- [x] Optimisation `/calculatrice-ipp` : title/H1 "Calcul IPP", barème capital 2026 vérifié, 2 cas concrets, faute inexcusable, erreurs fréquentes, 5 FAQ Schema.org (~1100 mots)
 - [x] Enrichissement `/guide/refus-mdph-aah-que-faire` (cas "renouvellement AAH refusé")
 
 ### Phase 2 (MI-MAI 2026 — dans 2-3 semaines) :
