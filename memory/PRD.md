@@ -30,6 +30,7 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - [x] SEO /calculatrice-aah : enrichissement complet (essentiel, déconjugalisation, plafonds, cas concrets, erreurs ✗/→, 5 FAQ Schema.org, ~1000 mots)
 - [x] SEO /dossier-express : description service, cible, processus + FAQ Schema.org
 - [x] SEO /mdph : enrichissement complet (essentiel, certificat médical, RSDAE, enfants/mineurs, dossiers refusés, AAH+travail, invalidité vs MDPH, erreurs ✗/→, 6 FAQ Schema.org, ~1050 mots)
+- [x] SEO /accident-travail-maladie-professionnelle : enrichissement complet (essentiel délais 24h/48h/120j/2ans, blocages réels, consolidation décisive, IPP capital/rente, faute inexcusable, MP hors tableau, erreurs ✗/→, 8 FAQ Schema.org sur questions Facebook réelles)
 - [x] /espace-client : noindex ajouté (page privée, pas d'indexation)
 
 ## SEO Phase 2 — 15 Pages Guides Actives (COMPLET)
