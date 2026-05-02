@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
+import { DossierExpressCTA } from '@/components/DossierExpressCTA';
 import {
   ArrowRight,
   Stethoscope,
@@ -364,6 +365,14 @@ export default function MedecinConseilPage() {
 
         </div>
       </section>
+
+      {/* Encart conversion */}
+      <DossierExpressCTA
+        testId="médecin-conseil-cta-dossier"
+        title="Convocation reçue ou avis défavorable ?"
+        text="Une convocation par le médecin conseil CPAM ou un avis défavorable se prépare et se conteste sur dossier médical solide. Le Dossier Express IA identifie les éléments manquants, structure votre argumentation et le calendrier exact de vos recours (CRA, CMRA, Tribunal)."
+        ctaLabel="Préparer mon dossier"
+      />
 
       {/* FAQ */}
       <MedecinConseilFaq />

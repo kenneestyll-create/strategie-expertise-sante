@@ -8,6 +8,7 @@ import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { SEO } from '@/components/SEO';
+import { DossierExpressCTA } from '@/components/DossierExpressCTA';
 import {
   Calculator,
   AlertTriangle,
@@ -507,6 +508,14 @@ export const CalculatriceIPPPage = () => {
               Ce simulateur de rente IPP fournit une estimation indicative basée sur les barèmes en vigueur. Les montants sont susceptibles de revalorisation annuelle par arrêté. Il ne remplace pas l'évaluation officielle du médecin conseil de la CPAM. Pour une analyse précise de votre situation et une stratégie de contestation adaptée, un accompagnement professionnel est recommandé.
             </p>
           </section>
+
+          {/* Encart conversion */}
+          <DossierExpressCTA
+            testId="ipp-cta-dossier"
+            title="Vous venez de calculer votre taux estimé ?"
+            text="Un écart de 2 ou 3 points d'IPP représente fréquemment 15 000 à 40 000 € sur l'indemnisation finale. Le Dossier Express IA analyse votre situation, identifie les leviers de revalorisation et vous oriente vers la bonne stratégie de contestation."
+            ctaLabel="Analyser ma situation IPP"
+          />
 
           {/* FAQ */}
           <IPPCalculatriceFAQ />

@@ -33,6 +33,7 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - [x] SEO /accident-travail-maladie-professionnelle : enrichissement complet (essentiel délais 24h/48h/120j/2ans, blocages réels, consolidation décisive, IPP capital/rente, faute inexcusable, MP hors tableau, erreurs ✗/→, 8 FAQ Schema.org sur questions Facebook réelles)
 - [x] SEO /expertise-medicale : enrichissement complet (essentiel acte juridique, préparation 80%, dires contradictoires, contre-expertise, cas concret consolidation sans séquelles, 4 erreurs ✗/→, 7 FAQ Schema.org)
 - [x] SEO /medecin-conseil : enrichissement complet (3 types médecins conseils CPAM/assureur/recours, convocation CPAM 6 mois, cas concret reprise imposée vs avis traitant, CRA/CMRA, invalidité vs inaptitude, 4 erreurs ✗/→, 7 FAQ Schema.org)
+- [x] Encart conversion `DossierExpressCTA` : composant réutilisable élégant (barre dorée verticale + bouton outline) injecté juste avant la FAQ sur les 6 pages stratégiques (IPP, AAH, MDPH, AT/MP, Expertise, Médecin Conseil) — chaque page devient un mini-funnel d'acquisition vers /dossier-express
 - [x] /espace-client : noindex ajouté (page privée, pas d'indexation)
 
 ## SEO Phase 2 — 15 Pages Guides Actives (COMPLET)

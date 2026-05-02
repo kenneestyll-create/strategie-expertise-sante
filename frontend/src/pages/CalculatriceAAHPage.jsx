@@ -8,6 +8,7 @@ import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import axios from 'axios';
 import { SEO } from '@/components/SEO';
+import { DossierExpressCTA } from '@/components/DossierExpressCTA';
 import {
   Calculator,
   AlertTriangle,
@@ -539,6 +540,14 @@ export const CalculatriceAAHPage = () => {
               </div>
             </div>
           </section>
+
+          {/* Encart conversion */}
+          <DossierExpressCTA
+            testId="aah-cta-dossier"
+            title="Votre simulation ne correspond pas à votre réalité ?"
+            text="Beaucoup de demandes AAH sont refusées non par manque de droits, mais à cause d'un dossier mal articulé sur le RSDAE ou les ressources. Le Dossier Express IA identifie le point de blocage exact et formule la stratégie pour votre prochain dépôt ou recours."
+            ctaLabel="Analyser mon dossier AAH"
+          />
 
           {/* FAQ */}
           <AAHCalculatriceFAQ />

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
+import { DossierExpressCTA } from '@/components/DossierExpressCTA';
 import { 
   ArrowRight, 
   Stethoscope, 
@@ -274,6 +275,14 @@ export const ExpertiseMedicalePage = () => {
 
         </div>
       </section>
+
+      {/* Encart conversion */}
+      <DossierExpressCTA
+        testId="expertise-cta-dossier"
+        title="Expertise prochaine ou rapport déjà reçu ?"
+        text="Préparer une expertise demande 3 à 6 semaines de travail méthodique sur votre dossier. Contester un rapport défavorable exige une argumentation médicale et juridique précise. Le Dossier Express IA structure votre préparation ou votre contestation."
+        ctaLabel="Préparer mon expertise"
+      />
 
       {/* FAQ */}
       <ExpertiseFaq />

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
+import { DossierExpressCTA } from '@/components/DossierExpressCTA';
 import { useState, useEffect } from 'react';
 import { 
   ArrowRight, 
@@ -253,6 +254,14 @@ export const MDPHPage = () => {
 
         </div>
       </section>
+
+      {/* Encart conversion */}
+      <DossierExpressCTA
+        testId="mdph-cta-dossier"
+        title="Refus, taux insuffisant, dossier en cours ?"
+        text="60 % des refus MDPH se gagnent en recours lorsque le dossier est correctement reconstruit. Le Dossier Express IA décortique votre situation, identifie les pièces manquantes et structure votre argumentation pour la CDAPH ou le recours."
+        ctaLabel="Faire analyser mon dossier MDPH"
+      />
 
       {/* FAQ */}
       <MDPHPageFAQ />
