@@ -424,6 +424,7 @@ export const CalculatriceAAHPage = () => {
                 <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Déconjugalisation : seuls <strong className="text-foreground">vos revenus</strong> comptent depuis octobre 2023</span></li>
                 <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Cumul AAH + salaire : possible — l'AAH complète vos revenus</span></li>
                 <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>L'AAH est exonérée d'impôt sur le revenu, de CSG et de CRDS</span></li>
+                <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Retraite : taux ≥ 80% → AAH maintenue en complément. Taux 50-79% → AAH remplacée par l'ASPA</span></li>
               </ul>
               <p className="text-xs text-muted-foreground mt-3 italic">Barèmes CAF en vigueur au 1er avril 2026. Montants indicatifs, susceptibles de revalorisation annuelle.</p>
             </div>
@@ -593,6 +594,10 @@ const aahFaqData = [
   {
     question: "La déconjugalisation s'applique-t-elle automatiquement ?",
     answer: "Oui, depuis octobre 2023, seuls vos revenus personnels sont pris en compte, et non ceux de votre conjoint. Si l'ancien calcul conjugal était plus favorable, vous pouvez demander son maintien — mais ce cas est rare. Si vous aviez été refusé avant cette date, refaites une simulation."
+  },
+  {
+    question: "Que devient l'AAH à l'ouverture des droits à la retraite ?",
+    answer: "Cela dépend de votre taux d'incapacité. Avec un taux d'au moins 80%, l'AAH peut être maintenue en complément de votre pension de retraite si celle-ci est inférieure au montant de l'AAH (versement différentiel). Avec un taux entre 50% et 79%, l'AAH cesse à l'âge légal de la retraite et peut être remplacée par l'ASPA (Allocation de Solidarité aux Personnes Âgées) si vous y êtes éligible. Dans tous les cas, vous devez demander votre retraite — l'AAH ne dispense pas de cette démarche."
   }
 ];
 
