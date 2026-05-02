@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
@@ -11,7 +12,8 @@ import {
   CheckCircle,
   AlertTriangle,
   BookOpen,
-  Phone
+  Phone,
+  ChevronDown
 } from 'lucide-react';
 
 export const ExpertiseMedicalePage = () => {
@@ -47,7 +49,7 @@ export const ExpertiseMedicalePage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Expertise médicale" description="Préparation et accompagnement pour vos expertises médicales. Analysez votre dossier et préparez vos arguments." path="/expertise-medicale" />
+      <SEO title="Expertise médicale : préparer, comprendre, contester" description="Tout ce qu'il faut savoir avant une expertise médicale : préparation stratégique, pièges à éviter, dires contradictoires et recours en cas de rapport défavorable." path="/expertise-medicale" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
@@ -172,6 +174,110 @@ export const ExpertiseMedicalePage = () => {
         </div>
       </section>
 
+      {/* ENRICHMENT — Préparation stratégique */}
+      <section className="section-padding bg-secondary/30">
+        <div className="max-w-4xl mx-auto space-y-10">
+
+          {/* L'essentiel */}
+          <div className="p-5 rounded-xl bg-[#1a1a2e]/[0.03] border border-[#C9A84C]/20" data-testid="expertise-essentiel">
+            <h2 className="font-semibold text-base mb-3 text-foreground">L'essentiel à retenir</h2>
+            <ul className="space-y-1.5 list-none pl-0 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Une expertise n'est pas un examen médical neutre : c'est un <strong className="text-foreground">acte juridique</strong> qui détermine votre indemnisation</span></li>
+              <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>L'expert est mandaté par <strong className="text-foreground">l'assureur ou le tribunal</strong> — il n'est pas votre médecin</span></li>
+              <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Le rapport produit fait <strong className="text-foreground">force probante</strong> : un oubli ou une minimisation devient quasi irréversible</span></li>
+              <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Vous avez le droit d'être assisté par un <strong className="text-foreground">médecin de recours</strong> et de produire des dires contradictoires</span></li>
+              <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Le pré-rapport peut être contesté avant signature ; après, seule la <strong className="text-foreground">contre-expertise</strong> reste possible</span></li>
+              <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Une expertise mal préparée se solde fréquemment par une indemnisation <strong className="text-foreground">sous-évaluée de plusieurs dizaines de milliers d'euros</strong></span></li>
+            </ul>
+            <p className="text-xs text-muted-foreground mt-3 italic">Référentiel : nomenclature Dintilhac, Code de procédure civile, jurisprudence des Cours d'appel 2024-2026.</p>
+          </div>
+
+          {/* Pourquoi c'est un acte stratégique */}
+          <div>
+            <h2 className="text-lg font-semibold mb-2">L'expertise médicale n'est pas un examen, c'est une procédure</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              La majorité des victimes abordent l'expertise comme une consultation médicale ordinaire. C'est précisément ce qui crée les indemnisations sous-évaluées. L'expert, choisi par l'assureur ou le juge, suit une mission écrite — il ne cherche pas à comprendre votre histoire, il <strong className="text-foreground">remplit une grille d'évaluation</strong>. Tout ce qui n'est pas explicitement dit, documenté et insisté ne figurera pas dans son rapport. Et tout ce qui figure dans son rapport devient la base juridique de votre indemnisation pour les années à venir.
+            </p>
+          </div>
+
+          {/* Avant l'expertise */}
+          <div>
+            <h2 className="text-lg font-semibold mb-2">Avant : la phase qui détermine 80% du résultat</h2>
+            <div className="text-sm text-muted-foreground space-y-2 leading-relaxed">
+              <p>
+                La préparation se joue sur trois plans. <strong className="text-foreground">Le dossier médical</strong> doit être chronologique, exhaustif, et inclure tous les comptes rendus, examens et certificats — y compris les douleurs secondaires souvent négligées (lombaires après un coup du lapin, troubles du sommeil, retentissement psy). <strong className="text-foreground">Le carnet de doléances</strong> liste précisément ce que vous ne pouvez plus faire au quotidien : porter vos enfants, conduire plus de 20 minutes, dormir plus de 4h d'affilée. <strong className="text-foreground">Le médecin de recours</strong>, médecin spécialisé en réparation du dommage corporel, vous prépare et vous accompagne le jour J.
+              </p>
+              <p>
+                Coût d'un médecin de recours : entre 800 et 3 000 € selon la complexité. Cet honoraire est souvent pris en charge par votre protection juridique, ou intégré aux indemnisations finales selon la nomenclature Dintilhac.
+              </p>
+            </div>
+          </div>
+
+          {/* Pendant l'expertise */}
+          <div className="p-4 rounded-xl bg-muted/30 border border-border">
+            <h3 className="font-medium text-sm text-foreground mb-1.5">Pendant : ce qui se joue vraiment ce jour-là</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              L'expert ouvre presque toujours par une question apparemment anodine : <em>"Comment ça va ?"</em> Répondre <em>"ça va"</em> par politesse coûte en moyenne 5 à 15 % de votre indemnisation finale. Décrivez objectivement : douleurs chroniques, limitations, fatigue, retentissement professionnel et familial. Ne minimisez rien, n'exagérez rien. Si une manipulation déclenche une douleur, dites-le — l'expert doit le consigner. Les émotions authentiques (larmes liées à la perte d'autonomie) documentent un préjudice psychologique réel, ne les retenez pas par pudeur.
+            </p>
+          </div>
+
+          {/* Après — recours */}
+          <div>
+            <h2 className="text-lg font-semibold mb-2">Après : pré-rapport, dires et contre-expertise</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Dans la majorité des procédures contradictoires, l'expert produit d'abord un <strong className="text-foreground">pré-rapport</strong>. C'est le moment décisif. Vous disposez généralement de 4 à 6 semaines pour produire des <strong className="text-foreground">dires contradictoires</strong> : observations écrites argumentant les points de désaccord. Une fois le rapport définitif déposé, seule la <strong className="text-foreground">contre-expertise judiciaire</strong> permet de le remettre en cause — procédure plus lourde, mais parfois indispensable. La contestation d'une expertise unilatérale d'assureur passe par une demande d'expertise contradictoire, refusable seulement avec motif sérieux.
+            </p>
+          </div>
+
+          {/* Cas concret */}
+          <div className="p-4 rounded-xl bg-accent/5 border border-accent/20" data-testid="expertise-cas-concret">
+            <h3 className="font-medium text-sm text-foreground mb-2">Cas concret — Consolidation sans séquelles reconnues</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Un salarié victime d'un accident du travail au dos se présente seul à l'expertise 14 mois après les faits. L'expert constate "absence de séquelles objectivables" et propose une consolidation sans IPP. Le salarié signe le rapport, soulagé. Six mois plus tard, ses douleurs chroniques empirent et l'empêchent de tenir son poste. <strong className="text-foreground">Sans dires contradictoires déposés à l'époque</strong>, ses recours sont quasi épuisés. Il finira par obtenir, après 2 ans de procédure, une révision IPP à 8 % via une contre-expertise judiciaire — pour un préjudice réel évalué par un médecin de recours indépendant à 18 %. Une préparation initiale lui aurait évité 2 ans de procédure et plusieurs dizaines de milliers d'euros de manque à gagner.
+            </p>
+          </div>
+
+          {/* Erreurs à éviter */}
+          <div>
+            <h3 className="font-medium text-sm text-foreground mb-3">Erreurs à éviter le jour de l'expertise</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/5 border border-red-500/10">
+                <span className="text-red-500 shrink-0 font-bold mt-0.5">✗</span>
+                <div>
+                  <p className="font-medium text-foreground">Y aller seul, sans médecin de recours</p>
+                  <p className="text-muted-foreground text-xs mt-0.5">→ Face au médecin expert de l'assureur, vous êtes désarmé techniquement et juridiquement. Le médecin de recours impose le contradictoire et fait acter ce qui sinon serait minimisé.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/5 border border-red-500/10">
+                <span className="text-red-500 shrink-0 font-bold mt-0.5">✗</span>
+                <div>
+                  <p className="font-medium text-foreground">Minimiser ses douleurs par pudeur ou par peur d'en faire trop</p>
+                  <p className="text-muted-foreground text-xs mt-0.5">→ "Ça va à peu près" devient "absence de gêne fonctionnelle" dans le rapport. Décrivez ce que vous ne pouvez plus faire concrètement, avec exemples du quotidien.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/5 border border-red-500/10">
+                <span className="text-red-500 shrink-0 font-bold mt-0.5">✗</span>
+                <div>
+                  <p className="font-medium text-foreground">Signer le rapport sans avoir produit de dires contradictoires</p>
+                  <p className="text-muted-foreground text-xs mt-0.5">→ Une fois le rapport définitif, seule la contre-expertise permet de le contester. Profitez de la phase pré-rapport pour faire acter par écrit chaque désaccord médical et chaque oubli.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/5 border border-red-500/10">
+                <span className="text-red-500 shrink-0 font-bold mt-0.5">✗</span>
+                <div>
+                  <p className="font-medium text-foreground">Omettre les préjudices psychologiques et le retentissement professionnel</p>
+                  <p className="text-muted-foreground text-xs mt-0.5">→ Anxiété, troubles du sommeil, perte de confiance, reconversion forcée : tout cela relève d'un préjudice indemnisable distinct. Sans documentation médicale (psychologue, psychiatre), il sera ignoré.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <ExpertiseFaq />
+
       {/* Médecin Conseil — Strategic Link */}
       <section className="section-padding bg-accent/5 border-y border-accent/10" data-testid="expertise-médecin-conseil">
         <div className="max-w-4xl mx-auto">
@@ -247,5 +353,87 @@ export const ExpertiseMedicalePage = () => {
         </div>
       </section>
     </main>
+  );
+};
+
+const expertiseFaqData = [
+  {
+    question: "Que dire et que ne pas dire lors d'une expertise médicale ?",
+    answer: "Dites tout ce qui limite votre quotidien : douleurs chroniques, fatigue, troubles du sommeil, retentissement familial et professionnel. Décrivez ce que vous ne pouvez plus faire (porter, conduire longtemps, dormir sans réveil). Ne dites jamais 'ça va' par politesse — c'est l'erreur n°1, qui se traduit dans le rapport par 'absence de gêne fonctionnelle'. Ne minimisez ni n'exagérez. Si une manipulation est douloureuse, dites-le et faites-le consigner."
+  },
+  {
+    question: "Puis-je refuser une manipulation douloureuse ou un examen invasif ?",
+    answer: "Oui. Vous avez le droit absolu de refuser tout examen que vous jugez excessif ou douloureux. Faites consigner par écrit dans le rapport votre refus et son motif (douleur intense, antécédent médical, absence de pertinence). Ce refus motivé ne vous est pas opposable s'il est documenté."
+  },
+  {
+    question: "Combien coûte un médecin de recours et qui paie ?",
+    answer: "Les honoraires d'un médecin de recours (médecin conseil de victime) varient selon la complexité : 800 à 1 800 € pour un dossier classique, 1 800 à 4 000 € pour un dossier complexe avec plusieurs séquelles. Ces honoraires sont fréquemment pris en charge par votre assurance protection juridique. Selon la nomenclature Dintilhac, ils peuvent également être inclus dans les frais divers indemnisables au titre du préjudice corporel — l'avance reste à votre charge mais est récupérable."
+  },
+  {
+    question: "Qu'est-ce qu'un dire contradictoire et à quoi sert-il ?",
+    answer: "Un 'dire' est une observation écrite, signée par votre conseil ou votre médecin de recours, déposée auprès de l'expert pendant la phase de pré-rapport. Il sert à argumenter chaque désaccord médical, à demander des examens complémentaires, à faire acter une omission. L'expert a l'obligation d'y répondre dans son rapport définitif. C'est le seul moyen efficace d'influencer le contenu final d'une expertise."
+  },
+  {
+    question: "Comment contester une expertise unilatérale d'assureur ?",
+    answer: "Toute expertise réalisée par le seul médecin de l'assureur, sans contradictoire, peut être contestée. Vous pouvez demander une expertise médicale contradictoire (votre médecin de recours assiste l'examen et co-signe ou conteste les conclusions), refuser de signer un rapport unilatéral, ou saisir le tribunal pour obtenir une expertise judiciaire. La jurisprudence des Cours d'appel sanctionne régulièrement les rapports non contradictoires."
+  },
+  {
+    question: "Quelle est la différence entre une expertise amiable et une expertise judiciaire ?",
+    answer: "L'expertise amiable est demandée et organisée hors procédure judiciaire, généralement par l'assureur. Elle est plus rapide mais l'expert n'est pas désigné par un juge — sa partialité peut être plus marquée. L'expertise judiciaire est ordonnée par le tribunal qui désigne lui-même l'expert sur une liste agréée. Elle offre des garanties procédurales fortes (contradictoire obligatoire, dires opposables, sanctions en cas de manquement) mais prend 6 à 18 mois."
+  },
+  {
+    question: "L'expertise est terminée et le rapport me semble injuste : que faire ?",
+    answer: "Si vous êtes encore en phase de pré-rapport, déposez immédiatement des dires contradictoires argumentés. Si le rapport est définitif et déjà déposé, vous pouvez demander une contre-expertise (amiable si l'assureur l'accepte, judiciaire sinon). Joignez à votre demande un certificat médical critique rédigé par un médecin de recours, listant points par points les omissions, les évaluations sous-cotées et les éléments médicaux ignorés. La contre-expertise judiciaire est accordée si la demande est sérieusement motivée."
+  }
+];
+
+const ExpertiseFaq = () => {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  useEffect(() => {
+    document.querySelectorAll('script[type="application/ld+json"]').forEach(s => {
+      try { if (JSON.parse(s.textContent)['@type'] === 'FAQPage') s.remove(); } catch {}
+    });
+    const script = document.createElement('script');
+    script.id = 'expertise-faq-schema';
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": expertiseFaqData.map(f => ({
+        "@type": "Question",
+        "name": f.question,
+        "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+      }))
+    });
+    document.head.appendChild(script);
+    return () => { const el = document.getElementById('expertise-faq-schema'); if (el) el.remove(); };
+  }, []);
+
+  return (
+    <section className="section-padding bg-secondary/20" data-testid="expertise-faq">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-3xl font-semibold mb-8 text-center">Questions fréquentes sur l'expertise médicale</h2>
+        <div className="space-y-2">
+          {expertiseFaqData.map((faq, i) => (
+            <div key={i} className="border border-border rounded-xl overflow-hidden bg-background">
+              <button
+                onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/30 transition-colors"
+                data-testid={`expertise-faq-${i}`}
+              >
+                <span className="font-medium text-sm text-foreground pr-4">{faq.question}</span>
+                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
+              </button>
+              {openIndex === i && (
+                <div className="px-4 pb-4">
+                  <p className="text-sm text-muted-foreground leading-relaxed">{faq.answer}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 };

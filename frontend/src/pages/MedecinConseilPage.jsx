@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
@@ -13,7 +13,8 @@ import {
   CheckCircle,
   CircleDollarSign,
   FileSearch,
-  Phone
+  Phone,
+  ChevronDown
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -55,8 +56,8 @@ export default function MedecinConseilPage() {
   return (
     <main className="page-transition pt-20">
       <SEO
-        title="Choisir le bon médecin conseil | Stratégie & Expertise Santé"
-        description="Le choix du médecin conseil est déterminant pour votre indemnisation. Expertise en dommage corporel, accident du travail, maladie professionnelle. Orientation personnalisée."
+        title="Médecin conseil : CPAM, assureur, victime — comprendre les rôles"
+        description="Médecin conseil CPAM, médecin de l'assureur, médecin de recours : 3 rôles différents, 3 stratégies différentes. Comprendre, préparer, contester."
         path="/medecin-conseil"
       />
 
@@ -261,6 +262,112 @@ export default function MedecinConseilPage() {
         </div>
       </section>
 
+      {/* ENRICHMENT — Clarification & cas terrain */}
+      <section className="section-padding bg-secondary/30">
+        <div className="max-w-4xl mx-auto space-y-10">
+
+          {/* L'essentiel */}
+          <div className="p-5 rounded-xl bg-[#1a1a2e]/[0.03] border border-[#C9A84C]/20" data-testid="médecin-conseil-essentiel">
+            <h2 className="font-semibold text-base mb-3 text-foreground">L'essentiel à retenir</h2>
+            <ul className="space-y-1.5 list-none pl-0 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Il existe <strong className="text-foreground">3 types de médecins conseils</strong> : CPAM (sécurité sociale), assureur privé, et médecin de recours (médecin conseil de victime)</span></li>
+              <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Le médecin conseil <strong className="text-foreground">n'est jamais votre médecin</strong> — son rôle est d'évaluer votre dossier au regard d'une mission précise</span></li>
+              <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>CPAM : convocation fréquente après <strong className="text-foreground">6 ou 12 mois d'arrêt</strong>, ou pour invalidité, ALD, AT/MP</span></li>
+              <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Tout avis défavorable du médecin conseil CPAM est contestable dans les <strong className="text-foreground">2 mois</strong> (CRA pour décisions administratives, CMRA pour décisions médicales)</span></li>
+              <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Manquer une convocation expose à une <strong className="text-foreground">suspension immédiate des indemnités journalières</strong> — sauf motif légitime documenté</span></li>
+              <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Pour une indemnisation, le choix du <strong className="text-foreground">médecin de recours</strong> peut représenter plusieurs dizaines de milliers d'euros sur le résultat final</span></li>
+            </ul>
+            <p className="text-xs text-muted-foreground mt-3 italic">Code de la Sécurité sociale, articles L. 142-1 et suivants — procédures CPAM en vigueur en 2026.</p>
+          </div>
+
+          {/* 3 types de médecins conseils */}
+          <div>
+            <h2 className="text-lg font-semibold mb-3">Trois médecins conseils, trois stratégies différentes</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              La confusion entre ces trois rôles produit la majorité des erreurs stratégiques. Chacun défend des intérêts différents — comprendre lequel vous avez en face change radicalement votre préparation.
+            </p>
+            <div className="grid md:grid-cols-3 gap-4 text-sm">
+              <div className="p-4 rounded-xl bg-background border border-border">
+                <h3 className="font-medium text-foreground mb-2">Médecin conseil CPAM</h3>
+                <p className="text-muted-foreground text-xs leading-relaxed">Mandaté par la Sécurité sociale. Évalue la justification médicale d'un arrêt, d'une demande d'invalidité, d'une reconnaissance d'AT/MP. Peut prescrire la reprise du travail. <strong className="text-foreground">Décisions contestables</strong> via CRA / CMRA.</p>
+              </div>
+              <div className="p-4 rounded-xl bg-background border border-border">
+                <h3 className="font-medium text-foreground mb-2">Médecin de l'assureur</h3>
+                <p className="text-muted-foreground text-xs leading-relaxed">Mandaté par votre assureur ou celui du tiers responsable. Évalue les séquelles pour fixer l'indemnisation. <strong className="text-foreground">N'est pas neutre</strong> : sa mission est de chiffrer le préjudice du point de vue de l'assureur qui le rémunère.</p>
+              </div>
+              <div className="p-4 rounded-xl bg-accent/5 border border-accent/30">
+                <h3 className="font-medium text-foreground mb-2">Médecin de recours (médecin conseil de victime)</h3>
+                <p className="text-muted-foreground text-xs leading-relaxed">Choisi et rémunéré par vous. Indépendant des assureurs. Diplômé en réparation du dommage corporel. <strong className="text-foreground">Défend vos intérêts</strong> face au médecin de l'assureur ou de l'expert judiciaire.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Convocation CPAM */}
+          <div>
+            <h2 className="text-lg font-semibold mb-2">Convocation par le médecin conseil CPAM : ce qui se joue</h2>
+            <div className="text-sm text-muted-foreground space-y-2 leading-relaxed">
+              <p>
+                Au-delà de 6 mois d'arrêt continu, la convocation par le médecin conseil devient quasi systématique. Son objet n'est pas de douter de vous, mais de <strong className="text-foreground">vérifier la justification médicale du maintien des indemnités journalières</strong>, d'orienter vers une éventuelle invalidité ou inaptitude, ou de fixer une consolidation pour un AT/MP. La convocation est obligatoire : ne pas s'y rendre suspend les IJ jusqu'à régularisation.
+              </p>
+              <p>
+                Préparation : apportez l'ensemble de vos certificats récents, les comptes rendus d'examens, les ordonnances en cours, et un courrier de votre médecin traitant détaillant les limitations actuelles. Vous pouvez être accompagné d'un proche pour le soutien moral, mais l'examen lui-même reste individuel.
+              </p>
+              <p>
+                À l'issue du rendez-vous, trois décisions principales sont possibles : prolongation des IJ, mise en invalidité (catégorie 1, 2 ou 3), ou avis favorable à la reprise. Tout avis défavorable doit vous être notifié par écrit par la CPAM avec mention des voies de recours.
+              </p>
+            </div>
+          </div>
+
+          {/* Cas concret CPAM */}
+          <div className="p-4 rounded-xl bg-accent/5 border border-accent/20" data-testid="médecin-conseil-cas-concret">
+            <h3 className="font-medium text-sm text-foreground mb-2">Cas concret — Reprise imposée malgré l'avis du médecin traitant</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Une assistante administrative en arrêt depuis 9 mois pour syndrome dépressif est convoquée par le médecin conseil CPAM. Son médecin traitant et son psychiatre maintiennent une incapacité totale. Le médecin conseil estime qu'une reprise à temps partiel thérapeutique est possible et émet un avis favorable à la reprise. Notifiée le 15 du mois, la CPAM coupe les IJ au 1er du mois suivant.
+              La salariée saisit la <strong className="text-foreground">Commission Médicale de Recours Amiable (CMRA)</strong> dans les 2 mois en joignant les certificats détaillés de ses médecins, un courrier confraternel motivé, et un complément médical d'un psychiatre tiers. Quatre mois plus tard, la CMRA infirme l'avis du médecin conseil et rétablit les IJ avec rappel rétroactif. <strong className="text-foreground">Sans recours dans les délais</strong>, la décision serait devenue définitive et les IJ perdues. Cette procédure est gratuite.
+            </p>
+          </div>
+
+          {/* Erreurs */}
+          <div>
+            <h3 className="font-medium text-sm text-foreground mb-3">Erreurs les plus coûteuses face au médecin conseil</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/5 border border-red-500/10">
+                <span className="text-red-500 shrink-0 font-bold mt-0.5">✗</span>
+                <div>
+                  <p className="font-medium text-foreground">Confondre médecin conseil CPAM et médecin de l'assureur</p>
+                  <p className="text-muted-foreground text-xs mt-0.5">→ Les enjeux, les délais et les recours sont totalement différents. Une stratégie efficace face au médecin CPAM est inadaptée face à un médecin d'assureur, et inversement.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/5 border border-red-500/10">
+                <span className="text-red-500 shrink-0 font-bold mt-0.5">✗</span>
+                <div>
+                  <p className="font-medium text-foreground">Manquer un rendez-vous sans justificatif</p>
+                  <p className="text-muted-foreground text-xs mt-0.5">→ La CPAM suspend immédiatement les IJ. Un report est possible mais doit être demandé en amont, par écrit, avec un motif sérieux (hospitalisation, déplacement programmé, certificat médical).</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/5 border border-red-500/10">
+                <span className="text-red-500 shrink-0 font-bold mt-0.5">✗</span>
+                <div>
+                  <p className="font-medium text-foreground">Ne pas contester un avis défavorable dans les 2 mois</p>
+                  <p className="text-muted-foreground text-xs mt-0.5">→ Passé ce délai, la décision devient définitive. La CMRA est gratuite, accessible, et donne fréquemment raison aux assurés lorsque le dossier est solidement complété d'éléments médicaux nouveaux.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/5 border border-red-500/10">
+                <span className="text-red-500 shrink-0 font-bold mt-0.5">✗</span>
+                <div>
+                  <p className="font-medium text-foreground">Confondre invalidité (CPAM) et inaptitude (médecine du travail)</p>
+                  <p className="text-muted-foreground text-xs mt-0.5">→ L'invalidité est prononcée par le médecin conseil CPAM et ouvre droit à pension. L'inaptitude est prononcée par le médecin du travail et concerne le poste. Les deux sont indépendants et peuvent se cumuler. Méconnaître cette différence prive de droits cumulables.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <MedecinConseilFaq />
+
       {/* ── CTA ── */}
       <section className="section-padding bg-accent/5 border-y border-accent/10" data-testid="médecin-conseil-cta">
         <div className="max-w-7xl mx-auto text-center">
@@ -310,3 +417,85 @@ export default function MedecinConseilPage() {
     </main>
   );
 }
+
+const medecinConseilFaqData = [
+  {
+    question: "Pourquoi je suis convoqué par le médecin conseil CPAM après 6 mois d'arrêt ?",
+    answer: "La convocation est une procédure standard, pas une suspicion. Elle vise à vérifier que la justification médicale de l'arrêt est toujours réunie, à orienter éventuellement vers une mise en invalidité, ou à fixer une consolidation pour un AT/MP. Préparez votre dossier avec tous vos certificats récents, comptes rendus d'examens et un courrier confraternel de votre médecin traitant détaillant les limitations actuelles."
+  },
+  {
+    question: "Que se passe-t-il si je ne peux pas me rendre au rendez-vous ?",
+    answer: "Le rendez-vous avec le médecin conseil est obligatoire. Une absence non justifiée entraîne la suspension immédiate des indemnités journalières. Si vous êtes dans l'impossibilité de vous y rendre (hospitalisation, déplacement programmé, état de santé incompatible), demandez un report en amont par écrit avec justificatif. Le report est presque toujours accordé pour motif sérieux."
+  },
+  {
+    question: "Le médecin conseil peut-il imposer ma reprise du travail malgré l'avis de mon médecin traitant ?",
+    answer: "Oui, le médecin conseil CPAM peut émettre un avis favorable à la reprise même contre l'avis du médecin traitant. Mais cet avis n'est pas définitif : vous disposez de 2 mois pour saisir la Commission Médicale de Recours Amiable (CMRA), procédure gratuite. Joignez à votre recours les certificats détaillés de votre médecin traitant, un complément médical d'un spécialiste tiers, et tout élément médical nouveau. La CMRA infirme régulièrement l'avis du médecin conseil lorsque le dossier est solide."
+  },
+  {
+    question: "Quelle différence entre la Commission de Recours Amiable (CRA) et la Commission Médicale de Recours Amiable (CMRA) ?",
+    answer: "La CRA traite les décisions administratives de la CPAM (refus d'indemnités, calcul du salaire de référence, refus de reconnaissance AT/MP sur le plan administratif). La CMRA traite uniquement les contestations d'ordre médical (taux d'IPP, date de consolidation, avis sur la justification de l'arrêt). Les deux ont un délai de saisine de 2 mois, sont gratuites, et précèdent toute saisine du Pôle social du Tribunal Judiciaire."
+  },
+  {
+    question: "Quelle différence entre invalidité (CPAM) et inaptitude (médecine du travail) ?",
+    answer: "L'invalidité est prononcée par le médecin conseil CPAM lorsque votre capacité de travail ou de gain est réduite d'au moins 2/3. Elle ouvre droit à une pension d'invalidité (catégorie 1, 2 ou 3 selon la gravité). L'inaptitude est prononcée par le médecin du travail et concerne uniquement votre poste actuel : elle peut conduire à un licenciement pour inaptitude. Les deux sont indépendantes et peuvent se cumuler — une personne en invalidité peut être déclarée apte à un autre poste, et inversement."
+  },
+  {
+    question: "Puis-je être accompagné lors d'un rendez-vous avec le médecin conseil ?",
+    answer: "Vous pouvez être accompagné par un proche dans la salle d'attente et pour le soutien moral. L'examen lui-même se déroule en principe en tête-à-tête avec le médecin conseil. Pour les recours médicaux (CMRA notamment), vous pouvez vous faire assister par un médecin de votre choix qui pourra présenter votre dossier."
+  },
+  {
+    question: "Combien coûte un médecin de recours pour une indemnisation d'assurance et qui paie ?",
+    answer: "Les honoraires d'un médecin de recours (médecin conseil de victime, distinct du médecin conseil CPAM) varient entre 800 et 3 000 € selon la complexité du dossier. Cette dépense est fréquemment prise en charge par votre assurance protection juridique. Selon la nomenclature Dintilhac, ces honoraires peuvent également être inclus dans les frais divers indemnisables au titre du préjudice corporel — ils sont alors récupérés sur l'indemnisation finale obtenue auprès de l'assureur du tiers responsable."
+  }
+];
+
+const MedecinConseilFaq = () => {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  useEffect(() => {
+    document.querySelectorAll('script[type="application/ld+json"]').forEach(s => {
+      try { if (JSON.parse(s.textContent)['@type'] === 'FAQPage') s.remove(); } catch {}
+    });
+    const script = document.createElement('script');
+    script.id = 'médecin-conseil-faq-schema';
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": medecinConseilFaqData.map(f => ({
+        "@type": "Question",
+        "name": f.question,
+        "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+      }))
+    });
+    document.head.appendChild(script);
+    return () => { const el = document.getElementById('médecin-conseil-faq-schema'); if (el) el.remove(); };
+  }, []);
+
+  return (
+    <section className="section-padding bg-secondary/20" data-testid="médecin-conseil-faq">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-3xl font-semibold mb-8 text-center">Questions fréquentes sur le médecin conseil</h2>
+        <div className="space-y-2">
+          {medecinConseilFaqData.map((faq, i) => (
+            <div key={i} className="border border-border rounded-xl overflow-hidden bg-background">
+              <button
+                onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/30 transition-colors"
+                data-testid={`médecin-conseil-faq-${i}`}
+              >
+                <span className="font-medium text-sm text-foreground pr-4">{faq.question}</span>
+                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
+              </button>
+              {openIndex === i && (
+                <div className="px-4 pb-4">
+                  <p className="text-sm text-muted-foreground leading-relaxed">{faq.answer}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
