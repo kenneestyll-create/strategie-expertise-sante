@@ -198,10 +198,10 @@ export const MDPHPage = () => {
 
           {/* AAH + travail */}
           <div>
-            <h2 className="text-lg font-semibold mb-2">AAH et travail : le cumul est possible</h2>
+            <h2 className="text-lg font-semibold mb-2">AAH et activité professionnelle</h2>
             <div className="text-sm text-muted-foreground space-y-2 leading-relaxed">
               <p>
-                Contrairement à une idée répandue, <strong className="text-foreground">travailler ne supprime pas automatiquement l'AAH</strong>. L'allocation fonctionne en différentiel : un abattement est appliqué sur vos revenus d'activité, et l'AAH complète la différence. Vous pouvez estimer le montant avec notre <Link to="/calculatrice-aah" className="text-accent hover:underline">simulateur AAH</Link>.
+                Un dossier MDPH ouvre l'accès à l'AAH même si vous exercez une activité professionnelle. <strong className="text-foreground">Le fait de travailler ne bloque pas l'attribution</strong> — l'allocation s'ajuste à vos revenus via un mécanisme d'abattement. C'est un point fréquemment mal compris qui conduit de nombreuses personnes à ne pas déposer de dossier. Estimez votre situation avec notre <Link to="/calculatrice-aah" className="text-accent hover:underline">simulateur AAH</Link>.
               </p>
             </div>
           </div>
@@ -316,8 +316,8 @@ const mdphFaqData = [
     answer: "Le projet de vie n'est pas juridiquement obligatoire, mais il est fortement recommandé. C'est le seul document où vous pouvez décrire concrètement l'impact du handicap sur votre quotidien. Son absence affaiblit significativement le dossier, notamment pour la reconnaissance de la RSDAE (taux 50-79%)."
   },
   {
-    question: "L'AAH est-elle cumulable avec un salaire ?",
-    answer: "Oui. L'AAH fonctionne en différentiel : un abattement est appliqué sur vos revenus d'activité, et l'allocation complète la différence. Travailler ne supprime pas l'AAH. Vous pouvez estimer le montant avec le simulateur AAH du site."
+    question: "Combien de temps sont attribués les droits MDPH ?",
+    answer: "La durée d'attribution varie selon le droit et le taux d'incapacité. L'AAH avec un taux d'au moins 80% peut être attribuée sans limitation de durée. Entre 50% et 79%, l'attribution est de 1 à 5 ans renouvelable. La RQTH est généralement accordée pour 1 à 10 ans, ou à vie si le handicap est irréversible. Anticipez le renouvellement 6 mois avant l'échéance pour éviter toute rupture de droits."
   },
   {
     question: "Quelle différence entre invalidité CPAM et taux MDPH ?",
