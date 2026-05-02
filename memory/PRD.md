@@ -29,7 +29,7 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - [x] Fix Canonical URLs : production domain hardcodé, canonical dynamique sur toutes les pages, vercel.json trailingSlash:false
 - [x] SEO /calculatrice-aah : enrichissement complet (essentiel, déconjugalisation, plafonds, cas concrets, erreurs ✗/→, 5 FAQ Schema.org, ~1000 mots)
 - [x] SEO /dossier-express : description service, cible, processus + FAQ Schema.org
-- [x] SEO /mdph : rôle MDPH, dossier, accompagnement + FAQ Schema.org
+- [x] SEO /mdph : enrichissement complet (essentiel, certificat médical, RSDAE, enfants/mineurs, dossiers refusés, AAH+travail, invalidité vs MDPH, erreurs ✗/→, 6 FAQ Schema.org, ~1050 mots)
 - [x] /espace-client : noindex ajouté (page privée, pas d'indexation)
 
 ## SEO Phase 2 — 15 Pages Guides Actives (COMPLET)
