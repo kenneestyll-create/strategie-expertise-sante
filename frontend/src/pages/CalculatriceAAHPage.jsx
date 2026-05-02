@@ -168,14 +168,14 @@ export const CalculatriceAAHPage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Calculatrice AAH" description="Estimez votre éligibilité et le montant de l'Allocation aux Adultes Handicapés (AAH)." path="/calculatrice-aah" />
+      <SEO title="Calcul AAH : simulateur montant et éligibilité" description="Estimez votre AAH selon votre situation et vos revenus. Simulateur gratuit basé sur les barèmes 2026. Montant maximum : 1 041,59 €/mois." path="/calculatrice-aah" />
       {/* Hero */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-3xl">
             <span className="text-sm font-medium text-accent uppercase tracking-wider">Outil de simulation</span>
             <h1 className="text-4xl sm:text-5xl font-semibold mt-2 mb-6" data-testid="aah-calculator-title">
-              Calculatrice AAH
+              Calcul AAH — Simulateur montant et éligibilité
             </h1>
             <p className="text-lg text-muted-foreground">
               Estimez le montant de votre Allocation aux Adultes Handicapés (AAH)
@@ -414,26 +414,128 @@ export const CalculatriceAAHPage = () => {
           </div>
 
           {/* SEO Content */}
-          <section className="mt-12 space-y-6" data-testid="aah-seo-content">
-            <h2 className="text-xl font-semibold">Qu'est-ce que l'AAH ?</h2>
-            <div className="text-sm text-muted-foreground space-y-3 leading-relaxed">
-              <p>
-                L'Allocation aux Adultes Handicapés (AAH) est une aide financière versée par la CAF ou la MSA aux personnes en situation de handicap. Elle vise à garantir un revenu minimum aux personnes dont le handicap limite l'accès à l'emploi. Son montant maximal est de {AAH_MAX} € par mois (barème en vigueur).
-              </p>
-              <p className="font-medium text-foreground">Conditions d'éligibilité :</p>
-              <ul className="space-y-1.5 list-none pl-0">
-                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Avoir un taux d'incapacité reconnu d'au moins 80%, ou entre 50% et 79% avec une restriction substantielle et durable d'accès à l'emploi (RSDAE)</span></li>
-                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Résider en France de manière stable et régulière</span></li>
-                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Ne pas dépasser un plafond de ressources annuel (variable selon la situation familiale)</span></li>
-                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Avoir au moins 20 ans (ou 16 ans si vous n'êtes plus à charge de vos parents)</span></li>
+          <section className="mt-12 space-y-8" data-testid="aah-seo-content">
+            {/* L'essentiel */}
+            <div className="p-5 rounded-xl bg-[#1a1a2e]/[0.03] border border-[#C9A84C]/20">
+              <h2 className="font-semibold text-base mb-3 text-foreground">L'essentiel à retenir</h2>
+              <ul className="space-y-1.5 list-none pl-0 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Montant max 2026 : <strong className="text-foreground">1 041,59 €/mois</strong> (revalorisation au 1er avril 2026)</span></li>
+                <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Conditions : taux d'incapacité ≥ 80%, ou 50-79% avec RSDAE</span></li>
+                <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Déconjugalisation : seuls <strong className="text-foreground">vos revenus</strong> comptent depuis octobre 2023</span></li>
+                <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Cumul AAH + salaire : possible — l'AAH complète vos revenus</span></li>
+                <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>L'AAH est exonérée d'impôt sur le revenu, de CSG et de CRDS</span></li>
               </ul>
-              <p>
-                La demande d'AAH s'effectue auprès de la MDPH de votre département. C'est la CDAPH (Commission des Droits et de l'Autonomie des Personnes Handicapées) qui statue sur l'attribution. Le montant est calculé en fonction de vos ressources et de votre situation familiale.
+              <p className="text-xs text-muted-foreground mt-3 italic">Barèmes CAF en vigueur au 1er avril 2026. Montants indicatifs, susceptibles de revalorisation annuelle.</p>
+            </div>
+
+            {/* Pourquoi faire une simulation */}
+            <div>
+              <h2 className="text-lg font-semibold mb-2">Pourquoi faire une simulation AAH ?</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                De nombreuses personnes pensent ne pas être éligibles à l'AAH — souvent à tort, notamment depuis la déconjugalisation. Même après un ancien refus, votre situation a pu évoluer. Ce simulateur vous permet de vérifier en quelques minutes si vous pouvez prétendre à cette allocation.
               </p>
-              <p className="font-medium text-foreground">Comment utiliser cette calculatrice :</p>
-              <p>
-                Renseignez votre taux d'incapacité, votre situation familiale, le nombre d'enfants à charge et vos revenus mensuels nets. L'outil calcule automatiquement une estimation de votre AAH mensuelle en appliquant les barèmes officiels et les plafonds de ressources en vigueur. Ce résultat est indicatif et ne remplace pas l'évaluation officielle de la CDAPH.
-              </p>
+            </div>
+
+            {/* Comment est calculée l'AAH */}
+            <div>
+              <h2 className="text-lg font-semibold mb-2">Comment est calculée l'AAH ?</h2>
+              <div className="text-sm text-muted-foreground space-y-2 leading-relaxed">
+                <p>
+                  L'AAH fonctionne en différentiel : la CAF compare le plafond de ressources à vos revenus réels, puis verse la différence. Sans revenu, vous percevez le montant plein. Avec des revenus d'activité, un abattement est appliqué — seule une partie de votre salaire est retenue dans le calcul, ce qui rend le cumul AAH + travail plus avantageux qu'une simple soustraction.
+                </p>
+                <p>
+                  Le montant est recalculé chaque trimestre sur la base de votre déclaration trimestrielle de ressources. C'est pourquoi il peut varier d'un trimestre à l'autre, notamment en cas de changement d'activité ou de prime ponctuelle.
+                </p>
+              </div>
+            </div>
+
+            {/* Déconjugalisation */}
+            <div className="p-5 rounded-xl bg-accent/5 border border-accent/15">
+              <h2 className="text-lg font-semibold mb-2 text-foreground">Déconjugalisation : ce qui a changé</h2>
+              <div className="text-sm text-muted-foreground space-y-2 leading-relaxed">
+                <p>
+                  <strong className="text-foreground">Depuis octobre 2023, les revenus du conjoint ne bloquent plus l'AAH.</strong> Seuls vos revenus personnels sont pris en compte. Ce changement a rendu éligibles des milliers de personnes qui étaient exclues par le plafond conjugal.
+                </p>
+                <p>
+                  Si vous n'aviez jamais fait la demande parce que votre conjoint travaille, ou si vous aviez essuyé un refus avant cette date — refaites une simulation. Votre situation peut avoir radicalement changé.
+                </p>
+              </div>
+            </div>
+
+            {/* Plafonds de ressources */}
+            <div>
+              <h2 className="text-lg font-semibold mb-3">Plafonds de ressources annuels (barème 2026)</h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
+                  <thead>
+                    <tr className="bg-muted/50">
+                      <th className="text-left p-3 font-medium text-foreground">Situation</th>
+                      <th className="text-right p-3 font-medium text-foreground">Plafond annuel</th>
+                      <th className="text-right p-3 font-medium text-foreground">Plafond mensuel</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-muted-foreground">
+                    <tr className="border-t border-border"><td className="p-3">Personne seule</td><td className="text-right p-3">12 499,08 €</td><td className="text-right p-3">1 041,59 €</td></tr>
+                    <tr className="border-t border-border bg-muted/20"><td className="p-3">+ 1 enfant à charge</td><td className="text-right p-3">+6 249,54 €</td><td className="text-right p-3">+520,80 €</td></tr>
+                    <tr className="border-t border-border"><td className="p-3">+ 2 enfants à charge</td><td className="text-right p-3">+12 499,08 €</td><td className="text-right p-3">+1 041,59 €</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2 italic">Montants indicatifs au 1er avril 2026, susceptibles de revalorisation. Source : Code de la Sécurité sociale.</p>
+            </div>
+
+            {/* Cas concrets */}
+            <div>
+              <h2 className="text-lg font-semibold mb-3">Cas concrets</h2>
+              <div className="space-y-3">
+                <div className="p-4 rounded-xl bg-muted/30 border border-border">
+                  <p className="font-medium text-sm text-foreground mb-1.5">Cas 1 — Personne seule, sans emploi, taux 80%</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Aucun revenu d'activité ni pension. L'AAH est versée à taux plein : <strong className="text-foreground">1 041,59 €/mois</strong>. Pas de calcul différentiel — le montant maximum s'applique directement.
+                  </p>
+                </div>
+                <div className="p-4 rounded-xl bg-muted/30 border border-border">
+                  <p className="font-medium text-sm text-foreground mb-1.5">Cas 2 — Activité à temps partiel, salaire 600 €/mois</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Après abattement sur les revenus d'activité, la ressource retenue est d'environ 400 €. L'AAH différentielle s'élève à environ <strong className="text-foreground">641 €/mois</strong>. Revenu total : ≈ 1 241 €. Travailler ne supprime pas l'AAH — elle complète vos revenus.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Erreurs fréquentes */}
+            <div>
+              <h2 className="text-lg font-semibold mb-3">Erreurs fréquentes</h2>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/5 border border-red-500/10">
+                  <span className="text-red-500 shrink-0 font-bold mt-0.5">✗</span>
+                  <div>
+                    <p className="font-medium text-foreground">Ne pas demander l'AAH parce que le conjoint travaille</p>
+                    <p className="text-muted-foreground text-xs mt-0.5">→ Depuis la déconjugalisation, seuls vos revenus comptent. Refaites une simulation.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/5 border border-red-500/10">
+                  <span className="text-red-500 shrink-0 font-bold mt-0.5">✗</span>
+                  <div>
+                    <p className="font-medium text-foreground">Confondre taux d'invalidité et taux d'incapacité</p>
+                    <p className="text-muted-foreground text-xs mt-0.5">→ Le taux d'invalidité (Sécurité sociale) et le taux d'incapacité (MDPH) sont deux évaluations distinctes avec des barèmes différents.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/5 border border-red-500/10">
+                  <span className="text-red-500 shrink-0 font-bold mt-0.5">✗</span>
+                  <div>
+                    <p className="font-medium text-foreground">Déposer un dossier MDPH sans projet de vie</p>
+                    <p className="text-muted-foreground text-xs mt-0.5">→ Le projet de vie est le seul document où vous décrivez l'impact réel du handicap sur votre quotidien. Sans lui, la RSDAE est rarement reconnue.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/5 border border-red-500/10">
+                  <span className="text-red-500 shrink-0 font-bold mt-0.5">✗</span>
+                  <div>
+                    <p className="font-medium text-foreground">Ne pas actualiser la déclaration trimestrielle</p>
+                    <p className="text-muted-foreground text-xs mt-0.5">→ La CAF recalcule chaque trimestre. Une déclaration en retard peut entraîner un trop-perçu et un remboursement forcé.</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -474,7 +576,7 @@ export const CalculatriceAAHPage = () => {
 const aahFaqData = [
   {
     question: "L'AAH est-elle cumulable avec un salaire ?",
-    answer: "Oui, l'AAH peut être cumulée partiellement avec des revenus d'activité. Les règles de cumul dépendent du montant de vos revenus et de votre taux d'incapacité. Un abattement est appliqué sur vos revenus pour le calcul de l'AAH différentielle."
+    answer: "Oui. L'AAH fonctionne en différentiel : un abattement est appliqué sur vos revenus d'activité, et l'allocation complète la différence jusqu'au plafond. Travailler ne supprime pas l'AAH, elle s'ajuste à vos revenus."
   },
   {
     question: "Quelle est la différence entre un taux de 80% et un taux entre 50% et 79% ?",
@@ -482,7 +584,15 @@ const aahFaqData = [
   },
   {
     question: "Comment est fixé le montant de l'AAH ?",
-    answer: "Le montant de l'AAH dépend de vos ressources. Si vous n'avez aucun revenu, vous percevez le montant maximal. Si vous avez des revenus, l'AAH est calculée en différentiel : plafond de ressources moins vos revenus annuels, divisé par 12, plafonné au montant maximal."
+    answer: "Le montant dépend de vos ressources personnelles. Sans revenu, vous percevez le montant maximal (1 041,59 € en 2026). Avec des revenus, l'AAH est calculée en différentiel après abattement. Le montant est recalculé chaque trimestre sur la base de votre déclaration de ressources."
+  },
+  {
+    question: "L'AAH est-elle imposable ?",
+    answer: "Non. L'AAH est totalement exonérée d'impôt sur le revenu, de CSG et de CRDS. Elle ne doit pas être déclarée dans vos revenus imposables."
+  },
+  {
+    question: "La déconjugalisation s'applique-t-elle automatiquement ?",
+    answer: "Oui, depuis octobre 2023, seuls vos revenus personnels sont pris en compte, et non ceux de votre conjoint. Si l'ancien calcul conjugal était plus favorable, vous pouvez demander son maintien — mais ce cas est rare. Si vous aviez été refusé avant cette date, refaites une simulation."
   }
 ];
 
