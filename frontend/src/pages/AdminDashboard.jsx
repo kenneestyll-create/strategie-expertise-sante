@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { PremiumAnalysisRenderer } from '@/components/PremiumAnalysisRenderer';
 import { AdminVipTab } from '@/components/AdminVipTab';
 import { AdminQRStats } from '@/components/AdminQRStats';
+import { AdminForumSeed } from '@/components/AdminForumSeed';
 import { 
   Heart, 
   LogOut, 
@@ -1235,6 +1236,11 @@ export const AdminDashboard = () => {
               <TabsTrigger value="feedback" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-feedback">
                 <MessageSquare className="w-3.5 h-3.5 text-indigo-600" />
                 Feedback
+              </TabsTrigger>
+
+              <TabsTrigger value="forum" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-forum">
+                <MessageSquare className="w-3.5 h-3.5 text-amber-600" />
+                Forum
               </TabsTrigger>
 
               <div className="w-px h-6 bg-border/60 mx-1 self-center flex-shrink-0" />
@@ -4451,6 +4457,9 @@ export const AdminDashboard = () => {
           </TabsContent>
           <TabsContent value="vip-guests" className="space-y-6" data-testid="vip-guests-tab-content">
             <AdminVipTab axiosConfig={axiosConfig} />
+          </TabsContent>
+          <TabsContent value="forum" className="space-y-6" data-testid="forum-tab-content">
+            <AdminForumSeed />
           </TabsContent>
         </Tabs>
       </main>

@@ -242,3 +242,74 @@ async def get_forum_users(admin: dict = Depends(get_current_admin)):
         if isinstance(user.get('created_at'), str):
             user['created_at'] = datetime.fromisoformat(user['created_at'])
     return users
+
+
+# ==================== ADMIN SEED TOPICS (amorçage communautaire) ====================
+# L'administrateur peut publier des "sujets graines" au nom de l'équipe afin
+# d'amorcer la communauté avec du contenu éditorial validé (conforme RGPD,
+# aucun faux témoignage). Ces sujets sont authentifiés comme étant publiés
+# par "Équipe S.E.S", épinglés par défaut, et marqués is_seed=True pour
+# traçabilité.
+
+SEED_AUTHOR_ID = "admin-seed-ses"
+SEED_DEFAULT_PSEUDO = "Équipe S.E.S"
+
+
+@router.post("/admin/forum/seed-topic")
+async def admin_seed_topic(
+    input_data: ForumTopicCreate,
+    pseudo: Optional[str] = None,
+    is_pinned: bool = True,
+    admin: dict = Depends(get_current_admin),
+):
+    """Crée un sujet éditorial publié au nom de l'Équipe S.E.S (sans passer
+    par l'inscription publique). is_pinned=True par défaut pour le mettre en avant."""
+    valid_categories = [cat.id for cat in FORUM_CATEGORIES]
+    if input_data.category_id not in valid_categories:
+        raise HTTPException(status_code=400, detail="Catégorie invalide")
+
+    author_pseudo = (pseudo or SEED_DEFAULT_PSEUDO).strip() or SEED_DEFAULT_PSEUDO
+
+    topic = ForumTopic(
+        category_id=input_data.category_id,
+        title=input_data.title,
+        content=input_data.content,
+        author_id=SEED_AUTHOR_ID,
+        author_pseudo=author_pseudo,
+        is_anonymous=False,
+        is_pinned=is_pinned,
+    )
+    doc = topic.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['updated_at'] = doc['updated_at'].isoformat()
+    doc['is_seed'] = True  # flag éditorial
+    doc['seeded_by'] = admin.get("sub") or admin.get("email")
+    await db.forum_topics.insert_one(doc)
+    return {"success": True, "topic_id": topic.id, "is_pinned": is_pinned}
+
+
+@router.get("/admin/forum/seed-topics")
+async def admin_list_seed_topics(admin: dict = Depends(get_current_admin)):
+    """Liste les sujets éditoriaux publiés par l'Équipe S.E.S."""
+    topics = await db.forum_topics.find(
+        {"author_id": SEED_AUTHOR_ID},
+        {"_id": 0}
+    ).sort([("is_pinned", -1), ("created_at", -1)]).to_list(200)
+    for t in topics:
+        if isinstance(t.get('created_at'), str):
+            t['created_at'] = datetime.fromisoformat(t['created_at'])
+        if isinstance(t.get('updated_at'), str):
+            t['updated_at'] = datetime.fromisoformat(t['updated_at'])
+    return topics
+
+
+@router.patch("/admin/forum/topics/{topic_id}/pin")
+async def admin_pin_topic(topic_id: str, is_pinned: bool = True, admin: dict = Depends(get_current_admin)):
+    """Épingle ou désépingle un sujet du forum."""
+    result = await db.forum_topics.update_one(
+        {"id": topic_id},
+        {"$set": {"is_pinned": is_pinned, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Sujet non trouvé")
+    return {"success": True, "is_pinned": is_pinned}

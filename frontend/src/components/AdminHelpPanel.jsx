@@ -191,6 +191,24 @@ const HELP_SECTIONS = [
     keywords: ['feedback', 'retour', 'expérience', 'frein', 'besoin', 'clarté', 'signal', 'client', 'avis stratégique']
   },
   {
+    id: 'forum',
+    tab: 'forum',
+    icon: MessageSquare,
+    title: 'Forum — Sujets graines',
+    color: '#d97706',
+    summary: 'Amorcez la communauté en publiant des sujets éditoriaux signés « Équipe S.E.S » sans passer par l\'inscription publique.',
+    steps: [
+      { label: 'Objectif', text: 'Le forum public démarre vide. Les sujets graines boostent le SEO longue traîne, renforcent votre E-E-A-T et incitent les visiteurs à poser leur première question.' },
+      { label: 'Publier', text: 'Choisissez une catégorie (AT/MP, MDPH, Expertise, Invalidité, Maladie Pro, Protection juridique), rédigez un titre accrocheur (≥ 10 caractères) et un contenu de qualité (≥ 80 caractères). Cliquez "Publier le sujet".' },
+      { label: 'Signature', text: 'Par défaut, le sujet est signé « Équipe S.E.S » pour assurer la cohérence de marque. Vous pouvez personnaliser la signature au cas par cas (ex. : un intervenant spécifique).' },
+      { label: 'Épinglage', text: 'Chaque sujet graine est épinglé par défaut → il apparaît en haut de sa catégorie. Vous pouvez désépingler ultérieurement via l\'icône pin/pin-off dans la liste.' },
+      { label: 'Modérer', text: 'Les sujets graines sont listés sous le formulaire avec badges (épinglé, supprimé), date de publication, vues et nombre de réponses. 3 actions : épingler/désépingler, voir sur le forum (ouvre un nouvel onglet), supprimer.' },
+      { label: 'Conformité', text: 'IMPORTANT : rédigez avec votre expertise réelle uniquement. Aucun faux témoignage, aucune personne identifiable, aucune statistique inventée (art. L.121-2 Code consommation + RGPD).' },
+      { label: 'Idées de sujets', text: 'Exemples à fort potentiel : "Comment bien préparer son expertise médicale ?", "Refus MDPH : par où commencer ?", "Consolidation : que dire au médecin conseil ?", "Faute inexcusable : les 3 conditions". Posez une question ouverte en fin de contenu pour inviter aux réponses.' },
+    ],
+    keywords: ['forum', 'sujet', 'graine', 'seed', 'communauté', 'amorcer', 'publier', 'épingler', 'pin', 'éditorial', 'équipe ses', 'modération', 'entraide', 'discussion', 'topic']
+  },
+  {
     id: 'config',
     tab: 'config',
     icon: Settings,
