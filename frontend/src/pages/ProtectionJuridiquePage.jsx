@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
 import { DossierExpressCTA } from '@/components/DossierExpressCTA';
+import { TerrainNote } from '@/components/TerrainNote';
 import { 
   ArrowRight, 
   Shield, 
@@ -401,6 +402,11 @@ export const ProtectionJuridiquePage = () => {
 
       {/* FAQ */}
       <PJFaq />
+
+      <TerrainNote
+        testId="pj-terrain-note"
+        text="Cette page est née d'un cas personnel vécu : avoir découvert la protection juridique trop tard. Elle rassemble ce qu'il aurait fallu que je sache, appliqué à chaque situation que j'accompagne."
+      />
 
       {/* Section 4 - Avocats partenaires */}
       <section className="section-padding bg-secondary">

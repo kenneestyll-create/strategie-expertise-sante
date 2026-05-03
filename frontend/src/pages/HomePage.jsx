@@ -124,13 +124,13 @@ export const HomePage = () => {
     { icon: TrendingUp, title: "Vision orientée résultats", desc: "Obtenir la reconnaissance et l'indemnisation que vous méritez." },
   ];
 
-  const temoignages = [
-    { initials: "M.L.", age: "52 ans", badge: "AT", text: "Après 18 mois de refus par la CPAM, mon accident du travail a enfin été reconnu. Sans cet accompagnement, j'aurais abandonné les démarches.", result: "AT reconnue — Rente obtenue" },
-    { initials: "P.D.", age: "45 ans", badge: "PTIA", badgeGold: true, text: "Mon assureur refusait de reconnaître ma PTIA malgre l'avis de trois médecins. Grâce à une stratégie méthodique, la garantie a été activée après 8 mois de recours.", result: "Garantie PTIA activée" },
-    { initials: "S.B.", age: "38 ans", badge: "MP", text: "Ma maladie professionnelle n'était pas dans les tableaux. L'accompagnement m'a permis de constituer un dossier solide — reconnaissance obtenue au premier passage.", result: "MP hors tableau reconnue" },
-    { initials: "C.R.", age: "61 ans", badge: "IPP", text: "Mon taux d'IPP avait été évalué à 5% alors que mes séquelles sont bien plus importantes. Après contestation, le taux a été réévalué à 23%.", result: "IPP réévaluée : 5% → 23%" },
-    { initials: "A.M.", age: "34 ans", badge: "MDPH", text: "Mes demandes MDPH étaient systématiquement refusées. Grâce à un dossier structuré et des arguments adaptés, j'ai obtenu l'AAH en moins de 4 mois.", result: "AAH obtenue en 4 mois" },
-    { initials: "J.T.", age: "48 ans", badge: "ITT", badgeGold: true, text: "Mon assurance refusait les indemnités ITT en invoquant une clause floue. L'analyse du contrat a permis de débloquer 14 mois d'arriérés.", result: "ITT versée — Arriérés récupérés" },
+  const typologieDossiers = [
+    { icon: "AT", label: "Accidents du travail", detail: "AVP, consolidations, taux d'IPP acquis, rechutes, recours CPAM", badgeGold: false },
+    { icon: "MP", label: "Maladies professionnelles", detail: "Dossiers en contentieux devant le tribunal administratif, reconnaissance hors tableau", badgeGold: true },
+    { icon: "MDPH", label: "MDPH — Carte & prestations", detail: "Carte mobilité inclusion stationnement, carte invalidité, RQTH, AAH, PCH (jusqu'à 185h/mois)", badgeGold: false },
+    { icon: "MDPH+", label: "MDPH — Profils complexes", detail: "Transplantation d'organe, surdité & malvoyance, obésité à impact fonctionnel, restrictions poste de travail, situations enfants", badgeGold: false },
+    { icon: "INV", label: "Invalidité & prévoyance", detail: "Invalidité catégorie 2, litiges assurantiels, reconnaissance PTIA et ITT acquises sur contentieux", badgeGold: true },
+    { icon: "PJ", label: "Protection juridique", detail: "Activation de PJ sur sinistres assurantiels — accompagnement par médecin-conseil indépendant", badgeGold: false },
   ];
 
   const ecosysteme = [
@@ -885,50 +885,40 @@ export const HomePage = () => {
       </section>
 
       {/* ══════════════════════════════════════════════════════════
-          11. TEMOIGNAGES
+          11. TYPOLOGIE DES DOSSIERS ACCOMPAGNÉS
       ══════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-20 overflow-clip bg-[#111]" data-testid="testimonials-section">
+      <section className="py-16 sm:py-20 overflow-clip bg-[#111]" data-testid="typologie-section">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <span className="text-[#C9A84C] text-xs font-medium uppercase tracking-[0.2em]">Ils ont fait confiance</span>
+            <span className="text-[#C9A84C] text-xs font-medium uppercase tracking-[0.2em]">Domaines d'expertise</span>
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold mt-3 text-[#f5f0e8]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-              Des parcours transformés
+              Les dossiers que nous accompagnons
             </h2>
             <p className="text-[#f5f0e8]/30 mt-3 max-w-xl mx-auto text-sm">
-              Témoignages anonymisés de personnes accompagnées par Stratégie & Expertise Santé.
+              Typologie réelle des situations traitées : sécurité sociale, MDPH, invalidité, litiges assurantiels.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-            {temoignages.map((t, i) => (
+            {typologieDossiers.map((d, i) => (
               <div
                 key={i}
-                className={`p-5 rounded-xl border ${t.badgeGold ? 'border-[#C9A84C]/20 bg-[#C9A84C]/[0.03]' : 'border-white/5 bg-white/[0.01]'} hover:border-[#C9A84C]/15 transition-all`}
-                data-testid={`testimonial-${i}`}
+                className={`p-5 rounded-xl border ${d.badgeGold ? 'border-[#C9A84C]/20 bg-[#C9A84C]/[0.03]' : 'border-white/5 bg-white/[0.01]'} hover:border-[#C9A84C]/15 transition-all`}
+                data-testid={`typologie-${i}`}
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-full bg-[#C9A84C]/10 border border-[#C9A84C]/15 flex items-center justify-center">
-                      <span className="text-[#C9A84C] text-[10px] font-bold">{t.initials}</span>
+                      <span className="text-[#C9A84C] text-[10px] font-bold">{d.icon}</span>
                     </div>
-                    <div>
-                      <span className="text-[#f5f0e8] text-sm font-medium">{t.initials}</span>
-                      <span className="text-[#f5f0e8]/25 text-xs ml-1.5">{t.age}</span>
-                    </div>
+                    <span className="text-[#f5f0e8] text-sm font-medium">{d.label}</span>
                   </div>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${t.badgeGold ? 'bg-[#C9A84C] text-[#1a1a1a]' : 'bg-white/5 text-[#f5f0e8]/40'}`}>
-                    {t.badge}
-                  </span>
                 </div>
-                <p className="text-[#f5f0e8]/45 text-sm leading-relaxed mb-3">{t.text}</p>
-                <div className="flex items-center gap-2 pt-2 border-t border-white/5">
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
-                  <span className="text-emerald-400 text-xs font-medium">{t.result}</span>
-                </div>
+                <p className="text-[#f5f0e8]/45 text-sm leading-relaxed">{d.detail}</p>
               </div>
             ))}
           </div>
           <p className="text-center text-[#f5f0e8]/15 text-[10px] mt-6">
-            * Prénoms et détails modifiés pour préserver l'anonymat. Résultats réels obtenus pour nos clients.
+            Description des domaines d'intervention. Aucun détail personnel identifiable n'est publié — confidentialité stricte des personnes accompagnées.
           </p>
         </div>
       </section>

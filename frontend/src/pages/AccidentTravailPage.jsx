@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
 import { DossierExpressCTA } from '@/components/DossierExpressCTA';
+import { TerrainNote } from '@/components/TerrainNote';
 import { 
   ArrowRight, 
   AlertCircle, 
@@ -300,6 +301,11 @@ export const AccidentTravailPage = () => {
 
       {/* FAQ */}
       <ATMPFaq />
+
+      <TerrainNote
+        testId="atmp-terrain-note"
+        text="Ce contenu est issu des dossiers AT/MP que j'accompagne concrètement : consolidations anticipées, refus CPAM, rechutes, fautes inexcusables, maladies hors tableau."
+      />
 
       {/* Accompagnement Section */}
       <section className="section-padding bg-foreground text-primary-foreground">

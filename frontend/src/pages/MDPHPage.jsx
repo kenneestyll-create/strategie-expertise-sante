@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
 import { DossierExpressCTA } from '@/components/DossierExpressCTA';
+import { TerrainNote } from '@/components/TerrainNote';
 import { useState, useEffect } from 'react';
 import { 
   ArrowRight, 
@@ -265,6 +266,11 @@ export const MDPHPage = () => {
 
       {/* FAQ */}
       <MDPHPageFAQ />
+
+      <TerrainNote
+        testId="mdph-terrain-note"
+        text="Ce guide s'appuie sur les dossiers MDPH que j'analyse chaque semaine : demandes initiales, taux contestés, recours CDAPH, RQTH et situations enfants."
+      />
 
       {/* Accompagnement Section */}
       <section className="section-padding bg-foreground text-primary-foreground">

@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import axios from 'axios';
 import { SEO } from '@/components/SEO';
 import { DossierExpressCTA } from '@/components/DossierExpressCTA';
+import { TerrainNote } from '@/components/TerrainNote';
 import {
   Calculator,
   AlertTriangle,
@@ -551,6 +552,11 @@ export const CalculatriceAAHPage = () => {
 
           {/* FAQ */}
           <AAHCalculatriceFAQ />
+
+          <TerrainNote
+            testId="aah-terrain-note"
+            text="Cette grille est nourrie par les dossiers AAH que j'aide à construire ou à contester, avec une attention particulière aux profils RSDAE et pluri-activités."
+          />
 
           {/* CTA */}
           <div className="mt-12 p-8 bg-foreground text-primary-foreground rounded-2xl text-center" data-testid="aah-cta">

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
 import { DossierExpressCTA } from '@/components/DossierExpressCTA';
+import { TerrainNote } from '@/components/TerrainNote';
 import {
   ArrowRight,
   Stethoscope,
@@ -376,6 +377,11 @@ export default function MedecinConseilPage() {
 
       {/* FAQ */}
       <MedecinConseilFaq />
+
+      <TerrainNote
+        testId="médecin-conseil-terrain-note"
+        text="Ce guide est construit à partir des convocations et avis défavorables que je décortique avec les assurés : CPAM, CMRA, CRA, saisines du Pôle social."
+      />
 
       {/* ── CTA ── */}
       <section className="section-padding bg-accent/5 border-y border-accent/10" data-testid="médecin-conseil-cta">

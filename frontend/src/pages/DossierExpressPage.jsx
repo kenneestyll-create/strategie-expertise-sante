@@ -93,11 +93,11 @@ const getContextDE = (type) => {
   return null; // fallback → Régime standard
 };
 
-/* ── Testimonials ── */
-const TESTIMONIALS = [
-  { name: "Marie L.", type: "Accident du travail", text: "Le rapport m'a permis d'identifier des droits que je ne connaissais pas. Mon dossier CPAM a été accepté grâce aux recommandations.", rating: 5 },
-  { name: "Jean-Pierre D.", type: "Maladie professionnelle", text: "Analyse très détaillée avec les jurisprudences exactes à utiliser. Mon avocat a été impressionné par la qualité du rapport.", rating: 5 },
-  { name: "Sophie M.", type: "MDPH / AAH", text: "En 2h j'avais un plan d'action clair. Le rapport a identifié 3 documents manquants qui bloquaient mon dossier depuis 6 mois.", rating: 5 },
+/* ── Typologie des dossiers accompagnés (aucun témoignage nominatif — conformité RGPD/consumer law) ── */
+const TYPOLOGIE = [
+  { label: "Accidents du travail & AVP", type: "AT / IPP", detail: "Analyse des taux d'IPP acquis, identification des leviers de contestation, stratégie de consolidation." },
+  { label: "Maladies professionnelles", type: "MP / CPAM", detail: "Constitution et renforcement des dossiers, reconnaissance hors tableau, contentieux tribunal administratif." },
+  { label: "MDPH — prestations complexes", type: "AAH / PCH / RQTH", detail: "Profils lourds : transplantation, polyhandicap sensoriel, obésité à impact fonctionnel, restrictions poste de travail." },
 ];
 
 /* ── Trust Badge Component ── */
@@ -645,36 +645,29 @@ export const DossierExpressPage = () => {
           </div>
         </section>
 
-        {/* Social Proof — Testimonials */}
+        {/* Typologie des dossiers traités */}
         <section className="section-padding bg-secondary/50">
           <div className="max-w-5xl mx-auto" ref={testimonialsRef}>
             <div className="text-center mb-10 reveal">
-              <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Ils ont fait analyser leur dossier</h2>
-              <p className="text-muted-foreground text-sm">Des dizaines de personnes ont renforcé leur dossier grâce au Dossier Express IA.</p>
+              <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Typologie des dossiers analysés</h2>
+              <p className="text-muted-foreground text-sm">Le Dossier Express IA a été conçu sur les situations réellement traitées — voici les grandes familles couvertes.</p>
             </div>
             <div className="grid md:grid-cols-3 gap-5 stagger">
-              {TESTIMONIALS.map((t, i) => (
-                <Card key={i} className="reveal hover:-translate-y-1 transition-transform duration-300" data-testid={`testimonial-${i}`}>
+              {TYPOLOGIE.map((t, i) => (
+                <Card key={i} className="reveal hover:-translate-y-1 transition-transform duration-300" data-testid={`typologie-${i}`}>
                   <CardContent className="p-5">
-                    <div className="flex items-center gap-0.5 mb-3">
-                      {[...Array(t.rating)].map((_, j) => (
-                        <Star key={j} className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                      ))}
+                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/10 border border-accent/20 mb-3">
+                      <span className="text-[10px] font-semibold text-accent uppercase tracking-wider">{t.type}</span>
                     </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed mb-4 italic">"{t.text}"</p>
-                    <div className="flex items-center gap-2 pt-3 border-t border-border">
-                      <div className="w-8 h-8 rounded-full bg-accent/15 flex items-center justify-center">
-                        <span className="text-xs font-semibold text-accent">{t.name.charAt(0)}</span>
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold">{t.name}</p>
-                        <p className="text-[10px] text-muted-foreground">{t.type}</p>
-                      </div>
-                    </div>
+                    <h3 className="text-sm font-semibold text-foreground mb-2">{t.label}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{t.detail}</p>
                   </CardContent>
                 </Card>
               ))}
             </div>
+            <p className="text-center text-[11px] text-muted-foreground/70 mt-6 italic">
+              Aucune donnée personnelle identifiable publiée. Confidentialité stricte des personnes accompagnées.
+            </p>
           </div>
         </section>
 

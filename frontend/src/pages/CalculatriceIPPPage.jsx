@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import { SEO } from '@/components/SEO';
 import { DossierExpressCTA } from '@/components/DossierExpressCTA';
+import { TerrainNote } from '@/components/TerrainNote';
 import {
   Calculator,
   AlertTriangle,
@@ -519,6 +520,11 @@ export const CalculatriceIPPPage = () => {
 
           {/* FAQ */}
           <IPPCalculatriceFAQ />
+
+          <TerrainNote
+            testId="ipp-terrain-note"
+            text="Ce simulateur est calibré sur les dossiers IPP que j'accompagne au quotidien, en coordination avec médecins-conseils et avocats spécialisés."
+          />
 
           {/* CTA */}
           <div className="mt-12 p-8 bg-foreground text-primary-foreground rounded-2xl text-center" data-testid="ipp-cta">

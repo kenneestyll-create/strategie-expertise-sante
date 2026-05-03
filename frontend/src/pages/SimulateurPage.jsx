@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,11 +8,13 @@ import { toast } from 'sonner';
 import {
   ArrowRight, ArrowLeft, CheckCircle, AlertTriangle, HelpCircle,
   FileSearch, Shield, Users, Scale, ClipboardList, Mail, Download,
-  MessageSquare, Phone, Share2, Copy, Check, CalendarPlus, FileText
+  MessageSquare, Phone, Share2, Copy, Check, CalendarPlus, FileText,
+  ChevronDown, Target, Sparkles, Lock
 } from 'lucide-react';
 import axios from 'axios';
 import jsPDF from 'jspdf';
 import { SEO } from '@/components/SEO';
+import { TerrainNote } from '@/components/TerrainNote';
 import { SHIELD_B64 } from './shieldLogo';
 import { useAdminTest } from '@/components/AdminTestBanner';
 
@@ -570,23 +572,33 @@ export const SimulateurPage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Auto-diagnostic gratuit" description="Évaluez gratuitement votre situation en cas de maladie professionnelle, accident du travail ou handicap." path="/simulateur" />
+      <SEO title="Diagnostic stratégique gratuit — 5 minutes" description="Un diagnostic personnalisé de votre situation : AT/MP, MDPH, expertise médicale, protection juridique. Rapport téléchargeable, 100% confidentiel." path="/simulateur" />
+      {/* HERO — Diagnostic stratégique */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-3xl">
-            <span className="text-sm font-medium text-accent uppercase tracking-wider">Auto-diagnostic</span>
-            <h1 className="text-4xl sm:text-5xl font-semibold mt-2 mb-6" data-testid="simulator-title">
-              Évaluez votre situation
+            <span className="text-sm font-medium text-accent uppercase tracking-wider">Diagnostic stratégique</span>
+            <h1 className="text-4xl sm:text-5xl font-semibold mt-2 mb-6 leading-tight" data-testid="simulator-title">
+              Diagnostic stratégique gratuit — en 5 minutes
             </h1>
-            <p className="text-lg text-muted-foreground">
-              Répondez à quelques questions pour obtenir un rapport personnalisé avec vos droits,
-              les demarches prioritaires et une recommandation d'accompagnement.
+            <p className="text-lg text-muted-foreground leading-relaxed mb-4">
+              Ce n'est pas un simple quiz : c'est un diagnostic conçu à partir de dossiers réels en AT/MP, MDPH, expertise médicale et litiges d'assurance. Vous obtenez un rapport personnalisé avec vos priorités, vos démarches clés et les pièges à éviter sur votre situation précise.
             </p>
+            <div className="flex flex-wrap gap-4 items-center text-xs text-muted-foreground mb-8">
+              <span className="inline-flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 text-accent" strokeWidth={2} /> 100 % confidentiel</span>
+              <span className="inline-flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 text-accent" strokeWidth={2} /> Sans engagement</span>
+              <span className="inline-flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-accent" strokeWidth={2} /> Rapport téléchargeable</span>
+            </div>
+            <a href="#diagnostic-form" data-testid="hero-cta-scroll">
+              <Button size="lg" className="rounded-full px-8 gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
+                Démarrer mon diagnostic <ArrowRight className="w-4 h-4" />
+              </Button>
+            </a>
           </div>
         </div>
       </section>
 
-      <section className="section-padding">
+      <section id="diagnostic-form" className="section-padding scroll-mt-24">
         <div className="max-w-2xl mx-auto">
           {/* Progress bar */}
           <div className="mb-8">
@@ -864,6 +876,261 @@ export const SimulateurPage = () => {
           )}
         </div>
       </section>
+
+      {/* ENRICHMENT — Comment ça marche */}
+      <section className="section-padding bg-secondary/30" data-testid="simulateur-how-it-works">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Comment ça marche</h2>
+            <p className="text-sm text-muted-foreground">Trois étapes, quelques minutes, un rapport personnalisé.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-5">
+            {[
+              { icon: Target, num: "01", title: "Vous répondez à quelques questions ciblées", desc: "Situation, démarches en cours, ancienneté, accompagnement. Des questions conçues pour cerner votre contexte sans entrer dans le médical." },
+              { icon: FileSearch, num: "02", title: "L'algorithme analyse votre situation", desc: "Le moteur croise vos réponses avec les règles CPAM, MDPH, AT/MP et les stratégies de recours éprouvées sur le terrain." },
+              { icon: Download, num: "03", title: "Vous recevez un rapport personnalisé", desc: "Priorités classées, démarches et délais, pièges identifiés, ressources et guides recommandés. Téléchargement immédiat." },
+            ].map((s, i) => (
+              <Card key={i} className="border-border/50">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-accent/10 border border-accent/30 flex items-center justify-center">
+                      <s.icon className="w-5 h-5 text-accent" strokeWidth={1.75} />
+                    </div>
+                    <span className="text-xs font-semibold text-accent/70 tracking-widest">ÉTAPE {s.num}</span>
+                  </div>
+                  <h3 className="font-semibold text-base text-foreground mb-2">{s.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ENRICHMENT — Ce que vous recevez */}
+      <section className="section-padding" data-testid="simulateur-what-you-get">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-10 items-start">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Ce que contient votre rapport</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-6">
+                Un document synthétique et actionnable, conçu pour vous donner une feuille de route claire sur votre situation.
+              </p>
+              <ul className="space-y-3 text-sm">
+                {[
+                  "Vos priorités stratégiques classées par urgence",
+                  "Les démarches à engager et leurs délais précis",
+                  "Les pièges identifiés sur votre situation",
+                  "Les ressources, guides et outils recommandés",
+                  "Une orientation vers l'accompagnement adapté si utile",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <CheckCircle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" strokeWidth={2} />
+                    <span className="text-muted-foreground">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="relative">
+              <div className="rounded-2xl bg-gradient-to-br from-[#1a1a2e]/[0.03] to-accent/[0.03] border border-border/60 p-6 sm:p-8">
+                <div className="flex items-center gap-3 mb-5 pb-4 border-b border-border/50">
+                  <div className="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-accent" strokeWidth={1.75} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Aperçu du rapport</p>
+                    <p className="text-sm font-semibold text-foreground">Diagnostic Stratégique — Personnalisé</p>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <div className="h-2 bg-accent/30 rounded w-1/3 mb-2"></div>
+                    <div className="h-1.5 bg-muted rounded w-full"></div>
+                    <div className="h-1.5 bg-muted rounded w-5/6 mt-1"></div>
+                  </div>
+                  <div>
+                    <div className="h-2 bg-accent/20 rounded w-2/5 mb-2 mt-4"></div>
+                    <div className="h-1.5 bg-muted rounded w-full"></div>
+                    <div className="h-1.5 bg-muted rounded w-4/5 mt-1"></div>
+                    <div className="h-1.5 bg-muted rounded w-3/4 mt-1"></div>
+                  </div>
+                  <div>
+                    <div className="h-2 bg-accent/20 rounded w-1/2 mb-2 mt-4"></div>
+                    <div className="h-1.5 bg-muted rounded w-full"></div>
+                    <div className="h-1.5 bg-muted rounded w-5/6 mt-1"></div>
+                  </div>
+                </div>
+                <p className="text-[10px] text-muted-foreground/70 italic mt-5 pt-4 border-t border-border/50">Aperçu stylisé — le rapport réel est personnalisé selon vos réponses.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ENRICHMENT — Pour qui (cartes maillage pages piliers) */}
+      <section className="section-padding bg-secondary/30" data-testid="simulateur-for-whom">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Pour qui est ce diagnostic ?</h2>
+            <p className="text-sm text-muted-foreground">Le simulateur couvre toutes les situations que nous accompagnons.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { label: "Accident du travail / MP", href: "/accident-travail-maladie-professionnelle", icon: AlertTriangle },
+              { label: "MDPH", href: "/mdph", icon: Users },
+              { label: "AAH", href: "/calculatrice-aah", icon: HelpCircle },
+              { label: "Expertise médicale", href: "/expertise-medicale", icon: FileSearch },
+              { label: "Médecin conseil", href: "/medecin-conseil", icon: Shield },
+              { label: "Protection juridique", href: "/protection-juridique", icon: Scale },
+              { label: "Calcul IPP", href: "/calculatrice-ipp", icon: ClipboardList },
+              { label: "Autre situation", href: "#diagnostic-form", icon: HelpCircle },
+            ].map((c, i) => {
+              const Wrapper = c.href.startsWith('#') ? 'a' : Link;
+              const props = c.href.startsWith('#') ? { href: c.href } : { to: c.href };
+              return (
+                <Wrapper key={i} {...props} data-testid={`for-whom-card-${i}`}>
+                  <div className="group p-4 rounded-xl bg-background border border-border/60 hover:border-accent/40 hover:bg-accent/[0.02] transition-colors duration-300 h-full flex flex-col gap-3">
+                    <c.icon className="w-5 h-5 text-accent" strokeWidth={1.75} />
+                    <p className="text-sm font-medium text-foreground group-hover:text-accent transition-colors">{c.label}</p>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-accent group-hover:translate-x-0.5 transition-all mt-auto" strokeWidth={2} />
+                  </div>
+                </Wrapper>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ENRICHMENT — Confidentialité RGPD */}
+      <section className="section-padding" data-testid="simulateur-rgpd">
+        <div className="max-w-3xl mx-auto">
+          <div className="p-6 sm:p-8 rounded-2xl bg-muted/20 border border-border/50">
+            <div className="flex items-center gap-3 mb-4">
+              <Shield className="w-6 h-6 text-accent" strokeWidth={1.75} />
+              <h2 className="text-xl font-semibold">Confidentialité & protection de vos données</h2>
+            </div>
+            <ul className="space-y-2.5 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2.5"><CheckCircle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" strokeWidth={2} /><span>Aucune donnée médicale stockée sans votre accord explicite</span></li>
+              <li className="flex items-start gap-2.5"><CheckCircle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" strokeWidth={2} /><span>Email facultatif — le rapport est téléchargeable directement</span></li>
+              <li className="flex items-start gap-2.5"><CheckCircle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" strokeWidth={2} /><span>Aucune revente de données, aucun partenaire commercial</span></li>
+              <li className="flex items-start gap-2.5"><CheckCircle className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" strokeWidth={2} /><span>Suppression possible à la demande — droit d'accès et d'effacement RGPD</span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* ENRICHMENT — FAQ */}
+      <SimulateurFaq />
+
+      {/* E-E-A-T Terrain Note */}
+      <TerrainNote
+        testId="simulateur-terrain-note"
+        text="Ce diagnostic a été construit à partir des situations que j'accompagne réellement : AT/MP, MDPH, expertises, litiges d'assurance, protection juridique."
+      />
     </main>
+  );
+};
+
+const simulateurFaqData = [
+  {
+    question: "Combien de temps prend le diagnostic ?",
+    answer: "Environ 5 minutes. Quelques questions ciblées suffisent à cerner votre contexte et à générer un rapport personnalisé. Vous pouvez revenir en arrière à tout moment pour ajuster vos réponses."
+  },
+  {
+    question: "Est-ce vraiment gratuit ?",
+    answer: "Oui, le diagnostic et le rapport sont entièrement gratuits. Il n'y a ni engagement, ni inscription obligatoire, ni prélèvement automatique. Vous pouvez télécharger votre rapport sans fournir d'email si vous préférez."
+  },
+  {
+    question: "Que contient le rapport ?",
+    answer: "Le rapport personnalisé contient : vos priorités stratégiques classées par urgence, les démarches à engager et leurs délais, les pièges identifiés sur votre situation, les ressources et guides recommandés, et une orientation vers l'accompagnement adapté si utile."
+  },
+  {
+    question: "Mes données sont-elles confidentielles ?",
+    answer: "Oui. Aucune donnée médicale n'est stockée sans votre accord explicite. Si vous ne fournissez pas d'email, rien n'est conservé côté serveur au-delà du temps de génération du rapport. Aucune revente, aucun partenaire commercial, et vous disposez d'un droit d'accès et d'effacement (RGPD)."
+  },
+  {
+    question: "À quoi sert le résultat concrètement ?",
+    answer: "Le diagnostic vous donne une feuille de route claire : quelles démarches engager, dans quel ordre, dans quels délais, et quels pièges éviter. Vous repartez avec un document actionnable — utile pour préparer un rendez-vous administratif, un recours, ou un échange avec un professionnel."
+  },
+  {
+    question: "Dois-je créer un compte ?",
+    answer: "Non. Le diagnostic se fait sans création de compte. Vous répondez aux questions, vous obtenez votre rapport, vous le téléchargez. Si vous souhaitez le recevoir par email, vous pouvez le faire — mais ce n'est jamais obligatoire."
+  }
+];
+
+const SimulateurFaq = () => {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  useEffect(() => {
+    // Cleanup any existing FAQPage + HowTo schemas to avoid duplicates
+    document.querySelectorAll('script[type="application/ld+json"]').forEach(s => {
+      try {
+        const t = JSON.parse(s.textContent)['@type'];
+        if (t === 'FAQPage' || t === 'HowTo') s.remove();
+      } catch {}
+    });
+    // Inject FAQPage
+    const faqScript = document.createElement('script');
+    faqScript.id = 'simulateur-faq-schema';
+    faqScript.type = 'application/ld+json';
+    faqScript.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": simulateurFaqData.map(f => ({
+        "@type": "Question",
+        "name": f.question,
+        "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+      }))
+    });
+    document.head.appendChild(faqScript);
+    // Inject HowTo
+    const howtoScript = document.createElement('script');
+    howtoScript.id = 'simulateur-howto-schema';
+    howtoScript.type = 'application/ld+json';
+    howtoScript.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "HowTo",
+      "name": "Comment obtenir votre diagnostic stratégique",
+      "description": "Obtenez un diagnostic personnalisé en trois étapes simples sur votre situation AT/MP, MDPH, expertise ou protection juridique.",
+      "step": [
+        { "@type": "HowToStep", "position": 1, "name": "Répondez aux questions ciblées", "text": "Indiquez votre situation, l'état de vos démarches et votre contexte en quelques clics." },
+        { "@type": "HowToStep", "position": 2, "name": "Laissez l'algorithme analyser", "text": "Le moteur croise vos réponses avec les règles CPAM, MDPH, AT/MP et les stratégies de recours éprouvées." },
+        { "@type": "HowToStep", "position": 3, "name": "Recevez votre rapport personnalisé", "text": "Téléchargez immédiatement un document avec vos priorités, démarches, délais et pièges à éviter." }
+      ]
+    });
+    document.head.appendChild(howtoScript);
+    return () => {
+      const faq = document.getElementById('simulateur-faq-schema');
+      const howto = document.getElementById('simulateur-howto-schema');
+      if (faq) faq.remove();
+      if (howto) howto.remove();
+    };
+  }, []);
+
+  return (
+    <section className="section-padding bg-secondary/20" data-testid="simulateur-faq">
+      <div className="max-w-3xl mx-auto">
+        <h2 className="text-2xl sm:text-3xl font-semibold mb-8 text-center">Questions fréquentes</h2>
+        <div className="space-y-2">
+          {simulateurFaqData.map((faq, i) => (
+            <div key={i} className="border border-border rounded-xl overflow-hidden bg-background">
+              <button
+                onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/30 transition-colors"
+                data-testid={`simulateur-faq-${i}`}
+              >
+                <span className="font-medium text-sm text-foreground pr-4">{faq.question}</span>
+                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
+              </button>
+              {openIndex === i && (
+                <div className="px-4 pb-4">
+                  <p className="text-sm text-muted-foreground leading-relaxed">{faq.answer}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 };

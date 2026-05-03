@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
 import { DossierExpressCTA } from '@/components/DossierExpressCTA';
+import { TerrainNote } from '@/components/TerrainNote';
 import { 
   ArrowRight, 
   Stethoscope, 
@@ -286,6 +287,11 @@ export const ExpertiseMedicalePage = () => {
 
       {/* FAQ */}
       <ExpertiseFaq />
+
+      <TerrainNote
+        testId="expertise-terrain-note"
+        text="Cette page condense ce que j'observe réellement en expertise : pré-rapports, dires contradictoires et contre-expertises suivis pas à pas avec mes accompagnés."
+      />
 
       {/* Médecin Conseil — Strategic Link */}
       <section className="section-padding bg-accent/5 border-y border-accent/10" data-testid="expertise-médecin-conseil">
