@@ -5,10 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
   MessageCircle, X, Send, Bot, User,
-  ArrowRight, Gauge, Lock, FileText, Phone, Search, Sparkles
+  ArrowRight, Gauge, Lock, FileText, Phone, Search, Sparkles, ShieldAlert, Headphones
 } from 'lucide-react';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
+import { useStrateTriggers, canAutoOpenOnPath } from '@/hooks/useStrateTriggers';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const CHAT_LIMIT = 3;
@@ -107,11 +108,118 @@ export const ChatBot = () => {
   const messagesEndRef = useRef(null);
   const pendingQuestionRef = useRef(null);
 
+  // --- STRATÉ mode state (Conciergerie IA) ---
+  const [strateEnabled, setStrateEnabled] = useState(true);
+  const [strateSessionId, setStrateSessionId] = useState(null);
+  const [strateStep, setStrateStep] = useState(null); // null until greeting loaded
+  const [strateMessage, setStrateMessage] = useState('');
+  const [strateOptions, setStrateOptions] = useState([]);
+  const [strateCtas, setStrateCtas] = useState(null); // { primary, alternative }
+  const [strateFreeText, setStrateFreeText] = useState('');
+  const [strateLoading, setStrateLoading] = useState(false);
+  const [showFallbackChat, setShowFallbackChat] = useState(false);
+
+  // Load Straté kill switch config once
+  useEffect(() => {
+    let cancelled = false;
+    axios.get(`${API}/strate/config`).then((r) => {
+      if (!cancelled) setStrateEnabled(!!r.data?.enabled);
+    }).catch(() => { /* default stays true */ });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Auto-open via scroll/inactivity triggers
+  useStrateTriggers({
+    enabled: strateEnabled,
+    isOpen,
+    onTrigger: () => setIsOpen(true),
+  });
+
+  // When chat opens and Straté is enabled → fetch greeting once per session
+  useEffect(() => {
+    if (!isOpen || !strateEnabled || strateStep !== null || showFallbackChat) return;
+    const fetchGreeting = async () => {
+      setStrateLoading(true);
+      try {
+        const r = await axios.post(`${API}/strate/chat`, {
+          step: 'greeting',
+          page: location.pathname,
+        });
+        setStrateSessionId(r.data.session_id);
+        setStrateStep('greeting');
+        setStrateMessage(r.data.message);
+        setStrateOptions(r.data.options || []);
+        setStrateCtas(null);
+      } catch (e) {
+        setShowFallbackChat(true);
+      } finally {
+        setStrateLoading(false);
+      }
+    };
+    fetchGreeting();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, strateEnabled, strateStep, showFallbackChat]);
+
+  const strateAct = async (payload) => {
+    setStrateLoading(true);
+    try {
+      const r = await axios.post(`${API}/strate/chat`, {
+        session_id: strateSessionId,
+        page: location.pathname,
+        ...payload,
+      });
+      setStrateSessionId(r.data.session_id);
+      setStrateStep(r.data.step);
+      setStrateMessage(r.data.message || '');
+      setStrateOptions(r.data.options || []);
+      if (r.data.primary_cta || r.data.alternative_cta) {
+        setStrateCtas({ primary: r.data.primary_cta, alternative: r.data.alternative_cta });
+      } else {
+        setStrateCtas(null);
+      }
+    } catch (e) {
+      setShowFallbackChat(true);
+    } finally {
+      setStrateLoading(false);
+    }
+  };
+
+  const strateTrackClick = (href, src) => {
+    if (strateSessionId) {
+      axios.post(`${API}/strate/chat`, {
+        session_id: strateSessionId,
+        step: 'route_click',
+        page: location.pathname,
+        text: href,
+        category_id: src,
+      }).catch(() => { /* silent */ });
+    }
+  };
+
+  const strateSelectRoot = (optId) => {
+    strateAct({ step: 'qualify', category_id: optId });
+  };
+  const strateSelectQualification = (optId) => {
+    strateAct({ step: 'route', qualification_id: optId });
+  };
+  const strateSubmitFreeText = () => {
+    const t = strateFreeText.trim();
+    if (t.length < 3) return;
+    strateAct({ step: 'free_text', text: t });
+    setStrateFreeText('');
+  };
+  const strateReset = () => {
+    setStrateStep(null);
+    setStrateMessage('');
+    setStrateOptions([]);
+    setStrateCtas(null);
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  useEffect(() => { scrollToBottom(); }, [messages]);
+  useEffect(() => { scrollToBottom(); }, [messages, strateStep, strateMessage]);
 
   // Delayed appearance of the bubble — disabled
   useEffect(() => {}, [isOpen, bubbleDismissed]);
@@ -235,16 +343,29 @@ export const ChatBot = () => {
           {/* Header */}
           <div className="flex items-center justify-between p-4 bg-foreground text-primary-foreground">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
-                <Bot className="w-5 h-5 text-accent-foreground" />
+              <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center font-bold text-accent-foreground text-base" aria-hidden="true">
+                S
               </div>
               <div>
-                <h3 className="font-semibold text-sm">Assistant d'orientation</h3>
-                <p className="text-xs text-primary-foreground/70">Je vous guide vers le bon outil</p>
+                <h3 className="font-semibold text-sm" data-testid="strate-header-name">Straté</h3>
+                <p className="text-[10px] text-primary-foreground/70" data-testid="strate-header-role">
+                  Conciergerie IA · répond instantanément
+                </p>
+                {strateEnabled && !showFallbackChat && (
+                  <Link
+                    to="/rdv?src=strate_human_header"
+                    onClick={() => { strateTrackClick('/rdv?src=strate_human_header', 'strate_human_header'); setIsOpen(false); }}
+                    className="inline-flex items-center gap-1 text-[10px] text-[#C9A84C] hover:underline mt-0.5"
+                    data-testid="strate-expert-link-header"
+                  >
+                    <Headphones className="w-3 h-3" /> Besoin d'un humain ? Parler à un expert
+                  </Link>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {/* Quota counter */}
+              {/* Quota counter — only visible in fallback chat mode */}
+              {showFallbackChat && (
               <Badge
                 className={`text-[10px] ${remaining > 2 ? 'bg-green-500/20 text-green-300 border-green-500/30' : remaining > 0 ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-red-500/20 text-red-300 border-red-500/30'}`}
                 data-testid="chatbot-quota-badge"
@@ -252,6 +373,7 @@ export const ChatBot = () => {
                 <Gauge className="w-3 h-3 mr-1" />
                 {remaining}/{CHAT_LIMIT}
               </Badge>
+              )}
               <button
                 onClick={() => setIsOpen(false)}
                 className="p-2 hover:bg-primary-foreground/10 rounded-lg transition-colors"
@@ -262,6 +384,133 @@ export const ChatBot = () => {
             </div>
           </div>
 
+          {/* ---------- STRATÉ MODE (structured reception) ---------- */}
+          {strateEnabled && !showFallbackChat && (
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/30" data-testid="strate-body">
+              {/* RGPD banner — always visible at top */}
+              <div className="flex items-start gap-2 text-[11px] text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2" data-testid="strate-rgpd-banner">
+                <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-amber-600" />
+                <span>Assistant IA. Merci de ne pas saisir de données médicales sensibles ici.</span>
+              </div>
+
+              {/* Current message bubble */}
+              {strateMessage && (
+                <div className="flex gap-3" data-testid="strate-message">
+                  <div className="w-8 h-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center flex-shrink-0 font-bold text-xs">S</div>
+                  <div className="max-w-[85%] bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3">
+                    <div className="text-sm prose prose-sm max-w-none">
+                      <ReactMarkdown>{strateMessage}</ReactMarkdown>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Loading state */}
+              {strateLoading && (
+                <div className="flex gap-3" data-testid="strate-loading">
+                  <div className="w-8 h-8 rounded-full bg-accent/50 flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-4 h-4 animate-pulse text-accent-foreground" />
+                  </div>
+                  <div className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3 text-xs text-muted-foreground italic">
+                    Un instant…
+                  </div>
+                </div>
+              )}
+
+              {/* Option buttons (greeting / qualify / confirm / out_of_scope) */}
+              {!strateLoading && strateOptions.length > 0 && (
+                <div className="ml-11 space-y-2" data-testid="strate-options">
+                  {strateOptions.map((opt) => (
+                    <button
+                      key={opt.id}
+                      onClick={() => {
+                        if (strateStep === 'greeting') strateSelectRoot(opt.id);
+                        else if (strateStep === 'qualify' || strateStep === 'confirm' || strateStep === 'out_of_scope') strateSelectQualification(opt.id);
+                      }}
+                      className="w-full text-left px-3 py-2.5 rounded-lg text-sm bg-card border border-border hover:border-[#C9A84C] hover:bg-[#C9A84C]/5 transition-all"
+                      data-testid={`strate-opt-${opt.id}`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Free text input (step free_text) */}
+              {!strateLoading && strateStep === 'free_text' && (
+                <div className="ml-11 space-y-2" data-testid="strate-freetext">
+                  <div className="flex gap-2">
+                    <Input
+                      value={strateFreeText}
+                      onChange={(e) => setStrateFreeText(e.target.value)}
+                      onKeyPress={(e) => { if (e.key === 'Enter') { e.preventDefault(); strateSubmitFreeText(); } }}
+                      placeholder="Ex. : J'ai reçu un refus AAH en septembre…"
+                      className="flex-1 rounded-lg"
+                      data-testid="strate-freetext-input"
+                    />
+                    <Button onClick={strateSubmitFreeText} size="icon" className="rounded-lg" disabled={strateFreeText.trim().length < 3} data-testid="strate-freetext-send">
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Sensitive data warning */}
+              {!strateLoading && strateStep === 'sensitive' && (
+                <div className="ml-11 space-y-2" data-testid="strate-sensitive">
+                  <Link
+                    to="/rdv?src=strate_sensitive_redirect"
+                    onClick={() => { strateTrackClick('/rdv?src=strate_sensitive_redirect', 'strate_sensitive_redirect'); setIsOpen(false); }}
+                  >
+                    <Button className="w-full gap-2 text-xs" data-testid="strate-sensitive-expert-btn">
+                      <Headphones className="w-3.5 h-3.5" /> Parler à un expert
+                    </Button>
+                  </Link>
+                </div>
+              )}
+
+              {/* Final CTAs (step route) */}
+              {!strateLoading && strateStep === 'route' && strateCtas && (
+                <div className="ml-11 space-y-2" data-testid="strate-final-ctas">
+                  {strateCtas.primary && (
+                    <Link
+                      to={strateCtas.primary.href}
+                      onClick={() => { strateTrackClick(strateCtas.primary.href, strateCtas.primary.src); setIsOpen(false); }}
+                    >
+                      <Button className="w-full justify-start gap-2 text-xs bg-[#C9A84C] hover:bg-[#B89640] text-[#0a0a08] font-semibold" data-testid="strate-primary-cta">
+                        <ArrowRight className="w-3.5 h-3.5" />
+                        {strateCtas.primary.label}
+                      </Button>
+                    </Link>
+                  )}
+                  {strateCtas.alternative && (
+                    <Link
+                      to={strateCtas.alternative.href}
+                      onClick={() => { strateTrackClick(strateCtas.alternative.href, strateCtas.alternative.src); setIsOpen(false); }}
+                    >
+                      <Button variant="outline" className="w-full justify-start gap-2 text-xs" data-testid="strate-alt-cta">
+                        <ArrowRight className="w-3.5 h-3.5" />
+                        {strateCtas.alternative.label}
+                      </Button>
+                    </Link>
+                  )}
+                  <button
+                    onClick={strateReset}
+                    className="w-full text-[11px] text-muted-foreground hover:text-foreground underline pt-1"
+                    data-testid="strate-restart"
+                  >
+                    Recommencer
+                  </button>
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+
+          {/* ---------- FALLBACK / LEGACY CHAT ---------- */}
+          {(!strateEnabled || showFallbackChat) && (
+          <>
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/30">
             {messages.map((message, index) => (
@@ -386,6 +635,8 @@ export const ChatBot = () => {
                 Il vous reste {remaining} question{remaining !== 1 ? 's' : ''} gratuite{remaining !== 1 ? 's' : ''}
               </p>
             </div>
+          )}
+          </>
           )}
         </div>
       )}

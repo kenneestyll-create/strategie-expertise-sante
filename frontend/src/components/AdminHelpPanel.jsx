@@ -191,6 +191,25 @@ const HELP_SECTIONS = [
     keywords: ['feedback', 'retour', 'expérience', 'frein', 'besoin', 'clarté', 'signal', 'client', 'avis stratégique']
   },
   {
+    id: 'strate',
+    tab: 'analytics',
+    icon: Sparkles,
+    title: 'Straté · Conciergerie IA',
+    color: '#C9A84C',
+    summary: 'Réceptionniste IA qui qualifie et oriente les visiteurs vers le bon parcours en 3 étapes max.',
+    steps: [
+      { label: 'Où le trouver ?', tab: 'analytics', text: 'Onglet "Analytique" → sous-onglet "Conciergerie Straté". Vous y voyez les KPI et le bouton kill switch.' },
+      { label: 'Mission', text: 'Straté ne discute pas, il oriente. Sa seule mission : qualifier le visiteur en 2-3 clics et le router vers StratégiIA, Dossier Express, RDV, calculatrice ou guide.' },
+      { label: 'Auto-ouverture', text: 'Straté s\'ouvre automatiquement après 15 sec d\'inactivité OU 40% de scroll. Limité à 1 fois / 24h via cookie. Jamais pendant la saisie d\'un formulaire.' },
+      { label: 'Pages actives', text: 'Homepage, guides, tarifs, calculatrices, pages piliers (MDPH, AT/MP, expertise…). DÉSACTIVÉ sur StratégiIA, Dossier Express, Simulateur (tunnels actifs), admin et pages légales.' },
+      { label: 'KPI principal', text: 'Le "Taux de routage" est LE chiffre à suivre. Objectif : 15-25% des sessions ouvertes finissent par un clic CTA. La répartition montre vers quoi ils cliquent (StratégiIA, RDV, guides…).' },
+      { label: 'Kill switch', text: 'Bouton rouge "Désactiver Straté" en haut → effet immédiat, aucun déploiement. Utilisez-le si bug ou pour une période de test. Bouton vert pour réactiver.' },
+      { label: 'Conformité RGPD', text: 'Bandeau visible à chaque ouverture rappelant de ne pas saisir de données médicales. Détection automatique des mots sensibles (cancer, métastase, NIR…) → redirection vers RDV humain. Logs anonymisés.' },
+      { label: 'Bouton expert toujours visible', text: 'Lien "Besoin d\'un humain ? Parler à un expert" présent en permanence dans le header du chat. Le visiteur peut court-circuiter Straté à tout moment.' },
+    ],
+    keywords: ['strate', 'straté', 'conciergerie', 'réceptionniste', 'chatbot', 'orientation', 'routage', 'kill switch', 'kpi', 'conversion', 'taux', 'auto-ouverture', 'rgpd', 'expert', 'qualification']
+  },
+  {
     id: 'forum',
     tab: 'forum',
     icon: MessageSquare,
