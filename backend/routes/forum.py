@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, Request
 from typing import Optional
 from datetime import datetime, timezone
 import uuid
+import re
 
 from config import db, limiter
 from models import (
@@ -313,3 +314,178 @@ async def admin_pin_topic(topic_id: str, is_pinned: bool = True, admin: dict = D
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Sujet non trouvé")
     return {"success": True, "is_pinned": is_pinned}
+
+
+# ==================== ADMIN CLEANUP PYTEST DATA (production-safe) ====================
+# Endpoints pour identifier et supprimer chirurgicalement les données pytest qui
+# ont pu polluer la DB de production. Règle d'or : on ne touche JAMAIS aux posts
+# réels — uniquement ceux qui correspondent aux patterns pytest connus.
+
+_PYTEST_PSEUDO_REGEX = r'^(pytest-|TestUser\d+|AnonUser\d+|anon-|integ-)'
+_PYTEST_EMAIL_REGEX = r'(@test\.com$|@example\.com$|^pytest-.*@)'
+_PYTEST_TITLE_MARKERS = [
+    'Test pytest topic', 'Test Topic from API', 'Reply test',
+    'Like test', 'Report test', 'Integration test topic',
+]
+_PYTEST_CONTENT_MARKERS = [
+    'Pytest reply', 'Content from pytest',
+    'This is a test topic created during API testing',
+    'Content from integration test',
+]
+_PYTEST_REPORT_REASONS = ['Spam test']
+
+
+async def _identify_pytest_artifacts():
+    """Identifie tous les documents pytest sans rien modifier.
+
+    Retourne un dictionnaire avec :
+      - pytest_user_ids : set d'ids utilisateurs pytest
+      - pytest_topic_ids : set d'ids topics à supprimer
+      - sample_* : échantillons (max 5) pour preview
+      - counts : nombre de docs dans chaque collection qui seront supprimés
+    """
+    users = await db.forum_users.find(
+        {}, {"_id": 0, "id": 1, "pseudo": 1, "email": 1}
+    ).to_list(length=None)
+
+    pytest_user_ids = set()
+    pytest_user_samples = []
+    for u in users:
+        p = u.get('pseudo') or ''
+        e = u.get('email') or ''
+        if re.match(_PYTEST_PSEUDO_REGEX, p) or (e and re.search(_PYTEST_EMAIL_REGEX, e)):
+            pytest_user_ids.add(u['id'])
+            if len(pytest_user_samples) < 5:
+                pytest_user_samples.append({"pseudo": p, "email": e or None})
+
+    # Topics authored by pytest users + topics with pytest title markers
+    topic_or = [{"author_id": {"$in": list(pytest_user_ids)}}] if pytest_user_ids else []
+    topic_or.append({"title": {"$in": _PYTEST_TITLE_MARKERS}})
+
+    topics_to_delete = await db.forum_topics.find(
+        {"$or": topic_or}, {"_id": 0, "id": 1, "title": 1, "author_pseudo": 1}
+    ).to_list(length=None)
+    pytest_topic_ids = {t['id'] for t in topics_to_delete}
+    topic_samples = [
+        {"title": t.get('title'), "author_pseudo": t.get('author_pseudo')}
+        for t in topics_to_delete[:5]
+    ]
+
+    # Replies: authored by pytest OR matching content markers OR orphan (topic_id in deleted)
+    reply_or = []
+    if pytest_user_ids:
+        reply_or.append({"author_id": {"$in": list(pytest_user_ids)}})
+    reply_or.append({"content": {"$in": _PYTEST_CONTENT_MARKERS}})
+    if pytest_topic_ids:
+        reply_or.append({"topic_id": {"$in": list(pytest_topic_ids)}})
+    replies_count = await db.forum_replies.count_documents({"$or": reply_or}) if reply_or else 0
+
+    # Reports: reporter pytest OR matching reason OR target topic pytest
+    report_or = []
+    if pytest_user_ids:
+        report_or.append({"reporter_id": {"$in": list(pytest_user_ids)}})
+    report_or.append({"reason": {"$in": _PYTEST_REPORT_REASONS}})
+    if pytest_topic_ids:
+        report_or.append({"target_type": "topic", "target_id": {"$in": list(pytest_topic_ids)}})
+    reports_count = await db.forum_reports.count_documents({"$or": report_or}) if report_or else 0
+
+    return {
+        "pytest_user_ids": pytest_user_ids,
+        "pytest_topic_ids": pytest_topic_ids,
+        "counts": {
+            "users": len(pytest_user_ids),
+            "topics": len(pytest_topic_ids),
+            "replies": replies_count,
+            "reports": reports_count,
+        },
+        "samples": {
+            "users": pytest_user_samples,
+            "topics": topic_samples,
+        },
+    }
+
+
+@router.get("/admin/forum/cleanup-pytest-preview")
+async def admin_cleanup_pytest_preview(admin: dict = Depends(get_current_admin)):
+    """DRY-RUN : affiche exactement ce qui SERAIT supprimé, sans rien toucher.
+    À appeler AVANT le nettoyage pour vérifier qu'aucun vrai post n'est ciblé."""
+    report = await _identify_pytest_artifacts()
+    return {
+        "dry_run": True,
+        "counts": report["counts"],
+        "samples": report["samples"],
+        "total_to_delete": sum(report["counts"].values()),
+    }
+
+
+@router.post("/admin/forum/cleanup-pytest")
+async def admin_cleanup_pytest(
+    confirm: str,
+    admin: dict = Depends(get_current_admin),
+):
+    """Supprime chirurgicalement les données pytest de la DB.
+    Protégé par double confirmation : confirm doit valoir 'NETTOYER'.
+    Opération idempotente : peut être relancée sans risque."""
+    if confirm != "NETTOYER":
+        raise HTTPException(
+            status_code=400,
+            detail="Confirmation requise : passez ?confirm=NETTOYER"
+        )
+
+    report = await _identify_pytest_artifacts()
+    pytest_user_ids = list(report["pytest_user_ids"])
+    pytest_topic_ids = list(report["pytest_topic_ids"])
+
+    deleted_topics = 0
+    deleted_replies = 0
+    deleted_reports = 0
+    deleted_users = 0
+
+    # 1) Topics
+    topic_or = []
+    if pytest_user_ids:
+        topic_or.append({"author_id": {"$in": pytest_user_ids}})
+    topic_or.append({"title": {"$in": _PYTEST_TITLE_MARKERS}})
+    if topic_or:
+        r = await db.forum_topics.delete_many({"$or": topic_or})
+        deleted_topics = r.deleted_count
+
+    # 2) Replies (pytest authors + markers + orphan of deleted topics)
+    reply_or = []
+    if pytest_user_ids:
+        reply_or.append({"author_id": {"$in": pytest_user_ids}})
+    reply_or.append({"content": {"$in": _PYTEST_CONTENT_MARKERS}})
+    if pytest_topic_ids:
+        reply_or.append({"topic_id": {"$in": pytest_topic_ids}})
+    if reply_or:
+        r = await db.forum_replies.delete_many({"$or": reply_or})
+        deleted_replies = r.deleted_count
+
+    # 3) Reports (pytest reporters + reason markers + target topic pytest)
+    report_or = []
+    if pytest_user_ids:
+        report_or.append({"reporter_id": {"$in": pytest_user_ids}})
+    report_or.append({"reason": {"$in": _PYTEST_REPORT_REASONS}})
+    if pytest_topic_ids:
+        report_or.append({"target_type": "topic", "target_id": {"$in": pytest_topic_ids}})
+    if report_or:
+        r = await db.forum_reports.delete_many({"$or": report_or})
+        deleted_reports = r.deleted_count
+
+    # 4) Users (last, since replies/reports may still reference them via author_id)
+    if pytest_user_ids:
+        r = await db.forum_users.delete_many({"id": {"$in": pytest_user_ids}})
+        deleted_users = r.deleted_count
+
+    return {
+        "success": True,
+        "deleted": {
+            "users": deleted_users,
+            "topics": deleted_topics,
+            "replies": deleted_replies,
+            "reports": deleted_reports,
+        },
+        "total_deleted": deleted_users + deleted_topics + deleted_replies + deleted_reports,
+        "performed_by": admin.get("sub") or admin.get("email"),
+        "performed_at": datetime.now(timezone.utc).isoformat(),
+    }

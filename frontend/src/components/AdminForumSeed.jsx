@@ -8,8 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Pin, PinOff, Trash2, Send, Loader2, MessageSquare, ExternalLink, Sparkles } from 'lucide-react';
+import { Pin, PinOff, Trash2, Send, Loader2, MessageSquare, ExternalLink, Sparkles, AlertTriangle, ShieldCheck, Bug } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -38,6 +39,14 @@ export const AdminForumSeed = () => {
 
   const [seedTopics, setSeedTopics] = useState([]);
   const [loadingList, setLoadingList] = useState(false);
+
+  // --- Cleanup pytest data state ---
+  const [cleanupPreview, setCleanupPreview] = useState(null); // { counts, samples, total_to_delete }
+  const [cleanupLoading, setCleanupLoading] = useState(false);
+  const [cleanupDialogOpen, setCleanupDialogOpen] = useState(false);
+  const [cleanupConfirmText, setCleanupConfirmText] = useState('');
+  const [cleanupExecuting, setCleanupExecuting] = useState(false);
+  const [cleanupResult, setCleanupResult] = useState(null); // last execution result
 
   const loadSeedTopics = useCallback(async () => {
     setLoadingList(true);
@@ -115,6 +124,55 @@ export const AdminForumSeed = () => {
     }
   };
 
+  // --- Cleanup pytest handlers ---
+  const scanPytestData = async () => {
+    setCleanupLoading(true);
+    setCleanupResult(null);
+    try {
+      const { data } = await axios.get(`${API}/admin/forum/cleanup-pytest-preview`, authConfig);
+      setCleanupPreview(data);
+      if (data.total_to_delete === 0) {
+        toast.success("Aucune donnée pytest détectée — votre base est propre.");
+      } else {
+        toast.info(`${data.total_to_delete} entrées pytest détectées`);
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || "Analyse impossible");
+    } finally {
+      setCleanupLoading(false);
+    }
+  };
+
+  const openCleanupDialog = () => {
+    setCleanupConfirmText('');
+    setCleanupDialogOpen(true);
+  };
+
+  const executeCleanup = async () => {
+    if (cleanupConfirmText.trim().toUpperCase() !== 'NETTOYER') {
+      toast.error("Tapez exactement NETTOYER pour confirmer");
+      return;
+    }
+    setCleanupExecuting(true);
+    try {
+      const { data } = await axios.post(
+        `${API}/admin/forum/cleanup-pytest`,
+        null,
+        { ...authConfig, params: { confirm: 'NETTOYER' } }
+      );
+      setCleanupResult(data);
+      setCleanupDialogOpen(false);
+      setCleanupPreview(null);
+      toast.success(`Nettoyage effectué : ${data.total_deleted} entrées supprimées`);
+      // Refresh seed topics list (in case some topics were pytest)
+      loadSeedTopics();
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || "Nettoyage impossible");
+    } finally {
+      setCleanupExecuting(false);
+    }
+  };
+
   const formatDate = (d) => {
     if (!d) return '—';
     try {
@@ -142,6 +200,113 @@ export const AdminForumSeed = () => {
           </p>
         </div>
       </div>
+
+      {/* Cleanup pytest data — production-safe, dry-run first */}
+      <Card className="border-amber-200/60" data-testid="forum-cleanup-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <ShieldCheck className="w-4 h-4 text-amber-600" />
+            Nettoyage chirurgical des données pytest
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="rounded-lg bg-amber-50/50 border border-amber-100 p-3 text-xs text-foreground/80 leading-relaxed flex gap-2" data-testid="cleanup-explainer">
+            <Bug className="w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" />
+            <div>
+              <p><strong>À quoi ça sert&nbsp;?</strong> Certains tests automatiques (pytest) ont pu insérer des posts fictifs
+              en base ("Test pytest topic", "Report test", auteurs <code>pytest-xxxx</code>…). Ce nettoyage les identifie par
+              des motifs précis (pseudos, emails, titres) et les supprime <strong>sans toucher</strong> aux vrais posts.</p>
+              <p className="mt-1"><strong>Sécurité</strong>&nbsp;: 1)&nbsp;Analyse d'abord → vous voyez exactement ce qui
+              serait supprimé. 2)&nbsp;Confirmation en tapant <code>NETTOYER</code>. 3)&nbsp;Opération idempotente (vous
+              pouvez la relancer sans risque).</p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={scanPytestData}
+              disabled={cleanupLoading}
+              data-testid="cleanup-scan-btn"
+            >
+              {cleanupLoading ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Analyse…</>
+              ) : (
+                <><Bug className="w-4 h-4 mr-2" /> Analyser la base</>
+              )}
+            </Button>
+            {cleanupPreview && cleanupPreview.total_to_delete > 0 && (
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={openCleanupDialog}
+                data-testid="cleanup-open-dialog-btn"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Supprimer {cleanupPreview.total_to_delete} entrées pytest
+              </Button>
+            )}
+          </div>
+
+          {/* Preview results */}
+          {cleanupPreview && (
+            <div
+              className={`rounded-lg border p-4 text-sm ${
+                cleanupPreview.total_to_delete === 0
+                  ? 'bg-emerald-50/60 border-emerald-200'
+                  : 'bg-red-50/40 border-red-200'
+              }`}
+              data-testid="cleanup-preview-result"
+            >
+              {cleanupPreview.total_to_delete === 0 ? (
+                <p className="flex items-center gap-2 text-emerald-800 font-medium">
+                  <ShieldCheck className="w-4 h-4" /> Aucune donnée pytest détectée — votre forum de production est propre.
+                </p>
+              ) : (
+                <>
+                  <p className="font-semibold text-red-900 mb-2 flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4" />
+                    {cleanupPreview.total_to_delete} entrées seront supprimées&nbsp;:
+                  </p>
+                  <ul className="text-xs text-red-900/90 space-y-0.5 mb-3 ml-6 list-disc">
+                    <li><strong>{cleanupPreview.counts.users}</strong> utilisateurs pytest</li>
+                    <li><strong>{cleanupPreview.counts.topics}</strong> sujets pytest</li>
+                    <li><strong>{cleanupPreview.counts.replies}</strong> réponses pytest</li>
+                    <li><strong>{cleanupPreview.counts.reports}</strong> signalements pytest</li>
+                  </ul>
+                  {cleanupPreview.samples?.topics?.length > 0 && (
+                    <div className="text-xs text-red-900/80">
+                      <p className="font-medium mb-1">Aperçu des sujets ciblés&nbsp;:</p>
+                      <ul className="ml-4 list-disc space-y-0.5">
+                        {cleanupPreview.samples.topics.map((t, i) => (
+                          <li key={i}>
+                            "{t.title}" — par {t.author_pseudo}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Last execution result */}
+          {cleanupResult && (
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-4 text-sm" data-testid="cleanup-result">
+              <p className="font-semibold text-emerald-900 flex items-center gap-2 mb-1">
+                <ShieldCheck className="w-4 h-4" /> Nettoyage effectué avec succès
+              </p>
+              <p className="text-xs text-emerald-900/80">
+                {cleanupResult.deleted.users} utilisateurs · {cleanupResult.deleted.topics} sujets ·
+                {' '}{cleanupResult.deleted.replies} réponses · {cleanupResult.deleted.reports} signalements supprimés
+                (total&nbsp;: <strong>{cleanupResult.total_deleted}</strong>).
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Formulaire */}
       <Card data-testid="forum-seed-form-card">
@@ -323,6 +488,59 @@ export const AdminForumSeed = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Cleanup confirmation dialog */}
+      <Dialog open={cleanupDialogOpen} onOpenChange={setCleanupDialogOpen}>
+        <DialogContent className="max-w-lg" data-testid="cleanup-confirm-dialog">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-900">
+              <AlertTriangle className="w-5 h-5 text-red-600" />
+              Confirmer le nettoyage
+            </DialogTitle>
+            <DialogDescription className="text-foreground/80">
+              Vous êtes sur le point de supprimer définitivement{' '}
+              <strong>{cleanupPreview?.total_to_delete || 0} entrées pytest</strong> de la base forum
+              ({cleanupPreview?.counts?.users || 0} utilisateurs, {cleanupPreview?.counts?.topics || 0} sujets,
+              {' '}{cleanupPreview?.counts?.replies || 0} réponses, {cleanupPreview?.counts?.reports || 0} signalements).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <p className="text-xs text-muted-foreground">
+              Cette opération est <strong>irréversible</strong>. Les vrais posts (non pytest) ne sont pas concernés.
+              Pour confirmer, tapez <code className="px-1.5 py-0.5 rounded bg-muted font-mono text-foreground">NETTOYER</code> ci-dessous&nbsp;:
+            </p>
+            <Input
+              value={cleanupConfirmText}
+              onChange={(e) => setCleanupConfirmText(e.target.value)}
+              placeholder="Tapez NETTOYER"
+              autoFocus
+              data-testid="cleanup-confirm-input"
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCleanupDialogOpen(false)}
+              disabled={cleanupExecuting}
+              data-testid="cleanup-cancel-btn"
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={executeCleanup}
+              disabled={cleanupExecuting || cleanupConfirmText.trim().toUpperCase() !== 'NETTOYER'}
+              data-testid="cleanup-execute-btn"
+            >
+              {cleanupExecuting ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Suppression…</>
+              ) : (
+                <><Trash2 className="w-4 h-4 mr-2" /> Confirmer la suppression</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
