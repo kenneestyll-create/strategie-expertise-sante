@@ -59,7 +59,7 @@ const calculateAAH = (tauxInvalidite, situationFamiliale, revenus, enfants) => {
       eligible: false,
       montant: 0,
       message: "Vos revenus dépassent le plafond de ressources.",
-      detail: `Plafond annuel pour votre situation : ${plafond.toLocaleString('fr-FR')} € (soit ${Math.round(plafond / 12).toLocaleString('fr-FR')} €/mois). Vos revenus annuels déclarés : ${revenusAnnuels.toLocaleString('fr-FR')} €.`,
+      detail: `Plafond annuel pour votre situation : ${plafond.toLocaleString('fr-FR')} € (soit ${Math.round(plafond / 12).toLocaleString('fr-FR')} €/mois). Vos revenus annuels déclarés : ${revenusAnnuels.toLocaleString('fr-FR')} €.`,
       plafond
     };
   }
@@ -143,9 +143,9 @@ export const CalculatriceAAHPage = () => {
   const getShareText = () => {
     if (!result) return '';
     if (result.eligible) {
-      return `Calculatrice AAH - Taux ${tauxInvalidite}% : AAH estimée à ${result.montant.toLocaleString('fr-FR')} €/mois. Estimez la vôtre :`;
+      return `Calculatrice AAH - Taux ${tauxInvalidite}% : AAH estimée à ${result.montant.toLocaleString('fr-FR')} €/mois. Estimez la vôtre :`;
     }
-    return `Calculatrice AAH - Vérifiez votre éligibilité à l'AAH :`;
+    return `Calculatrice AAH - Vérifiez votre éligibilité à l'AAH :`;
   };
 
   const handleCopyLink = () => {
@@ -170,7 +170,7 @@ export const CalculatriceAAHPage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Calcul AAH : simulateur montant et éligibilité" description="Estimez votre AAH selon votre situation et vos revenus. Simulateur gratuit basé sur les barèmes 2026. Montant maximum : 1 041,59 €/mois." path="/calculatrice-aah" />
+      <SEO title="Calcul AAH : simulateur montant et éligibilité" description="Estimez votre AAH selon votre situation et vos revenus. Simulateur gratuit basé sur les barèmes 2026. Montant maximum : 1 041,59 €/mois." path="/calculatrice-aah" />
       {/* Hero */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
@@ -241,7 +241,7 @@ export const CalculatriceAAHPage = () => {
                     type="button"
                     onClick={() => { setSituationFamiliale('seul'); setCalculated(false); }}
                     className={`flex items-center gap-2 p-3 rounded-lg border text-sm font-medium transition-all
-                      ${situationFamiliale === 'seul' ? 'border-accent bg-accent/10 text-accent' : 'border-border hover:border-accent/50'}`}
+                      ${situationFamiliale === 'seul' ? 'border-accent bg-accent/10 text-accent' : 'border-border hover:border-accent/50'}`}
                     data-testid="situation-seul"
                   >
                     <Users className="w-4 h-4" /> Personne seule
@@ -250,7 +250,7 @@ export const CalculatriceAAHPage = () => {
                     type="button"
                     onClick={() => { setSituationFamiliale('couple'); setCalculated(false); }}
                     className={`flex items-center gap-2 p-3 rounded-lg border text-sm font-medium transition-all
-                      ${situationFamiliale === 'couple' ? 'border-accent bg-accent/10 text-accent' : 'border-border hover:border-accent/50'}`}
+                      ${situationFamiliale === 'couple' ? 'border-accent bg-accent/10 text-accent' : 'border-border hover:border-accent/50'}`}
                     data-testid="situation-couple"
                   >
                     <Heart className="w-4 h-4" /> En couple
@@ -301,7 +301,7 @@ export const CalculatriceAAHPage = () => {
 
               {/* Results */}
               {calculated && result && (
-                <div className={`mt-6 p-6 rounded-xl border space-y-4 ${result.eligible ? 'bg-green-50 border-green-200' : 'bg-muted/30 border-border'}`} data-testid="aah-result">
+                <div className={`mt-6 p-6 rounded-xl border space-y-4 ${result.eligible ? 'bg-green-50 border-green-200' : 'bg-muted/30 border-border'}`} data-testid="aah-result">
                   <div className="flex items-center gap-2 text-sm font-medium">
                     <Info className="w-4 h-4 text-muted-foreground" />
                     <span>{result.message}</span>
@@ -328,8 +328,8 @@ export const CalculatriceAAHPage = () => {
 
                       <div className="text-xs text-muted-foreground bg-background p-3 rounded-lg">
                         <p className="font-medium mb-1">Détail :</p>
-                        <p>Taux d'invalidité : {tauxInvalidite}% {result.isTauxPlein ? '(taux plein ≥ 80%)' : '(50-79%, sous conditions)'}</p>
-                        <p>Plafond de ressources annuel : {result.plafond?.toLocaleString('fr-FR')} € ({situationFamiliale === 'couple' ? 'couple' : 'personne seule'}{enfants > 0 ? ` + ${enfants} enfant${enfants > 1 ? 's' : ''}` : ''})</p>
+                        <p>Taux d'invalidité : {tauxInvalidite}% {result.isTauxPlein ? '(taux plein ≥ 80%)' : '(50-79%, sous conditions)'}</p>
+                        <p>Plafond de ressources annuel : {result.plafond?.toLocaleString('fr-FR')} € ({situationFamiliale === 'couple' ? 'couple' : 'personne seule'}{enfants > 0 ? ` + ${enfants} enfant${enfants > 1 ? 's' : ''}` : ''})</p>
                         <p>Revenus déclarés : {(revenus * 12).toLocaleString('fr-FR')} €/an</p>
                         <p>AAH max : {AAH_MAX} €/mois</p>
                       </div>
@@ -378,7 +378,7 @@ export const CalculatriceAAHPage = () => {
                         data-testid="aah-share-copy"
                       >
                         {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
-                        {copied ? 'Copié !' : 'Copier le lien'}
+                        {copied ? 'Copié !' : 'Copier le lien'}
                       </button>
                     </div>
                   </div>
@@ -444,7 +444,7 @@ export const CalculatriceAAHPage = () => {
               <h2 className="text-lg font-semibold mb-2">Comment est calculée l'AAH ?</h2>
               <div className="text-sm text-muted-foreground space-y-2 leading-relaxed">
                 <p>
-                  L'AAH fonctionne en différentiel : la CAF compare le plafond de ressources à vos revenus réels, puis verse la différence. Sans revenu, vous percevez le montant plein. Avec des revenus d'activité, un abattement est appliqué — seule une partie de votre salaire est retenue dans le calcul, ce qui rend le cumul AAH + travail plus avantageux qu'une simple soustraction.
+                  L'AAH fonctionne en différentiel : la CAF compare le plafond de ressources à vos revenus réels, puis verse la différence. Sans revenu, vous percevez le montant plein. Avec des revenus d'activité, un abattement est appliqué — seule une partie de votre salaire est retenue dans le calcul, ce qui rend le cumul AAH + travail plus avantageux qu'une simple soustraction.
                 </p>
                 <p>
                   Le montant est recalculé chaque trimestre sur la base de votre déclaration trimestrielle de ressources. C'est pourquoi il peut varier d'un trimestre à l'autre, notamment en cas de changement d'activité ou de prime ponctuelle.
@@ -591,27 +591,27 @@ export const CalculatriceAAHPage = () => {
 
 const aahFaqData = [
   {
-    question: "L'AAH est-elle cumulable avec un salaire ?",
-    answer: "Oui. L'AAH fonctionne en différentiel : un abattement est appliqué sur vos revenus d'activité, et l'allocation complète la différence jusqu'au plafond. Travailler ne supprime pas l'AAH, elle s'ajuste à vos revenus."
+    question: "L'AAH est-elle cumulable avec un salaire ?",
+    answer: "Oui. L'AAH fonctionne en différentiel : un abattement est appliqué sur vos revenus d'activité, et l'allocation complète la différence jusqu'au plafond. Travailler ne supprime pas l'AAH, elle s'ajuste à vos revenus."
   },
   {
-    question: "Quelle est la différence entre un taux de 80% et un taux entre 50% et 79% ?",
+    question: "Quelle est la différence entre un taux de 80% et un taux entre 50% et 79% ?",
     answer: "Avec un taux d'au moins 80%, l'AAH est attribuée sans restriction de durée. Avec un taux entre 50% et 79%, l'attribution est limitée à 1 à 5 ans et nécessite la reconnaissance d'une restriction substantielle et durable d'accès à l'emploi (RSDAE) par la CDAPH."
   },
   {
-    question: "Comment est fixé le montant de l'AAH ?",
+    question: "Comment est fixé le montant de l'AAH ?",
     answer: "Le montant dépend de vos ressources personnelles. Sans revenu, vous percevez le montant maximal (1 041,59 € en 2026). Avec des revenus, l'AAH est calculée en différentiel après abattement. Le montant est recalculé chaque trimestre sur la base de votre déclaration de ressources."
   },
   {
-    question: "L'AAH est-elle imposable ?",
+    question: "L'AAH est-elle imposable ?",
     answer: "Non. L'AAH est totalement exonérée d'impôt sur le revenu, de CSG et de CRDS. Elle ne doit pas être déclarée dans vos revenus imposables."
   },
   {
-    question: "La déconjugalisation s'applique-t-elle automatiquement ?",
+    question: "La déconjugalisation s'applique-t-elle automatiquement ?",
     answer: "Oui, depuis octobre 2023, seuls vos revenus personnels sont pris en compte, et non ceux de votre conjoint. Si l'ancien calcul conjugal était plus favorable, vous pouvez demander son maintien — mais ce cas est rare. Si vous aviez été refusé avant cette date, refaites une simulation."
   },
   {
-    question: "Que devient l'AAH à l'ouverture des droits à la retraite ?",
+    question: "Que devient l'AAH à l'ouverture des droits à la retraite ?",
     answer: "Cela dépend de votre taux d'incapacité. Avec un taux d'au moins 80%, l'AAH peut être maintenue en complément de votre pension de retraite si celle-ci est inférieure au montant de l'AAH (versement différentiel). Avec un taux entre 50% et 79%, l'AAH cesse à l'âge légal de la retraite et peut être remplacée par l'ASPA (Allocation de Solidarité aux Personnes Âgées) si vous y êtes éligible. Dans tous les cas, vous devez demander votre retraite — l'AAH ne dispense pas de cette démarche."
   }
 ];
@@ -652,7 +652,7 @@ const AAHCalculatriceFAQ = () => {
               data-testid={`aah-faq-${i}`}
             >
               <span className="font-medium text-sm text-foreground pr-4">{faq.question}</span>
-              <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
             </button>
             {openIndex === i && (
               <div className="px-4 pb-4">

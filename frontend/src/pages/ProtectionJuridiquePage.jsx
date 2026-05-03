@@ -41,7 +41,7 @@ export const ProtectionJuridiquePage = () => {
     {
       step: "4",
       title: "Constituez votre dossier",
-      description: "Rassemblez tous les documents utiles : contrats, courriers, certificats médicaux, décisions administratives..."
+      description: "Rassemblez tous les documents utiles : contrats, courriers, certificats médicaux, décisions administratives..."
     },
     {
       step: "5",
@@ -75,7 +75,7 @@ export const ProtectionJuridiquePage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Protection juridique : l'outil méconnu qui change tout en cas de litige" description="Pourquoi la protection juridique est capitale avant un litige : délai de carence, antériorité du sinistre, contrats qui la contiennent déjà. Le guide stratégique." path="/protection-juridique" />
+      <SEO title="Protection juridique : l'outil méconnu qui change tout en cas de litige" description="Pourquoi la protection juridique est capitale avant un litige : délai de carence, antériorité du sinistre, contrats qui la contiennent déjà. Le guide stratégique." path="/protection-juridique" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
@@ -282,7 +282,7 @@ export const ProtectionJuridiquePage = () => {
               <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>La protection juridique <strong className="text-foreground">n'est jamais rétroactive</strong> : elle ne couvre que les litiges nés après sa souscription</span></li>
               <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Un <strong className="text-foreground">délai de carence</strong> de 2 à 24 mois s'applique sur la plupart des domaines (travail, voisinage, santé)</span></li>
               <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Beaucoup de Français en ont une <strong className="text-foreground">sans le savoir</strong> (incluse dans habitation, auto, carte bancaire premium, mutuelle)</span></li>
-              <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Coût d'un contrat dédié : <strong className="text-foreground">15 à 80 €/an</strong> — à mettre en regard de 3 000 à 15 000 € d'honoraires d'avocat potentiels</span></li>
+              <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Coût d'un contrat dédié : <strong className="text-foreground">15 à 80 €/an</strong> — à mettre en regard de 3 000 à 15 000 € d'honoraires d'avocat potentiels</span></li>
               <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>En cas de refus pour antériorité, <strong className="text-foreground">vérifiez vos anciens contrats</strong> : la PJ de l'ancien contrat peut couvrir si le fait générateur date de sa période d'effet</span></li>
               <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Droit fondamental : vous pouvez <strong className="text-foreground">choisir librement votre avocat</strong>, même si l'assureur en propose un</span></li>
             </ul>
@@ -350,7 +350,7 @@ export const ProtectionJuridiquePage = () => {
           <div className="p-4 rounded-xl bg-accent/5 border border-accent/20" data-testid="pj-cas-concret">
             <h3 className="font-medium text-sm text-foreground mb-2">Cas concret — La PJ découverte trop tard</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Un salarié victime d'un accident du travail engage une procédure de reconnaissance qui se complique : refus initial de la CPAM, besoin d'une expertise contradictoire, orientation vers un avocat. Confronté à des honoraires d'avocat estimés à 4 000 €, il découvre par hasard l'existence des protections juridiques et décide d'en souscrire une. Quelques semaines plus tard, il déclare son litige à son nouvel assureur. La réponse tombe : <strong className="text-foreground">refus de prise en charge au motif que le fait générateur du litige — l'accident du travail — est antérieur à la date de souscription</strong>. La décision est juridiquement incontestable. Ce qu'il aurait dû faire avant : éplucher son contrat d'assurance habitation et celui de sa carte bancaire premium. La première contenait une PJ incluse avec un plafond de 15 000 €/litige, applicable aux contentieux sociaux — elle aurait couvert l'intégralité des honoraires. <strong className="text-foreground">Enseignement : la protection juridique ne se souscrit pas quand on en a besoin, elle se vérifie avant tout litige — idéalement maintenant.</strong>
+              Un salarié victime d'un accident du travail engage une procédure de reconnaissance qui se complique : refus initial de la CPAM, besoin d'une expertise contradictoire, orientation vers un avocat. Confronté à des honoraires d'avocat estimés à 4 000 €, il découvre par hasard l'existence des protections juridiques et décide d'en souscrire une. Quelques semaines plus tard, il déclare son litige à son nouvel assureur. La réponse tombe : <strong className="text-foreground">refus de prise en charge au motif que le fait générateur du litige — l'accident du travail — est antérieur à la date de souscription</strong>. La décision est juridiquement incontestable. Ce qu'il aurait dû faire avant : éplucher son contrat d'assurance habitation et celui de sa carte bancaire premium. La première contenait une PJ incluse avec un plafond de 15 000 €/litige, applicable aux contentieux sociaux — elle aurait couvert l'intégralité des honoraires. <strong className="text-foreground">Enseignement : la protection juridique ne se souscrit pas quand on en a besoin, elle se vérifie avant tout litige — idéalement maintenant.</strong>
             </p>
           </div>
 
@@ -405,7 +405,7 @@ export const ProtectionJuridiquePage = () => {
 
       <TerrainNote
         testId="pj-terrain-note"
-        text="Cette page est née d'un cas personnel vécu : avoir découvert la protection juridique trop tard. Elle rassemble ce qu'il aurait fallu que je sache, appliqué à chaque situation que j'accompagne."
+        text="Cette page est née d'un cas personnel vécu : avoir découvert la protection juridique trop tard. Elle rassemble ce qu'il aurait fallu que je sache, appliqué à chaque situation que j'accompagne."
       />
 
       {/* Section 4 - Avocats partenaires */}
@@ -533,31 +533,31 @@ export const ProtectionJuridiquePage = () => {
 
 const pjFaqData = [
   {
-    question: "Puis-je souscrire une protection juridique maintenant si j'ai déjà un litige en cours ?",
-    answer: "Non. La protection juridique fonctionne sur le principe du fait générateur : l'événement à l'origine du litige doit être survenu après la date de souscription et après le délai de carence applicable. Souscrire après la survenance du litige entraîne systématiquement un refus de prise en charge, parfaitement légal. La seule voie de recours consiste à vérifier vos anciens contrats d'assurance : si le fait générateur s'est produit pendant la période d'effet d'un contrat antérieur, cette ancienne PJ peut être activée."
+    question: "Puis-je souscrire une protection juridique maintenant si j'ai déjà un litige en cours ?",
+    answer: "Non. La protection juridique fonctionne sur le principe du fait générateur : l'événement à l'origine du litige doit être survenu après la date de souscription et après le délai de carence applicable. Souscrire après la survenance du litige entraîne systématiquement un refus de prise en charge, parfaitement légal. La seule voie de recours consiste à vérifier vos anciens contrats d'assurance : si le fait générateur s'est produit pendant la période d'effet d'un contrat antérieur, cette ancienne PJ peut être activée."
   },
   {
-    question: "Comment savoir si j'ai déjà une protection juridique sans le savoir ?",
-    answer: "Vérifiez méthodiquement : votre contrat d'assurance habitation (MRH), votre contrat d'assurance auto, les conditions de votre carte bancaire (Gold, Visa Premier, Platinum, Infinite incluent très souvent une PJ), votre mutuelle santé, vos contrats d'assurance emprunteur. Demandez par écrit à chaque assureur une attestation listant les garanties PJ actives, leurs plafonds par litige, leurs franchises et les domaines couverts. 60 à 80 % des assurés disposent déjà d'une PJ qu'ils n'ont jamais activée."
+    question: "Comment savoir si j'ai déjà une protection juridique sans le savoir ?",
+    answer: "Vérifiez méthodiquement : votre contrat d'assurance habitation (MRH), votre contrat d'assurance auto, les conditions de votre carte bancaire (Gold, Visa Premier, Platinum, Infinite incluent très souvent une PJ), votre mutuelle santé, vos contrats d'assurance emprunteur. Demandez par écrit à chaque assureur une attestation listant les garanties PJ actives, leurs plafonds par litige, leurs franchises et les domaines couverts. 60 à 80 % des assurés disposent déjà d'une PJ qu'ils n'ont jamais activée."
   },
   {
-    question: "Qu'est-ce qu'un délai de carence et combien de temps dure-t-il ?",
-    answer: "Le délai de carence est une période initiale, après la souscription, pendant laquelle certaines garanties ne s'activent pas encore — même si le fait générateur est postérieur au contrat. Les seuils varient : aucun délai ou 1 à 2 mois pour la consommation, 2 à 3 mois pour les litiges d'assurance, 3 à 6 mois pour les litiges du travail, 6 à 12 mois pour l'immobilier, jusqu'à 24 mois pour divorce, successions et fiscalité. Vérifiez les conditions générales précises de votre contrat."
+    question: "Qu'est-ce qu'un délai de carence et combien de temps dure-t-il ?",
+    answer: "Le délai de carence est une période initiale, après la souscription, pendant laquelle certaines garanties ne s'activent pas encore — même si le fait générateur est postérieur au contrat. Les seuils varient : aucun délai ou 1 à 2 mois pour la consommation, 2 à 3 mois pour les litiges d'assurance, 3 à 6 mois pour les litiges du travail, 6 à 12 mois pour l'immobilier, jusqu'à 24 mois pour divorce, successions et fiscalité. Vérifiez les conditions générales précises de votre contrat."
   },
   {
-    question: "Combien coûte une protection juridique et est-ce rentable ?",
-    answer: "Un contrat dédié coûte entre 15 et 80 €/an pour un particulier, selon l'étendue des garanties et les plafonds. À mettre en perspective avec les honoraires potentiels d'un avocat : 3 000 à 15 000 € pour une procédure prud'homale, 2 000 à 8 000 € pour un contentieux CPAM, 1 500 à 5 000 € pour une contestation d'expertise. Même une année de cotisation couvre largement les honoraires d'une seule procédure."
+    question: "Combien coûte une protection juridique et est-ce rentable ?",
+    answer: "Un contrat dédié coûte entre 15 et 80 €/an pour un particulier, selon l'étendue des garanties et les plafonds. À mettre en perspective avec les honoraires potentiels d'un avocat : 3 000 à 15 000 € pour une procédure prud'homale, 2 000 à 8 000 € pour un contentieux CPAM, 1 500 à 5 000 € pour une contestation d'expertise. Même une année de cotisation couvre largement les honoraires d'une seule procédure."
   },
   {
-    question: "Mon assureur me refuse la prise en charge : quels sont mes recours ?",
+    question: "Mon assureur me refuse la prise en charge : quels sont mes recours ?",
     answer: "Demandez d'abord une motivation écrite du refus (courrier recommandé). Vérifiez si le motif est juridiquement fondé (antériorité du fait générateur, carence non écoulée, exclusion contractuelle, seuil d'intervention non atteint). Si vous estimez le refus injustifié, adressez une réclamation formelle au service réclamations de l'assureur. En cas de rejet maintenu, saisissez gratuitement le Médiateur de l'Assurance dans l'année suivant votre réclamation. En dernier recours, le tribunal judiciaire peut être saisi."
   },
   {
-    question: "Puis-je choisir mon propre avocat ou dois-je prendre celui de l'assureur ?",
+    question: "Puis-je choisir mon propre avocat ou dois-je prendre celui de l'assureur ?",
     answer: "Vous avez un droit fondamental de libre choix de l'avocat, garanti par le Code des assurances. L'assureur peut vous en proposer un via son réseau — ce n'est pas une obligation pour vous. Exercez votre droit par écrit, idéalement en précisant le nom de l'avocat choisi et sa spécialité (droit de la sécurité sociale, dommage corporel, droit du travail). L'assureur devra prendre en charge les honoraires dans la limite de son barème contractuel."
   },
   {
-    question: "Combien de temps ai-je pour déclarer un litige à mon assureur ?",
+    question: "Combien de temps ai-je pour déclarer un litige à mon assureur ?",
     answer: "La plupart des contrats imposent une déclaration dans les 5 à 15 jours suivant la connaissance du litige. Ce délai est généralement précisé dans les conditions générales. Passé ce délai, l'assureur peut invoquer la déchéance de garantie — sauf cas de force majeure dûment justifié. En pratique, déclarez dès que vous avez connaissance du refus, de la décision défavorable ou du courrier litigieux, même si votre dossier n'est pas encore complet."
   }
 ];
@@ -598,7 +598,7 @@ const PJFaq = () => {
                 data-testid={`pj-faq-${i}`}
               >
                 <span className="font-medium text-sm text-foreground pr-4">{faq.question}</span>
-                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
               </button>
               {openIndex === i && (
                 <div className="px-4 pb-4">

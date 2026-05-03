@@ -52,14 +52,14 @@ export default function MedecinConseilPage() {
     { step: "01", title: "Analyse de votre situation", desc: "Nous étudions votre pathologie, votre contexte professionnel et les enjeux financiers pour comprendre précisément vos besoins." },
     { step: "02", title: "Orientation personnalisée", desc: "Nous vous orientons vers le médecin conseil dont la spécialité et l'expérience correspondent le mieux à votre dossier." },
     { step: "03", title: "Préparation du dossier", desc: "Nous vous aidons à constituer un dossier médical complet et structuré pour optimiser le déroulement de l'expertise." },
-    { step: "04", title: "Suivi post-expertise", desc: "Nous analysons les conclusions du rapport et vous conseillons sur les suites à donner : acceptation, contestation ou complément." },
+    { step: "04", title: "Suivi post-expertise", desc: "Nous analysons les conclusions du rapport et vous conseillons sur les suites à donner : acceptation, contestation ou complément." },
   ];
 
   return (
     <main className="page-transition pt-20">
       <SEO
-        title="Médecin conseil : CPAM, assureur, victime — comprendre les rôles"
-        description="Médecin conseil CPAM, médecin de l'assureur, médecin de recours : 3 rôles différents, 3 stratégies différentes. Comprendre, préparer, contester."
+        title="Médecin conseil : CPAM, assureur, victime — comprendre les rôles"
+        description="Médecin conseil CPAM, médecin de l'assureur, médecin de recours : 3 rôles différents, 3 stratégies différentes. Comprendre, préparer, contester."
         path="/medecin-conseil"
       />
 
@@ -309,7 +309,7 @@ export default function MedecinConseilPage() {
             <h2 className="text-lg font-semibold mb-2">Convocation par le médecin conseil CPAM : ce qui se joue</h2>
             <div className="text-sm text-muted-foreground space-y-2 leading-relaxed">
               <p>
-                Au-delà de 6 mois d'arrêt continu, la convocation par le médecin conseil devient quasi systématique. Son objet n'est pas de douter de vous, mais de <strong className="text-foreground">vérifier la justification médicale du maintien des indemnités journalières</strong>, d'orienter vers une éventuelle invalidité ou inaptitude, ou de fixer une consolidation pour un AT/MP. La convocation est obligatoire : ne pas s'y rendre suspend les IJ jusqu'à régularisation.
+                Au-delà de 6 mois d'arrêt continu, la convocation par le médecin conseil devient quasi systématique. Son objet n'est pas de douter de vous, mais de <strong className="text-foreground">vérifier la justification médicale du maintien des indemnités journalières</strong>, d'orienter vers une éventuelle invalidité ou inaptitude, ou de fixer une consolidation pour un AT/MP. La convocation est obligatoire : ne pas s'y rendre suspend les IJ jusqu'à régularisation.
               </p>
               <p>
                 Préparation : apportez l'ensemble de vos certificats récents, les comptes rendus d'examens, les ordonnances en cours, et un courrier de votre médecin traitant détaillant les limitations actuelles. Vous pouvez être accompagné d'un proche pour le soutien moral, mais l'examen lui-même reste individuel.
@@ -380,7 +380,7 @@ export default function MedecinConseilPage() {
 
       <TerrainNote
         testId="médecin-conseil-terrain-note"
-        text="Ce guide est construit à partir des convocations et avis défavorables que je décortique avec les assurés : CPAM, CMRA, CRA, saisines du Pôle social."
+        text="Ce guide est construit à partir des convocations et avis défavorables que je décortique avec les assurés : CPAM, CMRA, CRA, saisines du Pôle social."
       />
 
       {/* ── CTA ── */}
@@ -435,31 +435,31 @@ export default function MedecinConseilPage() {
 
 const medecinConseilFaqData = [
   {
-    question: "Pourquoi je suis convoqué par le médecin conseil CPAM après 6 mois d'arrêt ?",
+    question: "Pourquoi je suis convoqué par le médecin conseil CPAM après 6 mois d'arrêt ?",
     answer: "La convocation est une procédure standard, pas une suspicion. Elle vise à vérifier que la justification médicale de l'arrêt est toujours réunie, à orienter éventuellement vers une mise en invalidité, ou à fixer une consolidation pour un AT/MP. Préparez votre dossier avec tous vos certificats récents, comptes rendus d'examens et un courrier confraternel de votre médecin traitant détaillant les limitations actuelles."
   },
   {
-    question: "Que se passe-t-il si je ne peux pas me rendre au rendez-vous ?",
+    question: "Que se passe-t-il si je ne peux pas me rendre au rendez-vous ?",
     answer: "Le rendez-vous avec le médecin conseil est obligatoire. Une absence non justifiée entraîne la suspension immédiate des indemnités journalières. Si vous êtes dans l'impossibilité de vous y rendre (hospitalisation, déplacement programmé, état de santé incompatible), demandez un report en amont par écrit avec justificatif. Le report est presque toujours accordé pour motif sérieux."
   },
   {
-    question: "Le médecin conseil peut-il imposer ma reprise du travail malgré l'avis de mon médecin traitant ?",
-    answer: "Oui, le médecin conseil CPAM peut émettre un avis favorable à la reprise même contre l'avis du médecin traitant. Mais cet avis n'est pas définitif : vous disposez de 2 mois pour saisir la Commission Médicale de Recours Amiable (CMRA), procédure gratuite. Joignez à votre recours les certificats détaillés de votre médecin traitant, un complément médical d'un spécialiste tiers, et tout élément médical nouveau. La CMRA infirme régulièrement l'avis du médecin conseil lorsque le dossier est solide."
+    question: "Le médecin conseil peut-il imposer ma reprise du travail malgré l'avis de mon médecin traitant ?",
+    answer: "Oui, le médecin conseil CPAM peut émettre un avis favorable à la reprise même contre l'avis du médecin traitant. Mais cet avis n'est pas définitif : vous disposez de 2 mois pour saisir la Commission Médicale de Recours Amiable (CMRA), procédure gratuite. Joignez à votre recours les certificats détaillés de votre médecin traitant, un complément médical d'un spécialiste tiers, et tout élément médical nouveau. La CMRA infirme régulièrement l'avis du médecin conseil lorsque le dossier est solide."
   },
   {
-    question: "Quelle différence entre la Commission de Recours Amiable (CRA) et la Commission Médicale de Recours Amiable (CMRA) ?",
+    question: "Quelle différence entre la Commission de Recours Amiable (CRA) et la Commission Médicale de Recours Amiable (CMRA) ?",
     answer: "La CRA traite les décisions administratives de la CPAM (refus d'indemnités, calcul du salaire de référence, refus de reconnaissance AT/MP sur le plan administratif). La CMRA traite uniquement les contestations d'ordre médical (taux d'IPP, date de consolidation, avis sur la justification de l'arrêt). Les deux ont un délai de saisine de 2 mois, sont gratuites, et précèdent toute saisine du Pôle social du Tribunal Judiciaire."
   },
   {
-    question: "Quelle différence entre invalidité (CPAM) et inaptitude (médecine du travail) ?",
-    answer: "L'invalidité est prononcée par le médecin conseil CPAM lorsque votre capacité de travail ou de gain est réduite d'au moins 2/3. Elle ouvre droit à une pension d'invalidité (catégorie 1, 2 ou 3 selon la gravité). L'inaptitude est prononcée par le médecin du travail et concerne uniquement votre poste actuel : elle peut conduire à un licenciement pour inaptitude. Les deux sont indépendantes et peuvent se cumuler — une personne en invalidité peut être déclarée apte à un autre poste, et inversement."
+    question: "Quelle différence entre invalidité (CPAM) et inaptitude (médecine du travail) ?",
+    answer: "L'invalidité est prononcée par le médecin conseil CPAM lorsque votre capacité de travail ou de gain est réduite d'au moins 2/3. Elle ouvre droit à une pension d'invalidité (catégorie 1, 2 ou 3 selon la gravité). L'inaptitude est prononcée par le médecin du travail et concerne uniquement votre poste actuel : elle peut conduire à un licenciement pour inaptitude. Les deux sont indépendantes et peuvent se cumuler — une personne en invalidité peut être déclarée apte à un autre poste, et inversement."
   },
   {
-    question: "Puis-je être accompagné lors d'un rendez-vous avec le médecin conseil ?",
+    question: "Puis-je être accompagné lors d'un rendez-vous avec le médecin conseil ?",
     answer: "Vous pouvez être accompagné par un proche dans la salle d'attente et pour le soutien moral. L'examen lui-même se déroule en principe en tête-à-tête avec le médecin conseil. Pour les recours médicaux (CMRA notamment), vous pouvez vous faire assister par un médecin de votre choix qui pourra présenter votre dossier."
   },
   {
-    question: "Combien coûte un médecin de recours pour une indemnisation d'assurance et qui paie ?",
+    question: "Combien coûte un médecin de recours pour une indemnisation d'assurance et qui paie ?",
     answer: "Les honoraires d'un médecin de recours (médecin conseil de victime, distinct du médecin conseil CPAM) varient entre 800 et 3 000 € selon la complexité du dossier. Cette dépense est fréquemment prise en charge par votre assurance protection juridique. Selon la nomenclature Dintilhac, ces honoraires peuvent également être inclus dans les frais divers indemnisables au titre du préjudice corporel — ils sont alors récupérés sur l'indemnisation finale obtenue auprès de l'assureur du tiers responsable."
   }
 ];
@@ -500,7 +500,7 @@ const MedecinConseilFaq = () => {
                 data-testid={`médecin-conseil-faq-${i}`}
               >
                 <span className="font-medium text-sm text-foreground pr-4">{faq.question}</span>
-                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
               </button>
               {openIndex === i && (
                 <div className="px-4 pb-4">

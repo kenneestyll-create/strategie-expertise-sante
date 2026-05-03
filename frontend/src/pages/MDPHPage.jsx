@@ -40,7 +40,7 @@ export const MDPHPage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="MDPH : droits, démarches et stratégie dossier" description="Dossier MDPH : comprendre vos droits (AAH, RQTH, PCH), éviter les erreurs fréquentes et structurer votre demande. Guide stratégique adultes et enfants." path="/mdph" />
+      <SEO title="MDPH : droits, démarches et stratégie dossier" description="Dossier MDPH : comprendre vos droits (AAH, RQTH, PCH), éviter les erreurs fréquentes et structurer votre demande. Guide stratégique adultes et enfants." path="/mdph" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
@@ -269,7 +269,7 @@ export const MDPHPage = () => {
 
       <TerrainNote
         testId="mdph-terrain-note"
-        text="Ce guide s'appuie sur les dossiers MDPH que j'analyse chaque semaine : demandes initiales, taux contestés, recours CDAPH, RQTH et situations enfants."
+        text="Ce guide s'appuie sur les dossiers MDPH que j'analyse chaque semaine : demandes initiales, taux contestés, recours CDAPH, RQTH et situations enfants."
       />
 
       {/* Accompagnement Section */}
@@ -319,27 +319,27 @@ export const MDPHPage = () => {
 
 const mdphFaqData = [
   {
-    question: "Combien de temps prend le traitement d'un dossier MDPH ?",
+    question: "Combien de temps prend le traitement d'un dossier MDPH ?",
     answer: "Le délai légal est de 4 mois à compter du dépôt du dossier complet. En pratique, les délais varient selon les départements et peuvent atteindre 6 à 12 mois. Un dossier complet et bien structuré réduit les risques de demande de pièces complémentaires et accélère le traitement."
   },
   {
-    question: "Peut-on contester une décision MDPH ?",
+    question: "Peut-on contester une décision MDPH ?",
     answer: "Oui, vous disposez de 2 mois après la notification pour déposer un recours administratif préalable obligatoire (RAPO) auprès de la MDPH. Ce recours est gratuit. Si le RAPO est rejeté, vous avez 2 mois pour saisir le tribunal judiciaire (pôle social). Renforcez votre dossier avec des éléments nouveaux avant de redéposer."
   },
   {
-    question: "Le projet de vie est-il obligatoire ?",
+    question: "Le projet de vie est-il obligatoire ?",
     answer: "Le projet de vie n'est pas juridiquement obligatoire, mais il est fortement recommandé. C'est le seul document où vous pouvez décrire concrètement l'impact du handicap sur votre quotidien. Son absence affaiblit significativement le dossier, notamment pour la reconnaissance de la RSDAE (taux 50-79%)."
   },
   {
-    question: "Combien de temps sont attribués les droits MDPH ?",
+    question: "Combien de temps sont attribués les droits MDPH ?",
     answer: "La durée d'attribution varie selon le droit et le taux d'incapacité. L'AAH avec un taux d'au moins 80% peut être attribuée sans limitation de durée. Entre 50% et 79%, l'attribution est de 1 à 5 ans renouvelable. La RQTH est généralement accordée pour 1 à 10 ans, ou à vie si le handicap est irréversible. Anticipez le renouvellement 6 mois avant l'échéance pour éviter toute rupture de droits."
   },
   {
-    question: "Quelle différence entre invalidité CPAM et taux MDPH ?",
+    question: "Quelle différence entre invalidité CPAM et taux MDPH ?",
     answer: "Ce sont deux systèmes distincts avec des barèmes différents. La pension d'invalidité est versée par la CPAM suite à une maladie ou un accident non professionnel. Le taux d'incapacité est évalué par la MDPH pour l'accès aux droits handicap. Ils peuvent se cumuler, mais l'un ne garantit pas l'autre."
   },
   {
-    question: "Mon enfant peut-il bénéficier d'un dossier MDPH ?",
+    question: "Mon enfant peut-il bénéficier d'un dossier MDPH ?",
     answer: "Oui. Les enfants de moins de 20 ans relèvent de l'AEEH (Allocation d'Éducation de l'Enfant Handicapé). Le dossier MDPH enfant couvre aussi les aides scolaires (AESH, orientation ULIS) via le GEVA-Sco. Depuis 2024, la RQTH est automatique pour les 15-20 ans sous AEEH, PCH ou PPS. Les troubles invisibles (TSA, TDAH, troubles dys) sont éligibles."
   }
 ];
@@ -380,7 +380,7 @@ const MDPHPageFAQ = () => {
                 data-testid={`mdph-faq-${i}`}
               >
                 <span className="font-medium text-sm text-foreground pr-4">{faq.question}</span>
-                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
               </button>
               {openIndex === i && (
                 <div className="px-4 pb-4">

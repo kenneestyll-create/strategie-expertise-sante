@@ -51,7 +51,7 @@ export const ExpertiseMedicalePage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Expertise médicale : préparer, comprendre, contester" description="Tout ce qu'il faut savoir avant une expertise médicale : préparation stratégique, pièges à éviter, dires contradictoires et recours en cas de rapport défavorable." path="/expertise-medicale" />
+      <SEO title="Expertise médicale : préparer, comprendre, contester" description="Tout ce qu'il faut savoir avant une expertise médicale : préparation stratégique, pièges à éviter, dires contradictoires et recours en cas de rapport défavorable." path="/expertise-medicale" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
@@ -184,7 +184,7 @@ export const ExpertiseMedicalePage = () => {
           <div className="p-5 rounded-xl bg-[#1a1a2e]/[0.03] border border-[#C9A84C]/20" data-testid="expertise-essentiel">
             <h2 className="font-semibold text-base mb-3 text-foreground">L'essentiel à retenir</h2>
             <ul className="space-y-1.5 list-none pl-0 text-sm text-muted-foreground">
-              <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Une expertise n'est pas un examen médical neutre : c'est un <strong className="text-foreground">acte juridique</strong> qui détermine votre indemnisation</span></li>
+              <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Une expertise n'est pas un examen médical neutre : c'est un <strong className="text-foreground">acte juridique</strong> qui détermine votre indemnisation</span></li>
               <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>L'expert est mandaté par <strong className="text-foreground">l'assureur ou le tribunal</strong> — il n'est pas votre médecin</span></li>
               <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Le rapport produit fait <strong className="text-foreground">force probante</strong> : un oubli ou une minimisation devient quasi irréversible</span></li>
               <li className="flex items-start gap-2"><span className="text-accent font-bold">·</span><span>Vous avez le droit d'être assisté par un <strong className="text-foreground">médecin de recours</strong> et de produire des dires contradictoires</span></li>
@@ -219,7 +219,7 @@ export const ExpertiseMedicalePage = () => {
           <div className="p-4 rounded-xl bg-muted/30 border border-border">
             <h3 className="font-medium text-sm text-foreground mb-1.5">Pendant : ce qui se joue vraiment ce jour-là</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              L'expert ouvre presque toujours par une question apparemment anodine : <em>"Comment ça va ?"</em> Répondre <em>"ça va"</em> par politesse coûte en moyenne 5 à 15 % de votre indemnisation finale. Décrivez objectivement : douleurs chroniques, limitations, fatigue, retentissement professionnel et familial. Ne minimisez rien, n'exagérez rien. Si une manipulation déclenche une douleur, dites-le — l'expert doit le consigner. Les émotions authentiques (larmes liées à la perte d'autonomie) documentent un préjudice psychologique réel, ne les retenez pas par pudeur.
+              L'expert ouvre presque toujours par une question apparemment anodine : <em>"Comment ça va ?"</em> Répondre <em>"ça va"</em> par politesse coûte en moyenne 5 à 15 % de votre indemnisation finale. Décrivez objectivement : douleurs chroniques, limitations, fatigue, retentissement professionnel et familial. Ne minimisez rien, n'exagérez rien. Si une manipulation déclenche une douleur, dites-le — l'expert doit le consigner. Les émotions authentiques (larmes liées à la perte d'autonomie) documentent un préjudice psychologique réel, ne les retenez pas par pudeur.
             </p>
           </div>
 
@@ -227,7 +227,7 @@ export const ExpertiseMedicalePage = () => {
           <div>
             <h2 className="text-lg font-semibold mb-2">Après : pré-rapport, dires et contre-expertise</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Dans la majorité des procédures contradictoires, l'expert produit d'abord un <strong className="text-foreground">pré-rapport</strong>. C'est le moment décisif. Vous disposez généralement de 4 à 6 semaines pour produire des <strong className="text-foreground">dires contradictoires</strong> : observations écrites argumentant les points de désaccord. Une fois le rapport définitif déposé, seule la <strong className="text-foreground">contre-expertise judiciaire</strong> permet de le remettre en cause — procédure plus lourde, mais parfois indispensable. La contestation d'une expertise unilatérale d'assureur passe par une demande d'expertise contradictoire, refusable seulement avec motif sérieux.
+              Dans la majorité des procédures contradictoires, l'expert produit d'abord un <strong className="text-foreground">pré-rapport</strong>. C'est le moment décisif. Vous disposez généralement de 4 à 6 semaines pour produire des <strong className="text-foreground">dires contradictoires</strong> : observations écrites argumentant les points de désaccord. Une fois le rapport définitif déposé, seule la <strong className="text-foreground">contre-expertise judiciaire</strong> permet de le remettre en cause — procédure plus lourde, mais parfois indispensable. La contestation d'une expertise unilatérale d'assureur passe par une demande d'expertise contradictoire, refusable seulement avec motif sérieux.
             </p>
           </div>
 
@@ -290,7 +290,7 @@ export const ExpertiseMedicalePage = () => {
 
       <TerrainNote
         testId="expertise-terrain-note"
-        text="Cette page condense ce que j'observe réellement en expertise : pré-rapports, dires contradictoires et contre-expertises suivis pas à pas avec mes accompagnés."
+        text="Cette page condense ce que j'observe réellement en expertise : pré-rapports, dires contradictoires et contre-expertises suivis pas à pas avec mes accompagnés."
       />
 
       {/* Médecin Conseil — Strategic Link */}
@@ -373,31 +373,31 @@ export const ExpertiseMedicalePage = () => {
 
 const expertiseFaqData = [
   {
-    question: "Que dire et que ne pas dire lors d'une expertise médicale ?",
-    answer: "Dites tout ce qui limite votre quotidien : douleurs chroniques, fatigue, troubles du sommeil, retentissement familial et professionnel. Décrivez ce que vous ne pouvez plus faire (porter, conduire longtemps, dormir sans réveil). Ne dites jamais 'ça va' par politesse — c'est l'erreur n°1, qui se traduit dans le rapport par 'absence de gêne fonctionnelle'. Ne minimisez ni n'exagérez. Si une manipulation est douloureuse, dites-le et faites-le consigner."
+    question: "Que dire et que ne pas dire lors d'une expertise médicale ?",
+    answer: "Dites tout ce qui limite votre quotidien : douleurs chroniques, fatigue, troubles du sommeil, retentissement familial et professionnel. Décrivez ce que vous ne pouvez plus faire (porter, conduire longtemps, dormir sans réveil). Ne dites jamais 'ça va' par politesse — c'est l'erreur n°1, qui se traduit dans le rapport par 'absence de gêne fonctionnelle'. Ne minimisez ni n'exagérez. Si une manipulation est douloureuse, dites-le et faites-le consigner."
   },
   {
-    question: "Puis-je refuser une manipulation douloureuse ou un examen invasif ?",
+    question: "Puis-je refuser une manipulation douloureuse ou un examen invasif ?",
     answer: "Oui. Vous avez le droit absolu de refuser tout examen que vous jugez excessif ou douloureux. Faites consigner par écrit dans le rapport votre refus et son motif (douleur intense, antécédent médical, absence de pertinence). Ce refus motivé ne vous est pas opposable s'il est documenté."
   },
   {
-    question: "Combien coûte un médecin de recours et qui paie ?",
-    answer: "Les honoraires d'un médecin de recours (médecin conseil de victime) varient selon la complexité : 800 à 1 800 € pour un dossier classique, 1 800 à 4 000 € pour un dossier complexe avec plusieurs séquelles. Ces honoraires sont fréquemment pris en charge par votre assurance protection juridique. Selon la nomenclature Dintilhac, ils peuvent également être inclus dans les frais divers indemnisables au titre du préjudice corporel — l'avance reste à votre charge mais est récupérable."
+    question: "Combien coûte un médecin de recours et qui paie ?",
+    answer: "Les honoraires d'un médecin de recours (médecin conseil de victime) varient selon la complexité : 800 à 1 800 € pour un dossier classique, 1 800 à 4 000 € pour un dossier complexe avec plusieurs séquelles. Ces honoraires sont fréquemment pris en charge par votre assurance protection juridique. Selon la nomenclature Dintilhac, ils peuvent également être inclus dans les frais divers indemnisables au titre du préjudice corporel — l'avance reste à votre charge mais est récupérable."
   },
   {
-    question: "Qu'est-ce qu'un dire contradictoire et à quoi sert-il ?",
+    question: "Qu'est-ce qu'un dire contradictoire et à quoi sert-il ?",
     answer: "Un 'dire' est une observation écrite, signée par votre conseil ou votre médecin de recours, déposée auprès de l'expert pendant la phase de pré-rapport. Il sert à argumenter chaque désaccord médical, à demander des examens complémentaires, à faire acter une omission. L'expert a l'obligation d'y répondre dans son rapport définitif. C'est le seul moyen efficace d'influencer le contenu final d'une expertise."
   },
   {
-    question: "Comment contester une expertise unilatérale d'assureur ?",
+    question: "Comment contester une expertise unilatérale d'assureur ?",
     answer: "Toute expertise réalisée par le seul médecin de l'assureur, sans contradictoire, peut être contestée. Vous pouvez demander une expertise médicale contradictoire (votre médecin de recours assiste l'examen et co-signe ou conteste les conclusions), refuser de signer un rapport unilatéral, ou saisir le tribunal pour obtenir une expertise judiciaire. La jurisprudence des Cours d'appel sanctionne régulièrement les rapports non contradictoires."
   },
   {
-    question: "Quelle est la différence entre une expertise amiable et une expertise judiciaire ?",
+    question: "Quelle est la différence entre une expertise amiable et une expertise judiciaire ?",
     answer: "L'expertise amiable est demandée et organisée hors procédure judiciaire, généralement par l'assureur. Elle est plus rapide mais l'expert n'est pas désigné par un juge — sa partialité peut être plus marquée. L'expertise judiciaire est ordonnée par le tribunal qui désigne lui-même l'expert sur une liste agréée. Elle offre des garanties procédurales fortes (contradictoire obligatoire, dires opposables, sanctions en cas de manquement) mais prend 6 à 18 mois."
   },
   {
-    question: "L'expertise est terminée et le rapport me semble injuste : que faire ?",
+    question: "L'expertise est terminée et le rapport me semble injuste : que faire ?",
     answer: "Si vous êtes encore en phase de pré-rapport, déposez immédiatement des dires contradictoires argumentés. Si le rapport est définitif et déjà déposé, vous pouvez demander une contre-expertise (amiable si l'assureur l'accepte, judiciaire sinon). Joignez à votre demande un certificat médical critique rédigé par un médecin de recours, listant points par points les omissions, les évaluations sous-cotées et les éléments médicaux ignorés. La contre-expertise judiciaire est accordée si la demande est sérieusement motivée."
   }
 ];
@@ -438,7 +438,7 @@ const ExpertiseFaq = () => {
                 data-testid={`expertise-faq-${i}`}
               >
                 <span className="font-medium text-sm text-foreground pr-4">{faq.question}</span>
-                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
               </button>
               {openIndex === i && (
                 <div className="px-4 pb-4">

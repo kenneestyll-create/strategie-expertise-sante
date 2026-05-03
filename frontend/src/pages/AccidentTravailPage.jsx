@@ -40,7 +40,7 @@ export const AccidentTravailPage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Accident du travail et maladie professionnelle : droits et recours" description="AT ou maladie professionnelle ? Vos droits, les délais stricts, les erreurs à éviter et les recours pour faire valoir vos droits efficacement." path="/accident-travail-maladie-professionnelle" />
+      <SEO title="Accident du travail et maladie professionnelle : droits et recours" description="AT ou maladie professionnelle ? Vos droits, les délais stricts, les erreurs à éviter et les recours pour faire valoir vos droits efficacement." path="/accident-travail-maladie-professionnelle" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
@@ -208,7 +208,7 @@ export const AccidentTravailPage = () => {
             <h2 className="text-lg font-semibold mb-2">Faute inexcusable de l'employeur</h2>
             <div className="text-sm text-muted-foreground space-y-2 leading-relaxed">
               <p>
-                Si votre employeur avait ou aurait dû avoir conscience du danger et n'a pas pris les mesures de prévention nécessaires, vous pouvez engager une procédure en <strong className="text-foreground">faute inexcusable</strong>. Les conséquences sont concrètes : votre rente AT/MP est majorée à son taux maximum, et vous obtenez la réparation de préjudices complémentaires — souffrances endurées, préjudice esthétique, perte de gains, préjudice d'agrément.
+                Si votre employeur avait ou aurait dû avoir conscience du danger et n'a pas pris les mesures de prévention nécessaires, vous pouvez engager une procédure en <strong className="text-foreground">faute inexcusable</strong>. Les conséquences sont concrètes : votre rente AT/MP est majorée à son taux maximum, et vous obtenez la réparation de préjudices complémentaires — souffrances endurées, préjudice esthétique, perte de gains, préjudice d'agrément.
               </p>
               <p>
                 C'est le levier principal pour passer d'une indemnisation forfaitaire à une réparation intégrale. Cette procédure se fait devant le tribunal judiciaire (pôle social) et nécessite un dossier documenté.
@@ -295,7 +295,7 @@ export const AccidentTravailPage = () => {
       <DossierExpressCTA
         testId="atmp-cta-dossier"
         title={"AT non déclaré, MP refusée, IPP sous-évalué\u00A0?"}
-        text="La majorité des dossiers AT/MP bloquent sur des failles dans le dossier initial : certificat médical incomplet, déclaration tardive, consolidation prématurée. Le Dossier Express IA identifie précisément où votre dossier perd de la valeur et la stratégie pour le redresser."
+        text="La majorité des dossiers AT/MP bloquent sur des failles dans le dossier initial : certificat médical incomplet, déclaration tardive, consolidation prématurée. Le Dossier Express IA identifie précisément où votre dossier perd de la valeur et la stratégie pour le redresser."
         ctaLabel="Analyser mon dossier AT/MP"
       />
 
@@ -304,7 +304,7 @@ export const AccidentTravailPage = () => {
 
       <TerrainNote
         testId="atmp-terrain-note"
-        text="Ce contenu est issu des dossiers AT/MP que j'accompagne concrètement : consolidations anticipées, refus CPAM, rechutes, fautes inexcusables, maladies hors tableau."
+        text="Ce contenu est issu des dossiers AT/MP que j'accompagne concrètement : consolidations anticipées, refus CPAM, rechutes, fautes inexcusables, maladies hors tableau."
       />
 
       {/* Accompagnement Section */}
@@ -375,36 +375,36 @@ export const AccidentTravailPage = () => {
 
 const atmpFaqData = [
   {
-    question: "Mon employeur refuse de déclarer mon accident du travail. Que faire ?",
+    question: "Mon employeur refuse de déclarer mon accident du travail. Que faire ?",
     answer: "L'employeur dispose de 48h pour déclarer l'accident à la CPAM. S'il refuse, vous pouvez déclarer vous-même l'accident directement à votre CPAM dans un délai de 2 ans, à l'aide du formulaire S6201. Joignez le certificat médical initial et tout élément de preuve (témoignages, échanges écrits). Le refus de déclaration par l'employeur n'éteint pas vos droits."
   },
   {
-    question: "Comment contester un refus de reconnaissance d'accident du travail ?",
+    question: "Comment contester un refus de reconnaissance d'accident du travail ?",
     answer: "Vous disposez de 2 mois à compter de la notification du refus pour saisir la Commission de Recours Amiable (CRA) de la CPAM. Le recours est gratuit, écrit et motivé. Renforcez votre dossier avec des éléments médicaux nouveaux, des témoignages et des écrits faisant le lien entre l'événement et l'activité professionnelle. En cas de rejet de la CRA, vous pouvez ensuite saisir le pôle social du Tribunal Judiciaire."
   },
   {
-    question: "Qu'est-ce que la consolidation et pourquoi est-ce une étape décisive ?",
+    question: "Qu'est-ce que la consolidation et pourquoi est-ce une étape décisive ?",
     answer: "La consolidation est la date à laquelle votre état de santé est considéré comme stabilisé — pas guéri. C'est à cette date que le médecin conseil fixe votre taux d'IPP, qui détermine votre indemnisation. Une consolidation prématurée, fixée alors que des soins sont encore en cours ou qu'une intervention est programmée, fige un taux sous-évalué. Vous pouvez la contester dans les 2 mois auprès de la CMRA."
   },
   {
-    question: "Quelle est la différence entre une rente et un capital après un accident du travail ?",
+    question: "Quelle est la différence entre une rente et un capital après un accident du travail ?",
     answer: "Si votre taux d'IPP est inférieur à 10 %, vous percevez un capital versé en une fois. Si votre taux est supérieur ou égal à 10 %, vous percevez une rente viagère, versée trimestriellement (et mensuellement si IPP ≥ 50 %). Le montant dépend du taux d'IPP et de votre salaire annuel de référence des 12 mois précédant l'arrêt."
   },
   {
-    question: "Qu'est-ce que la faute inexcusable de l'employeur et comment l'engager ?",
+    question: "Qu'est-ce que la faute inexcusable de l'employeur et comment l'engager ?",
     answer: "La faute inexcusable est reconnue lorsque l'employeur avait conscience du danger et n'a pas pris les mesures nécessaires pour en préserver le salarié. Sa reconnaissance ouvre droit à une majoration de la rente et à l'indemnisation de préjudices spécifiques (souffrances physiques et morales, préjudice esthétique, préjudice d'agrément, perte de chance professionnelle). La procédure se mène devant le pôle social du Tribunal Judiciaire dans un délai de 2 ans."
   },
   {
-    question: "Comment faire reconnaître une maladie hors tableau ?",
-    answer: "Si votre maladie n'est pas inscrite aux tableaux de maladies professionnelles, ou si toutes les conditions du tableau ne sont pas remplies, votre dossier est transmis au Comité Régional de Reconnaissance des Maladies Professionnelles (CRRMP). La reconnaissance hors tableau exige notamment un taux d'IPP prévisionnel d'au moins 25 %. La constitution du dossier est déterminante : justificatifs médicaux, descriptif des expositions, lien direct avec l'activité professionnelle."
+    question: "Comment faire reconnaître une maladie hors tableau ?",
+    answer: "Si votre maladie n'est pas inscrite aux tableaux de maladies professionnelles, ou si toutes les conditions du tableau ne sont pas remplies, votre dossier est transmis au Comité Régional de Reconnaissance des Maladies Professionnelles (CRRMP). La reconnaissance hors tableau exige notamment un taux d'IPP prévisionnel d'au moins 25 %. La constitution du dossier est déterminante : justificatifs médicaux, descriptif des expositions, lien direct avec l'activité professionnelle."
   },
   {
-    question: "Puis-je déclarer une rechute après consolidation ?",
+    question: "Puis-je déclarer une rechute après consolidation ?",
     answer: "Oui. La rechute correspond à une aggravation de votre état en lien direct avec l'accident ou la maladie initiale, après la date de consolidation. Elle doit être attestée par un certificat médical de rechute établi par votre médecin. Une fois reconnue, elle réouvre vos droits aux soins à 100 % et aux indemnités journalières. Une nouvelle évaluation du taux d'IPP peut être demandée."
   },
   {
-    question: "Quels sont les délais à respecter en accident du travail et maladie professionnelle ?",
-    answer: "Pour un AT : informer l'employeur sous 24h, l'employeur déclare à la CPAM sous 48h, la CPAM statue en 30 jours (extensible à 90 en cas d'investigation). Pour une MP : déclaration à la CPAM dans les 2 ans suivant la cessation du travail liée à la maladie ou la première constatation médicale, instruction en 120 jours. Pour contester un refus : 2 mois pour saisir la CRA. Pour engager une faute inexcusable : 2 ans."
+    question: "Quels sont les délais à respecter en accident du travail et maladie professionnelle ?",
+    answer: "Pour un AT : informer l'employeur sous 24h, l'employeur déclare à la CPAM sous 48h, la CPAM statue en 30 jours (extensible à 90 en cas d'investigation). Pour une MP : déclaration à la CPAM dans les 2 ans suivant la cessation du travail liée à la maladie ou la première constatation médicale, instruction en 120 jours. Pour contester un refus : 2 mois pour saisir la CRA. Pour engager une faute inexcusable : 2 ans."
   }
 ];
 
@@ -444,7 +444,7 @@ const ATMPFaq = () => {
                 data-testid={`atmp-faq-${i}`}
               >
                 <span className="font-medium text-sm text-foreground pr-4">{faq.question}</span>
-                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
               </button>
               {openIndex === i && (
                 <div className="px-4 pb-4">

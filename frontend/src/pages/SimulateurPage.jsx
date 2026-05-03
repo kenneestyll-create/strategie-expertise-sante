@@ -24,7 +24,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const QUESTIONS = [
   {
     id: 'situation',
-    question: "Quelle est votre situation actuelle ?",
+    question: "Quelle est votre situation actuelle ?",
     options: [
       { value: 'at', label: "J'ai eu un accident du travail", icon: AlertTriangle },
       { value: 'mp', label: "J'ai une maladie professionnelle", icon: Shield },
@@ -36,7 +36,7 @@ const QUESTIONS = [
   },
   {
     id: 'demarche',
-    question: "Où en êtes-vous dans vos démarches ?",
+    question: "Où en êtes-vous dans vos démarches ?",
     options: [
       { value: 'debut', label: "Je n'ai pas encore commencé" },
       { value: 'en_cours', label: "J'ai entamé des démarches" },
@@ -47,7 +47,7 @@ const QUESTIONS = [
   },
   {
     id: 'anciennete',
-    question: "Depuis combien de temps dure votre situation ?",
+    question: "Depuis combien de temps dure votre situation ?",
     options: [
       { value: 'recent', label: "Moins de 3 mois" },
       { value: 'moyen', label: "3 mois à 1 an" },
@@ -57,7 +57,7 @@ const QUESTIONS = [
   },
   {
     id: 'accompagnement',
-    question: "Êtes-vous accompagné(e) dans vos démarches ?",
+    question: "Êtes-vous accompagné(e) dans vos démarches ?",
     options: [
       { value: 'seul', label: "Non, je suis seul(e)" },
       { value: 'syndicat', label: "Oui, par un syndicat" },
@@ -68,7 +68,7 @@ const QUESTIONS = [
   },
   {
     id: 'besoin',
-    question: "Quel est votre besoin principal ?",
+    question: "Quel est votre besoin principal ?",
     options: [
       { value: 'comprendre', label: "Comprendre mes droits" },
       { value: 'dossier', label: "Aide pour constituer un dossier" },
@@ -103,16 +103,16 @@ const getResults = (answers, autreTexte = '') => {
       demarches.push("Remplir la déclaration de maladie professionnelle (Cerfa n°60-3950)");
       demarches.push("Envoyer le dossier complet à votre CPAM");
       demarches.push("Attendre l'instruction et la décision de la CPAM");
-      delais.push("Déclaration : dans les 15 jours suivant le certificat médical");
-      delais.push("Instruction CPAM : 3 mois (+ 3 mois si enquête complémentaire)");
-      delais.push("Contestation : 2 mois après notification de la décision");
+      delais.push("Déclaration : dans les 15 jours suivant le certificat médical");
+      delais.push("Instruction CPAM : 3 mois (+ 3 mois si enquête complémentaire)");
+      delais.push("Contestation : 2 mois après notification de la décision");
     } else {
       demarches.push("Faire constater l'accident par votre employeur (déclaration AT)");
       demarches.push("Consulter un médecin pour le certificat médical initial");
       demarches.push("Vérifier que votre employeur a bien déclaré l'AT à la CPAM");
-      delais.push("Déclaration employeur : 48h après l'accident");
-      delais.push("Certificat médical : dans les 24h si possible");
-      delais.push("Contestation : 2 mois après notification");
+      delais.push("Déclaration employeur : 48h après l'accident");
+      delais.push("Certificat médical : dans les 24h si possible");
+      delais.push("Contestation : 2 mois après notification");
     }
 
     if (demarche === 'refus' || demarche === 'recours') {
@@ -121,8 +121,8 @@ const getResults = (answers, autreTexte = '') => {
       recommendations.push("Un accompagnement spécialisé peut significativement améliorer vos chances de succès en recours.");
       demarches.push("Demander la notification écrite du refus avec ses motifs");
       demarches.push("Saisir la Commission de Recours Amiable (CRA) de votre CPAM");
-      delais.push("Recours CRA : 2 mois après la notification du refus");
-      delais.push("Tribunal (TASS/TJ) : 2 mois après la décision de la CRA");
+      delais.push("Recours CRA : 2 mois après la notification du refus");
+      delais.push("Tribunal (TASS/TJ) : 2 mois après la décision de la CRA");
       services.push({ id: 'préparation_recours', label: 'Préparation du recours', prix: '250€' });
     }
     if (demarche === 'expertise') {
@@ -145,9 +145,9 @@ const getResults = (answers, autreTexte = '') => {
     demarches.push("Faire remplir le certificat médical par votre médecin");
     demarches.push("Constituer le dossier complet avec pièces justificatives");
     demarches.push("Déposer le dossier à la MDPH de votre département");
-    delais.push("Instruction MDPH : 4 mois en moyenne (peut aller jusqu'à 6 mois)");
-    delais.push("Renouvellement : déposer 6 mois avant l'expiration des droits");
-    delais.push("Contestation : 2 mois après notification de la décision");
+    delais.push("Instruction MDPH : 4 mois en moyenne (peut aller jusqu'à 6 mois)");
+    delais.push("Renouvellement : déposer 6 mois avant l'expiration des droits");
+    delais.push("Contestation : 2 mois après notification de la décision");
     services.push({ id: 'accompagnement_mdph', label: 'Accompagnement dossier MDPH', prix: '180€' });
     recommendations.push("Le dossier MDPH requiert une attention particulière, notamment le projet de vie.");
     if (demarche === 'refus') {
@@ -164,8 +164,8 @@ const getResults = (answers, autreTexte = '') => {
     demarches.push("Relire attentivement votre contrat d'assurance et ses garanties");
     demarches.push("Vérifier si vous disposez d'une protection juridique");
     demarches.push("Contester par écrit (LRAR) l'évaluation de l'assureur si inadéquate");
-    delais.push("Prescription : 2 ans pour les contrats d'assurance (L.114-1 Code Assurances)");
-    delais.push("Contestation expertise : dans les meilleurs délais après réception du rapport");
+    delais.push("Prescription : 2 ans pour les contrats d'assurance (L.114-1 Code Assurances)");
+    delais.push("Contestation expertise : dans les meilleurs délais après réception du rapport");
     services.push({ id: 'protection_juridique', label: 'Activation protection juridique', prix: '150€' });
     recommendations.push("Vérifiez si votre contrat inclut une protection juridique qui pourrait couvrir vos frais.");
     if (anciennete === 'long' || anciennete === 'tres_long') {
@@ -183,15 +183,15 @@ const getResults = (answers, autreTexte = '') => {
     demarches.push("Préparer une chronologie précise de vos symptômes et traitements");
     demarches.push("Lister les impacts concrets sur votre vie quotidienne et professionnelle");
     demarches.push("Envisager d'être assisté par un médecin-conseil lors de l'expertise");
-    delais.push("Convocation expertise : se présenter impérativement à la date fixée");
-    delais.push("Contestation rapport : dans les 2 mois suivant la notification");
+    delais.push("Convocation expertise : se présenter impérativement à la date fixée");
+    delais.push("Contestation rapport : dans les 2 mois suivant la notification");
     services.push({ id: 'préparation_expertise', label: 'Préparation expertise médicale', prix: '200€' });
     recommendations.push("La préparation est cruciale pour faire valoir vos droits. Ne sous-estimez pas cette étape.");
   } else {
-    profile = autreTexte ? `Situation spécifique : ${autreTexte}` : 'Situation spécifique';
+    profile = autreTexte ? `Situation spécifique : ${autreTexte}` : 'Situation spécifique';
     recommendations.push("Votre situation mérite une analyse personnalisée lors d'une première consultation gratuite de 10 minutes.");
     if (autreTexte) {
-      recommendations.push(`Vous avez décrit votre situation comme suit : « ${autreTexte} ». Un expert pourra analyser votre cas en détail.`);
+      recommendations.push(`Vous avez décrit votre situation comme suit : « ${autreTexte} ». Un expert pourra analyser votre cas en détail.`);
     }
     demarches.push("Prendre contact pour une première consultation gratuite de 10 minutes, sans engagement");
     services.push({ id: 'consultation_personnalisée', label: 'Consultation personnalisée', prix: '100€' });
@@ -387,7 +387,7 @@ const generatePDF = (results, email, qrDataUrl = null) => {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(...BODY_TXT);
-    const svcTxt = results.services.map(s => `${s.label}${s.prix ? ' \u2014 ' + s.prix : ''}`).join(' | ');
+    const svcTxt = results.services.map(s => `${s.label}${s.prix ? ' \u2014 ' + s.prix : ''}`).join(' | ');
     doc.text(svcTxt, LM + 5, y + 12);
     doc.setFontSize(6.5);
     doc.setTextColor(...MUTED);
@@ -427,7 +427,7 @@ const generatePDF = (results, email, qrDataUrl = null) => {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
   doc.setTextColor(...MUTED);
-  doc.text("Prendre rendez-vous : strategie-expertise-sante.fr/contact", w / 2, y, { align: 'center' });
+  doc.text("Prendre rendez-vous : strategie-expertise-sante.fr/contact", w / 2, y, { align: 'center' });
   y += 4;
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(6.5);
@@ -529,7 +529,7 @@ export const SimulateurPage = () => {
       setSaved(true);
       setShowEmailStep(false);
       setShowResults(true);
-      toast.success("Mode Admin : email bypass, aucun lead créé.");
+      toast.success("Mode Admin : email bypass, aucun lead créé.");
       return;
     }
     const trimmed = email.trim().toLowerCase();
@@ -554,7 +554,7 @@ export const SimulateurPage = () => {
       setSaved(true);
       setShowEmailStep(false);
       setShowResults(true);
-      toast.success("Rapport enregistré !");
+      toast.success("Rapport enregistré !");
     } catch (e) {
       toast.error("Erreur lors de l'enregistrement");
     } finally {
@@ -574,12 +574,12 @@ export const SimulateurPage = () => {
     } catch (_) { /* fallback silencieux : PDF généré sans QR */ }
     const doc = generatePDF(result, email, qrDataUrl);
     doc.save(`rapport-diagnostic-SES-${new Date().getFullYear()}.pdf`);
-    toast.success("PDF téléchargé !");
+    toast.success("PDF téléchargé !");
   }, [answers, email, autreTexte]);
 
   const getShareText = () => {
     const result = getResults(answers, autreTexte);
-    return `J'ai réalisé mon auto-diagnostic sur Stratégie & Expertise Santé. Profil : ${result.profile}. Faites le vôtre :`;
+    return `J'ai réalisé mon auto-diagnostic sur Stratégie & Expertise Santé. Profil : ${result.profile}. Faites le vôtre :`;
   };
 
   const getShareUrl = () => `${window.location.origin}/simulateur`;
@@ -615,7 +615,7 @@ export const SimulateurPage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Diagnostic stratégique gratuit — 5 minutes" description="Un diagnostic personnalisé de votre situation : AT/MP, MDPH, expertise médicale, protection juridique. Rapport téléchargeable, 100% confidentiel." path="/simulateur" />
+      <SEO title="Diagnostic stratégique gratuit — 5 minutes" description="Un diagnostic personnalisé de votre situation : AT/MP, MDPH, expertise médicale, protection juridique. Rapport téléchargeable, 100% confidentiel." path="/simulateur" />
       {/* HERO — Diagnostic stratégique */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
@@ -625,7 +625,7 @@ export const SimulateurPage = () => {
               Diagnostic stratégique gratuit — en 5 minutes
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed mb-4">
-              Ce n'est pas un simple quiz : c'est un diagnostic conçu à partir de dossiers réels en AT/MP, MDPH, expertise médicale et litiges d'assurance. Vous obtenez un rapport personnalisé avec vos priorités, vos démarches clés et les pièges à éviter sur votre situation précise.
+              Ce n'est pas un simple quiz : c'est un diagnostic conçu à partir de dossiers réels en AT/MP, MDPH, expertise médicale et litiges d'assurance. Vous obtenez un rapport personnalisé avec vos priorités, vos démarches clés et les pièges à éviter sur votre situation précise.
             </p>
             <div className="flex flex-wrap gap-4 items-center text-xs text-muted-foreground mb-8">
               <span className="inline-flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 text-accent" strokeWidth={2} /> 100 % confidentiel</span>
@@ -671,8 +671,8 @@ export const SimulateurPage = () => {
                       onClick={() => handleAnswer(QUESTIONS[currentStep].id, option.value)}
                       className={`w-full text-left p-4 rounded-xl border transition-all flex items-center gap-3 group
                         ${answers[QUESTIONS[currentStep].id] === option.value
-                          ? 'border-accent bg-accent/10 shadow-md'
-                          : 'border-border hover:border-accent/50 hover:bg-muted/30'}
+                          ? 'border-accent bg-accent/10 shadow-md'
+                          : 'border-border hover:border-accent/50 hover:bg-muted/30'}
                       `}
                       data-testid={`option-${option.value}`}
                     >
@@ -693,7 +693,7 @@ export const SimulateurPage = () => {
                     id="autre-texte"
                     value={autreTexte}
                     onChange={e => setAutreTexte(e.target.value)}
-                    placeholder="Ex. : conflit avec mon employeur suite à un reclassement..."
+                    placeholder="Ex. : conflit avec mon employeur suite à un reclassement..."
                     maxLength={200}
                     data-testid="autre-situation-input"
                   />
@@ -770,8 +770,8 @@ export const SimulateurPage = () => {
             <div data-testid="simulator-results">
               {/* Urgency banner */}
               <div className={`p-4 rounded-xl border mb-6 flex items-start gap-3
-                ${results.urgency === 'urgent' ? 'bg-red-50 border-red-200' :
-                  results.urgency === 'important' ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}
+                ${results.urgency === 'urgent' ? 'bg-red-50 border-red-200' :
+                  results.urgency === 'important' ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}
               `}>
                 {results.urgency === 'urgent' ? (
                   <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
@@ -894,7 +894,7 @@ export const SimulateurPage = () => {
                   </button>
                   <button onClick={handleCopyLink} className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-muted hover:bg-muted/80 transition-colors" data-testid="diag-share-copy">
                     {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
-                    {copied ? 'Copié !' : 'Copier le lien'}
+                    {copied ? 'Copié !' : 'Copier le lien'}
                   </button>
                 </div>
               </div>
@@ -1068,7 +1068,7 @@ export const SimulateurPage = () => {
       {/* E-E-A-T Terrain Note */}
       <TerrainNote
         testId="simulateur-terrain-note"
-        text="Ce diagnostic a été construit à partir des situations que j'accompagne réellement : AT/MP, MDPH, expertises, litiges d'assurance, protection juridique."
+        text="Ce diagnostic a été construit à partir des situations que j'accompagne réellement : AT/MP, MDPH, expertises, litiges d'assurance, protection juridique."
       />
     </main>
   );
@@ -1076,27 +1076,27 @@ export const SimulateurPage = () => {
 
 const simulateurFaqData = [
   {
-    question: "Combien de temps prend le diagnostic ?",
+    question: "Combien de temps prend le diagnostic ?",
     answer: "Environ 5 minutes. Quelques questions ciblées suffisent à cerner votre contexte et à générer un rapport personnalisé. Vous pouvez revenir en arrière à tout moment pour ajuster vos réponses."
   },
   {
-    question: "Est-ce vraiment gratuit ?",
+    question: "Est-ce vraiment gratuit ?",
     answer: "Oui, le diagnostic et le rapport sont entièrement gratuits. Il n'y a ni engagement, ni inscription obligatoire, ni prélèvement automatique. Vous pouvez télécharger votre rapport sans fournir d'email si vous préférez."
   },
   {
-    question: "Que contient le rapport ?",
-    answer: "Le rapport personnalisé contient : vos priorités stratégiques classées par urgence, les démarches à engager et leurs délais, les pièges identifiés sur votre situation, les ressources et guides recommandés, et une orientation vers l'accompagnement adapté si utile."
+    question: "Que contient le rapport ?",
+    answer: "Le rapport personnalisé contient : vos priorités stratégiques classées par urgence, les démarches à engager et leurs délais, les pièges identifiés sur votre situation, les ressources et guides recommandés, et une orientation vers l'accompagnement adapté si utile."
   },
   {
-    question: "Mes données sont-elles confidentielles ?",
+    question: "Mes données sont-elles confidentielles ?",
     answer: "Oui. Aucune donnée médicale n'est stockée sans votre accord explicite. Si vous ne fournissez pas d'email, rien n'est conservé côté serveur au-delà du temps de génération du rapport. Aucune revente, aucun partenaire commercial, et vous disposez d'un droit d'accès et d'effacement (RGPD)."
   },
   {
-    question: "À quoi sert le résultat concrètement ?",
-    answer: "Le diagnostic vous donne une feuille de route claire : quelles démarches engager, dans quel ordre, dans quels délais, et quels pièges éviter. Vous repartez avec un document actionnable — utile pour préparer un rendez-vous administratif, un recours, ou un échange avec un professionnel."
+    question: "À quoi sert le résultat concrètement ?",
+    answer: "Le diagnostic vous donne une feuille de route claire : quelles démarches engager, dans quel ordre, dans quels délais, et quels pièges éviter. Vous repartez avec un document actionnable — utile pour préparer un rendez-vous administratif, un recours, ou un échange avec un professionnel."
   },
   {
-    question: "Dois-je créer un compte ?",
+    question: "Dois-je créer un compte ?",
     answer: "Non. Le diagnostic se fait sans création de compte. Vous répondez aux questions, vous obtenez votre rapport, vous le téléchargez. Si vous souhaitez le recevoir par email, vous pouvez le faire — mais ce n'est jamais obligatoire."
   }
 ];
@@ -1163,7 +1163,7 @@ const SimulateurFaq = () => {
                 data-testid={`simulateur-faq-${i}`}
               >
                 <span className="font-medium text-sm text-foreground pr-4">{faq.question}</span>
-                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
               </button>
               {openIndex === i && (
                 <div className="px-4 pb-4">
