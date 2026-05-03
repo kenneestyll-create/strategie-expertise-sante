@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { 
@@ -13,7 +14,8 @@ import {
   Send, 
   Loader2,
   CheckCircle,
-  MessageSquare
+  MessageSquare,
+  Shield
 } from 'lucide-react';
 import axios from 'axios';
 import { SEO } from '@/components/SEO';
@@ -30,7 +32,9 @@ export const AvisPage = () => {
     nom: '',
     situation: '',
     note: 5,
-    témoignage: ''
+    témoignage: '',
+    consent_publication: false,
+    consent_data_processing: false
   });
 
   useEffect(() => {
@@ -55,15 +59,28 @@ export const AvisPage = () => {
       toast.error("Veuillez remplir tous les champs obligatoires");
       return;
     }
+    if (!formData.consent_publication || !formData.consent_data_processing) {
+      toast.error("Veuillez valider les consentements obligatoires.");
+      return;
+    }
 
     setSubmitting(true);
     try {
-      await axios.post(`${API}/avis`, formData);
+      // Map frontend (nom/situation/témoignage) to backend (nom/type_accompagnement/commentaire) + consents
+      await axios.post(`${API}/avis`, {
+        nom: formData.nom,
+        note: formData.note,
+        commentaire: formData.témoignage,
+        type_accompagnement: formData.situation || null,
+        consent_publication: formData.consent_publication,
+        consent_data_processing: formData.consent_data_processing
+      });
       setSubmitted(true);
       toast.success("Merci pour votre témoignage !");
     } catch (error) {
       console.error('Erreur:', error);
-      toast.error("Une erreur est survenue");
+      const detail = error?.response?.data?.detail;
+      toast.error(detail || "Une erreur est survenue");
     } finally {
       setSubmitting(false);
     }
@@ -202,7 +219,7 @@ export const AvisPage = () => {
                 onClick={() => {
                   setShowForm(false);
                   setSubmitted(false);
-                  setFormData({ nom: '', situation: '', note: 5, témoignage: '' });
+                  setFormData({ nom: '', situation: '', note: 5, témoignage: '', consent_publication: false, consent_data_processing: false });
                 }}
               >
                 Fermer
@@ -227,15 +244,16 @@ export const AvisPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="nom">Votre nom ou pseudonyme *</Label>
+                  <Label htmlFor="nom">Prénom ou pseudonyme *</Label>
                   <Input
                     id="nom"
                     value={formData.nom}
                     onChange={(e) => setFormData(prev => ({ ...prev, nom: e.target.value }))}
-                    placeholder="Ex: Marie D."
+                    placeholder="Ex: Marie D. ou AnonymePro"
                     required
                     data-testid="avis-input-nom"
                   />
+                  <p className="text-[11px] text-muted-foreground/80">Privilégiez un prénom seul ou un pseudonyme — aucune obligation d'indiquer votre nom complet.</p>
                 </div>
 
                 <div className="space-y-2">
@@ -262,6 +280,40 @@ export const AvisPage = () => {
                   />
                 </div>
 
+                {/* RGPD Consent block */}
+                <div className="p-4 rounded-lg bg-muted/30 border border-border/60 space-y-3" data-testid="avis-rgpd-block">
+                  <div className="flex items-start gap-2 pb-2 border-b border-border/50">
+                    <Shield className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" strokeWidth={1.75} />
+                    <div className="text-[11px] text-muted-foreground leading-relaxed">
+                      Vos données sont collectées par Stratégie & Expertise Santé uniquement pour la publication de votre témoignage. Base légale : consentement (art. 6-1-a RGPD). Durée de conservation : jusqu'à retrait de votre demande. Vous disposez d'un droit d'accès, de rectification et d'effacement — voir notre <Link to="/mentions-legales" className="underline hover:text-accent">politique de confidentialité</Link>.
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <Checkbox
+                      id="consent-publication"
+                      checked={formData.consent_publication}
+                      onCheckedChange={(v) => setFormData(prev => ({ ...prev, consent_publication: !!v }))}
+                      data-testid="avis-consent-publication"
+                      className="mt-0.5"
+                    />
+                    <Label htmlFor="consent-publication" className="text-xs leading-relaxed cursor-pointer font-normal text-muted-foreground">
+                      <span className="text-destructive">*</span> J'autorise la publication de mon témoignage sur le site (prénom/pseudo, note, situation et texte).
+                    </Label>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <Checkbox
+                      id="consent-data"
+                      checked={formData.consent_data_processing}
+                      onCheckedChange={(v) => setFormData(prev => ({ ...prev, consent_data_processing: !!v }))}
+                      data-testid="avis-consent-data"
+                      className="mt-0.5"
+                    />
+                    <Label htmlFor="consent-data" className="text-xs leading-relaxed cursor-pointer font-normal text-muted-foreground">
+                      <span className="text-destructive">*</span> Je consens au traitement de mes données conformément à la politique de confidentialité (incluant, le cas échéant, une information sur ma situation de santé).
+                    </Label>
+                  </div>
+                </div>
+
                 <p className="text-xs text-muted-foreground">
                   Votre témoignage sera publié après validation par l'administrateur.
                 </p>
@@ -269,7 +321,7 @@ export const AvisPage = () => {
                 <Button 
                   type="submit" 
                   className="w-full rounded-lg gap-2"
-                  disabled={submitting}
+                  disabled={submitting || !formData.consent_publication || !formData.consent_data_processing}
                   data-testid="avis-submit-button"
                 >
                   {submitting ? (

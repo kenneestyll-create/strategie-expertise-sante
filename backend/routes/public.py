@@ -71,9 +71,21 @@ async def get_published_avis():
 
 @router.post("/avis", response_model=dict)
 async def create_avis(input_data: AvisCreate):
-    avis_obj = Avis(**input_data.model_dump())
+    # RGPD compliance: explicit consents are mandatory (art. 7 & 9 RGPD — données de santé possibles)
+    if not input_data.consent_publication:
+        raise HTTPException(status_code=422, detail="Le consentement à la publication est obligatoire.")
+    if not input_data.consent_data_processing:
+        raise HTTPException(status_code=422, detail="Le consentement au traitement des données est obligatoire.")
+
+    avis_obj = Avis(
+        **input_data.model_dump(),
+        consent_date=datetime.now(timezone.utc),
+        consent_version="v1.0-2026-02"
+    )
     doc = avis_obj.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
+    if doc.get('consent_date'):
+        doc['consent_date'] = doc['consent_date'].isoformat()
     await db.avis.insert_one(doc)
     return {
         "success": True,

@@ -83,12 +83,19 @@ class Avis(BaseModel):
     type_accompagnement: Optional[str] = None
     status: str = "en_attente"
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    # RGPD consent tracking (added 2026-02 for compliance with art. 7 & 9 RGPD)
+    consent_publication: Optional[bool] = None
+    consent_data_processing: Optional[bool] = None
+    consent_date: Optional[datetime] = None
+    consent_version: Optional[str] = None
 
 class AvisCreate(BaseModel):
     nom: str
     note: int = Field(ge=1, le=5)
     commentaire: str
     type_accompagnement: Optional[str] = None
+    consent_publication: bool
+    consent_data_processing: bool
 
 class AvisUpdate(BaseModel):
     status: Optional[str] = None

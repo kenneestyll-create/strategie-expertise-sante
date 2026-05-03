@@ -75,8 +75,8 @@ export const AboutPage = () => {
     },
     {
       icon: FileText,
-      title: "Dizaines de dossiers",
-      description: "Étudiés, analysés et préparés avec succès"
+      title: "Plusieurs dossiers accompagnés",
+      description: "Étudiés, analysés et préparés avec méthode"
     },
     {
       icon: Scale,
@@ -274,35 +274,31 @@ export const AboutPage = () => {
         </div>
       </section>
 
-      {/* Témoignages Anonymisés — Crédibilité */}
-      <section className="py-14 bg-[#0c0c0c]" data-testid="about-testimonials">
+      {/* Typologie des accompagnements — Ancrage factuel */}
+      <section className="py-14 bg-[#0c0c0c]" data-testid="about-typologie">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
-            <span className="text-[#C9A84C] text-sm font-medium uppercase tracking-[0.2em]">Retours d'expérience</span>
-            <h2 className="text-2xl sm:text-3xl font-semibold mt-3 text-[#f5f0e8]">Ceux qui ont fait le parcours avec moi</h2>
+            <span className="text-[#C9A84C] text-sm font-medium uppercase tracking-[0.2em]">Domaines d'intervention</span>
+            <h2 className="text-2xl sm:text-3xl font-semibold mt-3 text-[#f5f0e8]">Les dossiers que j'accompagne</h2>
+            <p className="text-[#f5f0e8]/40 text-sm mt-3 max-w-xl mx-auto">
+              Typologie réelle des situations que je traite — confidentialité stricte des personnes accompagnées.
+            </p>
           </div>
           <div className="grid sm:grid-cols-3 gap-5">
             {[
-              { initials: "P.D.", type: "PTIA", text: "Mon assureur refusait de reconnaître ma PTIA. Grâce à une stratégie méthodique, la garantie a été activée après 8 mois.", result: "Garantie PTIA activée", gold: true },
-              { initials: "M.L.", type: "AT", text: "Après 18 mois de refus, mon accident du travail a enfin été reconnu. Sans cet accompagnement, j'aurais abandonné.", result: "AT reconnue — Rente obtenue", gold: false },
-              { initials: "C.R.", type: "IPP", text: "Mon taux d'IPP de 5% a été réévalué à 23% après contestation. La différence sur ma rente est considérable.", result: "IPP : 5% → 23%", gold: false },
+              { type: "AT / MP", text: "Accidents du travail, maladies professionnelles en contentieux, consolidations, taux d'IPP acquis.", gold: false },
+              { type: "MDPH", text: "Dossiers complexes : transplantation d'organe, polyhandicap sensoriel, restrictions poste, PCH, RQTH.", gold: true },
+              { type: "PTIA / ITT", text: "Litiges assurantiels, reconnaissance de garanties acquises face aux grands assureurs nationaux.", gold: false },
             ].map((t, i) => (
-              <div key={i} className={`p-5 rounded-xl border ${t.gold ? 'border-[#C9A84C]/30 bg-[#C9A84C]/5' : 'border-white/5 bg-white/[0.02]'}`} data-testid={`about-testimonial-${i}`}>
+              <div key={i} className={`p-5 rounded-xl border ${t.gold ? 'border-[#C9A84C]/30 bg-[#C9A84C]/5' : 'border-white/5 bg-white/[0.02]'}`} data-testid={`about-typologie-${i}`}>
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 rounded-full bg-[#C9A84C]/10 border border-[#C9A84C]/20 flex items-center justify-center">
-                    <span className="text-[#C9A84C] text-[10px] font-bold">{t.initials}</span>
-                  </div>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${t.gold ? 'bg-[#C9A84C] text-[#1a1a1a]' : 'bg-white/10 text-[#f5f0e8]/60'}`}>{t.type}</span>
                 </div>
-                <p className="text-[#f5f0e8]/60 text-sm leading-relaxed mb-3">{t.text}</p>
-                <div className="flex items-center gap-2 pt-2 border-t border-white/5">
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
-                  <span className="text-emerald-400 text-[11px] font-medium">{t.result}</span>
-                </div>
+                <p className="text-[#f5f0e8]/60 text-sm leading-relaxed">{t.text}</p>
               </div>
             ))}
           </div>
-          <p className="text-center text-[#f5f0e8]/20 text-[10px] mt-6">* Prénoms modifiés pour préserver l'anonymat.</p>
+          <p className="text-center text-[#f5f0e8]/20 text-[10px] mt-6">Aucune donnée personnelle identifiable n'est publiée — conformité RGPD.</p>
         </div>
       </section>
 
