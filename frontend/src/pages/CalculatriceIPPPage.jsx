@@ -335,7 +335,7 @@ export const CalculatriceIPPPage = () => {
             <div className="flex items-center justify-center gap-2 mt-6 py-3 px-5 bg-accent/5 border border-accent/15 rounded-full w-fit mx-auto" data-testid="ipp-weekly-counter">
               <Eye className="w-4 h-4 text-accent" />
               <span className="text-sm font-medium text-muted-foreground">
-                <strong className="text-foreground">{weeklyCount}</strong> personne{weeklyCount > 1 ? 's' : ''} {weeklyCount > 1 ? 'ont' : 'a'} estimé leurs droits cette semaine
+                <strong className="text-foreground">{weeklyCount}</strong> personne{weeklyCount > 1 ? 's' : ''} {weeklyCount > 1 ? 'ont' : 'a'} estimé leurs droits avec cet outil
               </span>
             </div>
           )}

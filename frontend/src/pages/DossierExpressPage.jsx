@@ -176,7 +176,7 @@ const ValueReminder = ({ weeklyCount }) => (
         {weeklyCount > 0 && (
           <div className="flex items-center gap-2 pt-2 border-t border-border">
             <Users className="w-4 h-4 text-amber-500" />
-            <span className="text-xs text-amber-700 font-medium">{weeklyCount} dossiers analysés cette semaine</span>
+            <span className="text-xs text-amber-700 font-medium">{weeklyCount} dossiers accompagnés à ce jour</span>
           </div>
         )}
       </CardContent>
@@ -548,7 +548,7 @@ export const DossierExpressPage = () => {
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                     </span>
-                    <span className="text-xs text-emerald-300 font-medium" data-testid="weekly-counter">{weeklyCount} dossiers analysés cette semaine</span>
+                    <span className="text-xs text-emerald-300 font-medium" data-testid="weekly-counter">{weeklyCount} dossiers accompagnés à ce jour</span>
                   </div>
                 )}
                 <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 mb-4" data-testid="dossier-express-badge">

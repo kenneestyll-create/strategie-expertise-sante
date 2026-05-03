@@ -415,7 +415,7 @@ export const HomePage = () => {
                 <span className="text-yellow-300 font-bold ml-1">97 EUR</span>
                 {dossierCount > 0 && (
                   <span className="text-red-200 ml-2 text-xs" data-testid="dossier-express-counter">
-                    (<strong className="text-yellow-300">{dossierCount}</strong> dossiers cette semaine)
+                    (<strong className="text-yellow-300">{dossierCount}</strong> dossiers accompagnés)
                   </span>
                 )}
               </div>

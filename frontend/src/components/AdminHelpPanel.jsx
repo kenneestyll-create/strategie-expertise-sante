@@ -200,7 +200,7 @@ const HELP_SECTIONS = [
       { label: 'Email (Resend)', text: 'Vérifiez le statut de la configuration email et envoyez un email test.' },
       { label: 'Stockage', text: 'Statut du stockage objet cloud pour les documents uploadés.' },
       { label: 'Compteur visiteurs (Hero)', text: 'Le compteur "X+ visiteurs" s\'incrémente automatiquement à chaque visite sur la page d\'accueil. Vous pouvez ajuster la valeur manuellement ici.' },
-      { label: 'Base dossiers hebdo', text: 'Ajustez la base du compteur "dossiers analysés cette semaine" affiché sur Dossier Express. Le total affiché = base + vrais dossiers.' },
+      { label: 'Base dossiers accompagnés', text: 'Ajustez la base du compteur "dossiers accompagnés à ce jour" affiché sur Dossier Express. Le total affiché = base + vrais dossiers enregistrés.' },
       { label: 'Le défi en chiffres', text: 'Éditez les 4 statistiques clés affichées sur la page d\'accueil (valeur, préfixe, unité, source). Cliquez "Enregistrer les chiffres" pour appliquer.' },
       { label: 'Tarifs & Promotions', text: 'Modifiez le prix de chaque prestation et ajoutez un badge promo (ex: "-20%", "Nouveau"). Les changements se reflètent sur la page Tarifs.' },
       { label: 'Tutoriel Straté', text: 'Statistiques d\'engagement du tutoriel d\'onboarding : démarrages, taux de complétion et abandon par étape. Bouton "Relancer" pour revoir le tutoriel.' },

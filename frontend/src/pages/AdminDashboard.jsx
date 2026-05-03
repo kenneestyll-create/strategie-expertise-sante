@@ -3742,8 +3742,8 @@ export const AdminDashboard = () => {
 
                 {/* Compteur Dossiers hebdo */}
                 <div className="space-y-2" data-testid="config-compteur-dossiers">
-                  <label className="text-sm font-semibold text-foreground">Dossiers analysés cette semaine (Dossier Express)</label>
-                  <p className="text-[11px] text-muted-foreground">Base ajoutée au nombre réel de dossiers. Affiché : "base + vrais dossiers cette semaine"</p>
+                  <label className="text-sm font-semibold text-foreground">Dossiers accompagnés à ce jour (Dossier Express)</label>
+                  <p className="text-[11px] text-muted-foreground">Base ajoutée au nombre réel de dossiers. Affiché : "base + vrais dossiers enregistrés"</p>
                   <div className="flex items-end gap-3">
                     <input
                       type="number"
