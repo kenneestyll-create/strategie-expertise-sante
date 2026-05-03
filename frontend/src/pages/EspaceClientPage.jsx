@@ -153,7 +153,7 @@ const LoginForm = ({ onLogin }) => {
               className="text-sm text-accent hover:underline"
               data-testid="toggle-auth-mode"
             >
-              {mode === 'login' ? "Pas encore de compte ? S'inscrire" : 'Déjà un compte ? Se connecter'}
+              {mode === 'login' ? "Pas encore de compte ? S'inscrire" : 'Déjà un compte ? Se connecter'}
             </button>
           </div>
         </CardContent>
@@ -307,7 +307,7 @@ const ClientDashboard = ({ token, clientName, logout }) => {
                 </div>
                 <div className="flex flex-col items-start">
                   <span className="text-[11px] font-medium text-primary-foreground/80 leading-tight">Dossier</span>
-                  <span className={`text-[10px] font-semibold leading-tight ${navScore.score < 50 ? 'text-red-400' : navScore.score < 80 ? 'text-yellow-400' : 'text-green-400'}`}>
+                  <span className={`text-[10px] font-semibold leading-tight ${navScore.score < 50 ? 'text-red-400' : navScore.score < 80 ? 'text-yellow-400' : 'text-green-400'}`}>
                     {navScore.score < 50 ? 'Fragile' : navScore.score < 80 ? 'En progression' : 'Solide'}
                   </span>
                 </div>
@@ -337,8 +337,8 @@ const ClientDashboard = ({ token, clientName, logout }) => {
                 className="sm:hidden flex items-center gap-1.5 px-2 py-1 rounded-full border border-primary-foreground/15 bg-primary-foreground/5"
                 data-testid="navbar-score-mobile"
               >
-                <Shield className={`w-3.5 h-3.5 ${navScore.score < 50 ? 'text-red-400' : navScore.score < 80 ? 'text-yellow-400' : 'text-green-400'}`} />
-                <span className={`text-xs font-bold ${navScore.score < 50 ? 'text-red-400' : navScore.score < 80 ? 'text-yellow-400' : 'text-green-400'}`}>
+                <Shield className={`w-3.5 h-3.5 ${navScore.score < 50 ? 'text-red-400' : navScore.score < 80 ? 'text-yellow-400' : 'text-green-400'}`} />
+                <span className={`text-xs font-bold ${navScore.score < 50 ? 'text-red-400' : navScore.score < 80 ? 'text-yellow-400' : 'text-green-400'}`}>
                   {navScore.score}%
                 </span>
                 {scoreDelta && scoreDelta > 0 && (
@@ -384,12 +384,12 @@ const ClientDashboard = ({ token, clientName, logout }) => {
                       notifications.map((n) => (
                         <div
                           key={n.id}
-                          className={`p-3 border-b border-border/50 last:border-0 cursor-pointer hover:bg-muted/50 transition-colors ${!n.read ? 'bg-accent/5' : ''}`}
+                          className={`p-3 border-b border-border/50 last:border-0 cursor-pointer hover:bg-muted/50 transition-colors ${!n.read ? 'bg-accent/5' : ''}`}
                           onClick={() => { markRead(n.id); if (n.case_id) { setShowNotifs(false); const c = cases.find(x => x.id === n.case_id); if (c) setSelectedCase(c); }}}
                           data-testid={`notif-item-${n.id}`}
                         >
                           <div className="flex items-start gap-3">
-                            <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${!n.read ? 'bg-accent' : 'bg-transparent'}`} />
+                            <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${!n.read ? 'bg-accent' : 'bg-transparent'}`} />
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium">{n.title}</p>
                               <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>

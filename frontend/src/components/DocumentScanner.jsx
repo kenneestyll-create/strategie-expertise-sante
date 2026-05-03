@@ -91,7 +91,7 @@ async function buildPdf(pages) {
 const PageStrip = ({ pages, activeIndex, onSelect, onRemove }) => (
   <div className="flex gap-2 px-3 py-2 bg-black/70 overflow-x-auto flex-shrink-0" data-testid="page-strip">
     {pages.map((url, i) => (
-      <div key={i} onClick={() => onSelect(i)} className={`relative flex-shrink-0 w-14 h-18 rounded-lg overflow-hidden border-2 cursor-pointer ${i === activeIndex ? 'border-accent' : 'border-white/20'}`}>
+      <div key={i} onClick={() => onSelect(i)} className={`relative flex-shrink-0 w-14 h-18 rounded-lg overflow-hidden border-2 cursor-pointer ${i === activeIndex ? 'border-accent' : 'border-white/20'}`}>
         <img src={url} alt={`P${i + 1}`} className="w-full h-full object-cover" />
         <div className="absolute top-0 left-0 bg-black/60 text-white text-[9px] px-1 rounded-br">{i + 1}</div>
         {onRemove && <button onClick={(e) => { e.stopPropagation(); onRemove(i); }} className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center">x</button>}
@@ -214,7 +214,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
           {pages.length > 0 && <span className="bg-accent text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full" data-testid="page-counter">{pages.length}</span>}
           <ScanLine className="w-4 h-4 text-emerald-400" />
           <span>CamScanner</span>
-          <span className={`text-[10px] font-normal ml-1 ${isSimpleMode ? 'text-amber-400' : 'text-emerald-400'}`}>
+          <span className={`text-[10px] font-normal ml-1 ${isSimpleMode ? 'text-amber-400' : 'text-emerald-400'}`}>
             {isSimpleMode ? '(Simple)' : '(Avance)'}
           </span>
         </h3>
@@ -255,7 +255,7 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
             {isReady
               ? <Check className="w-5 h-5 text-emerald-400 flex-shrink-0" />
               : <Loader2 className="w-5 h-5 text-amber-400 flex-shrink-0 animate-spin" />}
-            <span className={`text-xs font-medium ${isReady ? 'text-emerald-400/80' : 'text-amber-400/80'}`}>
+            <span className={`text-xs font-medium ${isReady ? 'text-emerald-400/80' : 'text-amber-400/80'}`}>
               {isReady
                 ? (isSimpleMode ? 'Mode simple — capture photo directe' : 'Mode avance — filtres, rotation, multi-pages')
                 : 'Initialisation du scanner...'}
@@ -320,19 +320,19 @@ export const DocumentScanner = ({ onCapture, onClose }) => {
                   { id: 'original', label: 'Original', icon: FileText },
                 ].map(f => (
                   <button key={f.id} onClick={() => handleFilter(f.id)} disabled={isProcessing}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all min-h-[40px] whitespace-nowrap ${activeFilter === f.id ? 'bg-emerald-500 text-white' : 'bg-white/8 text-white/60 hover:bg-white/15'} ${isProcessing ? 'opacity-40' : ''}`}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all min-h-[40px] whitespace-nowrap ${activeFilter === f.id ? 'bg-emerald-500 text-white' : 'bg-white/8 text-white/60 hover:bg-white/15'} ${isProcessing ? 'opacity-40' : ''}`}
                     data-testid={`filter-${f.id}`}>
                     <f.icon className="w-3.5 h-3.5" /> {f.label}
                   </button>
                 ))}
                 <div className="w-px h-7 bg-white/10 mx-0.5 flex-shrink-0" />
                 <button onClick={() => handleRotate('left')} disabled={isProcessing}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 min-h-[40px] ${isProcessing ? 'opacity-30' : ''}`}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 min-h-[40px] ${isProcessing ? 'opacity-30' : ''}`}
                   data-testid="rotate-left-btn">
                   <RotateCcw className="w-3.5 h-3.5" />
                 </button>
                 <button onClick={() => handleRotate('right')} disabled={isProcessing}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 min-h-[40px] ${isProcessing ? 'opacity-30' : ''}`}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-white/8 text-white/60 hover:bg-white/15 min-h-[40px] ${isProcessing ? 'opacity-30' : ''}`}
                   data-testid="rotate-right-btn">
                   <RotateCw className="w-3.5 h-3.5" />
                 </button>

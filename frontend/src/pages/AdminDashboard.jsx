@@ -128,7 +128,7 @@ const AnalyticsTab = ({ data, period, onPeriodChange, axiosConfig }) => {
             <button
               key={p.v}
               onClick={() => onPeriodChange(p.v)}
-              className={`px-3 py-1 text-xs rounded-md transition-colors ${period === p.v ? 'bg-background shadow text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`px-3 py-1 text-xs rounded-md transition-colors ${period === p.v ? 'bg-background shadow text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'}`}
               data-testid={`period-${p.v}`}
             >
               {p.l}
@@ -235,7 +235,7 @@ const AnalyticsTab = ({ data, period, onPeriodChange, axiosConfig }) => {
               {packages.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={packages} dataKey="revenue" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({name, percent}) => `${name.substring(0, 15)}${name.length > 15 ? '...' : ''} (${(percent*100).toFixed(0)}%)`} labelLine={{ strokeWidth: 1 }} style={{ fontSize: 10 }}>
+                    <Pie data={packages} dataKey="revenue" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({name, percent}) => `${name.substring(0, 15)}${name.length > 15 ? '...' : ''} (${(percent*100).toFixed(0)}%)`} labelLine={{ strokeWidth: 1 }} style={{ fontSize: 10 }}>
                       {packages.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
                     </Pie>
                     <Tooltip formatter={(v) => [`${v}€`, 'Revenus']} />
@@ -326,7 +326,7 @@ const AnalyticsTab = ({ data, period, onPeriodChange, axiosConfig }) => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-600">
               <AlertTriangle className="w-5 h-5" />
-              {purgeType === 'all' ? 'Supprimer TOUTES les transactions ?' : 'Supprimer les transactions de test ?'}
+              {purgeType === 'all' ? 'Supprimer TOUTES les transactions ?' : 'Supprimer les transactions de test ?'}
             </DialogTitle>
             <DialogDescription>
               {purgeType === 'all'
@@ -396,7 +396,7 @@ const AccountingTab = ({ axiosConfig }) => {
       <div className="flex flex-wrap gap-1 bg-muted rounded-lg p-1" data-testid="accounting-period-selector">
         {Object.entries(PERIOD_LABELS).map(([k, l]) => (
           <button key={k} onClick={() => setPeriod(k)}
-            className={`px-3 py-1.5 text-xs rounded-md transition-colors ${period === k ? 'bg-background shadow text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`px-3 py-1.5 text-xs rounded-md transition-colors ${period === k ? 'bg-background shadow text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'}`}
             data-testid={`accounting-period-${k}`}
           >{l}</button>
         ))}
@@ -408,7 +408,7 @@ const AccountingTab = ({ axiosConfig }) => {
           <CardContent className="py-4 px-5">
             <p className="text-xs text-muted-foreground uppercase">Chiffre d'affaires</p>
             <p className="text-2xl font-bold mt-1 text-emerald-600">{formatEuro(kpis.total_ca)}</p>
-            <p className={`text-xs mt-0.5 font-medium ${kpis.evolution_ca >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+            <p className={`text-xs mt-0.5 font-medium ${kpis.evolution_ca >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
               {kpis.evolution_ca >= 0 ? '+' : ''}{kpis.evolution_ca}% vs période précédente
             </p>
           </CardContent>
@@ -417,7 +417,7 @@ const AccountingTab = ({ axiosConfig }) => {
           <CardContent className="py-4 px-5">
             <p className="text-xs text-muted-foreground uppercase">Transactions</p>
             <p className="text-2xl font-bold mt-1">{kpis.total_transactions}</p>
-            <p className={`text-xs mt-0.5 font-medium ${kpis.evolution_tx >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+            <p className={`text-xs mt-0.5 font-medium ${kpis.evolution_tx >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
               {kpis.evolution_tx >= 0 ? '+' : ''}{kpis.evolution_tx}% vs période précédente
             </p>
           </CardContent>
@@ -552,7 +552,7 @@ const OnboardingStatsCard = ({ axiosConfig, onRestartTour }) => {
                 <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
                   <div
                     className="h-full rounded-full bg-[#C9A84C] transition-all"
-                    style={{ width: `${stats.step_views[0].views ? (s.views / stats.step_views[0].views) * 100 : 0}%` }}
+                    style={{ width: `${stats.step_views[0].views ? (s.views / stats.step_views[0].views) * 100 : 0}%` }}
                   />
                 </div>
                 <span className="w-6 text-right font-medium">{s.views}</span>
@@ -584,7 +584,7 @@ const ProductionCleanupCard = ({ axiosConfig }) => {
     try {
       const res = await axios.post(`${API}${item.endpoint}`, {}, axiosConfig);
       setResults(prev => ({ ...prev, [item.key]: res.data.deleted }));
-      toast.success(`${item.label} : ${res.data.deleted} élément(s) supprimé(s)`);
+      toast.success(`${item.label} : ${res.data.deleted} élément(s) supprimé(s)`);
     } catch {
       toast.error(`Erreur lors de la purge de ${item.label}`);
     }
@@ -609,7 +609,7 @@ const ProductionCleanupCard = ({ axiosConfig }) => {
     try {
       const res = await axios.post(`${API}/admin/cleanup/full-purge`, {}, axiosConfig);
       const total = Object.values(res.data.purged).filter(v => typeof v === 'number').reduce((a, b) => a + b, 0);
-      toast.success(`Purge complète : ${total} élément(s) supprimé(s) + compteurs remis à zéro`);
+      toast.success(`Purge complète : ${total} élément(s) supprimé(s) + compteurs remis à zéro`);
       setResults({ full: total });
     } catch {
       toast.error('Erreur lors de la purge complète');
@@ -1060,13 +1060,13 @@ export const AdminDashboard = () => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star 
         key={i} 
-        className={`w-4 h-4 ${i < note ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}`} 
+        className={`w-4 h-4 ${i < note ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}`} 
       />
     ));
   };
 
   return (
-    <div className={`min-h-screen bg-background transition-colors duration-300 ${isDark ? 'admin-dark' : ''}`}>
+    <div className={`min-h-screen bg-background transition-colors duration-300 ${isDark ? 'admin-dark' : ''}`}>
       {/* Header */}
       <header className="bg-foreground text-primary-foreground sticky top-0 z-50 border-b border-white/5 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1088,8 +1088,8 @@ export const AdminDashboard = () => {
                 data-testid="admin-test-toggle"
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all border ${
                   isAdminMode
-                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
-                    : 'bg-white/10 text-primary-foreground/60 border-white/20 hover:bg-white/20'
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
+                    : 'bg-white/10 text-primary-foreground/60 border-white/20 hover:bg-white/20'
                 }`}
               >
                 <Shield className="w-3 h-3" />
@@ -1100,8 +1100,8 @@ export const AdminDashboard = () => {
                 data-testid="admin-dark-toggle"
                 className={`flex items-center justify-center w-8 h-8 rounded-md transition-all border ${
                   isDark
-                    ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 hover:bg-amber-500/25'
-                    : 'bg-white/10 text-primary-foreground/60 border-white/20 hover:bg-white/20'
+                    ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 hover:bg-amber-500/25'
+                    : 'bg-white/10 text-primary-foreground/60 border-white/20 hover:bg-white/20'
                 }`}
                 title={isDark ? 'Mode clair' : 'Mode sombre'}
               >
@@ -1146,11 +1146,11 @@ export const AdminDashboard = () => {
                 <option value="bookings">RDV</option>
                 <option value="clients">Clients</option>
                 <option value="relance">Relance</option>
-                <option value="alertes">{`Alertes${urgentAlerts.non_traite > 0 ? ` (${urgentAlerts.non_traite})` : ''}`}</option>
+                <option value="alertes">{`Alertes${urgentAlerts.non_traite > 0 ? ` (${urgentAlerts.non_traite})` : ''}`}</option>
               </optgroup>
               <optgroup label="IA & Production">
-                <option value="strategiia">{`StrategiIA${premiumAnalyses.items.filter(i => i.type === 'strategiia' && i.status === 'en_attente').length > 0 ? ` (${premiumAnalyses.items.filter(i => i.type === 'strategiia' && i.status === 'en_attente').length})` : ''}`}</option>
-                <option value="dossier-express">{`Dossier Express${premiumAnalyses.items.filter(i => i.type === 'dossier_express' && i.status === 'en_attente').length > 0 ? ` (${premiumAnalyses.items.filter(i => i.type === 'dossier_express' && i.status === 'en_attente').length})` : ''}`}</option>
+                <option value="strategiia">{`StrategiIA${premiumAnalyses.items.filter(i => i.type === 'strategiia' && i.status === 'en_attente').length > 0 ? ` (${premiumAnalyses.items.filter(i => i.type === 'strategiia' && i.status === 'en_attente').length})` : ''}`}</option>
+                <option value="dossier-express">{`Dossier Express${premiumAnalyses.items.filter(i => i.type === 'dossier_express' && i.status === 'en_attente').length > 0 ? ` (${premiumAnalyses.items.filter(i => i.type === 'dossier_express' && i.status === 'en_attente').length})` : ''}`}</option>
               </optgroup>
               <optgroup label="Suivi">
                 <option value="analytics">Analytique</option>
@@ -1870,9 +1870,9 @@ export const AdminDashboard = () => {
                             size="sm"
                             className="gap-1 text-xs"
                             onClick={async () => {
-                              const title = prompt("Titre du dossier :");
+                              const title = prompt("Titre du dossier :");
                               if (!title) return;
-                              const description = prompt("Description :") || "";
+                              const description = prompt("Description :") || "";
                               try {
                                 await axios.post(`${API}/admin/clients/${client.id}/cases`, { title, description }, axiosConfig);
                                 toast.success("Dossier créé + notification envoyée au client");
@@ -1989,7 +1989,7 @@ export const AdminDashboard = () => {
                 ) : (
                   <div className="space-y-3">
                     {urgentAlerts.items?.map((alert) => (
-                      <div key={alert.id} className={`p-3 sm:p-4 rounded-lg border ${alert.traité ? 'bg-muted/30 border-border' : 'bg-red-50 border-red-200'}`} data-testid={`alert-item-${alert.id}`}>
+                      <div key={alert.id} className={`p-3 sm:p-4 rounded-lg border ${alert.traité ? 'bg-muted/30 border-border' : 'bg-red-50 border-red-200'}`} data-testid={`alert-item-${alert.id}`}>
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2.5 sm:gap-4">
                           <div className="flex-1 space-y-1">
                             <div className="flex items-center gap-2 flex-wrap">
@@ -2168,7 +2168,7 @@ export const AdminDashboard = () => {
                             <div className="flex items-center gap-2 flex-wrap">
                               <Badge variant="secondary" className="text-[10px]">{c.type_dossier}</Badge>
                               {c.regime && <Badge variant="outline" className="text-[10px]">{c.regime}</Badge>}
-                              <Badge variant={c.resultat === 'Favorable' ? 'default' : c.resultat === 'Défavorable' ? 'destructive' : 'outline'} className={`text-[10px] ${c.resultat === 'Favorable' ? 'bg-green-100 text-green-700 border-green-200' : ''}`}>
+                              <Badge variant={c.resultat === 'Favorable' ? 'default' : c.resultat === 'Défavorable' ? 'destructive' : 'outline'} className={`text-[10px] ${c.resultat === 'Favorable' ? 'bg-green-100 text-green-700 border-green-200' : ''}`}>
                                 {c.resultat}
                               </Badge>
                               <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{c.score_pertinence}/100</span>
@@ -2261,17 +2261,17 @@ export const AdminDashboard = () => {
           <TabsContent value="dossier-express" className="space-y-8" data-testid="dossier-express-tab-content">
 
             {/* ====== LAUNCH MODE CONTROL ====== */}
-            <Card className={`border-2 transition-all ${launchMode.mode === 'ouvert' ? 'border-green-300 bg-green-50/20' : launchMode.mode === 'controle' ? 'border-amber-300 bg-amber-50/20' : 'border-red-300 bg-red-50/20'}`} data-testid="launch-mode-card">
+            <Card className={`border-2 transition-all ${launchMode.mode === 'ouvert' ? 'border-green-300 bg-green-50/20' : launchMode.mode === 'controle' ? 'border-amber-300 bg-amber-50/20' : 'border-red-300 bg-red-50/20'}`} data-testid="launch-mode-card">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${launchMode.mode === 'ouvert' ? 'bg-green-500' : launchMode.mode === 'controle' ? 'bg-amber-500' : 'bg-red-500'} animate-pulse`} />
+                    <div className={`w-3 h-3 rounded-full ${launchMode.mode === 'ouvert' ? 'bg-green-500' : launchMode.mode === 'controle' ? 'bg-amber-500' : 'bg-red-500'} animate-pulse`} />
                     <div>
                       <h3 className="text-sm font-bold flex items-center gap-2">
                         Mode de lancement
                         <Badge variant="outline" className={`text-[10px] ${
-                          launchMode.mode === 'ouvert' ? 'bg-green-100 text-green-700 border-green-200' :
-                          launchMode.mode === 'controle' ? 'bg-amber-100 text-amber-700 border-amber-200' :
+                          launchMode.mode === 'ouvert' ? 'bg-green-100 text-green-700 border-green-200' :
+                          launchMode.mode === 'controle' ? 'bg-amber-100 text-amber-700 border-amber-200' :
                           'bg-red-100 text-red-700 border-red-200'
                         }`} data-testid="launch-mode-badge">
                           {launchMode.mode === 'ouvert' ? 'Ouvert' : launchMode.mode === 'controle' ? 'Ouverture controlee' : 'Temporairement indisponible'}
@@ -2285,7 +2285,7 @@ export const AdminDashboard = () => {
                   <div className="flex gap-2" data-testid="launch-mode-buttons">
                     {['ouvert', 'controle', 'indisponible'].map(m => (
                       <Button key={m} size="sm" variant={launchMode.mode === m ? 'default' : 'outline'}
-                        className={`text-xs h-8 ${launchMode.mode === m ? '' : ''}`}
+                        className={`text-xs h-8 ${launchMode.mode === m ? '' : ''}`}
                         disabled={launchLoading}
                         data-testid={`launch-mode-${m}`}
                         onClick={async () => {
@@ -2293,7 +2293,7 @@ export const AdminDashboard = () => {
                           try {
                             const res = await axios.put(`${API}/admin/launch-mode`, { mode: m }, axiosConfig);
                             setLaunchMode({ mode: res.data.mode, message: res.data.message });
-                            toast.success(`Mode de lancement : ${m === 'ouvert' ? 'Ouvert' : m === 'controle' ? 'Ouverture controlee' : 'Temporairement indisponible'}`);
+                            toast.success(`Mode de lancement : ${m === 'ouvert' ? 'Ouvert' : m === 'controle' ? 'Ouverture controlee' : 'Temporairement indisponible'}`);
                           } catch { toast.error("Erreur lors du changement de mode"); }
                           setLaunchLoading(false);
                         }}>
@@ -2339,22 +2339,22 @@ export const AdminDashboard = () => {
             )}
             {/* ====== SERVICES STATUS ====== */}
             {servicesStatus && (
-              <Card className={`border-2 ${servicesStatus.critical_services_ok ? 'border-green-200/60' : 'border-red-300'}`} data-testid="services-status-card">
+              <Card className={`border-2 ${servicesStatus.critical_services_ok ? 'border-green-200/60' : 'border-red-300'}`} data-testid="services-status-card">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                       <Shield className="w-3.5 h-3.5" />
                       État des services
                     </h3>
-                    <Badge variant="outline" className={`text-[10px] ${servicesStatus.critical_services_ok ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>
+                    <Badge variant="outline" className={`text-[10px] ${servicesStatus.critical_services_ok ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>
                       {servicesStatus.all_services_ok ? 'Tous operationnels' : servicesStatus.critical_services_ok ? 'Services critiques OK' : 'Attention requise'}
                     </Badge>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
                     {Object.entries(servicesStatus.services).map(([key, svc]) => (
-                      <div key={key} className={`flex items-center gap-2 p-2 rounded-lg text-xs ${svc.status === 'ok' ? 'bg-green-50/60' : svc.status === 'missing' ? 'bg-amber-50/60' : 'bg-red-50/60'}`}
+                      <div key={key} className={`flex items-center gap-2 p-2 rounded-lg text-xs ${svc.status === 'ok' ? 'bg-green-50/60' : svc.status === 'missing' ? 'bg-amber-50/60' : 'bg-red-50/60'}`}
                         data-testid={`service-${key}`}>
-                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${svc.status === 'ok' ? 'bg-green-500' : svc.status === 'missing' ? 'bg-amber-400' : 'bg-red-500'}`} />
+                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${svc.status === 'ok' ? 'bg-green-500' : svc.status === 'missing' ? 'bg-amber-400' : 'bg-red-500'}`} />
                         <div className="min-w-0">
                           <span className="font-medium block truncate">
                             {key === 'ia_anthropic' ? 'IA' : key === 'stripe' ? 'Paiement' : key === 'email_resend' ? 'Email' : key === 'storage_s3' ? 'Stockage' : key === 'database' ? 'Base' : key === 'launch_mode' ? 'Mode' : key}
@@ -2451,16 +2451,16 @@ export const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className={`relative overflow-hidden hover:shadow-md transition-shadow ${(dossierExpressAdmin.stats?.incidents || 0) > 0 ? 'border-red-300 bg-red-50/30 ring-1 ring-red-200/50' : 'border-border/60'}`} data-testid="de-kpi-incidents">
+              <Card className={`relative overflow-hidden hover:shadow-md transition-shadow ${(dossierExpressAdmin.stats?.incidents || 0) > 0 ? 'border-red-300 bg-red-50/30 ring-1 ring-red-200/50' : 'border-border/60'}`} data-testid="de-kpi-incidents">
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Incidents</p>
-                      <p className={`text-3xl font-bold mt-2 tracking-tight ${(dossierExpressAdmin.stats?.incidents || 0) > 0 ? 'text-red-600' : 'text-foreground/40'}`}>{dossierExpressAdmin.stats?.incidents || 0}</p>
+                      <p className={`text-3xl font-bold mt-2 tracking-tight ${(dossierExpressAdmin.stats?.incidents || 0) > 0 ? 'text-red-600' : 'text-foreground/40'}`}>{dossierExpressAdmin.stats?.incidents || 0}</p>
                       <p className="text-[11px] text-red-500/70 mt-1">{(dossierExpressAdmin.stats?.incidents || 0) > 0 ? 'Intervention requise' : 'Aucun incident'}</p>
                     </div>
-                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${(dossierExpressAdmin.stats?.incidents || 0) > 0 ? 'bg-red-100' : 'bg-muted/60'}`}>
-                      <AlertTriangle className={`w-5 h-5 ${(dossierExpressAdmin.stats?.incidents || 0) > 0 ? 'text-red-500' : 'text-foreground/30'}`} />
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${(dossierExpressAdmin.stats?.incidents || 0) > 0 ? 'bg-red-100' : 'bg-muted/60'}`}>
+                      <AlertTriangle className={`w-5 h-5 ${(dossierExpressAdmin.stats?.incidents || 0) > 0 ? 'text-red-500' : 'text-foreground/30'}`} />
                     </div>
                   </div>
                 </CardContent>
@@ -2505,7 +2505,7 @@ export const AdminDashboard = () => {
                       ].map(f => (
                         <button key={f.v}
                           onClick={() => setDeFilter(f.v)}
-                          className={`px-2.5 sm:px-3 py-1 text-[11px] rounded-md transition-all font-medium whitespace-nowrap ${deFilter === f.v ? 'bg-foreground text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                          className={`px-2.5 sm:px-3 py-1 text-[11px] rounded-md transition-all font-medium whitespace-nowrap ${deFilter === f.v ? 'bg-foreground text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                           data-testid={`de-filter-${f.v}`}
                         >{f.l}{f.v === 'incidents' && (dossierExpressAdmin.stats?.incidents || 0) > 0 ? ` (${dossierExpressAdmin.stats.incidents})` : ''}</button>
                       ))}
@@ -2557,7 +2557,7 @@ export const AdminDashboard = () => {
                           <div className="flex flex-col sm:flex-row sm:items-start gap-2.5 sm:gap-3.5">
                             {/* Top row mobile: icon + name */}
                             <div className="flex items-center gap-2.5 sm:block sm:flex-shrink-0">
-                              <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${d.status === 'completed' ? 'bg-green-100' : d.status === 'error' ? 'bg-red-100' : 'bg-blue-100'}`}>
+                              <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${d.status === 'completed' ? 'bg-green-100' : d.status === 'error' ? 'bg-red-100' : 'bg-blue-100'}`}>
                                 <StatusIcon className={`w-4 h-4 ${sc.iconCls}`} />
                               </div>
                               <span className="font-semibold text-sm truncate sm:hidden">{d.name || d.email}</span>
@@ -2713,7 +2713,7 @@ export const AdminDashboard = () => {
                                 { value: level, label: 'Lisibilité documentaire', cls: levelColor },
                               ].map((m, i) => (
                                 <div key={i} className="text-center p-2.5 rounded-lg bg-background border">
-                                  <span className={`block ${m.cls ? `text-sm font-bold ${m.cls}` : 'text-lg font-bold'}`}>{m.value}</span>
+                                  <span className={`block ${m.cls ? `text-sm font-bold ${m.cls}` : 'text-lg font-bold'}`}>{m.value}</span>
                                   <span className="text-[10px] text-muted-foreground">{m.label}</span>
                                 </div>
                               ))}
@@ -2819,7 +2819,7 @@ export const AdminDashboard = () => {
                                 { label: 'Client', value: dossierViewDialog.name || '—' },
                                 { label: 'Type', value: dossierViewDialog.type_dossier || '—' },
                                 { label: 'Régime', value: dossierViewDialog.regime || '—' },
-                                { label: 'Documents', value: `${dossierViewDialog.document_details?.length || 0} fichier${(dossierViewDialog.document_details?.length || 0) > 1 ? 's' : ''}` },
+                                { label: 'Documents', value: `${dossierViewDialog.document_details?.length || 0} fichier${(dossierViewDialog.document_details?.length || 0) > 1 ? 's' : ''}` },
                               ].map((item, i) => (
                                 <div key={i} className="p-2.5 rounded-lg bg-background border">
                                   <span className="text-muted-foreground block text-[10px]">{item.label}</span>
@@ -2913,7 +2913,7 @@ export const AdminDashboard = () => {
                                 <span className="text-[10px] text-muted-foreground">Pages exploitées</span>
                               </div>
                               <div className="text-center p-2.5 rounded-lg bg-background border">
-                                <span className={`block text-lg font-bold ${pct === 100 ? 'text-emerald-600' : pct >= 50 ? 'text-blue-600' : 'text-amber-600'}`}>{pct}%</span>
+                                <span className={`block text-lg font-bold ${pct === 100 ? 'text-emerald-600' : pct >= 50 ? 'text-blue-600' : 'text-amber-600'}`}>{pct}%</span>
                                 <span className="text-[10px] text-muted-foreground">Extraction réussie</span>
                               </div>
                             </div>
@@ -2986,7 +2986,7 @@ export const AdminDashboard = () => {
                           </Button>
                           <Button size="sm" className="gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white" data-testid="regenerate-and-send-btn"
                             onClick={async () => {
-                              if (!window.confirm(`Envoyer le rapport expert finalisé à ${dossierViewDialog.email} ?`)) return;
+                              if (!window.confirm(`Envoyer le rapport expert finalisé à ${dossierViewDialog.email} ?`)) return;
                               try {
                                 toast.info('Regénération et envoi du PDF...');
                                 const res = await axios.post(`${API}/admin/dossier-express/${dossierViewDialog.id}/regenerate-pdf`, { send_email: true }, axiosConfig);
@@ -3017,12 +3017,12 @@ export const AdminDashboard = () => {
             {/* Sub-tabs: Analytique / Comptabilité */}
             <div className="flex gap-2 border-b" data-testid="analytics-subtabs">
               <button onClick={() => setAnalyticsSubTab('analytics')}
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${(!analyticsSubTab || analyticsSubTab === 'analytics') ? 'border-[#C9A84C] text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${(!analyticsSubTab || analyticsSubTab === 'analytics') ? 'border-[#C9A84C] text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                 data-testid="subtab-analytics">
                 Analytique
               </button>
               <button onClick={() => setAnalyticsSubTab('comptabilite')}
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${analyticsSubTab === 'comptabilite' ? 'border-[#C9A84C] text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${analyticsSubTab === 'comptabilite' ? 'border-[#C9A84C] text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                 data-testid="subtab-comptabilite">
                 Comptabilité
               </button>
@@ -3116,7 +3116,7 @@ export const AdminDashboard = () => {
                             </td>
                             <td className="py-2 px-3"><Badge variant="outline" className="text-[10px]">{doc.category}</Badge></td>
                             <td className="py-2 px-3">
-                              <Badge className={`text-[10px] ${doc.status === 'valide' ? 'bg-green-100 text-green-700' : doc.status === 'illisible' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                              <Badge className={`text-[10px] ${doc.status === 'valide' ? 'bg-green-100 text-green-700' : doc.status === 'illisible' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
                                 {doc.status}
                               </Badge>
                             </td>
@@ -3129,7 +3129,7 @@ export const AdminDashboard = () => {
                                       try {
                                         await axios.patch(`${API}/admin/documents/${doc.id}/status`, { status: 'valide' }, axiosConfig);
                                         toast.success('Document validé + notification envoyée');
-                                        const r = await axios.get(`${API}/admin/documents${docStatusFilter ? `?status=${docStatusFilter}` : ''}`, axiosConfig);
+                                        const r = await axios.get(`${API}/admin/documents${docStatusFilter ? `?status=${docStatusFilter}` : ''}`, axiosConfig);
                                         setAdminDocs(r.data);
                                       } catch { toast.error('Erreur'); }
                                     }}
@@ -3144,7 +3144,7 @@ export const AdminDashboard = () => {
                                       try {
                                         await axios.patch(`${API}/admin/documents/${doc.id}/status`, { status: 'illisible' }, axiosConfig);
                                         toast.success('Document marqué illisible + notification envoyée');
-                                        const r = await axios.get(`${API}/admin/documents${docStatusFilter ? `?status=${docStatusFilter}` : ''}`, axiosConfig);
+                                        const r = await axios.get(`${API}/admin/documents${docStatusFilter ? `?status=${docStatusFilter}` : ''}`, axiosConfig);
                                         setAdminDocs(r.data);
                                       } catch { toast.error('Erreur'); }
                                     }}
@@ -3298,10 +3298,10 @@ export const AdminDashboard = () => {
                             setS3AlertCheck(r.data);
                           } catch { toast.error('Erreur de sauvegarde'); }
                         }}
-                        className={`w-9 h-5 rounded-full transition-colors relative ${s3AlertConfig.enabled ? 'bg-[#0d9488]' : 'bg-gray-300'}`}
+                        className={`w-9 h-5 rounded-full transition-colors relative ${s3AlertConfig.enabled ? 'bg-[#0d9488]' : 'bg-gray-300'}`}
                         data-testid="s3-alert-toggle"
                       >
-                        <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${s3AlertConfig.enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                        <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${s3AlertConfig.enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
                       </button>
                     </div>
                   </div>
@@ -3316,15 +3316,15 @@ export const AdminDashboard = () => {
                             <div className="flex-1 h-3 bg-muted/40 rounded-full overflow-hidden">
                               <div
                                 className={`h-full rounded-full transition-all duration-500 ${
-                                  alert.status === 'exceeded' ? 'bg-red-500' :
-                                  alert.status === 'warning' ? 'bg-amber-500' : 'bg-[#0d9488]'
+                                  alert.status === 'exceeded' ? 'bg-red-500' :
+                                  alert.status === 'warning' ? 'bg-amber-500' : 'bg-[#0d9488]'
                                 }`}
                                 style={{ width: `${Math.min(alert.current_pct, 100)}%` }}
                               />
                             </div>
                             <span className={`text-xs font-bold w-14 ${
-                              alert.status === 'exceeded' ? 'text-red-500' :
-                              alert.status === 'warning' ? 'text-amber-500' : 'text-[#0d9488]'
+                              alert.status === 'exceeded' ? 'text-red-500' :
+                              alert.status === 'warning' ? 'text-amber-500' : 'text-[#0d9488]'
                             }`}>
                               {alert.current_pct}%
                             </span>
@@ -3381,8 +3381,8 @@ export const AdminDashboard = () => {
                             }}
                             className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
                               t.active 
-                                ? 'bg-[#0d9488]/10 border-[#0d9488] text-[#0d9488] font-medium' 
-                                : 'bg-muted/20 border-muted-foreground/20 text-muted-foreground line-through'
+                                ? 'bg-[#0d9488]/10 border-[#0d9488] text-[#0d9488] font-medium' 
+                                : 'bg-muted/20 border-muted-foreground/20 text-muted-foreground line-through'
                             }`}
                             data-testid={`s3-threshold-toggle-${i}`}
                           >
@@ -3563,10 +3563,10 @@ export const AdminDashboard = () => {
                         toast.success(newConfig.enabled ? 'Rapport activé' : 'Rapport désactivé');
                       } catch { toast.error('Erreur'); }
                     }}
-                    className={`w-9 h-5 rounded-full transition-colors relative ${weeklyConfig.enabled ? 'bg-[#0d9488]' : 'bg-gray-300'}`}
+                    className={`w-9 h-5 rounded-full transition-colors relative ${weeklyConfig.enabled ? 'bg-[#0d9488]' : 'bg-gray-300'}`}
                     data-testid="weekly-report-toggle"
                   >
-                    <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${weeklyConfig.enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                    <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${weeklyConfig.enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
                   </button>
                 </div>
 
@@ -3731,7 +3731,7 @@ export const AdminDashboard = () => {
                         if (isNaN(val) || val < 0) { toast.error('Valeur invalide'); return; }
                         try {
                           await axios.put(`${API}/admin/compteur`, { count: val }, axiosConfig);
-                          toast.success(`Compteur mis à jour : ${val.toLocaleString('fr-FR')}+`);
+                          toast.success(`Compteur mis à jour : ${val.toLocaleString('fr-FR')}+`);
                         } catch { toast.error('Erreur lors de la sauvegarde'); }
                       }}
                     >
@@ -3772,7 +3772,7 @@ export const AdminDashboard = () => {
                         if (isNaN(val) || val < 0) { toast.error('Valeur invalide'); return; }
                         try {
                           await axios.put(`${API}/admin/compteur-dossiers`, { base: val }, axiosConfig);
-                          toast.success(`Base dossiers mis à jour : ${val}`);
+                          toast.success(`Base dossiers mis à jour : ${val}`);
                         } catch { toast.error('Erreur lors de la sauvegarde'); }
                       }}
                     >
@@ -3866,12 +3866,12 @@ export const AdminDashboard = () => {
                   {kpiAlerts.alerts?.length > 0 && (
                     <div className="space-y-2" data-testid="kpi-alerts-section">
                       {kpiAlerts.alerts.map((alert, i) => (
-                        <div key={i} className={`flex items-center gap-3 p-3 rounded-lg border ${alert.severity === 'critical' ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'}`}>
-                          <AlertTriangle className={`w-4 h-4 flex-shrink-0 ${alert.severity === 'critical' ? 'text-red-600' : 'text-amber-600'}`} />
+                        <div key={i} className={`flex items-center gap-3 p-3 rounded-lg border ${alert.severity === 'critical' ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'}`}>
+                          <AlertTriangle className={`w-4 h-4 flex-shrink-0 ${alert.severity === 'critical' ? 'text-red-600' : 'text-amber-600'}`} />
                           <div className="flex-1">
-                            <p className={`text-xs font-semibold ${alert.severity === 'critical' ? 'text-red-700' : 'text-amber-700'}`}>{alert.message}</p>
+                            <p className={`text-xs font-semibold ${alert.severity === 'critical' ? 'text-red-700' : 'text-amber-700'}`}>{alert.message}</p>
                           </div>
-                          <Badge variant="outline" className={`text-[10px] ${alert.severity === 'critical' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                          <Badge variant="outline" className={`text-[10px] ${alert.severity === 'critical' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
                             {alert.severity === 'critical' ? 'Critique' : 'Attention'}
                           </Badge>
                         </div>
@@ -3943,7 +3943,7 @@ export const AdminDashboard = () => {
                       {engagementKpis.by_level.map(lvl => (
                         <div key={lvl.level} className="p-3 rounded-lg border">
                           <div className="flex items-center justify-between mb-2">
-                            <Badge variant="outline" className={`text-xs ${lvl.level === 3 ? 'bg-red-100 text-red-700' : lvl.level === 2 ? 'bg-orange-100 text-orange-700' : 'bg-amber-100 text-amber-700'}`}>
+                            <Badge variant="outline" className={`text-xs ${lvl.level === 3 ? 'bg-red-100 text-red-700' : lvl.level === 2 ? 'bg-orange-100 text-orange-700' : 'bg-amber-100 text-amber-700'}`}>
                               {lvl.level === 1 ? 'J+7' : lvl.level === 2 ? 'J+14' : 'J+21'}
                             </Badge>
                             <span className="text-xs text-muted-foreground">{lvl.total} envoyés</span>
@@ -3987,7 +3987,7 @@ export const AdminDashboard = () => {
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">Amélioration</p>
-                        <p className={`text-2xl font-bold ${engagementKpis.completeness_evolution.improvement > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+                        <p className={`text-2xl font-bold ${engagementKpis.completeness_evolution.improvement > 0 ? 'text-green-600' : 'text-gray-400'}`}>
                           {engagementKpis.completeness_evolution.improvement > 0 ? '+' : ''}{engagementKpis.completeness_evolution.improvement}%
                         </p>
                       </div>
@@ -4081,14 +4081,14 @@ export const AdminDashboard = () => {
                               <p className="text-[10px] text-muted-foreground">{n.client_email}</p>
                             </td>
                             <td className="py-2 text-center">
-                              <Badge variant="outline" className={`text-xs ${n.threshold_pct === 100 ? 'bg-green-100 text-green-700' : n.threshold_pct === 80 ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>
+                              <Badge variant="outline" className={`text-xs ${n.threshold_pct === 100 ? 'bg-green-100 text-green-700' : n.threshold_pct === 80 ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>
                                 {n.threshold_pct}%
                               </Badge>
                             </td>
                             <td className="py-2 text-center text-xs font-medium">{n.actual_pct}%</td>
                             <td className="py-2 text-xs">{n.case_type || '—'}</td>
                             <td className="py-2 text-center">
-                              <Badge variant="outline" className={`text-[10px] ${n.status === 'sent' ? 'bg-green-100 text-green-700' : n.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500'}`}>
+                              <Badge variant="outline" className={`text-[10px] ${n.status === 'sent' ? 'bg-green-100 text-green-700' : n.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500'}`}>
                                 {n.status === 'sent' ? 'Envoyé' : n.status === 'failed' ? 'Échoué' : 'Non envoyé'}
                               </Badge>
                             </td>
@@ -4118,7 +4118,7 @@ export const AdminDashboard = () => {
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border bg-muted/30" data-testid="cron-toggle-section">
                       <span className="text-[10px] text-muted-foreground whitespace-nowrap">Cron {cronStatus.hour}h{String(cronStatus.minute).padStart(2,'0')}</span>
                       <button
-                        className={`relative w-9 h-5 rounded-full transition-colors ${cronStatus.enabled ? 'bg-green-500' : 'bg-gray-300'}`}
+                        className={`relative w-9 h-5 rounded-full transition-colors ${cronStatus.enabled ? 'bg-green-500' : 'bg-gray-300'}`}
                         data-testid="cron-toggle-btn"
                         onClick={async () => {
                           const newVal = !cronStatus.enabled;
@@ -4129,7 +4129,7 @@ export const AdminDashboard = () => {
                           } catch { toast.error('Erreur'); }
                         }}
                       >
-                        <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${cronStatus.enabled ? 'left-[18px]' : 'left-0.5'}`} />
+                        <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${cronStatus.enabled ? 'left-[18px]' : 'left-0.5'}`} />
                       </button>
                     </div>
                     <Button
@@ -4245,14 +4245,14 @@ export const AdminDashboard = () => {
                               <p className="text-[10px] text-muted-foreground">{r.client_email}</p>
                             </td>
                             <td className="py-2 text-center">
-                              <Badge variant="outline" className={`text-xs ${r.level === 3 ? 'bg-red-100 text-red-700' : r.level === 2 ? 'bg-orange-100 text-orange-700' : 'bg-amber-100 text-amber-700'}`}>
+                              <Badge variant="outline" className={`text-xs ${r.level === 3 ? 'bg-red-100 text-red-700' : r.level === 2 ? 'bg-orange-100 text-orange-700' : 'bg-amber-100 text-amber-700'}`}>
                                 L{r.level}
                               </Badge>
                             </td>
                             <td className="py-2 text-center text-xs">{r.days_inactive}j</td>
                             <td className="py-2 text-center text-xs font-medium">{r.completeness_pct}%</td>
                             <td className="py-2 text-center">
-                              <Badge variant="outline" className={`text-[10px] ${r.status === 'sent' ? 'bg-green-100 text-green-700' : r.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500'}`}>
+                              <Badge variant="outline" className={`text-[10px] ${r.status === 'sent' ? 'bg-green-100 text-green-700' : r.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500'}`}>
                                 {r.status === 'sent' ? 'Envoyé' : r.status === 'failed' ? 'Échoué' : 'Non envoyé'}
                               </Badge>
                             </td>
@@ -4327,7 +4327,7 @@ export const AdminDashboard = () => {
                         <div className="flex items-center justify-between p-3 bg-muted/30 border-b">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-semibold">{test.name}</span>
-                            <Badge variant="outline" className={`text-[10px] ${test.status === 'active' ? 'bg-green-100 text-green-700' : test.status === 'completed' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
+                            <Badge variant="outline" className={`text-[10px] ${test.status === 'active' ? 'bg-green-100 text-green-700' : test.status === 'completed' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
                               {test.status === 'active' ? 'Actif' : test.status === 'completed' ? 'Terminé' : 'Pausé'}
                             </Badge>
                             {test.promoted_variant && (
@@ -4366,7 +4366,7 @@ export const AdminDashboard = () => {
                               {res.results.map(v => {
                                 const isWinner = res.winner && res.winner.variant === v.variant;
                                 return (
-                                  <div key={v.variant} className={`p-3 rounded-lg border ${isWinner ? 'bg-green-50 border-green-300 ring-2 ring-green-200' : 'bg-white'}`}>
+                                  <div key={v.variant} className={`p-3 rounded-lg border ${isWinner ? 'bg-green-50 border-green-300 ring-2 ring-green-200' : 'bg-white'}`}>
                                     <div className="flex items-center justify-between mb-2">
                                       <span className="text-xs font-semibold capitalize">{v.variant}</span>
                                       {isWinner && <Badge className="text-[9px] bg-green-600 px-1">Meilleur</Badge>}

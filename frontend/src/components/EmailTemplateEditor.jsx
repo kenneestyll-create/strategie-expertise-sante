@@ -257,7 +257,7 @@ export const EmailTemplateEditor = ({ token }) => {
     const newStatus = tpl.status === 'active' ? 'draft' : 'active';
     try {
       await axios.put(`${API}/admin/email-templates/${tpl.id}`, { status: newStatus }, { headers });
-      toast.success(`Template ${newStatus === 'active' ? 'activé' : 'désactivé'}`);
+      toast.success(`Template ${newStatus === 'active' ? 'activé' : 'désactivé'}`);
       fetchTemplates();
     } catch {
       toast.error('Erreur');
@@ -411,7 +411,7 @@ export const EmailTemplateEditor = ({ token }) => {
           {templates.map(tpl => {
             const isEditing = editingId === tpl.id;
             return (
-              <Card key={tpl.id} className={`transition-all ${isEditing ? 'ring-2 ring-amber-400/50' : ''}`} data-testid={`template-card-${tpl.name}`}>
+              <Card key={tpl.id} className={`transition-all ${isEditing ? 'ring-2 ring-amber-400/50' : ''}`} data-testid={`template-card-${tpl.name}`}>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -427,7 +427,7 @@ export const EmailTemplateEditor = ({ token }) => {
                       </CardTitle>
                       <Badge
                         variant="outline"
-                        className={`text-[10px] cursor-pointer select-none ${tpl.status === 'active' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                        className={`text-[10px] cursor-pointer select-none ${tpl.status === 'active' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
                         onClick={() => toggleStatus(tpl)}
                         data-testid={`toggle-status-${tpl.name}`}
                       >
@@ -616,7 +616,7 @@ export const EmailTemplateEditor = ({ token }) => {
             <div>
               <label className="text-xs font-medium text-muted-foreground">Texte de motivation</label>
               <VariableToolbar targetField="new-motivation" onInsert={(v) => insertAtCursor(newMotivationRef, 'motivation', setNewForm, v)} />
-              <Textarea ref={newMotivationRef} value={newForm.motivation} onChange={e => setNewForm(f => ({ ...f, motivation: e.target.value }))} placeholder="Documents manquants : {{documents_missing}}..." className="mt-1 min-h-[60px]" data-testid="new-tpl-motivation" />
+              <Textarea ref={newMotivationRef} value={newForm.motivation} onChange={e => setNewForm(f => ({ ...f, motivation: e.target.value }))} placeholder="Documents manquants : {{documents_missing}}..." className="mt-1 min-h-[60px]" data-testid="new-tpl-motivation" />
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground">Texte du bouton CTA</label>
@@ -696,7 +696,7 @@ export const EmailTemplateEditor = ({ token }) => {
                     {testHistory.slice(0, 5).map((h, i) => (
                       <div key={h.id || i} className="flex items-center justify-between text-[11px] py-1 px-2 rounded bg-muted/40" data-testid={`test-history-item-${i}`}>
                         <div className="flex items-center gap-2">
-                          <span className={`w-1.5 h-1.5 rounded-full ${h.status === 'sent' ? 'bg-green-500' : 'bg-red-400'}`} />
+                          <span className={`w-1.5 h-1.5 rounded-full ${h.status === 'sent' ? 'bg-green-500' : 'bg-red-400'}`} />
                           <span className="text-muted-foreground">{h.email}</span>
                         </div>
                         <span className="text-muted-foreground/70">{formatTimeAgo(h.sent_at)}</span>

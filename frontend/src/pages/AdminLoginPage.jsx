@@ -30,7 +30,7 @@ export const AdminLoginPage = () => {
     try {
       const response = await axios.post(`${API}/auth/login`, { email, password });
       login(response.data.access_token, response.data.admin_name);
-      toast.success(`Bienvenue, ${response.data.admin_name} !`);
+      toast.success(`Bienvenue, ${response.data.admin_name} !`);
       navigate('/admin');
     } catch (error) {
       console.error('Erreur de connexion:', error);

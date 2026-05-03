@@ -46,7 +46,7 @@ const GuideCard = ({ guide }) => {
         category: guide.category,
       });
       setSent(true);
-      toast.success("Guide envoyé ! Le téléchargement va démarrer.");
+      toast.success("Guide envoyé ! Le téléchargement va démarrer.");
       // Auto-download the PDF
       window.open(`${API}/resources/pdf/${guide.id}`, '_blank');
     } catch {
@@ -256,13 +256,13 @@ export const ResourcesPage = () => {
 
   const glossary = [
     { term: "IPP", fullName: "Incapacité Permanente Partielle", definition: "Taux exprimé en pourcentage qui évalue les séquelles définitives d'un accident du travail ou d'une maladie professionnelle." },
-    { term: "IP", fullName: "Incidence Professionnelle", definition: "Poste de préjudice indemnisant les conséquences sur la carrière : pénibilité accrue, dévalorisation, reconversion, perte d'opportunités." },
+    { term: "IP", fullName: "Incidence Professionnelle", definition: "Poste de préjudice indemnisant les conséquences sur la carrière : pénibilité accrue, dévalorisation, reconversion, perte d'opportunités." },
     { term: "PGPF", fullName: "Perte de Gains Professionnels Futurs", definition: "Indemnisation de la perte définitive de revenus après consolidation, calculée par capitalisation selon un barème officiel." },
     { term: "PTIA", fullName: "Perte Totale et Irréversible d'Autonomie", definition: "Garantie d'assurance couvrant l'état d'une personne qui ne peut plus exercer aucune activité professionnelle." },
     { term: "CRRMP", fullName: "Comité Régional de Reconnaissance des MP", definition: "Instance médicale qui statue sur les maladies hors tableau ou ne remplissant pas les conditions d'un tableau." },
     { term: "AT/MP", fullName: "Accident du Travail / Maladie Pro", definition: "Régime de la Sécurité sociale couvrant les accidents du travail et maladies professionnelles." },
     { term: "RQTH", fullName: "Reconnaissance Travailleur Handicapé", definition: "Décision administrative ouvrant des droits spécifiques en matière d'emploi." },
-    { term: "MDPH", fullName: "Maison Départementale PH", definition: "Guichet unique pour toutes les démarches liées au handicap : RQTH, AAH, cartes, PCH, etc." },
+    { term: "MDPH", fullName: "Maison Départementale PH", definition: "Guichet unique pour toutes les démarches liées au handicap : RQTH, AAH, cartes, PCH, etc." },
     { term: "AAH", fullName: "Allocation Adultes Handicapés", definition: "Aide financière pour personnes handicapées (taux d'incapacité ≥ 80%, ou 50-79% avec restriction d'emploi)." },
     { term: "CMI", fullName: "Carte Mobilité Inclusion", definition: "Carte remplaçant les anciennes cartes d'invalidité, de priorité et de stationnement." },
     { term: "PGPA", fullName: "Perte de Gains Professionnels Actuels", definition: "Indemnisation des pertes de revenus entre l'accident et la consolidation (arrêt de travail, mi-temps thérapeutique)." },
@@ -277,7 +277,7 @@ export const ResourcesPage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Ressources et guides" description="Ressources gratuites : IP, PGPF, annuaire MDPH, tableaux des maladies professionnelles, guides pratiques et outils de calcul." path="/ressources" />
+      <SEO title="Ressources et guides" description="Ressources gratuites : IP, PGPF, annuaire MDPH, tableaux des maladies professionnelles, guides pratiques et outils de calcul." path="/ressources" />
       {/* Hero */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
@@ -645,12 +645,12 @@ export const ResourcesPage = () => {
                       {[
                         {
                           title: "Pénibilité accrue",
-                          desc: "La victime peut continuer à travailler mais dans des conditions plus pénibles : efforts supplémentaires, fatigue accrue, douleurs lors de certaines tâches, aménagements nécessaires du poste.",
+                          desc: "La victime peut continuer à travailler mais dans des conditions plus pénibles : efforts supplémentaires, fatigue accrue, douleurs lors de certaines tâches, aménagements nécessaires du poste.",
                           color: "bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-400"
                         },
                         {
                           title: "Dévalorisation sur le marché du travail",
-                          desc: "Le handicap ou les séquelles réduisent l'employabilité de la victime : difficulté à retrouver un emploi équivalent, discrimination à l'embauche, postes accessibles moins nombreux.",
+                          desc: "Le handicap ou les séquelles réduisent l'employabilité de la victime : difficulté à retrouver un emploi équivalent, discrimination à l'embauche, postes accessibles moins nombreux.",
                           color: "bg-orange-500/10 border-orange-500/20 text-orange-700 dark:text-orange-400"
                         },
                         {
@@ -841,7 +841,7 @@ export const ResourcesPage = () => {
                       {[
                         {
                           etape: "1. Projection de carrière",
-                          desc: "Reconstitution du parcours professionnel hypothétique sans l'accident : évolution de poste, augmentations prévues, promotions probables, ancienneté.",
+                          desc: "Reconstitution du parcours professionnel hypothétique sans l'accident : évolution de poste, augmentations prévues, promotions probables, ancienneté.",
                         },
                         {
                           etape: "2. Évolution salariale prévisible",
@@ -849,7 +849,7 @@ export const ResourcesPage = () => {
                         },
                         {
                           etape: "3. Impact du handicap sur les revenus",
-                          desc: "Évaluation de la réduction de revenus causée par les séquelles : temps partiel imposé, poste moins rémunéré, impossibilité de travailler.",
+                          desc: "Évaluation de la réduction de revenus causée par les séquelles : temps partiel imposé, poste moins rémunéré, impossibilité de travailler.",
                         },
                         {
                           etape: "4. Capitalisation",
@@ -917,19 +917,19 @@ export const ResourcesPage = () => {
                       {[
                         {
                           profil: "Salarié du privé — Technicien, 40 ans",
-                          situation: "Salaire net : 2 200 EUR/mois. Après AT grave, reclassé à mi-temps thérapeutique : 1 300 EUR/mois. Perte annuelle : 10 800 EUR.",
+                          situation: "Salaire net : 2 200 EUR/mois. Après AT grave, reclassé à mi-temps thérapeutique : 1 300 EUR/mois. Perte annuelle : 10 800 EUR.",
                           calcul: "10 800 EUR x 19,5 (euro de rente, homme 40 ans) = 210 600 EUR capitalisés",
                           indemnisation: "environ 210 000 EUR"
                         },
                         {
                           profil: "Fonctionnaire — Enseignant, 35 ans",
-                          situation: "Salaire net : 2 500 EUR/mois. Maladie professionnelle, mise en retraite pour invalidité. Pension : 1 400 EUR/mois. Perte annuelle : 13 200 EUR.",
+                          situation: "Salaire net : 2 500 EUR/mois. Maladie professionnelle, mise en retraite pour invalidité. Pension : 1 400 EUR/mois. Perte annuelle : 13 200 EUR.",
                           calcul: "13 200 EUR x 22,1 (euro de rente, homme 35 ans) = 291 720 EUR capitalisés",
                           indemnisation: "environ 290 000 EUR"
                         },
                         {
                           profil: "Indépendant — Artisan plombier, 48 ans",
-                          situation: "Revenu moyen : 3 500 EUR/mois. TMS invalidant, ne peut plus exercer. Revenu après reconversion : 1 800 EUR/mois. Perte annuelle : 20 400 EUR.",
+                          situation: "Revenu moyen : 3 500 EUR/mois. TMS invalidant, ne peut plus exercer. Revenu après reconversion : 1 800 EUR/mois. Perte annuelle : 20 400 EUR.",
                           calcul: "20 400 EUR x 15,8 (euro de rente, homme 48 ans) = 322 320 EUR capitalisés",
                           indemnisation: "environ 320 000 EUR"
                         }
@@ -1025,7 +1025,7 @@ export const ResourcesPage = () => {
                           color: "green"
                         }
                       ].map((carte, i) => (
-                        <div key={i} className={`p-5 rounded-xl border-2 border-${carte.color === 'red' ? 'red' : carte.color === 'blue' ? 'blue' : 'green'}-200/50 bg-${carte.color === 'red' ? 'red' : carte.color === 'blue' ? 'blue' : 'green'}-50/30`} data-testid={`cmi-${carte.color}`}>
+                        <div key={i} className={`p-5 rounded-xl border-2 border-${carte.color === 'red' ? 'red' : carte.color === 'blue' ? 'blue' : 'green'}-200/50 bg-${carte.color === 'red' ? 'red' : carte.color === 'blue' ? 'blue' : 'green'}-50/30`} data-testid={`cmi-${carte.color}`}>
                           <h4 className="font-semibold text-lg mb-2">{carte.type}</h4>
                           <p className="text-sm text-muted-foreground mb-3 pb-3 border-b border-border/50">
                             <strong>Condition :</strong> {carte.condition}
@@ -1065,31 +1065,31 @@ export const ResourcesPage = () => {
                           id: "aide-technique",
                           title: "Aides techniques",
                           condition: "Nécessité d'un équipement pour compenser le handicap",
-                          content: "Financement d'équipements : fauteuil roulant, prothèses auditives, appareils de verticalisation, aides à la communication, matériel informatique adapté, etc. La PCH prend en charge jusqu'à 75% du coût avec un plafond triennal."
+                          content: "Financement d'équipements : fauteuil roulant, prothèses auditives, appareils de verticalisation, aides à la communication, matériel informatique adapté, etc. La PCH prend en charge jusqu'à 75% du coût avec un plafond triennal."
                         },
                         {
                           id: "aménagément-logement",
                           title: "Aménagement du logement",
                           condition: "Nécessité d'adapter le domicile au handicap",
-                          content: "Travaux d'accessibilité : rampe d'accès, douche à l'italienne, monte-escalier, élargissement de portes, domotique. Prise en charge jusqu'à 10 000 € sur 10 ans (ou 50% du coût au-delà)."
+                          content: "Travaux d'accessibilité : rampe d'accès, douche à l'italienne, monte-escalier, élargissement de portes, domotique. Prise en charge jusqu'à 10 000 € sur 10 ans (ou 50% du coût au-delà)."
                         },
                         {
                           id: "aménagément-vehicule",
                           title: "Aménagement du véhicule",
                           condition: "Nécessité d'adapter le véhicule ou surcoût de transport",
-                          content: "Adaptation du poste de conduite, boîte automatique, rampe d'accès. Prise en charge jusqu'à 5 000 € sur 5 ans. Surcoûts de transport : 200 €/mois (ou 12 000 € sur 5 ans)."
+                          content: "Adaptation du poste de conduite, boîte automatique, rampe d'accès. Prise en charge jusqu'à 5 000 € sur 5 ans. Surcoûts de transport : 200 €/mois (ou 12 000 € sur 5 ans)."
                         },
                         {
                           id: "aide-animaliere",
                           title: "Aide animalière",
                           condition: "Recours à un animal d'assistance (chien guide, chien d'aide)",
-                          content: "Prise en charge des frais liés à l'animal d'assistance : acquisition, entretien, nourriture, soins vétérinaires. Montant forfaitaire de 50 €/mois (3 000 € sur 5 ans)."
+                          content: "Prise en charge des frais liés à l'animal d'assistance : acquisition, entretien, nourriture, soins vétérinaires. Montant forfaitaire de 50 €/mois (3 000 € sur 5 ans)."
                         },
                         {
                           id: "charges-specifiques",
                           title: "Charges spécifiques et exceptionnelles",
                           condition: "Dépenses permanentes ou ponctuelles liées au handicap",
-                          content: "Charges spécifiques (récurrentes) : couches, protections, alimentation spéciale — jusqu'à 100 €/mois. Charges exceptionnelles (ponctuelles) : réparation de matériel, frais de formation — jusqu'à 1 800 € sur 3 ans."
+                          content: "Charges spécifiques (récurrentes) : couches, protections, alimentation spéciale — jusqu'à 100 €/mois. Charges exceptionnelles (ponctuelles) : réparation de matériel, frais de formation — jusqu'à 1 800 € sur 3 ans."
                         }
                       ].map(aide => (
                         <AccordionItem key={aide.id} value={aide.id} data-testid={`aide-${aide.id}`}>
@@ -1225,10 +1225,10 @@ export const ResourcesPage = () => {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {[
-              { id: 'guide_mp', title: "Déclarer une maladie professionnelle", description: "Feuille de route complète : éligibilité, CMI, dossier CPAM, instruction et indemnisation.", category: "Maladie professionnelle" },
-              { id: 'guide_expertise', title: "Se préparer à une expertise médicale", description: "Check-list complète : documents, doléances, accompagnement et suivi post-expertise.", category: "Expertise médicale" },
+              { id: 'guide_mp', title: "Déclarer une maladie professionnelle", description: "Feuille de route complète : éligibilité, CMI, dossier CPAM, instruction et indemnisation.", category: "Maladie professionnelle" },
+              { id: 'guide_expertise', title: "Se préparer à une expertise médicale", description: "Check-list complète : documents, doléances, accompagnement et suivi post-expertise.", category: "Expertise médicale" },
               { id: 'guide_mdph', title: "Constituer un dossier MDPH", description: "Formulaires, projet de vie, certificat médical et stratégie de recours.", category: "MDPH" },
-              { id: 'guide_recours', title: "Contester un refus", description: "Stratégie étape par étape : CRA, RAPO, médiateur et tribunal judiciaire.", category: "Recours" },
+              { id: 'guide_recours', title: "Contester un refus", description: "Stratégie étape par étape : CRA, RAPO, médiateur et tribunal judiciaire.", category: "Recours" },
               { id: 'guide_ipp', title: "Comprendre le taux d'IPP", description: "Barème 2025, calcul de la rente, exemples concrets et contestation.", category: "Accident du travail" },
               { id: 'guide_assurance', title: "Activer sa protection juridique", description: "Où trouver sa PJ, déclaration du litige, choix de l'avocat et plafonds.", category: "Assurances" }
             ].map(g => (

@@ -49,7 +49,7 @@ export const EntreprisesPage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Entreprises — Sensibilisation AT/MP et maladies professionnelles" description="Formations et sensibilisation pour les entreprises : gestion des accidents du travail, maladies professionnelles, prévention des risques. Formats adaptés à vos équipes." path="/entreprises" />
+      <SEO title="Entreprises — Sensibilisation AT/MP et maladies professionnelles" description="Formations et sensibilisation pour les entreprises : gestion des accidents du travail, maladies professionnelles, prévention des risques. Formats adaptés à vos équipes." path="/entreprises" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
@@ -237,15 +237,15 @@ export const EntreprisesPage = () => {
 
 const entreprisesFaqData = [
   {
-    question: "Une entreprise peut-elle contester une maladie professionnelle ?",
+    question: "Une entreprise peut-elle contester une maladie professionnelle ?",
     answer: "Oui, il est possible de contester une reconnaissance de maladie professionnelle, notamment en apportant des éléments médicaux et techniques précis."
   },
   {
-    question: "Pourquoi préparer une expertise médicale côté entreprise ?",
+    question: "Pourquoi préparer une expertise médicale côté entreprise ?",
     answer: "Une préparation en amont permet d'anticiper les enjeux, de structurer les arguments et d'éviter les décisions défavorables."
   },
   {
-    question: "Quels sont les risques pour l'entreprise ?",
+    question: "Quels sont les risques pour l'entreprise ?",
     answer: "Les enjeux peuvent être financiers, organisationnels et humains, notamment en cas de reconnaissance d'une maladie professionnelle ou d'un accident du travail."
   }
 ];
@@ -286,7 +286,7 @@ const EntreprisesFAQ = () => {
                 data-testid={`entreprises-faq-${i}`}
               >
                 <span className="font-medium text-sm text-foreground pr-4">{faq.question}</span>
-                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
               </button>
               {openIndex === i && (
                 <div className="px-4 pb-4">

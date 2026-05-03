@@ -99,11 +99,11 @@ export const ProgressDashboard = ({ token }) => {
                   <span className="text-xs text-muted-foreground">Complétude documentaire</span>
                   <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all duration-700 ${completeness_pct >= 80 ? 'bg-green-500' : completeness_pct >= 50 ? 'bg-amber-500' : 'bg-red-400'}`}
+                      className={`h-full rounded-full transition-all duration-700 ${completeness_pct >= 80 ? 'bg-green-500' : completeness_pct >= 50 ? 'bg-amber-500' : 'bg-red-400'}`}
                       style={{ width: `${completeness_pct}%` }}
                     />
                   </div>
-                  <span className={`text-xs font-semibold ${completeness_pct >= 80 ? 'text-green-600' : completeness_pct >= 50 ? 'text-amber-600' : 'text-red-500'}`} data-testid="completeness-pct">
+                  <span className={`text-xs font-semibold ${completeness_pct >= 80 ? 'text-green-600' : completeness_pct >= 50 ? 'text-amber-600' : 'text-red-500'}`} data-testid="completeness-pct">
                     {completeness_pct}%
                   </span>
                 </div>
@@ -179,18 +179,18 @@ export const ProgressDashboard = ({ token }) => {
                 return (
                   <div
                     key={i}
-                    className={`flex items-center justify-between gap-3 p-3 rounded-lg border ${isUrgent ? 'bg-orange-50 border-orange-200' : 'bg-blue-50 border-blue-200'}`}
+                    className={`flex items-center justify-between gap-3 p-3 rounded-lg border ${isUrgent ? 'bg-orange-50 border-orange-200' : 'bg-blue-50 border-blue-200'}`}
                     data-testid={`next-action-${i}`}
                   >
                     <div className="min-w-0">
-                      <p className={`text-xs font-semibold ${isUrgent ? 'text-orange-700' : 'text-blue-700'}`}>
+                      <p className={`text-xs font-semibold ${isUrgent ? 'text-orange-700' : 'text-blue-700'}`}>
                         {i + 1}. {action.label}
                       </p>
                       <p className="text-[10px] text-muted-foreground truncate">{action.detail}</p>
                     </div>
                     {action.cta && action.cta_link && (
                       <Link to={action.cta_link}>
-                        <Button size="sm" className={`h-7 px-3 text-[10px] rounded-full whitespace-nowrap gap-1 ${isUrgent ? 'bg-orange-600 hover:bg-orange-700' : 'bg-blue-600 hover:bg-blue-700'}`} data-testid={`action-cta-${i}`}>
+                        <Button size="sm" className={`h-7 px-3 text-[10px] rounded-full whitespace-nowrap gap-1 ${isUrgent ? 'bg-orange-600 hover:bg-orange-700' : 'bg-blue-600 hover:bg-blue-700'}`} data-testid={`action-cta-${i}`}>
                           {action.cta}
                           <ArrowRight className="w-3 h-3" />
                         </Button>
@@ -222,7 +222,7 @@ export const ProgressDashboard = ({ token }) => {
                     </div>
                     {!isLast && <div className="w-0.5 flex-1 bg-border my-1" />}
                   </div>
-                  <div className={`flex-1 pb-3 ${isLast ? '' : 'border-b border-transparent'}`}>
+                  <div className={`flex-1 pb-3 ${isLast ? '' : 'border-b border-transparent'}`}>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium">{step.label}</span>
                       <Badge variant="outline" className={`text-[9px] px-1.5 ${config.bg} ${config.text} border-0`}>{config.label}</Badge>

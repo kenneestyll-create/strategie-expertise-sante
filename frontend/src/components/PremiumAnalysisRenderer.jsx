@@ -96,7 +96,7 @@ export const PremiumAnalysisRenderer = ({ markdown, testIdPrefix = 'premium-sect
         const isPremium = section.config?.premium;
 
         return (
-          <Card key={idx} className={`${border} ${isPremium ? 'ring-1 ring-accent/10' : ''} overflow-hidden`} data-testid={`${testIdPrefix}-${idx}`}>
+          <Card key={idx} className={`${border} ${isPremium ? 'ring-1 ring-accent/10' : ''} overflow-hidden`} data-testid={`${testIdPrefix}-${idx}`}>
             <CardContent className="p-0">
               {/* Section header */}
               <div className={`flex items-center gap-2.5 px-5 py-3 ${bg} border-b ${border}`}>

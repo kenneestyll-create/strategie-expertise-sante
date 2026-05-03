@@ -24,7 +24,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const LockIndicator = ({ lock }) => {
   const passed = lock.passed;
   return (
-    <div className={`flex items-center gap-3 p-3 rounded-lg border ${passed ? 'border-emerald-200 bg-emerald-50/30' : 'border-red-200 bg-red-50/30'}`}
+    <div className={`flex items-center gap-3 p-3 rounded-lg border ${passed ? 'border-emerald-200 bg-emerald-50/30' : 'border-red-200 bg-red-50/30'}`}
       data-testid={`v2-lock-${lock.id}`}>
       {passed ? <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" /> : <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />}
       <div className="flex-1 min-w-0">
@@ -113,7 +113,7 @@ export const AdminPredictiveV2 = ({ axiosConfig }) => {
 
   const handleActivateFinal = async () => {
     if (confirmText !== 'ACTIVER V2') {
-      toast.error('Saisissez exactement : ACTIVER V2');
+      toast.error('Saisissez exactement : ACTIVER V2');
       return;
     }
     setActivating(true);
@@ -187,7 +187,7 @@ export const AdminPredictiveV2 = ({ axiosConfig }) => {
   return (
     <div className="space-y-6" data-testid="v2-predictive-panel">
       {/* ===== HEADER + MASTER SWITCH ===== */}
-      <Card className={`border-2 ${isEnabled ? 'border-emerald-300' : 'border-muted'}`} data-testid="v2-master-switch">
+      <Card className={`border-2 ${isEnabled ? 'border-emerald-300' : 'border-muted'}`} data-testid="v2-master-switch">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
@@ -386,7 +386,7 @@ export const AdminPredictiveV2 = ({ axiosConfig }) => {
                 </div>
                 <div className="space-y-2">
                   {sandboxResult.v2_result.alerts.map((a, i) => (
-                    <div key={i} className={`p-2.5 rounded-lg border text-xs ${a.severity === 'critique' ? 'border-red-300 bg-red-50/30' : a.severity === 'haute' ? 'border-amber-300 bg-amber-50/30' : 'border-muted'}`}>
+                    <div key={i} className={`p-2.5 rounded-lg border text-xs ${a.severity === 'critique' ? 'border-red-300 bg-red-50/30' : a.severity === 'haute' ? 'border-amber-300 bg-amber-50/30' : 'border-muted'}`}>
                       <div className="flex items-center gap-2 mb-0.5">
                         <Badge variant="outline" className="text-[9px]">{a.severity}</Badge>
                         <span className="font-medium">{a.label}</span>
@@ -508,7 +508,7 @@ export const AdminPredictiveV2 = ({ axiosConfig }) => {
                       <span className="text-muted-foreground">{log.admin_email}</span>
                       {log.details && Object.keys(log.details).length > 0 && (
                         <span className="ml-2 text-[10px] text-muted-foreground">
-                          {Object.entries(log.details).slice(0, 3).map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`).join(' | ')}
+                          {Object.entries(log.details).slice(0, 3).map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`).join(' | ')}
                         </span>
                       )}
                     </div>
@@ -563,7 +563,7 @@ export const AdminPredictiveV2 = ({ axiosConfig }) => {
             <DialogTitle className="flex items-center gap-2"><Lock className="w-5 h-5 text-red-500" /> Activation V2 — Etape 3/3</DialogTitle>
             <DialogDescription>Saisissez exactement <strong>ACTIVER V2</strong> pour confirmer l'activation.</DialogDescription>
           </DialogHeader>
-          <Input value={confirmText} onChange={e => setConfirmText(e.target.value)} placeholder="Tapez : ACTIVER V2"
+          <Input value={confirmText} onChange={e => setConfirmText(e.target.value)} placeholder="Tapez : ACTIVER V2"
             className="font-mono text-center" data-testid="v2-activate-confirm-input" />
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowActivateStep3(false); setConfirmText(''); }}>Annuler</Button>

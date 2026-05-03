@@ -108,10 +108,10 @@ const formatSize = (bytes) => {
 const validateFile = (file) => {
   const ext = '.' + file.name.split('.').pop().toLowerCase();
   if (!ACCEPTED_EXTENSIONS.includes(ext)) {
-    return { valid: false, error: `Format "${ext}" non accepte. Formats autorises : PDF, JPG, PNG, DOCX, XLSX.` };
+    return { valid: false, error: `Format "${ext}" non accepte. Formats autorises : PDF, JPG, PNG, DOCX, XLSX.` };
   }
   if (file.size > MAX_SIZE) {
-    return { valid: false, error: `Fichier trop volumineux (${formatSize(file.size)}). Taille maximale : 50 Mo. Veuillez reduire la taille du fichier ou le compresser.` };
+    return { valid: false, error: `Fichier trop volumineux (${formatSize(file.size)}). Taille maximale : 50 Mo. Veuillez reduire la taille du fichier ou le compresser.` };
   }
   if (file.size < 100) {
     return { valid: false, error: 'Ce document semble illisible ou corrompu. Merci de le scanner a nouveau en haute qualité.' };
@@ -266,7 +266,7 @@ const QualityChecklist = ({ checks, onChange }) => {
             onChange={e => onChange({ ...checks, [item.key]: e.target.checked })}
             className="w-4 h-4 accent-accent rounded"
           />
-          <span className={`text-sm transition-colors ${checks[item.key] ? 'text-foreground' : 'text-muted-foreground'}`}>{item.label}</span>
+          <span className={`text-sm transition-colors ${checks[item.key] ? 'text-foreground' : 'text-muted-foreground'}`}>{item.label}</span>
           {checks[item.key] && <CheckCircle className="w-3.5 h-3.5 text-green-500 ml-auto" />}
         </label>
       ))}
@@ -323,12 +323,12 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
 
       const result = validateFile(processedFile);
       if (!result.valid) {
-        newErrors.push(`${file.name} : ${result.error}`);
+        newErrors.push(`${file.name} : ${result.error}`);
         continue;
       }
       const newTotal = currentTotalSize + validFiles.reduce((s, f) => s + f.size, 0) + processedFile.size;
       if (newTotal > MAX_TOTAL_SIZE) {
-        newErrors.push(`Taille totale dépassée (limite : ${formatSize(MAX_TOTAL_SIZE)}). Le fichier "${file.name}" (${formatSize(file.size)}) n'a pas été ajouté.`);
+        newErrors.push(`Taille totale dépassée (limite : ${formatSize(MAX_TOTAL_SIZE)}). Le fichier "${file.name}" (${formatSize(file.size)}) n'a pas été ajouté.`);
         continue;
       }
       processedFile._validated = false;
@@ -502,7 +502,7 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
       <div className="flex gap-2">
         <div
           ref={dropzoneRef}
-          className={`flex-1 border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200 cursor-pointer relative ${dragOver ? 'border-accent bg-accent/5 scale-[1.01] ring-2 ring-accent/20' : 'border-border hover:border-accent/50'}`}
+          className={`flex-1 border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200 cursor-pointer relative ${dragOver ? 'border-accent bg-accent/5 scale-[1.01] ring-2 ring-accent/20' : 'border-border hover:border-accent/50'}`}
           onClick={handleDropzoneClick}
           data-testid="upload-dropzone"
         >

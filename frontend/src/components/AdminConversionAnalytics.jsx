@@ -90,7 +90,7 @@ export const AdminConversionAnalytics = ({ axiosConfig }) => {
             <button
               key={p.v}
               onClick={() => setPeriod(p.v)}
-              className={`px-2.5 py-1 text-[11px] rounded-md transition-colors ${period === p.v ? 'bg-background shadow text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`px-2.5 py-1 text-[11px] rounded-md transition-colors ${period === p.v ? 'bg-background shadow text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'}`}
               data-testid={`conv-period-${p.v}`}
             >
               {p.l}

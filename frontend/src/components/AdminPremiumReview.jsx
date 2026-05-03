@@ -83,7 +83,7 @@ export const AdminPremiumReview = ({ items, stats, productType, productLabel, ic
             </div>
           </CardContent>
         </Card>
-        <Card className={`border-amber-200/60 hover:shadow-sm transition-shadow ${filteredStats.en_attente > 0 ? 'ring-1 ring-amber-200/50' : ''}`}>
+        <Card className={`border-amber-200/60 hover:shadow-sm transition-shadow ${filteredStats.en_attente > 0 ? 'ring-1 ring-amber-200/50' : ''}`}>
           <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div>
@@ -158,7 +158,7 @@ export const AdminPremiumReview = ({ items, stats, productType, productLabel, ic
                   <div className="flex flex-col sm:flex-row sm:items-start gap-2.5 sm:gap-3.5">
                     {/* Top row on mobile: icon + email + status */}
                     <div className="flex items-center gap-2.5 sm:block sm:flex-shrink-0">
-                      <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${item.status === 'en_attente' ? 'bg-amber-100' : item.status === 'en_cours' ? 'bg-blue-100' : item.status === 'valide' ? 'bg-green-100' : 'bg-emerald-100'}`}>
+                      <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${item.status === 'en_attente' ? 'bg-amber-100' : item.status === 'en_cours' ? 'bg-blue-100' : item.status === 'valide' ? 'bg-green-100' : 'bg-emerald-100'}`}>
                         {item.status === 'en_attente' && <Clock className="w-4 h-4 text-amber-600" />}
                         {item.status === 'en_cours' && <PenTool className="w-4 h-4 text-blue-600" />}
                         {item.status === 'valide' && <CheckCircle className="w-4 h-4 text-green-600" />}
@@ -236,7 +236,7 @@ export const AdminPremiumReview = ({ items, stats, productType, productLabel, ic
                           <Eye className="w-3 h-3" /> <span className="hidden sm:inline">Consulter</span><span className="sm:hidden">Voir</span>
                         </Button>
                       )}
-                      <Button size="sm" variant="outline" className={`text-xs h-8 sm:h-7 gap-1 ${item.client_notified ? 'border-green-500/30 text-green-600' : 'border-accent/30 text-accent hover:bg-accent/5'}`}
+                      <Button size="sm" variant="outline" className={`text-xs h-8 sm:h-7 gap-1 ${item.client_notified ? 'border-green-500/30 text-green-600' : 'border-accent/30 text-accent hover:bg-accent/5'}`}
                         onClick={async () => {
                           const notifType = item.status === 'envoye' ? 'report_ready' : item.status === 'valide' ? 'analyse_premium_ready' : item.status === 'en_cours' ? 'dossier_in_progress' : 'payment_confirmed';
                           try {
@@ -256,7 +256,7 @@ export const AdminPremiumReview = ({ items, stats, productType, productLabel, ic
                       )}
                       <Button size="sm" variant="ghost" className="text-xs h-8 sm:h-7 w-8 sm:w-7 p-0 text-muted-foreground/50 hover:text-red-600 hover:bg-red-50"
                         onClick={() => {
-                          if (window.confirm(`Supprimer le dossier de ${item.name || item.email} ? Cette action est irréversible.`)) {
+                          if (window.confirm(`Supprimer le dossier de ${item.name || item.email} ? Cette action est irréversible.`)) {
                             axios.delete(`${API}/admin/premium-analyses/${item.id}`, axiosConfig)
                               .then(() => { toast.success('Dossier supprimé'); onRefresh(); })
                               .catch(() => toast.error('Erreur lors de la suppression'));

@@ -197,7 +197,7 @@ export const AdminStrategicFeedback = ({ axiosConfig }) => {
                   <div className="space-y-1.5">
                     {synthesis.irritants.map((item, i) => (
                       <div key={i} className="flex items-start gap-2 p-2 rounded-lg border text-xs" data-testid={`synthesis-irritant-${i}`}>
-                        <Badge variant="outline" className={`text-[9px] flex-shrink-0 ${item.signal === 'fort' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                        <Badge variant="outline" className={`text-[9px] flex-shrink-0 ${item.signal === 'fort' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
                           {item.signal === 'fort' ? 'SIGNAL FORT' : 'Bruit'}
                         </Badge>
                         <div className="flex-1 min-w-0">
@@ -228,7 +228,7 @@ export const AdminStrategicFeedback = ({ axiosConfig }) => {
                   <div className="space-y-1.5">
                     {synthesis.besoins.map((item, i) => (
                       <div key={i} className="flex items-start gap-2 p-2 rounded-lg border text-xs" data-testid={`synthesis-besoin-${i}`}>
-                        <Badge variant="outline" className={`text-[9px] flex-shrink-0 ${item.signal === 'fort' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                        <Badge variant="outline" className={`text-[9px] flex-shrink-0 ${item.signal === 'fort' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
                           {item.signal === 'fort' ? 'SIGNAL FORT' : 'Bruit'}
                         </Badge>
                         <div className="flex-1 min-w-0">

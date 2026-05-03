@@ -6,17 +6,17 @@ export const PolitiqueConfidentialitePage = () => {
   const sections = [
     {
       icon: Users, title: "1. Responsable du traitement",
-      content: "Le responsable du traitement des données personnelles est Stratégie & Expertise Santé, service exploité par KAPSULES KORPORATION, entreprise individuelle immatriculée au RCS de Chartres sous le numéro 824 339 584, dont le siège est situé au 4 Rue de la Corne du Parc, 28310 Janville-en-Beauce. Pour toute question relative à la protection de vos données, vous pouvez nous contacter à l'adresse : contact@strategie-expertise-sante.fr."
+      content: "Le responsable du traitement des données personnelles est Stratégie & Expertise Santé, service exploité par KAPSULES KORPORATION, entreprise individuelle immatriculée au RCS de Chartres sous le numéro 824 339 584, dont le siège est situé au 4 Rue de la Corne du Parc, 28310 Janville-en-Beauce. Pour toute question relative à la protection de vos données, vous pouvez nous contacter à l'adresse : contact@strategie-expertise-sante.fr."
     },
     {
       icon: FileText, title: "2. Données collectées",
       content: null,
       list: [
-        "Données d'identification : nom, prénom, adresse email, numéro de téléphone",
-        "Données relatives à votre situation : type de dossier, régime, description de votre situation",
-        "Documents transmis : documents médicaux, administratifs et juridiques que vous choisissez de nous transmettre",
-        "Données de navigation : adresse IP, cookies techniques, pages visitées (à des fins d'amélioration du service)",
-        "Données de santé : informations médicales transmises volontairement dans le cadre de l'accompagnement"
+        "Données d'identification : nom, prénom, adresse email, numéro de téléphone",
+        "Données relatives à votre situation : type de dossier, régime, description de votre situation",
+        "Documents transmis : documents médicaux, administratifs et juridiques que vous choisissez de nous transmettre",
+        "Données de navigation : adresse IP, cookies techniques, pages visitées (à des fins d'amélioration du service)",
+        "Données de santé : informations médicales transmises volontairement dans le cadre de l'accompagnement"
       ]
     },
     {
@@ -33,7 +33,7 @@ export const PolitiqueConfidentialitePage = () => {
     },
     {
       icon: Lock, title: "4. Base légale du traitement",
-      content: "Le traitement de vos données repose sur : votre consentement explicite (article 6.1.a du RGPD), notamment pour les données de santé qui font l'objet d'un consentement spécifique ; l'exécution du contrat de service (article 6.1.b) ; nos intérêts légitimes (article 6.1.f) pour l'amélioration de nos services."
+      content: "Le traitement de vos données repose sur : votre consentement explicite (article 6.1.a du RGPD), notamment pour les données de santé qui font l'objet d'un consentement spécifique ; l'exécution du contrat de service (article 6.1.b) ; nos intérêts légitimes (article 6.1.f) pour l'amélioration de nos services."
     },
     {
       icon: Shield, title: "5. Données de santé — Protection renforcée",
@@ -55,36 +55,36 @@ export const PolitiqueConfidentialitePage = () => {
       icon: Clock, title: "7. Durée de conservation",
       content: null,
       list: [
-        "Fichiers originaux transmis (Dossier Express IA) : non conservés après extraction du texte",
-        "Texte extrait des documents : conservé pendant la durée du traitement, puis automatiquement purgé 30 jours après la finalisation du rapport",
-        "Rapport d'analyse généré : conservé pendant la durée de la relation contractuelle",
-        "Documents de l'Espace Client : conservés tant que votre compte est actif, supprimables à votre demande",
-        "Données de compte et de dossier : conservées pendant la durée de la relation, puis 3 ans après le dernier contact",
-        "Données de navigation : 13 mois maximum",
-        "Données de facturation : 10 ans (obligation légale)"
+        "Fichiers originaux transmis (Dossier Express IA) : non conservés après extraction du texte",
+        "Texte extrait des documents : conservé pendant la durée du traitement, puis automatiquement purgé 30 jours après la finalisation du rapport",
+        "Rapport d'analyse généré : conservé pendant la durée de la relation contractuelle",
+        "Documents de l'Espace Client : conservés tant que votre compte est actif, supprimables à votre demande",
+        "Données de compte et de dossier : conservées pendant la durée de la relation, puis 3 ans après le dernier contact",
+        "Données de navigation : 13 mois maximum",
+        "Données de facturation : 10 ans (obligation légale)"
       ]
     },
     {
       icon: Server, title: "8. Destinataires et sous-traitants",
-      content: "Vos données personnelles sont accessibles uniquement à l'équipe restreinte de Stratégie & Expertise Santé dans le cadre de votre accompagnement. Elles ne sont jamais vendues ni cédées. Les sous-traitants techniques suivants peuvent y avoir accès dans le cadre strict de la fourniture du service :",
+      content: "Vos données personnelles sont accessibles uniquement à l'équipe restreinte de Stratégie & Expertise Santé dans le cadre de votre accompagnement. Elles ne sont jamais vendues ni cédées. Les sous-traitants techniques suivants peuvent y avoir accès dans le cadre strict de la fourniture du service :",
       list: [
-        "Anthropic (États-Unis) : traitement du texte extrait pour la génération des rapports d'analyse IA",
-        "Vercel Inc. (États-Unis) : hébergement de l'application web",
-        "Resend : envoi des emails transactionnels (confirmation, livraison de rapport)",
-        "Stripe : traitement sécurisé des paiements (Stripe ne reçoit aucune donnée médicale)"
+        "Anthropic (États-Unis) : traitement du texte extrait pour la génération des rapports d'analyse IA",
+        "Vercel Inc. (États-Unis) : hébergement de l'application web",
+        "Resend : envoi des emails transactionnels (confirmation, livraison de rapport)",
+        "Stripe : traitement sécurisé des paiements (Stripe ne reçoit aucune donnée médicale)"
       ],
       footer: "Ces sous-traitants sont tenus contractuellement au respect de la confidentialité et du RGPD."
     },
     {
       icon: Trash2, title: "9. Vos droits",
-      content: "Conformément au RGPD, vous disposez des droits suivants :",
+      content: "Conformément au RGPD, vous disposez des droits suivants :",
       list: [
-        "Droit d'accès : obtenir une copie de vos données personnelles",
-        "Droit de rectification : corriger des données inexactes ou incomplètes",
-        "Droit à l'effacement : demander la suppression de vos données",
+        "Droit d'accès : obtenir une copie de vos données personnelles",
+        "Droit de rectification : corriger des données inexactes ou incomplètes",
+        "Droit à l'effacement : demander la suppression de vos données",
         "Droit à la limitation du traitement",
-        "Droit à la portabilité : recevoir vos données dans un format structuré",
-        "Droit d'opposition : vous opposer au traitement de vos données",
+        "Droit à la portabilité : recevoir vos données dans un format structuré",
+        "Droit d'opposition : vous opposer au traitement de vos données",
         "Droit de retirer votre consentement à tout moment"
       ],
       footer: "Pour exercer ces droits, contactez-nous à contact@strategie-expertise-sante.fr. Nous répondrons dans un délai de 30 jours. En cas de litige, vous pouvez introduire une réclamation auprès de la CNIL (www.cnil.fr)."
@@ -104,11 +104,11 @@ export const PolitiqueConfidentialitePage = () => {
     },
     {
       icon: Mail, title: "11. Contact",
-      content: "Pour toute question relative à la protection de vos données personnelles ou pour exercer vos droits, contactez-nous : Email : contact@strategie-expertise-sante.fr. Nous nous engageons à traiter votre demande avec diligence et confidentialité."
+      content: "Pour toute question relative à la protection de vos données personnelles ou pour exercer vos droits, contactez-nous : Email : contact@strategie-expertise-sante.fr. Nous nous engageons à traiter votre demande avec diligence et confidentialité."
     },
     {
       icon: TrendingUp, title: "12. Amélioration du service et réutilisation limitée de données anonymisées",
-      content: "Dans une logique d'amélioration continue de la qualité du service, Stratégie & Expertise Santé peut analyser certains schémas récurrents, tendances documentaires, logiques de blocage, motifs de refus, leviers procéduraux ou configurations de dossier, uniquement après anonymisation stricte et irréversible lorsque cela est techniquement et juridiquement possible. Les données ainsi exploitées le sont exclusivement afin de : renforcer la qualité d'analyse ; améliorer la structuration des réponses ; affiner les cas-types et matrices de lecture ; améliorer la cohérence stratégique et documentaire du service.",
+      content: "Dans une logique d'amélioration continue de la qualité du service, Stratégie & Expertise Santé peut analyser certains schémas récurrents, tendances documentaires, logiques de blocage, motifs de refus, leviers procéduraux ou configurations de dossier, uniquement après anonymisation stricte et irréversible lorsque cela est techniquement et juridiquement possible. Les données ainsi exploitées le sont exclusivement afin de : renforcer la qualité d'analyse ; améliorer la structuration des réponses ; affiner les cas-types et matrices de lecture ; améliorer la cohérence stratégique et documentaire du service.",
       list: [
         "Les données identifiantes ne sont jamais réinjectées dans une base de connaissances mutualisée",
         "Les données médicales, assurantielles ou professionnelles nominatives d'un client ne sont jamais utilisées pour un autre client",
@@ -116,7 +116,7 @@ export const PolitiqueConfidentialitePage = () => {
         "Les personnes concernées sont informées de manière claire de cette finalité d'amélioration du service",
         "Un droit d'opposition peut être exercé lorsque cela est applicable au traitement concerné"
       ],
-      footer: "Important : la simple suppression du nom ou du prénom d'un dossier ne constitue pas nécessairement une anonymisation suffisante. Stratégie & Expertise Santé applique une logique de minimisation, de cloisonnement, de sécurité et de non-réutilisation brute des dossiers clients."
+      footer: "Important : la simple suppression du nom ou du prénom d'un dossier ne constitue pas nécessairement une anonymisation suffisante. Stratégie & Expertise Santé applique une logique de minimisation, de cloisonnement, de sécurité et de non-réutilisation brute des dossiers clients."
     }
   ];
 

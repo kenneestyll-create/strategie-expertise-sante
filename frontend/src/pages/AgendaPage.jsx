@@ -184,11 +184,11 @@ export const AgendaPage = () => {
       if (callType === 'decouverte') {
         await axios.post(`${API}/bookings`, payload);
         setBooked(true);
-        toast.success("Rendez-vous confirmé !");
+        toast.success("Rendez-vous confirmé !");
       } else if (isVip) {
         await axios.post(`${API}/bookings`, payload);
         setBooked(true);
-        toast.success(`Accès Partenaire VIP (${vipName}) : réservation offerte.`);
+        toast.success(`Accès Partenaire VIP (${vipName}) : réservation offerte.`);
       } else {
         if (!cgvAccepted) {
           toast.error('Veuillez accepter les CGV et la renonciation au droit de rétractation.');
@@ -430,7 +430,7 @@ export const AgendaPage = () => {
                 <ArrowLeft className="w-3.5 h-3.5" /> Changer de format
               </Button>
               <div className="flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${callType === 'decouverte' ? 'bg-emerald-100' : 'bg-accent/10'}`}>
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${callType === 'decouverte' ? 'bg-emerald-100' : 'bg-accent/10'}`}>
                   {callType === 'decouverte' ? <Gift className="w-4.5 h-4.5 text-emerald-600" /> : <Phone className="w-4.5 h-4.5 text-accent" />}
                 </div>
                 <div>
@@ -466,11 +466,11 @@ export const AgendaPage = () => {
                           disabled={!day || isWeekend(day) || isPast(day)}
                           onClick={() => day && handleDateClick(day)}
                           className={`aspect-square rounded-lg text-sm font-medium transition-all
-                            ${!day ? 'invisible' : ''}
-                            ${day && isSameDay(day, selectedDate) ? 'bg-accent text-accent-foreground shadow-md' : ''}
-                            ${day && isToday(day) && !isSameDay(day, selectedDate) ? 'bg-muted font-bold' : ''}
-                            ${day && !isWeekend(day) && !isPast(day) && !isSameDay(day, selectedDate) ? 'hover:bg-muted cursor-pointer' : ''}
-                            ${day && (isWeekend(day) || isPast(day)) ? 'text-muted-foreground/30 cursor-not-allowed' : ''}
+                            ${!day ? 'invisible' : ''}
+                            ${day && isSameDay(day, selectedDate) ? 'bg-accent text-accent-foreground shadow-md' : ''}
+                            ${day && isToday(day) && !isSameDay(day, selectedDate) ? 'bg-muted font-bold' : ''}
+                            ${day && !isWeekend(day) && !isPast(day) && !isSameDay(day, selectedDate) ? 'hover:bg-muted cursor-pointer' : ''}
+                            ${day && (isWeekend(day) || isPast(day)) ? 'text-muted-foreground/30 cursor-not-allowed' : ''}
                           `}
                           data-testid={day ? `cal-day-${day.getDate()}` : undefined}
                         >
@@ -503,8 +503,8 @@ export const AgendaPage = () => {
                               onClick={() => setSelectedSlot(slot)}
                               className={`py-2 px-3 rounded-lg text-sm font-medium border transition-all
                                 ${selectedSlot === slot
-                                  ? 'bg-accent text-accent-foreground border-accent shadow-md'
-                                  : 'border-border hover:border-accent/50 hover:bg-muted'
+                                  ? 'bg-accent text-accent-foreground border-accent shadow-md'
+                                  : 'border-border hover:border-accent/50 hover:bg-muted'
                                 }
                               `}
                               data-testid={`slot-${slot.replace(':', '')}`}
@@ -621,7 +621,7 @@ export const AgendaPage = () => {
                                       name: form.name, email: form.email, phone: form.phone, message: form.message, call_type: callType, amount: 75,
                                     });
                                     setBooked(true);
-                                    toast.success('Paiement PayPal confirmé ! Rendez-vous réservé.');
+                                    toast.success('Paiement PayPal confirmé ! Rendez-vous réservé.');
                                   } catch { toast.error("Erreur lors de l'enregistrement PayPal"); }
                                 }}
                                 onError={() => toast.error("Erreur PayPal")}

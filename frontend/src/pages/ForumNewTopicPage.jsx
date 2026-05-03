@@ -59,7 +59,7 @@ export const ForumNewTopicPage = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      toast.success("Sujet créé avec succès !");
+      toast.success("Sujet créé avec succès !");
       navigate(`/forum/sujet/${response.data.topic_id}`);
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erreur lors de la création");

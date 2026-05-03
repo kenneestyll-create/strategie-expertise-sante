@@ -302,7 +302,7 @@ export const AdminConseilsStrate = ({ axiosConfig }) => {
   const handleHighlight = async (id) => {
     try {
       await axios.post(`${API}/conseils/admin/${id}/highlight`, {}, axiosConfig);
-      toast.success("Conseil mis en avant pour aujourd'hui !");
+      toast.success("Conseil mis en avant pour aujourd'hui !");
       fetchConseils();
     } catch { toast.error("Erreur"); }
   };
@@ -364,7 +364,7 @@ export const AdminConseilsStrate = ({ axiosConfig }) => {
         <button
           onClick={() => setTab('gestion')}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-            tab === 'gestion' ? 'border-[#C9A84C] text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
+            tab === 'gestion' ? 'border-[#C9A84C] text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
           data-testid="subtab-gestion"
         >
@@ -373,7 +373,7 @@ export const AdminConseilsStrate = ({ axiosConfig }) => {
         <button
           onClick={() => setTab('stats')}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${
-            tab === 'stats' ? 'border-[#C9A84C] text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
+            tab === 'stats' ? 'border-[#C9A84C] text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
           data-testid="subtab-stats"
         >
@@ -439,7 +439,7 @@ export const AdminConseilsStrate = ({ axiosConfig }) => {
                         <td className="p-3 text-center text-muted-foreground">{c.views}</td>
                         <td className="p-3 text-center text-muted-foreground">{c.clicks}</td>
                         <td className="p-3 text-center">
-                          <span className={`text-xs font-medium ${parseFloat(ctr) >= 30 ? 'text-green-500' : parseFloat(ctr) >= 15 ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                          <span className={`text-xs font-medium ${parseFloat(ctr) >= 30 ? 'text-green-500' : parseFloat(ctr) >= 15 ? 'text-amber-500' : 'text-muted-foreground'}`}>
                             {ctr}%
                           </span>
                         </td>
@@ -450,10 +450,10 @@ export const AdminConseilsStrate = ({ axiosConfig }) => {
                         <td className="p-3 text-right">
                           <div className="flex items-center gap-1 justify-end">
                             <Button size="icon" variant="ghost" onClick={() => previewTTS(c.text)} disabled={isSpeaking && previewText === c.text} title="Preview TTS" data-testid={`conseil-preview-${c.id}`}>
-                              <Volume2 className={`w-4 h-4 ${isSpeaking && previewText === c.text ? 'text-amber-400 animate-pulse' : ''}`} />
+                              <Volume2 className={`w-4 h-4 ${isSpeaking && previewText === c.text ? 'text-amber-400 animate-pulse' : ''}`} />
                             </Button>
                             <Button size="icon" variant="ghost" onClick={() => handleHighlight(c.id)} title="Mettre en avant aujourd'hui" data-testid={`conseil-highlight-${c.id}`}>
-                              <Star className={`w-4 h-4 ${c.priority ? 'text-amber-400 fill-amber-400' : ''}`} />
+                              <Star className={`w-4 h-4 ${c.priority ? 'text-amber-400 fill-amber-400' : ''}`} />
                             </Button>
                             <Button size="icon" variant="ghost" onClick={() => openEdit(c)} title="Modifier" data-testid={`conseil-edit-${c.id}`}>
                               <Pencil className="w-4 h-4" />

@@ -99,7 +99,7 @@ export const StrategicFeedback = ({ source = '', typeDossier = '' }) => {
           </label>
           <Textarea
             value={frein} onChange={e => setFrein(e.target.value)}
-            placeholder="Ex : je ne savais pas par ou commencer, il me manquait..."
+            placeholder="Ex : je ne savais pas par ou commencer, il me manquait..."
             className="h-16 text-xs resize-none"
             maxLength={500}
             data-testid="feedback-frein"
@@ -113,7 +113,7 @@ export const StrategicFeedback = ({ source = '', typeDossier = '' }) => {
           </label>
           <Textarea
             value={besoin} onChange={e => setBesoin(e.target.value)}
-            placeholder="Ex : un suivi personnalise, une aide pour les formulaires..."
+            placeholder="Ex : un suivi personnalise, une aide pour les formulaires..."
             className="h-16 text-xs resize-none"
             maxLength={500}
             data-testid="feedback-besoin"
@@ -130,8 +130,8 @@ export const StrategicFeedback = ({ source = '', typeDossier = '' }) => {
               <button key={opt.value}
                 onClick={() => setClarte(opt.value)}
                 className={`px-3 py-1.5 rounded-full text-xs transition-colors border ${clarte === opt.value
-                  ? 'bg-foreground text-background border-foreground'
-                  : 'bg-transparent text-foreground/70 border-border hover:border-foreground/30'
+                  ? 'bg-foreground text-background border-foreground'
+                  : 'bg-transparent text-foreground/70 border-border hover:border-foreground/30'
                 }`}
                 data-testid={`feedback-clarte-${opt.value}`}
               >

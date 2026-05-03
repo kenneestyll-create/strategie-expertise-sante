@@ -49,7 +49,7 @@ export const PartenairesPage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Partenaires — Réseau de professionnels" description="Découvrez notre réseau de partenaires : avocats, médecins de recours, experts médicaux. Un réseau de confiance pour accompagner vos démarches." path="/partenaires" />
+      <SEO title="Partenaires — Réseau de professionnels" description="Découvrez notre réseau de partenaires : avocats, médecins de recours, experts médicaux. Un réseau de confiance pour accompagner vos démarches." path="/partenaires" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">

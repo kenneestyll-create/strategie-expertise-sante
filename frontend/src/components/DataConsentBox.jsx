@@ -32,8 +32,8 @@ export const DataConsentBox = ({ checked, onChange, className = '', variant = 'd
         className="flex items-center gap-1.5 text-xs text-[#C9A84C] hover:text-[#1A1A1A] transition-colors ml-7 font-medium"
         data-testid="data-consent-details-toggle"
       >
-        {isInfoOnly ? "Que deviennent mes informations ?" : "Que deviennent mes documents ?"}
-        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showDetails ? 'rotate-180' : ''}`} />
+        {isInfoOnly ? "Que deviennent mes informations ?" : "Que deviennent mes documents ?"}
+        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showDetails ? 'rotate-180' : ''}`} />
       </button>
 
       {showDetails && (
@@ -115,7 +115,7 @@ export const DataConsentBox = ({ checked, onChange, className = '', variant = 'd
         >
           <TrendingUp className="w-3 h-3" />
           Amélioration continue du service
-          <ChevronDown className={`w-3 h-3 transition-transform ${showImprovement ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`w-3 h-3 transition-transform ${showImprovement ? 'rotate-180' : ''}`} />
         </button>
 
         {showImprovement && (

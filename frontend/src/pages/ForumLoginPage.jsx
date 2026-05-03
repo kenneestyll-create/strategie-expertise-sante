@@ -37,7 +37,7 @@ export const ForumLoginPage = () => {
         is_anonymous: response.data.is_anonymous
       });
       
-      toast.success(`Bienvenue, ${response.data.pseudo} !`);
+      toast.success(`Bienvenue, ${response.data.pseudo} !`);
       navigate('/forum');
     } catch (error) {
       console.error('Login error:', error);

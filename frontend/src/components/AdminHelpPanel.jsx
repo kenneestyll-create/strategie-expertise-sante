@@ -42,7 +42,7 @@ const HELP_SECTIONS = [
     steps: [
       { label: 'Créer', text: 'Générez un code de parrainage unique pour un client existant.' },
       { label: 'Suivre', text: 'Consultez le nombre d\'utilisations de chaque code et les réductions accordées.' },
-      { label: 'Statistiques', text: 'Vue d\'ensemble : codes actifs, utilisations totales, montant total des réductions.' },
+      { label: 'Statistiques', text: 'Vue d\'ensemble : codes actifs, utilisations totales, montant total des réductions.' },
     ],
     keywords: ['parrainage', 'code', 'réduction', 'remise', 'filleul', 'parrain', 'discount']
   },
@@ -138,7 +138,7 @@ const HELP_SECTIONS = [
     color: '#10b981',
     summary: 'Tableau de bord avec statistiques et graphiques de performance.',
     steps: [
-      { label: 'Période', text: 'Sélectionnez la période d\'analyse : 7 jours, 30 jours, 90 jours.' },
+      { label: 'Période', text: 'Sélectionnez la période d\'analyse : 7 jours, 30 jours, 90 jours.' },
       { label: 'Métriques', text: 'Visiteurs, contacts, conversions, revenus — tout est tracé.' },
       { label: 'Graphiques', text: 'Visualisez les tendances avec les courbes et diagrammes interactifs.' },
     ],
@@ -153,9 +153,9 @@ const HELP_SECTIONS = [
     summary: 'Gérez les documents clients et consultez les fichiers stockés dans AWS S3.',
     steps: [
       { label: 'Documents clients', text: 'Tableau des documents uploadés par les clients via l\'espace client. Validez ou marquez comme illisibles.' },
-      { label: 'Documents S3', text: 'Section "Documents stockés (S3)" : tous les fichiers uploadés via StrategiIA et Dossier Express, stockés durablement dans AWS S3.' },
+      { label: 'Documents S3', text: 'Section "Documents stockés (S3)" : tous les fichiers uploadés via StrategiIA et Dossier Express, stockés durablement dans AWS S3.' },
       { label: 'Voir / Télécharger', text: 'Cliquez "Voir" pour ouvrir un document via une URL sécurisée temporaire (pre-signed URL, valide 1h). "Télécharger" pour le sauvegarder localement.' },
-      { label: 'Tableau de bord S3', text: 'Graphiques d\'évolution : uploads par jour, volume total stocké (Mo/Go), répartition par source et type de fichier.' },
+      { label: 'Tableau de bord S3', text: 'Graphiques d\'évolution : uploads par jour, volume total stocké (Mo/Go), répartition par source et type de fichier.' },
       { label: 'Actualiser', text: 'Le bouton "Actualiser" recharge les données S3 en temps réel.' },
     ],
     keywords: ['documents', 'faq', 'questions', 'ressources', 'guide', 'fichier', 's3', 'stockage', 'aws', 'upload', 'pre-signed', 'url', 'télécharger', 'voir']
@@ -181,12 +181,12 @@ const HELP_SECTIONS = [
     icon: MessageSquare,
     title: 'Retours d\'expérience',
     color: '#6366f1',
-    summary: 'Retours stratégiques des clients : freins, besoins, compréhension de l\'offre.',
+    summary: 'Retours stratégiques des clients : freins, besoins, compréhension de l\'offre.',
     steps: [
       { label: 'Lecture', text: 'Consultez tous les retours d\'expérience collectés après les analyses StrategiIA et Dossier Express.' },
       { label: 'Catégories', text: 'Les retours sont automatiquement catégorisés (juridique, médical, MDPH, assurantiel, accompagnement, etc.).' },
       { label: 'Filtrage', text: 'Filtrez par catégorie pour repérer les récurrences et les besoins non couverts.' },
-      { label: 'Statistiques', text: 'Vue d\'ensemble : total retours, freins mentionnés, besoins exprimés, clarté de l\'offre.' },
+      { label: 'Statistiques', text: 'Vue d\'ensemble : total retours, freins mentionnés, besoins exprimés, clarté de l\'offre.' },
     ],
     keywords: ['feedback', 'retour', 'expérience', 'frein', 'besoin', 'clarté', 'signal', 'client', 'avis stratégique']
   },
@@ -204,11 +204,11 @@ const HELP_SECTIONS = [
       { label: 'Base dossiers accompagnés', text: 'Ajustez la base du compteur "dossiers accompagnés à ce jour" affiché sur Dossier Express. Le total affiché = base + vrais dossiers enregistrés.' },
       { label: 'Le défi en chiffres', text: 'Éditez les 4 statistiques clés affichées sur la page d\'accueil (valeur, préfixe, unité, source). Cliquez "Enregistrer les chiffres" pour appliquer.' },
       { label: 'Tarifs & Promotions', text: 'Modifiez le prix de chaque prestation et ajoutez un badge promo (ex: "-20%", "Nouveau"). Les changements se reflètent sur la page Tarifs.' },
-      { label: 'Tutoriel Straté', text: 'Statistiques d\'engagement du tutoriel d\'onboarding : démarrages, taux de complétion et abandon par étape. Bouton "Relancer" pour revoir le tutoriel.' },
+      { label: 'Tutoriel Straté', text: 'Statistiques d\'engagement du tutoriel d\'onboarding : démarrages, taux de complétion et abandon par étape. Bouton "Relancer" pour revoir le tutoriel.' },
       { label: 'Préparation Production', text: 'Purgez les données de test (contacts, analyses, dossiers, avis, chatbot) et remettez les compteurs à zéro avant le lancement. Bouton "Purge complète" pour tout supprimer d\'un coup.' },
       { label: 'Notifications Push', text: 'Statut du Service Worker et des notifications push (VAPID).' },
       { label: 'IA V2 Readiness', text: 'Feu tricolore mesurant la progression vers l\'IA Prédictive V2. Score de 0 à 100 basé sur le volume de cas, la diversité, la complétude et la qualité. Minimum 500 cas exploitables pour le feu vert. Le graphique d\'évolution montre la progression dans le temps.' },
-      { label: 'V2 Prédictive — Module dormant', text: 'Module préinstallé mais désactivé par défaut. Activation sécurisée (triple confirmation + saisie "ACTIVER V2") impossible sous 500 cas. Sandbox : testez l\'analyse V2 sur un texte libre sans impacter les clients. Comparateur : comparez une analyse V1 existante avec les signaux V2. Paramètres : ajustez les seuils (min cas, score requis, alertes max, prudence). Audit : journal complet de toutes les actions V2. Kill switch : désactivation instantanée vers V1 pur.' },
+      { label: 'V2 Prédictive — Module dormant', text: 'Module préinstallé mais désactivé par défaut. Activation sécurisée (triple confirmation + saisie "ACTIVER V2") impossible sous 500 cas. Sandbox : testez l\'analyse V2 sur un texte libre sans impacter les clients. Comparateur : comparez une analyse V1 existante avec les signaux V2. Paramètres : ajustez les seuils (min cas, score requis, alertes max, prudence). Audit : journal complet de toutes les actions V2. Kill switch : désactivation instantanée vers V1 pur.' },
     ],
     keywords: ['config', 'configuration', 'email', 'resend', 'stockage', 'compteur', 'hero', 'visiteurs', 'push', 'notification', 'tarifs', 'prix', 'promotion', 'badge', 'promo', 'chiffres', 'statistiques', 'défi', 'dossiers', 'hebdomadaire', 'semaine', 'base', 'tutoriel', 'onboarding', 'engagement', 'production', 'purge', 'nettoyage', 'supprimer', 'reset', 'v2', 'readiness', 'feu', 'tricolore', 'prédictive', 'score', 'dormant', 'sandbox', 'comparateur', 'kill switch', 'activation', 'audit']
   },

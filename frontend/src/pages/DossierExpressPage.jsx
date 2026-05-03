@@ -97,7 +97,7 @@ const getContextDE = (type) => {
 const TYPOLOGIE = [
   { label: "Accidents du travail & AVP", type: "AT / IPP", detail: "Analyse des taux d'IPP acquis, identification des leviers de contestation, stratégie de consolidation." },
   { label: "Maladies professionnelles", type: "MP / CPAM", detail: "Constitution et renforcement des dossiers, reconnaissance hors tableau, contentieux tribunal administratif." },
-  { label: "MDPH — prestations complexes", type: "AAH / PCH / RQTH", detail: "Profils lourds : transplantation, polyhandicap sensoriel, obésité à impact fonctionnel, restrictions poste de travail." },
+  { label: "MDPH — prestations complexes", type: "AAH / PCH / RQTH", detail: "Profils lourds : transplantation, polyhandicap sensoriel, obésité à impact fonctionnel, restrictions poste de travail." },
 ];
 
 /* ── Trust Badge Component ── */
@@ -120,13 +120,13 @@ const StepIndicator = ({ currentStep }) => {
       {steps.map((s, i) => (
         <div key={s.id} className="flex items-center gap-2">
           <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all ${
-            currentStep === s.id ? 'bg-accent text-white' :
-            currentStep > s.id ? 'bg-accent/15 text-accent' : 'bg-muted text-muted-foreground'
+            currentStep === s.id ? 'bg-accent text-white' :
+            currentStep > s.id ? 'bg-accent/15 text-accent' : 'bg-muted text-muted-foreground'
           }`}>
             {currentStep > s.id ? <CheckCircle className="w-3 h-3" /> : <span>{s.id}</span>}
             <span className="hidden sm:inline">{s.label}</span>
           </div>
-          {i < steps.length - 1 && <div className={`w-8 h-px ${currentStep > s.id ? 'bg-accent' : 'bg-border'}`} />}
+          {i < steps.length - 1 && <div className={`w-8 h-px ${currentStep > s.id ? 'bg-accent' : 'bg-border'}`} />}
         </div>
       ))}
     </div>
@@ -186,15 +186,15 @@ const ValueReminder = ({ weeklyCount }) => (
 
 const dossierFaqData = [
   {
-    question: "Combien de temps faut-il pour recevoir le rapport ?",
+    question: "Combien de temps faut-il pour recevoir le rapport ?",
     answer: "Le rapport est livré par email sous 2 heures après le paiement et la soumission de vos informations. Il est envoyé au format PDF directement dans votre boîte mail."
   },
   {
-    question: "Le Dossier Express remplace-t-il un avocat ou un médecin ?",
+    question: "Le Dossier Express remplace-t-il un avocat ou un médecin ?",
     answer: "Non. Le Dossier Express IA fournit une analyse documentaire et stratégique. Il ne constitue pas un avis juridique, médical ou une expertise officielle. Il vous aide à comprendre votre situation et à préparer vos démarches."
   },
   {
-    question: "Quels types de dossiers peuvent être analysés ?",
+    question: "Quels types de dossiers peuvent être analysés ?",
     answer: "Le service couvre les accidents du travail, les maladies professionnelles, les litiges avec les assurances ou la protection juridique, et les demandes MDPH/AAH. Chaque analyse est personnalisée à votre situation spécifique."
   }
 ];
@@ -235,7 +235,7 @@ const DossierExpressFAQ = () => {
                 data-testid={`dossier-faq-${i}`}
               >
                 <span className="font-medium text-sm text-foreground pr-4">{faq.question}</span>
-                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
               </button>
               {openIndex === i && (
                 <div className="px-4 pb-4">
@@ -311,10 +311,10 @@ export const DossierExpressPage = () => {
         const parsed = JSON.parse(savedForm);
         setForm(parsed);
         setStep('form');
-        toast.success("Paiement confirmé ! Complétez votre dossier pour lancer l'analyse.");
+        toast.success("Paiement confirmé ! Complétez votre dossier pour lancer l'analyse.");
       } else {
         setStep('form');
-        toast.success("Paiement confirmé ! Complétez le formulaire ci-dessous.");
+        toast.success("Paiement confirmé ! Complétez le formulaire ci-dessous.");
       }
       window.history.replaceState({}, '', '/dossier-express');
     } else if (payment === 'cancelled') {
@@ -334,7 +334,7 @@ export const DossierExpressPage = () => {
         if (res.data.status === 'completed') {
           setStep('success');
           clearInterval(interval);
-          toast.success("Votre rapport est prêt ! Vérifiez votre email.");
+          toast.success("Votre rapport est prêt ! Vérifiez votre email.");
         } else if (res.data.delivery_status === 'incident_technique') {
           // Incident detected — show reassuring fallback (still in processing view)
           setPollStatus(res.data);
@@ -370,7 +370,7 @@ export const DossierExpressPage = () => {
       sessionStorage.setItem('dossier_express_premium_pdf', premiumPdf ? '1' : '0');
       sessionStorage.setItem('dossier_express_admin_bypass', '1');
       setAdminPaid(true);
-      toast.success("Mode Admin : paiement bypass — complétez le dossier puis lancez l'analyse.");
+      toast.success("Mode Admin : paiement bypass — complétez le dossier puis lancez l'analyse.");
       return;
     }
     // VIP bypass: skip payment like admin
@@ -379,7 +379,7 @@ export const DossierExpressPage = () => {
       sessionStorage.setItem('dossier_express_premium_pdf', premiumPdf ? '1' : '0');
       sessionStorage.setItem('dossier_express_admin_bypass', '1');
       setAdminPaid(true);
-      toast.success(`Accès Partenaire VIP (${vipName}) : paiement offert.`);
+      toast.success(`Accès Partenaire VIP (${vipName}) : paiement offert.`);
       return;
     }
     sessionStorage.setItem('dossier_express_form', JSON.stringify(form));
@@ -448,9 +448,9 @@ export const DossierExpressPage = () => {
         if (hasLargeFiles) {
           toast.info("Fichiers volumineux détectés — upload fractionné sécurisé en cours...");
         } else if (totalSize > 2 * 1024 * 1024) {
-          toast.info(`Envoi de ${files.length} document${files.length > 1 ? 's' : ''} — cela peut prendre quelques instants...`);
+          toast.info(`Envoi de ${files.length} document${files.length > 1 ? 's' : ''} — cela peut prendre quelques instants...`);
         } else {
-          toast.info(`Lecture de ${files.length} document${files.length > 1 ? 's' : ''}...`);
+          toast.info(`Lecture de ${files.length} document${files.length > 1 ? 's' : ''}...`);
         }
         const { extractTextFromFiles } = await import('@/utils/pdfExtractor');
         const onChunkProgress = (filename, uploaded, total) => {
@@ -464,7 +464,7 @@ export const DossierExpressPage = () => {
         storedFiles = extraction.storedFiles || [];
         const extractedCount = extraction.extractedCount;
         if (extractedCount > 0) {
-          toast.success(`${extractedCount}/${files.length} document${extractedCount > 1 ? 's' : ''} lu${extractedCount > 1 ? 's' : ''} avec succes`);
+          toast.success(`${extractedCount}/${files.length} document${extractedCount > 1 ? 's' : ''} lu${extractedCount > 1 ? 's' : ''} avec succes`);
         } else if (form.documents_text) {
           toast.info("Contenu OCR des images inclus dans l'analyse");
         }
@@ -597,12 +597,12 @@ export const DossierExpressPage = () => {
                   { icon: Mail, title: "4. Rapport PDF par email sous 2h", desc: "Droits identifiés, stratégie recommandée, prochaines étapes concrètes", accent: false }
                 ].map((s, i) => (
                   <div key={i} className={`flex items-start gap-4 rounded-xl p-4 backdrop-blur-sm transition-all duration-300 hover:translate-x-1 ${
-                    s.accent ? 'bg-amber-500/10 border border-amber-500/20 hover:border-amber-500/40' : 'bg-white/5 border border-white/10 hover:bg-white/[0.08] hover:border-white/20'
+                    s.accent ? 'bg-amber-500/10 border border-amber-500/20 hover:border-amber-500/40' : 'bg-white/5 border border-white/10 hover:bg-white/[0.08] hover:border-white/20'
                   }`}>
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      s.accent ? 'bg-amber-500/25' : 'bg-white/10'
+                      s.accent ? 'bg-amber-500/25' : 'bg-white/10'
                     }`}>
-                      <s.icon className={`w-5 h-5 ${s.accent ? 'text-amber-400' : 'text-white/70'}`} />
+                      <s.icon className={`w-5 h-5 ${s.accent ? 'text-amber-400' : 'text-white/70'}`} />
                     </div>
                     <div>
                       <h3 className="font-semibold text-white text-sm">{s.title}</h3>
@@ -823,7 +823,7 @@ export const DossierExpressPage = () => {
                       onChange={e => setForm(p => ({...p, situation: e.target.value}))}
                       rows={6}
                       className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset"
-                      placeholder="Décrivez votre situation en détail : historique, démarches entreprises, difficultés rencontrées, objectifs..."
+                      placeholder="Décrivez votre situation en détail : historique, démarches entreprises, difficultés rencontrées, objectifs..."
                       data-testid="de-situation-input"
                     />
                     <p className="text-xs text-muted-foreground">Plus votre description est détaillée, plus l'analyse sera pertinente.</p>
@@ -859,7 +859,7 @@ export const DossierExpressPage = () => {
                           if (!form.situation.trim()) {
                             let autoText = '';
                             if (f.resume) autoText += f.resume;
-                            if (f.recommandations?.length > 0) autoText += '\n\nPoints identifiés : ' + f.recommandations.join('. ');
+                            if (f.recommandations?.length > 0) autoText += '\n\nPoints identifiés : ' + f.recommandations.join('. ');
                             if (f.contexte && !autoText) autoText = f.contexte;
                             if (autoText) setForm(prev => ({ ...prev, situation: autoText }));
                           }
@@ -918,7 +918,7 @@ export const DossierExpressPage = () => {
                       disabled={loading || (!isAdminMode && !isVip && (!form.email || !form.name || !consent))}
                       data-testid="de-checkout-button"
                     >
-                      {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection vers le paiement...</> : isVip ? <><CreditCard className="w-5 h-5" /> Accès Partenaire — Lancer l'analyse</> : <><CreditCard className="w-5 h-5" /> {adminPaid ? 'Mode Admin — Paiement validé' : `Payer ${totalAmount} € — Analyse sous 2h`}</>}
+                      {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection vers le paiement...</> : isVip ? <><CreditCard className="w-5 h-5" /> Accès Partenaire — Lancer l'analyse</> : <><CreditCard className="w-5 h-5" /> {adminPaid ? 'Mode Admin — Paiement validé' : `Payer ${totalAmount} € — Analyse sous 2h`}</>}
                     </Button>
                   )}
 
@@ -1102,13 +1102,13 @@ export const DossierExpressPage = () => {
                     <div
                       key={s.key}
                       className={`flex items-center gap-3.5 px-5 py-3 border-b border-border/40 last:border-0 transition-all duration-500 ${
-                        isActive ? 'bg-amber-50/50' : ''
+                        isActive ? 'bg-amber-50/50' : ''
                       }`}
                       data-testid={`step-${s.key}`}
                     >
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ${
-                        isDone ? 'bg-emerald-100 text-emerald-600' :
-                        isActive ? 'bg-amber-100 text-amber-600 ring-2 ring-amber-200' :
+                        isDone ? 'bg-emerald-100 text-emerald-600' :
+                        isActive ? 'bg-amber-100 text-amber-600 ring-2 ring-amber-200' :
                         'bg-muted text-muted-foreground/50'
                       }`}>
                         {isDone ? <CheckCircle className="w-4 h-4" /> :
@@ -1117,8 +1117,8 @@ export const DossierExpressPage = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <span className={`text-sm block transition-colors ${
-                          isDone ? 'text-emerald-600 font-medium' :
-                          isActive ? 'text-amber-700 font-semibold' :
+                          isDone ? 'text-emerald-600 font-medium' :
+                          isActive ? 'text-amber-700 font-semibold' :
                           'text-muted-foreground/50'
                         }`}>
                           {s.label}

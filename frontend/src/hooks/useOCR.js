@@ -206,7 +206,7 @@ function parseFields(text) {
   const ss = t.match(ssPattern);
   if (ss) fields.numero_ss = ss[0].replace(/\s/g, '');
 
-  // Names (after "Nom :", "Patient :", "Assuré :")
+  // Names (after "Nom :", "Patient :", "Assuré :")
   const namePatterns = [
     /(?:Nom|Patient|Assuré|Bénéficiaire|Demandeur)\s*[:\s]\s*([A-ZÀ-Ü][a-zà-ü]+(?:\s+[A-ZÀ-Ü][a-zà-ü]+){0,3})/g,
     /(?:M\.|Mme|Mr|Madame|Monsieur)\s+([A-ZÀ-Ü][a-zà-ü]+(?:\s+[A-ZÀ-Ü][a-zà-ü]+){0,3})/g,

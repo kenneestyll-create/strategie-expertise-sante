@@ -30,8 +30,8 @@ export const TMS_LOCALISATION = [
 ];
 
 export const IPP_EXEMPLES = [
-  { taux: 3, description: "Légère limitation de la mobilité d'un doigt", indemnisation: "Capital forfaitaire : environ 1 111 €", consequences: "Versement unique, pas de rente. Pas de majoration pour tierce personne." },
-  { taux: 5, description: "Perte partielle de l'audition d'une oreille", indemnisation: "Capital forfaitaire : environ 2 222 €", consequences: "Versement unique. Possibilité de contester si le taux semble sous-évalué." },
+  { taux: 3, description: "Légère limitation de la mobilité d'un doigt", indemnisation: "Capital forfaitaire : environ 1 111 €", consequences: "Versement unique, pas de rente. Pas de majoration pour tierce personne." },
+  { taux: 5, description: "Perte partielle de l'audition d'une oreille", indemnisation: "Capital forfaitaire : environ 2 222 €", consequences: "Versement unique. Possibilité de contester si le taux semble sous-évalué." },
   { taux: 10, description: "Syndrome du canal carpien opéré avec séquelles modérées", indemnisation: "Rente viagère trimestrielle basée sur le salaire", consequences: "Passage au régime de la rente. Taux utile = 5%. Droit à majoration pour accident de trajet." },
   { taux: 15, description: "Lombalgie chronique avec limitation fonctionnelle", indemnisation: "Rente viagère (ex: ~1 875 €/an pour salaire de 25 000 €)", consequences: "Taux utile = 7,5%. Protection contre le licenciement renforcée." },
   { taux: 25, description: "Hernie discale opérée avec séquelles importantes", indemnisation: "Rente viagère (ex: ~3 125 €/an pour salaire de 25 000 €)", consequences: "Taux utile = 12,5%. Possibilité de demander la RQTH." },

@@ -75,7 +75,7 @@ export const ForumRegisterPage = () => {
         is_anonymous: response.data.is_anonymous
       });
       
-      toast.success("Inscription réussie ! Bienvenue sur le forum.");
+      toast.success("Inscription réussie ! Bienvenue sur le forum.");
       navigate('/forum');
     } catch (error) {
       console.error('Registration error:', error);

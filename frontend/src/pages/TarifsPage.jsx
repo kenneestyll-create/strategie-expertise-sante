@@ -80,7 +80,7 @@ export const TarifsPage = () => {
     try {
       const response = await axios.get(`${API}/referral/validate/${code}`);
       setReferralValid(response.data.valid);
-      if (response.data.valid) toast.success("Code parrainage valide ! -10%");
+      if (response.data.valid) toast.success("Code parrainage valide ! -10%");
     } catch (error) { setReferralValid(false); }
   };
 
@@ -110,7 +110,7 @@ export const TarifsPage = () => {
       if (response.data.url) {
         window.location.href = response.data.url;
       } else {
-        toast.error("Erreur : URL de paiement non reçue");
+        toast.error("Erreur : URL de paiement non reçue");
         setLoading(false);
       }
     } catch (error) {
@@ -178,7 +178,7 @@ export const TarifsPage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Tarifs et prestations" description="Découvrez nos tarifs : pré-analyse gratuite assistée par StratégiIA, Dossier Express IA 97€, accompagnement personnalisé 150-500€. Première consultation gratuite — 10 minutes." path="/tarifs" />
+      <SEO title="Tarifs et prestations" description="Découvrez nos tarifs : pré-analyse gratuite assistée par StratégiIA, Dossier Express IA 97€, accompagnement personnalisé 150-500€. Première consultation gratuite — 10 minutes." path="/tarifs" />
       {/* Hero */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
@@ -337,7 +337,7 @@ export const TarifsPage = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 stagger" ref={step3Ref}>
             {prestations.map((p, i) => (
-              <Card key={i} className={`relative border-border flex flex-col card-glow reveal ${p.popular ? 'ring-2 ring-accent' : ''}`} data-testid={`tarif-card-${i}`}>
+              <Card key={i} className={`relative border-border flex flex-col card-glow reveal ${p.popular ? 'ring-2 ring-accent' : ''}`} data-testid={`tarif-card-${i}`}>
                 {p.popular && (
                   <div className="absolute -top-3 left-6">
                     <Badge className="bg-accent text-accent-foreground gap-1"><Star className="w-3 h-3" fill="currentColor" />Plus demandé</Badge>
@@ -505,7 +505,7 @@ export const TarifsPage = () => {
               {
                 icon: "Scale",
                 title: "Positionnement clair",
-                text: "Nous nous situons entre l'information généraliste gratuite et l'intervention juridique spécialisée. Notre rôle : clarifier, structurer, sécuriser et faire gagner du temps."
+                text: "Nous nous situons entre l'information généraliste gratuite et l'intervention juridique spécialisée. Notre rôle : clarifier, structurer, sécuriser et faire gagner du temps."
               }
             ].map((item, i) => {
               const IconComp = { Clock, Brain, Sparkles, Scale }[item.icon];
@@ -536,15 +536,15 @@ export const TarifsPage = () => {
             <h3 className="text-lg font-semibold text-[#f5f0e8]/80 mb-6">Questions fréquentes</h3>
             {[
               {
-                q: "Pourquoi vos prestations ne sont-elles pas gratuites ?",
+                q: "Pourquoi vos prestations ne sont-elles pas gratuites ?",
                 a: "Parce qu'un dossier sensible ne se joue pas sur une réponse générique. Chaque prestation repose sur un vrai travail d'analyse, de lecture, de structuration et d'orientation."
               },
               {
-                q: "En quoi cela est-il différent d'une simple IA ?",
+                q: "En quoi cela est-il différent d'une simple IA ?",
                 a: "L'outil ne se contente pas de reformuler. Il a été structuré pour analyser des logiques de blocage, de preuves, de stratégie et de cohérence de dossier dans des situations souvent complexes."
               },
               {
-                q: "Comment savoir si le prix est justifié pour mon dossier ?",
+                q: "Comment savoir si le prix est justifié pour mon dossier ?",
                 a: "Le bon prix n'est pas seulement celui que l'on paie aujourd'hui, mais aussi celui des erreurs, des retards ou des leviers non exploités que l'on évite demain."
               }
             ].map((faq, i) => (
@@ -659,7 +659,7 @@ export const TarifsPage = () => {
                         setShowPaymentModal(false);
                         setPaymentDetails({ amount: getDiscountedPrice(selectedPackage?.price) || selectedPackage?.price, metadata: { package_name: selectedPackage?.title } });
                         setShowSuccessModal(true);
-                        toast.success("Paiement PayPal réussi !");
+                        toast.success("Paiement PayPal réussi !");
                       }}
                       onError={() => toast.error("Erreur PayPal")}
                       onCancel={() => toast.info("Paiement annulé")}

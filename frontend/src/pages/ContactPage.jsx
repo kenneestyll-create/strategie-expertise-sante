@@ -83,7 +83,7 @@ export const ContactPage = () => {
       };
       await axios.post(`${API}/contact`, payload);
       setSubmitted(true);
-      toast.success("Votre message a été envoyé avec succès !");
+      toast.success("Votre message a été envoyé avec succès !");
     } catch (error) {
       console.error('Erreur lors de l\'envoi:', error);
       toast.error("Une erreur est survenue. Veuillez réessayer.");

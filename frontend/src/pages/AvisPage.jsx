@@ -76,7 +76,7 @@ export const AvisPage = () => {
         consent_data_processing: formData.consent_data_processing
       });
       setSubmitted(true);
-      toast.success("Merci pour votre témoignage !");
+      toast.success("Merci pour votre témoignage !");
     } catch (error) {
       console.error('Erreur:', error);
       const detail = error?.response?.data?.detail;
@@ -90,7 +90,7 @@ export const AvisPage = () => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star 
         key={i} 
-        className={`w-5 h-5 ${i < note ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}`} 
+        className={`w-5 h-5 ${i < note ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}`} 
       />
     ));
   };
@@ -112,8 +112,8 @@ export const AvisPage = () => {
             <Star 
               className={`w-8 h-8 transition-colors ${
                 (hover || value) >= star 
-                  ? 'text-amber-400 fill-amber-400' 
-                  : 'text-gray-300'
+                  ? 'text-amber-400 fill-amber-400' 
+                  : 'text-gray-300'
               }`}
             />
           </button>

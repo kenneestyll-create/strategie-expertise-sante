@@ -124,7 +124,7 @@ export const ClientDocuments = ({ token, onDocumentsChange }) => {
   };
 
   const deleteDoc = async (docId) => {
-    if (!window.confirm('Supprimer ce document ?')) return;
+    if (!window.confirm('Supprimer ce document ?')) return;
     try {
       await axios.delete(`${API}/client/documents/${docId}`, { headers });
       toast.success('Document supprimé');
@@ -214,8 +214,8 @@ export const ClientDocuments = ({ token, onDocumentsChange }) => {
           {Object.entries(STATUSES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
         </select>
         <div className="flex gap-1 bg-muted rounded-lg p-0.5">
-          <button onClick={() => setView('list')} className={`px-2 py-1 text-[10px] rounded ${view === 'list' ? 'bg-background shadow font-medium' : 'text-muted-foreground'}`} data-testid="view-list">Liste</button>
-          <button onClick={() => setView('category')} className={`px-2 py-1 text-[10px] rounded ${view === 'category' ? 'bg-background shadow font-medium' : 'text-muted-foreground'}`} data-testid="view-category">Catégories</button>
+          <button onClick={() => setView('list')} className={`px-2 py-1 text-[10px] rounded ${view === 'list' ? 'bg-background shadow font-medium' : 'text-muted-foreground'}`} data-testid="view-list">Liste</button>
+          <button onClick={() => setView('category')} className={`px-2 py-1 text-[10px] rounded ${view === 'category' ? 'bg-background shadow font-medium' : 'text-muted-foreground'}`} data-testid="view-category">Catégories</button>
         </div>
       </div>
 
@@ -334,7 +334,7 @@ const DocumentCard = ({ doc, compact = false, onDelete, onDownload, onEdit }) =>
   const ext = doc.filename?.split('.').pop()?.toUpperCase() || '?';
 
   return (
-    <div className={`flex items-center gap-3 p-3 rounded-lg border border-border bg-card hover:bg-muted/30 transition-colors group ${compact ? 'py-2' : ''}`} data-testid={`doc-card-${doc.id}`}>
+    <div className={`flex items-center gap-3 p-3 rounded-lg border border-border bg-card hover:bg-muted/30 transition-colors group ${compact ? 'py-2' : ''}`} data-testid={`doc-card-${doc.id}`}>
       <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
         <Icon className="w-4 h-4 text-muted-foreground" />
       </div>

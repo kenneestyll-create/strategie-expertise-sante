@@ -220,7 +220,7 @@ export const StrategiIA = () => {
       setEmail('admin-test@ses-interne.fr');
       setRemaining(999);
       setStep('basic');
-      toast.success("Mode Admin : email bypass, pas de lead créé.");
+      toast.success("Mode Admin : email bypass, pas de lead créé.");
       return;
     }
     if (!email.trim() || !email.includes('@')) {
@@ -241,7 +241,7 @@ export const StrategiIA = () => {
       } else {
         setStep('basic');
       }
-      toast.success("Inscription réussie ! Voici votre analyse complète.");
+      toast.success("Inscription réussie ! Voici votre analyse complète.");
     } catch {
       // Even if registration fails, show the full result
       setStep('basic');
@@ -257,7 +257,7 @@ export const StrategiIA = () => {
       const opts = [];
       if (analysePremium) opts.push('Relecture expert');
       if (premiumPdf) opts.push('PDF pro');
-      toast.info(`Mode Admin : bypass paiement${opts.length ? ' (' + opts.join(' + ') + ')' : ''}, analyse en cours...`);
+      toast.info(`Mode Admin : bypass paiement${opts.length ? ' (' + opts.join(' + ') + ')' : ''}, analyse en cours...`);
       try {
         const { data } = await axios.post(`${API}/strategiia/admin-bypass-premium`, {
           situation, type_dossier: typeDossier, regime,
@@ -279,11 +279,11 @@ export const StrategiIA = () => {
               // If relecture expert selected: show waiting step, not immédiate result
               if (analysePremium) {
                 setStep('relecture_attente');
-                toast.success("Mode Admin : dossier transmis pour relecture expert (simulation).");
+                toast.success("Mode Admin : dossier transmis pour relecture expert (simulation).");
               } else {
                 setPremiumResult(st.analysis);
                 setStep('premium');
-                toast.success("Mode Admin : rapport premium généré (test interne).");
+                toast.success("Mode Admin : rapport premium généré (test interne).");
               }
             } else if (st.status === 'error') {
               jobCompleted2 = true;
@@ -331,14 +331,14 @@ export const StrategiIA = () => {
       a.download = data.filename || 'strategiia-rapport.pdf';
       a.click();
       URL.revokeObjectURL(url);
-      toast.success("Rapport PDF téléchargé !");
+      toast.success("Rapport PDF téléchargé !");
     } catch {
       toast.error("Erreur lors de la génération du PDF.");
     } finally { setPdfLoading(false); }
   }, [premiumResult, typeDossier, regime, email, premiumPdf]);
 
   const getShareUrl = () => `${window.location.origin}/simulateur`;
-  const getShareText = () => `J'ai analysé mon dossier avec StratégiIA sur Stratégie & Expertise Santé. Analysez le vôtre :`;
+  const getShareText = () => `J'ai analysé mon dossier avec StratégiIA sur Stratégie & Expertise Santé. Analysez le vôtre :`;
   const handleWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(getShareText() + ' ' + getShareUrl())}`, '_blank');
   const handleSMS = () => window.open(`sms:?body=${encodeURIComponent(getShareText() + ' ' + getShareUrl())}`, '_blank');
   const handleShareEmail = () => window.open(`mailto:?subject=${encodeURIComponent('StratégiIA — Analyse de dossier')}&body=${encodeURIComponent(getShareText() + '\n\n' + getShareUrl())}`, '_blank');
@@ -528,9 +528,9 @@ export const StrategiIA = () => {
                         return (
                           <div
                             key={i}
-                            className={`flex items-center gap-3 text-sm transition-opacity duration-500 ${loadingStep >= stepNum ? 'opacity-100' : 'opacity-30'}`}
+                            className={`flex items-center gap-3 text-sm transition-opacity duration-500 ${loadingStep >= stepNum ? 'opacity-100' : 'opacity-30'}`}
                           >
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${isDone ? 'bg-accent/20' : isActive ? 'bg-accent/10' : 'bg-muted'}`}>
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${isDone ? 'bg-accent/20' : isActive ? 'bg-accent/10' : 'bg-muted'}`}>
                               {isDone ? <Check className="w-3.5 h-3.5 text-accent" /> : isActive ? <Loader2 className="w-3.5 h-3.5 text-accent animate-spin" /> : <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30" />}
                             </div>
                             <span className={isDone ? 'text-foreground/80' : isActive ? 'text-foreground' : ''}>{label}</span>
@@ -727,7 +727,7 @@ export const StrategiIA = () => {
                           )}
                         </Button>
                         <p className="text-[10px] text-muted-foreground text-center">
-                          {isAdminMode ? "Mode Admin : aucun paiement réel ne sera effectué." : "Paiement sécurisé par Stripe. Satisfaction garantie."}
+                          {isAdminMode ? "Mode Admin : aucun paiement réel ne sera effectué." : "Paiement sécurisé par Stripe. Satisfaction garantie."}
                         </p>
                       </CardContent>
                     </Card>
@@ -736,7 +736,7 @@ export const StrategiIA = () => {
                       <button onClick={handleWhatsApp} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors" data-testid="strategiia-share-whatsapp"><MessageSquare className="w-3.5 h-3.5" /> WhatsApp</button>
                       <button onClick={handleSMS} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 transition-colors" data-testid="strategiia-share-sms"><Phone className="w-3.5 h-3.5" /> SMS</button>
                       <button onClick={handleShareEmail} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors" data-testid="strategiia-share-email"><Mail className="w-3.5 h-3.5" /> Email</button>
-                      <button onClick={handleCopyLink} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-muted hover:bg-muted/80 transition-colors" data-testid="strategiia-share-copy">{copied ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}{copied ? 'Copié !' : 'Copier'}</button>
+                      <button onClick={handleCopyLink} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-muted hover:bg-muted/80 transition-colors" data-testid="strategiia-share-copy">{copied ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}{copied ? 'Copié !' : 'Copier'}</button>
                     </div>
                     <Button variant="ghost" onClick={handleReset} className="w-full gap-2 text-sm" data-testid="strategiia-new-analysis">Nouvelle analyse</Button>
                     <StrategicFeedback source="strategiia_basic" typeDossier={typeDossier} />
@@ -765,7 +765,7 @@ export const StrategiIA = () => {
                               <div className="flex items-center gap-2 mb-1">
                                 <Target className="w-4 h-4 text-accent" />
                                 <span className="text-sm font-semibold">Score de pertinence personnalisé</span>
-                                <Badge variant="outline" className={`text-[10px] ${scoreData.confidence === 'high' ? 'border-green-400 text-green-600' : scoreData.confidence === 'medium' ? 'border-yellow-400 text-yellow-600' : 'border-orange-400 text-orange-600'}`}>
+                                <Badge variant="outline" className={`text-[10px] ${scoreData.confidence === 'high' ? 'border-green-400 text-green-600' : scoreData.confidence === 'medium' ? 'border-yellow-400 text-yellow-600' : 'border-orange-400 text-orange-600'}`}>
                                   {scoreData.confidence === 'high' ? 'Fiabilité haute' : scoreData.confidence === 'medium' ? 'Fiabilité moyenne' : 'Fiabilité limitée'}
                                 </Badge>
                               </div>

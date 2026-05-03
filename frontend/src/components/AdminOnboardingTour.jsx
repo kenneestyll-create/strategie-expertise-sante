@@ -30,8 +30,8 @@ const StrateTourSVG = ({ size = 28 }) => (
 const STEPS = [
   {
     target: '[data-testid="admin-tabs-nav"]',
-    title: 'Bienvenue !',
-    message: 'Je suis Straté, votre assistant. Voici votre tableau de bord avec tous les onglets de gestion. Laissez-moi vous montrer l\'essentiel !',
+    title: 'Bienvenue !',
+    message: 'Je suis Straté, votre assistant. Voici votre tableau de bord avec tous les onglets de gestion. Laissez-moi vous montrer l\'essentiel !',
   },
   {
     target: '[data-testid="tab-strategiia"]',
@@ -41,7 +41,7 @@ const STEPS = [
   {
     target: '[data-testid="tab-dossier-express"]',
     title: 'Dossier Express',
-    message: 'Traitez les dossiers payants sous 2h : consultez les documents soumis, ajoutez votre expertise, puis générez et livrez le PDF final.',
+    message: 'Traitez les dossiers payants sous 2h : consultez les documents soumis, ajoutez votre expertise, puis générez et livrez le PDF final.',
   },
   {
     target: '[data-testid="tab-config"]',
@@ -76,7 +76,7 @@ const STEPS = [
   {
     target: '[data-testid="admin-help-btn"]',
     title: 'Aide & Guide',
-    message: 'Ctrl+H ou ce bouton ouvre le guide complet (15 sections documentées). Vous pouvez relancer ce tutoriel depuis le guide. Bonne gestion !',
+    message: 'Ctrl+H ou ce bouton ouvre le guide complet (15 sections documentées). Vous pouvez relancer ce tutoriel depuis le guide. Bonne gestion !',
   },
 ];
 
@@ -230,7 +230,7 @@ export const AdminOnboardingTour = ({ isActive, onClose, token }) => {
               {STEPS.map((_, i) => (
                 <div
                   key={i}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${i === step ? 'w-5 bg-[#C9A84C]' : 'w-1.5 bg-white/20'}`}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${i === step ? 'w-5 bg-[#C9A84C]' : 'w-1.5 bg-white/20'}`}
                 />
               ))}
             </div>

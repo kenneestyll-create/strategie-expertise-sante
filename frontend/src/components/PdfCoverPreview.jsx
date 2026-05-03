@@ -15,7 +15,7 @@ const CoverContent = ({ reportType = "StrategiIA", large = false }) => {
     <div className={`relative w-full h-full bg-[#1a1a2e] ${pad} flex flex-col overflow-hidden select-none`}>
       {/* Watermark */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ transform: 'rotate(-40deg)' }}>
-        <span className={`${large ? 'text-3xl' : 'text-[10px]'} font-bold text-white/[0.06] whitespace-nowrap tracking-wider`}>
+        <span className={`${large ? 'text-3xl' : 'text-[10px]'} font-bold text-white/[0.06] whitespace-nowrap tracking-wider`}>
           Stratégie & Expertise Santé
         </span>
       </div>
@@ -26,8 +26,8 @@ const CoverContent = ({ reportType = "StrategiIA", large = false }) => {
       {/* Title block */}
       <div className={`flex flex-col items-center text-center mt-auto ${gap}`}>
         {/* Shield logo */}
-        <div className={`${large ? 'w-14 h-14' : 'w-5 h-5'} rounded-md bg-white/10 flex items-center justify-center`}>
-          <svg viewBox="0 0 40 44" className={`${large ? 'w-8 h-8' : 'w-3 h-3'}`}>
+        <div className={`${large ? 'w-14 h-14' : 'w-5 h-5'} rounded-md bg-white/10 flex items-center justify-center`}>
+          <svg viewBox="0 0 40 44" className={`${large ? 'w-8 h-8' : 'w-3 h-3'}`}>
             <path d="M20 0L40 8V22C40 34 28 42 20 44C12 42 0 34 0 22V8L20 0Z" fill="#b94e48" />
             <text x="20" y="28" textAnchor="middle" fontFamily="serif" fontSize="16" fontWeight="bold" fill="white">FS</text>
           </svg>
@@ -44,7 +44,7 @@ const CoverContent = ({ reportType = "StrategiIA", large = false }) => {
       </div>
 
       {/* Info box */}
-      <div className={`bg-white/[0.07] rounded ${large ? 'p-4 mt-6 mx-6' : 'p-1 mt-2 mx-1'} ${gap} flex flex-col`}>
+      <div className={`bg-white/[0.07] rounded ${large ? 'p-4 mt-6 mx-6' : 'p-1 mt-2 mx-1'} ${gap} flex flex-col`}>
         {[
           ['Numéro du rapport', 'SES-2026-48721'],
           ['Date de generation', '15/03/2026'],

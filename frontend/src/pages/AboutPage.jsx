@@ -148,14 +148,14 @@ export const AboutPage = () => {
               <div 
                 key={index}
                 className={`relative flex flex-col md:flex-row gap-6 md:gap-10 mb-14 last:mb-0 ${
-                  index % 2 === 0 ? 'md:flex-row-reverse' : ''
+                  index % 2 === 0 ? 'md:flex-row-reverse' : ''
                 }`}
                 data-testid={`timeline-item-${index}`}
               >
                 {/* Content card */}
-                <div className={`flex-1 ${index % 2 === 0 ? 'md:text-right md:pr-14' : 'md:pl-14'} pl-14 md:pl-0`}>
-                  <div className={`p-5 rounded-xl border ${item.highlight ? 'border-[#C9A84C]/40 bg-[#C9A84C]/5' : 'border-white/5 bg-white/[0.02]'} transition-all hover:border-[#C9A84C]/30`}>
-                    <div className={`flex items-center gap-2 mb-3 ${index % 2 === 0 ? 'md:justify-end' : ''}`}>
+                <div className={`flex-1 ${index % 2 === 0 ? 'md:text-right md:pr-14' : 'md:pl-14'} pl-14 md:pl-0`}>
+                  <div className={`p-5 rounded-xl border ${item.highlight ? 'border-[#C9A84C]/40 bg-[#C9A84C]/5' : 'border-white/5 bg-white/[0.02]'} transition-all hover:border-[#C9A84C]/30`}>
+                    <div className={`flex items-center gap-2 mb-3 ${index % 2 === 0 ? 'md:justify-end' : ''}`}>
                       <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${item.badgeColor || 'bg-white/10 text-[#f5f0e8]/70'}`}>
                         {item.badge}
                       </span>
@@ -169,10 +169,10 @@ export const AboutPage = () => {
                 {/* Icon dot */}
                 <div className={`absolute left-5 md:left-1/2 top-5 w-10 h-10 rounded-full border-2 flex items-center justify-center transform -translate-x-1/2 ${
                   item.highlight 
-                    ? 'border-[#C9A84C] bg-[#C9A84C]/20' 
-                    : 'border-[#C9A84C]/40 bg-[#0c0c0c]'
+                    ? 'border-[#C9A84C] bg-[#C9A84C]/20' 
+                    : 'border-[#C9A84C]/40 bg-[#0c0c0c]'
                 }`}>
-                  <item.icon className={`w-4 h-4 ${item.highlight ? 'text-[#C9A84C]' : 'text-[#C9A84C]/60'}`} />
+                  <item.icon className={`w-4 h-4 ${item.highlight ? 'text-[#C9A84C]' : 'text-[#C9A84C]/60'}`} />
                 </div>
                 
                 {/* Spacer */}
@@ -287,12 +287,12 @@ export const AboutPage = () => {
           <div className="grid sm:grid-cols-3 gap-5">
             {[
               { type: "AT / MP", text: "Accidents du travail, maladies professionnelles en contentieux, consolidations, taux d'IPP acquis.", gold: false },
-              { type: "MDPH", text: "Dossiers complexes : transplantation d'organe, polyhandicap sensoriel, restrictions poste, PCH, RQTH.", gold: true },
+              { type: "MDPH", text: "Dossiers complexes : transplantation d'organe, polyhandicap sensoriel, restrictions poste, PCH, RQTH.", gold: true },
               { type: "PTIA / ITT", text: "Litiges assurantiels, reconnaissance de garanties acquises face aux grands assureurs nationaux.", gold: false },
             ].map((t, i) => (
-              <div key={i} className={`p-5 rounded-xl border ${t.gold ? 'border-[#C9A84C]/30 bg-[#C9A84C]/5' : 'border-white/5 bg-white/[0.02]'}`} data-testid={`about-typologie-${i}`}>
+              <div key={i} className={`p-5 rounded-xl border ${t.gold ? 'border-[#C9A84C]/30 bg-[#C9A84C]/5' : 'border-white/5 bg-white/[0.02]'}`} data-testid={`about-typologie-${i}`}>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${t.gold ? 'bg-[#C9A84C] text-[#1a1a1a]' : 'bg-white/10 text-[#f5f0e8]/60'}`}>{t.type}</span>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${t.gold ? 'bg-[#C9A84C] text-[#1a1a1a]' : 'bg-white/10 text-[#f5f0e8]/60'}`}>{t.type}</span>
                 </div>
                 <p className="text-[#f5f0e8]/60 text-sm leading-relaxed">{t.text}</p>
               </div>

@@ -55,7 +55,7 @@ export const AdminVipTab = ({ axiosConfig }) => {
   };
 
   const handleDelete = async (id, name) => {
-    if (!window.confirm(`Supprimer définitivement l'invité ${name} ?`)) return;
+    if (!window.confirm(`Supprimer définitivement l'invité ${name} ?`)) return;
     try {
       await axios.delete(`${API}/admin/vip-guests/${id}`, axiosConfig);
       toast.success("Invité supprimé");
@@ -125,7 +125,7 @@ export const AdminVipTab = ({ axiosConfig }) => {
       ) : (
         <div className="space-y-3">
           {guests.map(g => (
-            <Card key={g.id} className={`border-border ${!g.active ? 'opacity-60' : ''}`} data-testid={`vip-guest-${g.id}`}>
+            <Card key={g.id} className={`border-border ${!g.active ? 'opacity-60' : ''}`} data-testid={`vip-guest-${g.id}`}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">

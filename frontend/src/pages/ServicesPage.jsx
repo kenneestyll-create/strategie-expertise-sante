@@ -22,7 +22,7 @@ export const ServicesPage = () => {
     {
       icon: FileSearch,
       title: "Analyse de dossier médical et administratif",
-      description: "Je passe en revue l'ensemble de vos documents : certificats médicaux, rapports d'expertise, courriers de la CPAM, contrats d'assurance. L'objectif est de comprendre votre situation dans sa globalité et d'identifier les points forts et les failles de votre dossier.",
+      description: "Je passe en revue l'ensemble de vos documents : certificats médicaux, rapports d'expertise, courriers de la CPAM, contrats d'assurance. L'objectif est de comprendre votre situation dans sa globalité et d'identifier les points forts et les failles de votre dossier.",
       includes: [
         "Lecture complète de votre dossier",
         "Identification des documents manquants",
@@ -34,7 +34,7 @@ export const ServicesPage = () => {
     {
       icon: Shield,
       title: "Préparation aux expertises médicales",
-      description: "L'expertise médicale est souvent un moment stressant et décisif. Je vous aide à vous y préparer : quoi apporter, comment présenter vos symptômes, quels pièges éviter, et comment rester serein face à l'expert.",
+      description: "L'expertise médicale est souvent un moment stressant et décisif. Je vous aide à vous y préparer : quoi apporter, comment présenter vos symptômes, quels pièges éviter, et comment rester serein face à l'expert.",
       includes: [
         "Simulation d'entretien d'expertise",
         "Liste des documents à préparer",
@@ -46,7 +46,7 @@ export const ServicesPage = () => {
     {
       icon: Users,
       title: "Stratégie AT/MP et CRRMP",
-      description: "La reconnaissance d'une maladie professionnelle est un parcours semé d'embûches. Je vous guide dans les démarches : déclaration initiale, constitution du dossier, passage devant le CRRMP, et suivi de votre demande.",
+      description: "La reconnaissance d'une maladie professionnelle est un parcours semé d'embûches. Je vous guide dans les démarches : déclaration initiale, constitution du dossier, passage devant le CRRMP, et suivi de votre demande.",
       includes: [
         "Aide à la déclaration de maladie professionnelle",
         "Préparation du dossier CRRMP",

@@ -114,9 +114,9 @@ export const AdminV2Readiness = ({ axiosConfig }) => {
         <div className={`flex items-center gap-5 p-4 rounded-xl ${cfg.bg} ${cfg.border} border`} data-testid="v2-readiness-status-block">
           {/* Traffic light */}
           <div className="flex flex-col items-center gap-1.5 flex-shrink-0" data-testid="v2-traffic-light">
-            <div className={`w-5 h-5 rounded-full ${data.status === 'rouge' ? 'bg-red-500 shadow-lg shadow-red-500/50' : 'bg-red-500/20'} transition-all`} />
-            <div className={`w-5 h-5 rounded-full ${data.status === 'orange' ? 'bg-amber-500 shadow-lg shadow-amber-500/50' : 'bg-amber-500/20'} transition-all`} />
-            <div className={`w-5 h-5 rounded-full ${data.status === 'vert' ? 'bg-emerald-500 shadow-lg shadow-emerald-500/50' : 'bg-emerald-500/20'} transition-all`} />
+            <div className={`w-5 h-5 rounded-full ${data.status === 'rouge' ? 'bg-red-500 shadow-lg shadow-red-500/50' : 'bg-red-500/20'} transition-all`} />
+            <div className={`w-5 h-5 rounded-full ${data.status === 'orange' ? 'bg-amber-500 shadow-lg shadow-amber-500/50' : 'bg-amber-500/20'} transition-all`} />
+            <div className={`w-5 h-5 rounded-full ${data.status === 'vert' ? 'bg-emerald-500 shadow-lg shadow-emerald-500/50' : 'bg-emerald-500/20'} transition-all`} />
           </div>
 
           {/* Score */}

@@ -52,7 +52,7 @@ export const ReferralPage = () => {
   const copyToClipboard = () => {
     navigator.clipboard.writeText(referralCode);
     setCopied(true);
-    toast.success("Code copié !");
+    toast.success("Code copié !");
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -321,15 +321,15 @@ export const ReferralPage = () => {
 
 const parrainageFaqData = [
   {
-    question: "À qui s'adresse le parrainage ?",
+    question: "À qui s'adresse le parrainage ?",
     answer: "Le parrainage s'adresse à toute personne souhaitant recommander un accompagnement dans le cadre d'une maladie professionnelle ou d'un accident du travail."
   },
   {
-    question: "Le parrainage est-il obligatoire pour être accompagné ?",
+    question: "Le parrainage est-il obligatoire pour être accompagné ?",
     answer: "Non, toute personne peut contacter directement Stratégie Expertise Santé sans passer par un parrain."
   },
   {
-    question: "Quels sont les avantages du parrainage ?",
+    question: "Quels sont les avantages du parrainage ?",
     answer: "Le principal avantage est de permettre à une personne en difficulté d'être orientée vers un accompagnement adapté et spécialisé. Le filleul bénéficie de 10% de réduction sur sa première prestation, et tous les clients profitent de 15% de réduction de fidélité dès leur deuxième prestation."
   }
 ];
@@ -370,7 +370,7 @@ const ParrainageFAQ = () => {
                 data-testid={`parrainage-faq-${i}`}
               >
                 <span className="font-medium text-sm text-foreground pr-4">{faq.question}</span>
-                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
               </button>
               {openIndex === i && (
                 <div className="px-4 pb-4">

@@ -147,8 +147,8 @@ export const SuiviDossierPage = () => {
                         {/* Vertical line + dot */}
                         <div className="flex flex-col items-center">
                           <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all ${
-                            isCompleted ? 'bg-green-50 border-green-400' :
-                            isActive ? 'bg-accent/10 border-accent ring-4 ring-accent/10' :
+                            isCompleted ? 'bg-green-50 border-green-400' :
+                            isActive ? 'bg-accent/10 border-accent ring-4 ring-accent/10' :
                             'bg-muted/40 border-muted-foreground/20'
                           }`}>
                             {isCompleted ? (
@@ -160,15 +160,15 @@ export const SuiviDossierPage = () => {
                             )}
                           </div>
                           {!isLast && (
-                            <div className={`w-0.5 h-8 my-1 ${isCompleted ? 'bg-green-300' : 'bg-muted-foreground/15'}`} />
+                            <div className={`w-0.5 h-8 my-1 ${isCompleted ? 'bg-green-300' : 'bg-muted-foreground/15'}`} />
                           )}
                         </div>
 
                         {/* Label */}
-                        <div className={`pt-1.5 pb-3 ${isActive ? '' : ''}`}>
+                        <div className={`pt-1.5 pb-3 ${isActive ? '' : ''}`}>
                           <p className={`text-sm font-medium ${
-                            isCompleted ? 'text-green-700' :
-                            isActive ? 'text-foreground' :
+                            isCompleted ? 'text-green-700' :
+                            isActive ? 'text-foreground' :
                             'text-muted-foreground/50'
                           }`}>
                             {step.label}

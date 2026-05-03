@@ -122,7 +122,7 @@ export const ForumTopicPage = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      toast.success("Réponse publiée !");
+      toast.success("Réponse publiée !");
       setReplyContent('');
       fetchTopic();
     } catch (error) {
@@ -240,10 +240,10 @@ export const ForumTopicPage = () => {
                     variant="ghost"
                     size="sm"
                     onClick={handleLikeTopic}
-                    className={`gap-1 ${isLiked ? 'text-red-500' : ''}`}
+                    className={`gap-1 ${isLiked ? 'text-red-500' : ''}`}
                     data-testid="like-topic-button"
                   >
-                    <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+                    <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
                     {topic.likes?.length || 0}
                   </Button>
                   {isAuthenticated && (
@@ -309,9 +309,9 @@ export const ForumTopicPage = () => {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleLikeReply(reply.id)}
-                              className={`gap-1 ${replyLiked ? 'text-red-500' : ''}`}
+                              className={`gap-1 ${replyLiked ? 'text-red-500' : ''}`}
                             >
-                              <Heart className={`w-4 h-4 ${replyLiked ? 'fill-current' : ''}`} />
+                              <Heart className={`w-4 h-4 ${replyLiked ? 'fill-current' : ''}`} />
                               {reply.likes?.length || 0}
                             </Button>
                             {isAuthenticated && (

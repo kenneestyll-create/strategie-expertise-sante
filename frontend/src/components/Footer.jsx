@@ -36,7 +36,7 @@ export const Footer = () => {
     try {
       await axios.post(`${API}/partner-request`, form);
       setSubmitted(true);
-      toast.success("Demande envoyée avec succès !");
+      toast.success("Demande envoyée avec succès !");
     } catch {
       toast.error("Erreur lors de l'envoi. Veuillez réessayer.");
     } finally {

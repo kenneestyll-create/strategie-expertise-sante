@@ -93,7 +93,7 @@ export const ChatBot = () => {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: "Bonjour ! Je suis l'assistant d'orientation de S.E.S.\n\nDites-moi en quelques mots votre besoin et je vous oriente vers le bon outil."
+      content: "Bonjour ! Je suis l'assistant d'orientation de S.E.S.\n\nDites-moi en quelques mots votre besoin et je vous oriente vers le bon outil."
     }
   ]);
   const [input, setInput] = useState('');
@@ -148,9 +148,9 @@ export const ChatBot = () => {
   const remaining = Math.max(0, CHAT_LIMIT - questionsUsed);
 
   const quickQuestions = [
-    "Comment préparer une expertise ?",
-    "Qu'est-ce que la MDPH ?",
-    "Quels sont vos tarifs ?",
+    "Comment préparer une expertise ?",
+    "Qu'est-ce que la MDPH ?",
+    "Quels sont vos tarifs ?",
     "Mes droits après un AT"
   ];
 
@@ -246,7 +246,7 @@ export const ChatBot = () => {
             <div className="flex items-center gap-2">
               {/* Quota counter */}
               <Badge
-                className={`text-[10px] ${remaining > 2 ? 'bg-green-500/20 text-green-300 border-green-500/30' : remaining > 0 ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-red-500/20 text-red-300 border-red-500/30'}`}
+                className={`text-[10px] ${remaining > 2 ? 'bg-green-500/20 text-green-300 border-green-500/30' : remaining > 0 ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-red-500/20 text-red-300 border-red-500/30'}`}
                 data-testid="chatbot-quota-badge"
               >
                 <Gauge className="w-3 h-3 mr-1" />
@@ -266,11 +266,11 @@ export const ChatBot = () => {
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/30">
             {messages.map((message, index) => (
               <div key={index}>
-                <div className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${message.role === 'user' ? 'bg-accent text-accent-foreground' : 'bg-muted text-muted-foreground'}`}>
+                <div className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${message.role === 'user' ? 'bg-accent text-accent-foreground' : 'bg-muted text-muted-foreground'}`}>
                     {message.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                   </div>
-                  <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${message.role === 'user' ? 'bg-accent text-accent-foreground rounded-tr-sm' : 'bg-card border border-border rounded-tl-sm'}`}>
+                  <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${message.role === 'user' ? 'bg-accent text-accent-foreground rounded-tr-sm' : 'bg-card border border-border rounded-tl-sm'}`}>
                     <div className="text-sm prose prose-sm max-w-none">
                       <ReactMarkdown
                         components={{

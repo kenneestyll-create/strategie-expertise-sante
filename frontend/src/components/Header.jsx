@@ -67,12 +67,12 @@ export const Header = () => {
 
   const navLinkClass = (active) =>
     `px-3 py-2 text-[13px] tracking-wide font-medium transition-colors duration-200 ${
-      active ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/60 hover:text-[#f5f0e8]'
+      active ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/60 hover:text-[#f5f0e8]'
     }`;
 
   const dropdownBtnClass = (active) =>
     `flex items-center gap-1 px-3 py-2 text-[13px] tracking-wide font-medium transition-colors duration-200 outline-none focus:outline-none focus-visible:outline-none ${
-      active ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/60 hover:text-[#f5f0e8]'
+      active ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/60 hover:text-[#f5f0e8]'
     }`;
 
   const mobileToggle = (section) =>
@@ -82,10 +82,10 @@ export const Header = () => {
     <header
       className={`fixed top-0 left-0 right-0 transition-all duration-300 ${
         isMenuOpen
-          ? 'bg-[#0a0a08]'
-          : scrolled
-            ? 'bg-[#0a0a08]/95 backdrop-blur-md'
-            : 'bg-[#0a0a08]/80 backdrop-blur-sm'
+          ? 'bg-[#0a0a08]'
+          : scrolled
+            ? 'bg-[#0a0a08]/95 backdrop-blur-md'
+            : 'bg-[#0a0a08]/80 backdrop-blur-sm'
       }`}
       style={{ zIndex: 'var(--z-header, 9999)' }}
       data-testid="header"
@@ -124,7 +124,7 @@ export const Header = () => {
                   <DropdownMenuItem key={item.href} asChild>
                     <Link
                       to={item.href}
-                      className={`text-[13px] cursor-pointer ${isActive(item.href) ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/70 hover:text-[#f5f0e8]'}`}
+                      className={`text-[13px] cursor-pointer ${isActive(item.href) ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/70 hover:text-[#f5f0e8]'}`}
                       data-testid={`nav-${item.name.toLowerCase().replace(/[\s\/]+/g, '-')}`}
                     >
                       {item.name}
@@ -146,7 +146,7 @@ export const Header = () => {
                   <DropdownMenuItem key={item.href} asChild>
                     <Link
                       to={item.href}
-                      className={`text-[13px] cursor-pointer ${isActive(item.href) ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/70 hover:text-[#f5f0e8]'}`}
+                      className={`text-[13px] cursor-pointer ${isActive(item.href) ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/70 hover:text-[#f5f0e8]'}`}
                       data-testid={`nav-${item.name.toLowerCase().replace(/[\s\/]+/g, '-')}`}
                     >
                       {item.name}
@@ -226,21 +226,21 @@ export const Header = () => {
         {isMenuOpen && (
           <div className="lg:hidden border-t border-[#C9A84C]/10 bg-[#0a0a08] -mx-4 sm:-mx-6 px-4 sm:px-6 overflow-y-auto overflow-x-hidden" style={{ maxHeight: 'calc(85dvh - env(safe-area-inset-top, 0px))', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }} data-testid="mobile-menu">
             <div className="flex flex-col py-3">
-              <Link to="/" className={`px-4 py-3 text-sm font-medium tracking-wide ${isActive('/') ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/60 hover:text-[#f5f0e8]'}`} data-testid="mobile-nav-accueil">
+              <Link to="/" className={`px-4 py-3 text-sm font-medium tracking-wide ${isActive('/') ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/60 hover:text-[#f5f0e8]'}`} data-testid="mobile-nav-accueil">
                 Accueil
               </Link>
-              <Link to="/a-propos" className={`px-4 py-3 text-sm font-medium tracking-wide ${isActive('/a-propos') ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/60 hover:text-[#f5f0e8]'}`} data-testid="mobile-nav-a-propos">
+              <Link to="/a-propos" className={`px-4 py-3 text-sm font-medium tracking-wide ${isActive('/a-propos') ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/60 hover:text-[#f5f0e8]'}`} data-testid="mobile-nav-a-propos">
                 À propos
               </Link>
 
               {/* Accompagnements */}
               <button
                 onClick={() => mobileToggle('accompagnements')}
-                className={`flex items-center justify-between px-4 py-3 text-sm font-medium tracking-wide w-full ${isDropdownActive(accompagnementsItems) ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/60'}`}
+                className={`flex items-center justify-between px-4 py-3 text-sm font-medium tracking-wide w-full ${isDropdownActive(accompagnementsItems) ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/60'}`}
                 data-testid="mobile-toggle-accompagnements"
               >
                 Accompagnements
-                <ChevronDown className={`w-4 h-4 transition-transform ${mobileOpen === 'accompagnements' ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 transition-transform ${mobileOpen === 'accompagnements' ? 'rotate-180' : ''}`} />
               </button>
               {mobileOpen === 'accompagnements' && (
                 <div className="border-l border-[#C9A84C]/10 ml-6">
@@ -248,7 +248,7 @@ export const Header = () => {
                     <Link
                       key={item.href}
                       to={item.href}
-                      className={`block pl-4 pr-4 py-2.5 text-sm ${isActive(item.href) ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/50 hover:text-[#f5f0e8]'}`}
+                      className={`block pl-4 pr-4 py-2.5 text-sm ${isActive(item.href) ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/50 hover:text-[#f5f0e8]'}`}
                       data-testid={`mobile-nav-${item.name.toLowerCase().replace(/[\s\/]+/g, '-')}`}
                     >
                       {item.name}
@@ -260,11 +260,11 @@ export const Header = () => {
               {/* Outils */}
               <button
                 onClick={() => mobileToggle('outils')}
-                className={`flex items-center justify-between px-4 py-3 text-sm font-medium tracking-wide w-full ${isDropdownActive(outilsItems) ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/60'}`}
+                className={`flex items-center justify-between px-4 py-3 text-sm font-medium tracking-wide w-full ${isDropdownActive(outilsItems) ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/60'}`}
                 data-testid="mobile-toggle-outils"
               >
                 Outils
-                <ChevronDown className={`w-4 h-4 transition-transform ${mobileOpen === 'outils' ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 transition-transform ${mobileOpen === 'outils' ? 'rotate-180' : ''}`} />
               </button>
               {mobileOpen === 'outils' && (
                 <div className="border-l border-[#C9A84C]/10 ml-6">
@@ -272,7 +272,7 @@ export const Header = () => {
                     <Link
                       key={item.href}
                       to={item.href}
-                      className={`block pl-4 pr-4 py-2.5 text-sm ${isActive(item.href) ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/50 hover:text-[#f5f0e8]'}`}
+                      className={`block pl-4 pr-4 py-2.5 text-sm ${isActive(item.href) ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/50 hover:text-[#f5f0e8]'}`}
                       data-testid={`mobile-nav-${item.name.toLowerCase().replace(/[\s\/]+/g, '-')}`}
                     >
                       {item.name}
@@ -290,10 +290,10 @@ export const Header = () => {
               >
                 StratégiIA
               </button>
-              <Link to="/tarifs" className={`px-4 py-3 text-sm font-medium tracking-wide ${isActive('/tarifs') ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/60 hover:text-[#f5f0e8]'}`} data-testid="mobile-nav-tarifs">
+              <Link to="/tarifs" className={`px-4 py-3 text-sm font-medium tracking-wide ${isActive('/tarifs') ? 'text-[#C9A84C]' : 'text-[#f5f0e8]/60 hover:text-[#f5f0e8]'}`} data-testid="mobile-nav-tarifs">
                 Tarifs
               </Link>
-              <Link to="/dossier-express" className={`px-4 py-3 text-sm font-medium tracking-wide flex items-center gap-1.5 ${isActive('/dossier-express') ? 'text-[#C9A84C]' : 'text-[#C9A84C]/70 hover:text-[#C9A84C]'}`} data-testid="mobile-nav-dossier-express">
+              <Link to="/dossier-express" className={`px-4 py-3 text-sm font-medium tracking-wide flex items-center gap-1.5 ${isActive('/dossier-express') ? 'text-[#C9A84C]' : 'text-[#C9A84C]/70 hover:text-[#C9A84C]'}`} data-testid="mobile-nav-dossier-express">
                 <Zap className="w-3.5 h-3.5" />
                 Dossier Express IA
               </Link>

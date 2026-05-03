@@ -41,7 +41,7 @@ const ScoreRing = ({ score, color, blurred }) => {
   const stopA = color === 'green' ? '#10b981' : color === 'blue' ? '#3b82f6' : color === 'amber' ? '#f59e0b' : color === 'orange' ? '#f97316' : '#ef4444';
   const stopB = color === 'green' ? '#22c55e' : color === 'blue' ? '#6366f1' : color === 'amber' ? '#eab308' : color === 'orange' ? '#fb923c' : '#f87171';
   return (
-    <div className={`relative w-36 h-36 flex-shrink-0 ${blurred ? 'blur-sm opacity-60' : ''}`} data-testid="dossier-score-ring">
+    <div className={`relative w-36 h-36 flex-shrink-0 ${blurred ? 'blur-sm opacity-60' : ''}`} data-testid="dossier-score-ring">
       <svg className="w-full h-full -rotate-90" viewBox="0 0 128 128">
         <circle cx="64" cy="64" r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
         <circle cx="64" cy="64" r={r} fill="none" stroke="url(#scoreGrad)" strokeWidth="8" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c - (score / 100) * c} className="transition-all duration-1000 ease-out" />
@@ -81,7 +81,7 @@ const BreakdownBar = ({ label, score, weight }) => {
         <span className="text-xs text-muted-foreground">{label}</span>
         <div className="flex items-center gap-2">
           {weight > 0 && <span className="text-[10px] text-muted-foreground/60">{weight}%</span>}
-          <span className={`text-xs font-semibold ${score >= 80 ? 'text-emerald-600' : score >= 60 ? 'text-blue-600' : score >= 40 ? 'text-amber-600' : 'text-red-500'}`}>{score}</span>
+          <span className={`text-xs font-semibold ${score >= 80 ? 'text-emerald-600' : score >= 60 ? 'text-blue-600' : score >= 40 ? 'text-amber-600' : 'text-red-500'}`}>{score}</span>
         </div>
       </div>
       <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -252,9 +252,9 @@ export const DossierAnalysis = ({ token }) => {
 
       {/* ── Real-time Feedback ── */}
       {feedback && (
-        <div className={`animate-in slide-in-from-top-2 duration-300 p-3.5 rounded-lg flex items-center gap-3 ${feedback.type === 'up' ? 'bg-emerald-50 border border-emerald-200' : 'bg-blue-50 border border-blue-200'}`} data-testid="score-feedback-toast">
-          <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${feedback.type === 'up' ? 'bg-emerald-100' : 'bg-blue-100'}`}>
-            <TrendingUp className={`w-4.5 h-4.5 ${feedback.type === 'up' ? 'text-emerald-600' : 'text-blue-600'}`} />
+        <div className={`animate-in slide-in-from-top-2 duration-300 p-3.5 rounded-lg flex items-center gap-3 ${feedback.type === 'up' ? 'bg-emerald-50 border border-emerald-200' : 'bg-blue-50 border border-blue-200'}`} data-testid="score-feedback-toast">
+          <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${feedback.type === 'up' ? 'bg-emerald-100' : 'bg-blue-100'}`}>
+            <TrendingUp className={`w-4.5 h-4.5 ${feedback.type === 'up' ? 'text-emerald-600' : 'text-blue-600'}`} />
           </div>
           <div className="flex-1">
             {feedback.type === 'up' ? (

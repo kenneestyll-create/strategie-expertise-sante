@@ -121,7 +121,7 @@ const GuidePage = () => {
                 {c.reponse_rapide_titre || page.title}
               </h2>
               <p className="text-sm leading-relaxed text-foreground/80 mb-4">{c.reponse_rapide}</p>
-              <Link to={`${page.cta_type === 'accompagnement' ? '/agenda?type=conseil' : '/dossier-express'}?source=seo&page=${slug}`}>
+              <Link to={`${page.cta_type === 'accompagnement' ? '/agenda?type=conseil' : '/dossier-express'}?source=seo&page=${slug}`}>
                 <Button size="sm" className="bg-[#C9A84C] hover:bg-[#b8960f] text-[#1a1a2e] font-semibold gap-2 rounded-lg" data-testid="guide-reponse-rapide-cta">
                   {page.cta_label || 'Se faire accompagner'}
                   <ArrowRight className="w-3.5 h-3.5" />

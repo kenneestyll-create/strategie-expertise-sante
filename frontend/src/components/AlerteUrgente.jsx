@@ -46,7 +46,7 @@ export const AlerteUrgente = () => {
           if (res.data.success) {
             setConfirmed(true);
             setConfirmedFormule(res.data.formule || '2h');
-            toast.success('Paiement confirmé ! Votre demande urgente est enregistrée.');
+            toast.success('Paiement confirmé ! Votre demande urgente est enregistrée.');
           } else {
             toast.error('Le paiement n\'a pas été finalisé.');
           }
@@ -92,7 +92,7 @@ export const AlerteUrgente = () => {
         await axios.post(`${API}/alerte-urgente/vip`, { nom, telephone, email, message, formule });
         setConfirmed(true);
         setConfirmedFormule(formule);
-        toast.success(`Accès Partenaire VIP (${vipName}) : alerte envoyée sans paiement.`);
+        toast.success(`Accès Partenaire VIP (${vipName}) : alerte envoyée sans paiement.`);
       } catch {
         toast.error("Erreur lors de l'envoi de l'alerte.");
       }
@@ -276,7 +276,7 @@ export const AlerteUrgente = () => {
                               setShowRecap(false);
                               setConfirmed(true);
                               setConfirmedFormule(formule);
-                              toast.success('Paiement PayPal confirmé !');
+                              toast.success('Paiement PayPal confirmé !');
                             } catch { toast.error("Erreur lors de l'enregistrement PayPal"); }
                           }}
                           onError={() => toast.error("Erreur PayPal")}
@@ -317,8 +317,8 @@ export const AlerteUrgente = () => {
                     onClick={() => setFormule('2h')}
                     className={`p-3 rounded-xl border-2 text-left transition-all ${
                       formule === '2h'
-                        ? 'border-orange-500 bg-orange-50'
-                        : 'border-border hover:border-orange-300'
+                        ? 'border-orange-500 bg-orange-50'
+                        : 'border-border hover:border-orange-300'
                     }`}
                     data-testid="formule-2h"
                   >
@@ -333,8 +333,8 @@ export const AlerteUrgente = () => {
                     onClick={() => setFormule('30min')}
                     className={`p-3 rounded-xl border-2 text-left transition-all ${
                       formule === '30min'
-                        ? 'border-orange-500 bg-orange-50'
-                        : 'border-border hover:border-orange-300'
+                        ? 'border-orange-500 bg-orange-50'
+                        : 'border-border hover:border-orange-300'
                     }`}
                     data-testid="formule-30min"
                   >
