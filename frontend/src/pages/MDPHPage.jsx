@@ -259,7 +259,7 @@ export const MDPHPage = () => {
       {/* Encart conversion */}
       <DossierExpressCTA
         testId="mdph-cta-dossier"
-        title="Refus, taux insuffisant, dossier en cours ?"
+        title={"Refus, taux insuffisant, dossier en cours\u00A0?"}
         text="60 % des refus MDPH se gagnent en recours lorsque le dossier est correctement reconstruit. Le Dossier Express IA décortique votre situation, identifie les pièces manquantes et structure votre argumentation pour la CDAPH ou le recours."
         ctaLabel="Faire analyser mon dossier MDPH"
       />

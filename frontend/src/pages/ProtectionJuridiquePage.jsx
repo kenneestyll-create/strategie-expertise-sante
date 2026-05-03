@@ -395,7 +395,7 @@ export const ProtectionJuridiquePage = () => {
       {/* Encart conversion */}
       <DossierExpressCTA
         testId="pj-cta-dossier"
-        title="Litige en cours ou à venir ? Faites l'audit de votre couverture"
+        title={"Litige en cours ou à venir\u00A0? Faites l'audit de votre couverture"}
         text="La majorité des Français disposent d'une protection juridique sans le savoir — à condition de l'activer avant le litige. Le Dossier Express IA identifie vos couvertures existantes, leurs plafonds, leurs exclusions et la stratégie pour en tirer le maximum."
         ctaLabel="Faire mon audit PJ"
       />

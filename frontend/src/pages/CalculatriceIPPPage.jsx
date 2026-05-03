@@ -513,7 +513,7 @@ export const CalculatriceIPPPage = () => {
           {/* Encart conversion */}
           <DossierExpressCTA
             testId="ipp-cta-dossier"
-            title="Vous venez de calculer votre taux estimé ?"
+            title={"Vous venez de calculer votre taux estimé\u00A0?"}
             text="Un écart de 2 ou 3 points d'IPP représente fréquemment 15 000 à 40 000 € sur l'indemnisation finale. Le Dossier Express IA analyse votre situation, identifie les leviers de revalorisation et vous oriente vers la bonne stratégie de contestation."
             ctaLabel="Analyser ma situation IPP"
           />

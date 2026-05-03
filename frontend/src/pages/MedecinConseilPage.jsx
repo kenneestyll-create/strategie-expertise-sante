@@ -370,7 +370,7 @@ export default function MedecinConseilPage() {
       {/* Encart conversion */}
       <DossierExpressCTA
         testId="médecin-conseil-cta-dossier"
-        title="Convocation reçue ou avis défavorable ?"
+        title={"Convocation reçue ou avis défavorable\u00A0?"}
         text="Une convocation par le médecin conseil CPAM ou un avis défavorable se prépare et se conteste sur dossier médical solide. Le Dossier Express IA identifie les éléments manquants, structure votre argumentation et le calendrier exact de vos recours (CRA, CMRA, Tribunal)."
         ctaLabel="Préparer mon dossier"
       />

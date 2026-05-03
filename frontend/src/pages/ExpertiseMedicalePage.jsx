@@ -280,7 +280,7 @@ export const ExpertiseMedicalePage = () => {
       {/* Encart conversion */}
       <DossierExpressCTA
         testId="expertise-cta-dossier"
-        title="Expertise prochaine ou rapport déjà reçu ?"
+        title={"Expertise prochaine ou rapport déjà reçu\u00A0?"}
         text="Préparer une expertise demande 3 à 6 semaines de travail méthodique sur votre dossier. Contester un rapport défavorable exige une argumentation médicale et juridique précise. Le Dossier Express IA structure votre préparation ou votre contestation."
         ctaLabel="Préparer mon expertise"
       />

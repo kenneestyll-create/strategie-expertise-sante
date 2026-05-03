@@ -294,7 +294,7 @@ export const AccidentTravailPage = () => {
       {/* Encart conversion */}
       <DossierExpressCTA
         testId="atmp-cta-dossier"
-        title="AT non déclaré, MP refusée, IPP sous-évalué ?"
+        title={"AT non déclaré, MP refusée, IPP sous-évalué\u00A0?"}
         text="La majorité des dossiers AT/MP bloquent sur des failles dans le dossier initial : certificat médical incomplet, déclaration tardive, consolidation prématurée. Le Dossier Express IA identifie précisément où votre dossier perd de la valeur et la stratégie pour le redresser."
         ctaLabel="Analyser mon dossier AT/MP"
       />
