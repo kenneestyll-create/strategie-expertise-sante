@@ -14,8 +14,9 @@ const HELP_SECTIONS = [
       { label: 'Filtrer', text: 'Utilisez les filtres par statut, canal (site, téléphone, email) et source pour cibler vos recherches.' },
       { label: 'Traiter', text: 'Cliquez sur un contact pour voir le détail, ajouter des notes internes et changer le statut.' },
       { label: 'Supprimer', text: 'Le bouton corbeille permet de supprimer définitivement un contact.' },
+      { label: 'Tracking QR', text: 'En haut du tab, l\'indicateur "Contacts arrivés via QR" mesure les visiteurs venus depuis les QR codes des PDFs imprimés/partagés (Dossier Express IA, StratégiIA, Auto-diagnostic). Permet d\'identifier quel PDF circule le plus.' },
     ],
-    keywords: ['contact', 'prospect', 'formulaire', 'demande', 'statut', 'nouveau', 'en cours', 'traité', 'filtre', 'notes']
+    keywords: ['contact', 'prospect', 'formulaire', 'demande', 'statut', 'nouveau', 'en cours', 'traité', 'filtre', 'notes', 'qr', 'qr code', 'tracking', 'pdf']
   },
   {
     id: 'avis',

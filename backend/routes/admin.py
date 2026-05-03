@@ -184,6 +184,28 @@ async def get_current_user(admin: dict = Depends(get_current_admin)):
 
 # ==================== CONTACTS ====================
 
+@router.get("/admin/contacts/qr-stats")
+async def get_qr_stats(admin: dict = Depends(get_current_admin)):
+    """Agrégation des contacts arrivés via QR codes, groupés par source."""
+    pipeline = [
+        {"$match": {"tracking_via": "qr"}},
+        {"$group": {"_id": "$tracking_source", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}}
+    ]
+    results = await db.contacts.aggregate(pipeline).to_list(50)
+    by_source = {r["_id"] or "inconnu": r["count"] for r in results}
+    total = sum(by_source.values())
+    return {
+        "total": total,
+        "by_source": by_source,
+        "labels": {
+            "dossier_express": "Dossier Express IA",
+            "strategiia": "StratégiIA",
+            "auto_diagnostic": "Auto-diagnostic",
+            "inconnu": "Source inconnue"
+        }
+    }
+
 @router.get("/admin/contacts", response_model=List[ContactRequest])
 async def get_all_contacts(status: Optional[str] = None, via: Optional[str] = None, source: Optional[str] = None, admin: dict = Depends(get_current_admin)):
     query = {}

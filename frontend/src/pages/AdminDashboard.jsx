@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { PremiumAnalysisRenderer } from '@/components/PremiumAnalysisRenderer';
 import { AdminVipTab } from '@/components/AdminVipTab';
+import { AdminQRStats } from '@/components/AdminQRStats';
 import { 
   Heart, 
   LogOut, 
@@ -1263,6 +1264,7 @@ export const AdminDashboard = () => {
 
           {/* Contacts Tab */}
           <TabsContent value="contacts" className="space-y-6">
+            <AdminQRStats />
             {/* Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
               <Card data-testid="stat-total">
