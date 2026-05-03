@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import jsPDF from 'jspdf';
+import QRCode from 'qrcode';
 import { SEO } from '@/components/SEO';
 import { TerrainNote } from '@/components/TerrainNote';
 import { SHIELD_B64 } from './shieldLogo';
@@ -219,7 +220,7 @@ const getResults = (answers, autreTexte = '') => {
 
 
 /* ─── Premium PDF Generation (Noir / Or / Ivoire) ─── */
-const generatePDF = (results, email) => {
+const generatePDF = (results, email, qrDataUrl = null) => {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const w = doc.internal.pageSize.getWidth();
   const h = doc.internal.pageSize.getHeight();
@@ -432,6 +433,40 @@ const generatePDF = (results, email) => {
   doc.setFontSize(6.5);
   doc.text("Consultation personnalis\u00e9e sur rendez-vous \u2014 Premi\u00e8re consultation gratuite", w / 2, y, { align: 'center' });
 
+  /* ── QR code (cohérence visuelle avec PDFs Dossier Express et StrategiIA) ── */
+  if (qrDataUrl) {
+    y += 8;
+    /* Si l'espace restant est insuffisant, nouvelle page */
+    if (y + 32 > maxY) {
+      doc.addPage();
+      y = 32;
+    }
+    /* Ligne séparatrice fine */
+    doc.setDrawColor(...GOLD_LT);
+    doc.setLineWidth(0.15);
+    doc.line(LM + 25, y, w - RM - 25, y);
+    y += 5;
+
+    /* Libellé "Prochaine étape recommandée" */
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(...MUTED);
+    doc.text("Prochaine \u00e9tape recommand\u00e9e", w / 2, y, { align: 'center' });
+    y += 4;
+
+    /* QR centré 22×22 mm — identique aux PDFs backend */
+    const qrSize = 22;
+    const qrX = (w - qrSize) / 2;
+    try { doc.addImage(qrDataUrl, 'PNG', qrX, y, qrSize, qrSize); } catch (_) { /* fallback silencieux */ }
+    y += qrSize + 3;
+
+    /* Libellé sous le QR */
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(...MUTED);
+    doc.text("Scanner pour prendre contact", w / 2, y, { align: 'center' });
+  }
+
   /* ── Apply footer + watermark on every page ── */
   const totalPages = doc.internal.getNumberOfPages();
   for (let p = 1; p <= totalPages; p++) {
@@ -527,9 +562,17 @@ export const SimulateurPage = () => {
     }
   };
 
-  const handleDownloadPDF = useCallback(() => {
+  const handleDownloadPDF = useCallback(async () => {
     const result = getResults(answers, autreTexte);
-    const doc = generatePDF(result, email);
+    /* Génération du QR — cohérence visuelle avec les PDFs Dossier Express et StrategiIA */
+    let qrDataUrl = null;
+    try {
+      qrDataUrl = await QRCode.toDataURL(
+        'https://strategie-expertise-sante.fr/contact?via=qr&source=auto_diagnostic',
+        { errorCorrectionLevel: 'M', margin: 2, scale: 8, color: { dark: '#1a1a1a', light: '#FAF8F3' } }
+      );
+    } catch (_) { /* fallback silencieux : PDF généré sans QR */ }
+    const doc = generatePDF(result, email, qrDataUrl);
     doc.save(`rapport-diagnostic-SES-${new Date().getFullYear()}.pdf`);
     toast.success("PDF téléchargé !");
   }, [answers, email, autreTexte]);
