@@ -523,6 +523,19 @@ CONTENU DES DOCUMENTS FOURNIS :
       Etre accompagne par un expert
     </a>
   </td></tr></table>
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:18px;"><tr><td align="center" style="padding:14px 20px;background:#faf8f3;border-radius:6px;">
+    <p style="font-size:13px;color:#555;line-height:1.55;margin:0 0 10px;">
+      Votre rapport vous a-t-il aide dans votre demarche ?
+    </p>
+    <a href="{SITE_URL}/avis?source=dossier_express" target="_blank"
+       style="display:inline-block;color:#1a1a1a;font-size:12px;font-weight:600;
+              text-decoration:none;border-bottom:1px solid #c9a84c;padding-bottom:2px;">
+      Partager mon experience &rarr;
+    </a>
+    <p style="font-size:11px;color:#999;line-height:1.5;margin:10px 0 0;font-style:italic;">
+      Temoignage anonyme possible &mdash; votre retour aide d'autres personnes.
+    </p>
+  </td></tr></table>
   <div style="border-top:1px solid #e8e3d6;padding:14px 0 0;margin:16px 0 0;">
     <p style="font-size:11px;color:#888;line-height:1.6;margin:0;text-align:center;">
       &#128274; Vos documents sont traites dans un cadre strictement confidentiel,
