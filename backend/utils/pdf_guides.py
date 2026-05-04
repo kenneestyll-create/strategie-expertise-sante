@@ -16,6 +16,7 @@ _BLACK = (26, 26, 26)
 _GOLD = (201, 168, 76)
 _GOLD_LIGHT = (218, 195, 130)
 _IVORY = (250, 248, 243)
+_IVORY_WARM = (247, 244, 237)
 _DARK_TEXT = (35, 35, 35)
 _BODY_TEXT = (55, 55, 55)
 _MUTED = (130, 125, 118)
@@ -547,6 +548,35 @@ def generate_guide_pdf(guide_id: str) -> bytes | None:
     pdf.cell(CW - 14, 5, "Stratégie & Expertise Santé \u2014 Votre bouclier.")
 
     pdf.ln(10)
+
+    # ── Trust Badge: "Contenu juridique vérifié — Sources officielles" ──
+    # Variante B (contenu rédigé manuellement, pas IA). Visuellement identique au badge des
+    # rapports StrategiIA / Dossier Express IA pour cohérence sur l'ensemble des PDF du site.
+    badge_y = pdf.get_y()
+    badge_h = 13
+    if pdf.h - 18 - badge_y < badge_h + 28:  # badge + closing brand block
+        pdf.add_page()
+        badge_y = pdf.get_y()
+    pdf.set_fill_color(*_IVORY_WARM)
+    pdf.rect(LM, badge_y, CW, badge_h, "F")
+    pdf.set_fill_color(*_GOLD)
+    pdf.rect(LM, badge_y, 2, badge_h, "F")
+
+    pdf.set_xy(LM + 7, badge_y + 2.5)
+    pdf.set_font("DejaVu", "B", 7.8)
+    pdf.set_text_color(*_BLACK)
+    pdf.cell(CW - 12, 4, "Contenu juridique vérifié — Sources officielles", new_x="LMARGIN", new_y="NEXT")
+
+    pdf.set_x(LM + 7)
+    pdf.set_font("DejaVu", "", 6.8)
+    pdf.set_text_color(*_MUTED)
+    pdf.multi_cell(CW - 12, 3.2,
+        "Document rédigé par les experts S.E.S à partir des textes légaux en vigueur "
+        "(Code de la Sécurité Sociale, CASF, Service-public.fr). "
+        "Outil d'aide à la décision — ne remplace pas un avis personnalisé."
+    )
+
+    pdf.set_y(badge_y + badge_h + 6)
 
     # Final gold separator
     sep_final = pdf.get_y()

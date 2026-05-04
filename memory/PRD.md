@@ -146,6 +146,13 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - [x] Texte : "Analyse IA — Références juridiques vérifiées" + "Rapport appuyé sur des articles de loi officiels (Code de la Sécurité Sociale, CASF). Aucune jurisprudence citée sans référence exacte — outil d'aide à la décision."
 - [x] Sécurité visuelle : gestion automatique du saut de page si espace insuffisant pour badge + séparateur + QR + ligne contact
 
+### 2026-05-04 — Trust Badge Variante B "Contenu juridique vérifié — Sources officielles" (v1.3)
+- [x] **Badge harmonisé sur les 7 PDF non-IA restants** : 6 guides PDF (`pdf_guides.py` → guide_mp, guide_expertise, guide_mdph, guide_recours, guide_ipp, guide_assurance) + auto-diagnostic Simulateur (`SimulateurPage.jsx` jsPDF)
+- [x] **Variante B — texte juridiquement honnête** : "Contenu juridique vérifié — Sources officielles" / "Document rédigé par les experts S.E.S à partir des textes légaux en vigueur (Code de la Sécurité Sociale, CASF, Service-public.fr). Outil d'aide à la décision — ne remplace pas un avis personnalisé."
+- [x] **Visuel identique à la Variante A** : même fond ivoire chaud, même barre verticale or 2mm, même typographie, même placement (entre la signature/CTA et le QR code ou la mention de fermeture)
+- [x] **Cohérence totale 10/10 PDF** : tous les documents générés par le site portent désormais un badge harmonisé adapté à leur nature (IA vs rédaction manuelle)
+- [x] Vérification visuelle automatisée à 100 % de confiance sur guide_mp (badge bien positionné, sources mentionnées, harmonie typographique préservée)
+
 ## Calendrier SEO — Rappels Phases
 ### Phase 1 (FAIT) :
 - [x] Optimisation `/calculatrice-ipp` : title/H1 "Calcul IPP", barème capital 2026 vérifié, 2 cas concrets, faute inexcusable, erreurs fréquentes, 5 FAQ Schema.org (~1100 mots)

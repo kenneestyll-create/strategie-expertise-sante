@@ -433,9 +433,36 @@ const generatePDF = (results, email, qrDataUrl = null) => {
   doc.setFontSize(6.5);
   doc.text("Consultation personnalis\u00e9e sur rendez-vous \u2014 Premi\u00e8re consultation gratuite", w / 2, y, { align: 'center' });
 
+  /* ── Trust Badge: "Contenu juridique vérifié — Sources officielles" ── */
+  /* Variante B (auto-diagnostic = calcul déterministe, pas IA). Visuellement identique     */
+  /* aux badges des PDFs StrategiIA / Dossier Express IA / Guides PDF pour cohérence.       */
+  const IVORY_WARM = [247, 244, 237];
+  y += 8;
+  const badgeH = 13;
+  if (y + badgeH + 52 > maxY) {
+    doc.addPage();
+    y = 32;
+  }
+  doc.setFillColor(...IVORY_WARM);
+  doc.rect(LM, y, CW, badgeH, 'F');
+  doc.setFillColor(...GOLD);
+  doc.rect(LM, y, 2, badgeH, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.8);
+  doc.setTextColor(...BLACK);
+  doc.text("Contenu juridique v\u00e9rifi\u00e9 \u2014 Sources officielles", LM + 7, y + 5);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.8);
+  doc.setTextColor(...MUTED);
+  const badgeSubLines = doc.splitTextToSize(
+    "Document r\u00e9dig\u00e9 par les experts S.E.S \u00e0 partir des textes l\u00e9gaux en vigueur (Code de la S\u00e9curit\u00e9 Sociale, CASF, Service-public.fr). Outil d'aide \u00e0 la d\u00e9cision \u2014 ne remplace pas un avis personnalis\u00e9.",
+    CW - 12
+  );
+  doc.text(badgeSubLines, LM + 7, y + 8.5);
+  y += badgeH + 6;
+
   /* ── QR code (cohérence visuelle avec PDFs Dossier Express et StrategiIA) ── */
   if (qrDataUrl) {
-    y += 8;
     /* Si l'espace restant est insuffisant, nouvelle page */
     if (y + 32 > maxY) {
       doc.addPage();
