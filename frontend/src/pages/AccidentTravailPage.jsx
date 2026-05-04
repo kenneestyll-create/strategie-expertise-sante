@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
 import { DossierExpressCTA } from '@/components/DossierExpressCTA';
+import { PillarLeadMagnet } from '@/components/PillarLeadMagnet';
 import { TerrainNote } from '@/components/TerrainNote';
 import { 
   ArrowRight, 
@@ -292,6 +293,17 @@ export const AccidentTravailPage = () => {
       </section>
 
       {/* Encart conversion */}
+      <PillarLeadMagnet
+        pageId="accident-travail-maladie-professionnelle"
+        memoTitle="Check-list : les 7 réflexes immédiats après un accident du travail"
+        bulletPoints={[
+          "Les 24 premières heures qui décident de tout votre dossier",
+          "La preuve testimoniale : l'arme oubliée par 90 % des dossiers",
+          "Le silence de la CPAM : présomption acceptée, mais piège possible",
+          "Les pièces à exiger immédiatement, avant qu'elles deviennent introuvables",
+        ]}
+      />
+
       <DossierExpressCTA
         testId="atmp-cta-dossier"
         title={"AT non déclaré, MP refusée, IPP sous-évalué\u00A0?"}

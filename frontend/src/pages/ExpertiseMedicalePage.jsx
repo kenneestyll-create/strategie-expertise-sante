@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
 import { DossierExpressCTA } from '@/components/DossierExpressCTA';
+import { PillarLeadMagnet } from '@/components/PillarLeadMagnet';
 import { TerrainNote } from '@/components/TerrainNote';
 import { 
   ArrowRight, 
@@ -278,6 +279,17 @@ export const ExpertiseMedicalePage = () => {
       </section>
 
       {/* Encart conversion */}
+      <PillarLeadMagnet
+        pageId="expertise-medicale"
+        memoTitle="La phrase à NE JAMAIS dire au médecin expert"
+        bulletPoints={[
+          "L'expertise médicale n'est PAS un examen de soins — c'est un acte juridique",
+          "La formule qui fait perdre votre IPP en 30 secondes",
+          "Le journal des douleurs sur 4 semaines : votre meilleure arme",
+          "Les dires sous 8 jours : votre seule contre-attaque écrite",
+        ]}
+      />
+
       <DossierExpressCTA
         testId="expertise-cta-dossier"
         title={"Expertise prochaine ou rapport déjà reçu\u00A0?"}

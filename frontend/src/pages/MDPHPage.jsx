@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
 import { DossierExpressCTA } from '@/components/DossierExpressCTA';
+import { PillarLeadMagnet } from '@/components/PillarLeadMagnet';
 import { TerrainNote } from '@/components/TerrainNote';
 import { useState, useEffect } from 'react';
 import { 
@@ -257,6 +258,17 @@ export const MDPHPage = () => {
       </section>
 
       {/* Encart conversion */}
+      <PillarLeadMagnet
+        pageId="mdph"
+        memoTitle="Les 5 erreurs qui font perdre 6 mois sur un dossier MDPH"
+        bulletPoints={[
+          "Pourquoi un certificat médical Cerfa générique fait échouer 1 dossier sur 2",
+          "Les retentissements concrets que la CDAPH évalue (et que personne ne décrit)",
+          "La règle silencieuse : on n'attribue que ce qui est explicitement demandé",
+          "Le délai de 2 mois post-refus à ne JAMAIS rater (RAPO + recours)",
+        ]}
+      />
+
       <DossierExpressCTA
         testId="mdph-cta-dossier"
         title={"Refus, taux insuffisant, dossier en cours\u00A0?"}

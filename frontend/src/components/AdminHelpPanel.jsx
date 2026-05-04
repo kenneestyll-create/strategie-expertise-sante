@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { HelpCircle, X, Search, ChevronRight, ArrowRight, Sparkles, BookOpen, Users, MessageSquare, Gift, Calendar, FolderOpen, Send, Zap, Brain, FileSearch, BarChart3, FileText, Star, Settings, Bell, PenTool, ChevronDown, RotateCcw } from 'lucide-react';
+import { HelpCircle, X, Search, ChevronRight, ArrowRight, Sparkles, BookOpen, Users, MessageSquare, Gift, Calendar, FolderOpen, Send, Zap, Brain, FileSearch, BarChart3, FileText, Star, Settings, Bell, PenTool, ChevronDown, RotateCcw, Mail } from 'lucide-react';
 
 const HELP_SECTIONS = [
   {
@@ -208,6 +208,24 @@ const HELP_SECTIONS = [
       { label: 'Bouton expert toujours visible', text: 'Lien "Besoin d\'un humain ? Parler à un expert" présent en permanence dans le header du chat. Le visiteur peut court-circuiter Straté à tout moment.' },
     ],
     keywords: ['strate', 'straté', 'conciergerie', 'réceptionniste', 'chatbot', 'orientation', 'routage', 'kill switch', 'kpi', 'conversion', 'taux', 'auto-ouverture', 'rgpd', 'expert', 'qualification']
+  },
+  {
+    id: 'leads-seo',
+    tab: 'analytics',
+    icon: Mail,
+    title: 'Leads SEO — Pages piliers',
+    color: '#C9A84C',
+    summary: 'Capture d\'emails sur les 5 pages stratégiques (MDPH, AT/MP, Expertise, Calc. IPP, Calc. AAH) via les blocs « Mémo gratuit ».',
+    steps: [
+      { label: 'Où le trouver ?', tab: 'analytics', text: 'Onglet "Analytique" → sous-onglet "Leads SEO". Vous y voyez total leads, taux d\'envoi email, leads des 7 derniers jours, répartition par page et la liste des 50 derniers leads.' },
+      { label: 'Pourquoi c\'est important', text: 'Sans capture email, les visiteurs SEO disparaissent dans le néant. Avec ce système, chaque visiteur intéressé devient un contact qualifié auquel vous pouvez parler plus tard (forum, newsletter, suivi).' },
+      { label: 'Comment ça marche', text: 'Sur chacune des 5 pages piliers, un bloc doré sobre propose un "Mémo gratuit" (contenu à forte valeur ajoutée, signé Équipe S.E.S). Le visiteur saisit son email + coche la case RGPD → reçoit immédiatement le mémo dans sa boîte.' },
+      { label: 'Les 5 mémos disponibles', text: '1) MDPH — 5 erreurs qui font perdre 6 mois. 2) AT/MP — 7 réflexes immédiats. 3) Expertise — la phrase à NE JAMAIS dire. 4) IPP — calcul réel + marges de négociation. 5) AAH — décrypter le refus et préparer le RAPO.' },
+      { label: 'Conformité RGPD', text: 'Consentement explicite (case à cocher obligatoire). Stockage du consent_date + IP partielle pour preuve. Désinscription mentionnée dans chaque email. Aucun email envoyé sans consentement.' },
+      { label: 'Idempotence', text: 'Si le même visiteur s\'inscrit 2 fois sur la même page sous 7 jours, l\'email n\'est pas renvoyé en double (anti-spam). Au-delà de 7 jours, on suppose qu\'il a perdu le mémo et on le renvoie.' },
+      { label: 'Stratégie', text: 'Objectif initial : 0 → 5-10 emails captés en 4-6 semaines. Avec ces premiers contacts, on pourra plus tard lancer le forum (recyclage Q&A) ou une newsletter mensuelle de stratégie.' },
+    ],
+    keywords: ['leads', 'seo', 'email', 'capture', 'mémo', 'memo', 'lead magnet', 'pilier', 'pillar', 'mdph', 'ipp', 'aah', 'expertise', 'newsletter', 'rgpd', 'consentement']
   },
   {
     id: 'forum',

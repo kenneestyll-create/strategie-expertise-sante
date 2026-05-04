@@ -15,6 +15,7 @@ import { AdminVipTab } from '@/components/AdminVipTab';
 import { AdminQRStats } from '@/components/AdminQRStats';
 import { AdminForumSeed } from '@/components/AdminForumSeed';
 import { AdminStrateKpis } from '@/components/AdminStrateKpis';
+import { AdminPillarLeads } from '@/components/AdminPillarLeads';
 import { 
   Heart, 
   LogOut, 
@@ -3038,6 +3039,11 @@ export const AdminDashboard = () => {
                 data-testid="subtab-conciergerie">
                 Conciergerie Straté
               </button>
+              <button onClick={() => setAnalyticsSubTab('leads-seo')}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${analyticsSubTab === 'leads-seo' ? 'border-[#C9A84C] text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                data-testid="subtab-leads-seo">
+                Leads SEO
+              </button>
             </div>
 
             {(!analyticsSubTab || analyticsSubTab === 'analytics') && (
@@ -3070,6 +3076,10 @@ export const AdminDashboard = () => {
 
             {analyticsSubTab === 'conciergerie' && (
               <AdminStrateKpis />
+            )}
+
+            {analyticsSubTab === 'leads-seo' && (
+              <AdminPillarLeads />
             )}
           </TabsContent>
 

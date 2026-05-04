@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import { SEO } from '@/components/SEO';
 import { DossierExpressCTA } from '@/components/DossierExpressCTA';
+import { PillarLeadMagnet } from '@/components/PillarLeadMagnet';
 import { TerrainNote } from '@/components/TerrainNote';
 import {
   Calculator,
@@ -511,6 +512,17 @@ export const CalculatriceIPPPage = () => {
           </section>
 
           {/* Encart conversion */}
+          <PillarLeadMagnet
+            pageId="calculatrice-ipp"
+            memoTitle="Comprendre le calcul IPP réel et les marges de négociation"
+            bulletPoints={[
+              "Pourquoi un même handicap peut donner 8 % à 15 % selon l'évaluation",
+              "Le coefficient socio-professionnel : la majoration que personne ne demande",
+              "Le seuil 10 % : rente viagère vs capital — l'enjeu stratégique invisible",
+              "Les dires : votre seule arme écrite pour contester un rapport faible",
+            ]}
+          />
+
           <DossierExpressCTA
             testId="ipp-cta-dossier"
             title={"Vous venez de calculer votre taux estimé\u00A0?"}

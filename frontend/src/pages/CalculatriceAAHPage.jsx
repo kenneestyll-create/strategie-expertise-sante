@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import axios from 'axios';
 import { SEO } from '@/components/SEO';
 import { DossierExpressCTA } from '@/components/DossierExpressCTA';
+import { PillarLeadMagnet } from '@/components/PillarLeadMagnet';
 import { TerrainNote } from '@/components/TerrainNote';
 import {
   Calculator,
@@ -543,6 +544,17 @@ export const CalculatriceAAHPage = () => {
           </section>
 
           {/* Encart conversion */}
+          <PillarLeadMagnet
+            pageId="calculatrice-aah"
+            memoTitle="Décrypter le motif de refus AAH et préparer le RAPO"
+            bulletPoints={[
+              "Les 3 motifs réels qui se cachent derrière chaque refus",
+              "RSDAE : la notion floue qui fait gagner ou perdre 90 % des dossiers",
+              "Le délai de 2 mois pour le RAPO — irrattrapable une fois passé",
+              "Les pièces nouvelles à ajouter pour faire basculer le dossier",
+            ]}
+          />
+
           <DossierExpressCTA
             testId="aah-cta-dossier"
             title={"Votre simulation ne correspond pas à votre réalité\u00A0?"}

@@ -16,6 +16,7 @@ from routes.feedback import router as feedback_router
 from routes.seo_pages import router as seo_pages_router
 from routes.vip_guests import router as vip_guests_router
 from routes.strate import router as strate_router
+from routes.leads_pillar import router as leads_pillar_router
 
 all_routers = [
     public_router,
@@ -36,4 +37,5 @@ all_routers = [
     seo_pages_router,
     vip_guests_router,
     strate_router,
+    leads_pillar_router,
 ]
