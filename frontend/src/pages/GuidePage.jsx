@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowRight, ChevronRight, AlertTriangle, CheckCircle, ShieldCheck, Lightbulb, X, Scale, Search, BookOpen } from 'lucide-react';
 import { Button } from '../components/ui/button';
+import ReactMarkdown from 'react-markdown';
 import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL + '/api';
@@ -89,6 +90,7 @@ const GuidePage = () => {
   }
 
   const c = page.content || {};
+  const markdownBody = typeof c.markdown_body === 'string' ? c.markdown_body : '';
   const erreurs = Array.isArray(c.erreurs) ? c.erreurs : [];
   const solutions = Array.isArray(c.solutions) ? c.solutions : [];
   const orientation = Array.isArray(c.orientation) ? c.orientation : [];
@@ -127,6 +129,27 @@ const GuidePage = () => {
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Button>
               </Link>
+            </div>
+          </section>
+        )}
+
+        {/* BLOC MARKDOWN BODY — rendu pour articles publiés via Studio Éditorial */}
+        {markdownBody && (
+          <section className="mb-10" data-testid="guide-markdown-body">
+            <div className="prose prose-neutral max-w-none prose-headings:font-semibold prose-h2:text-xl sm:prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:text-foreground prose-h3:text-base sm:prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-3 prose-h3:text-foreground prose-p:text-sm prose-p:leading-relaxed prose-p:text-foreground/80 prose-li:text-sm prose-li:text-foreground/80 prose-strong:text-foreground prose-a:text-[#C9A84C] prose-a:no-underline hover:prose-a:underline">
+              <ReactMarkdown
+                skipHtml={false}
+                components={{
+                  // Strip TERRAIN_HOOK comments from rendered output (they are editorial placeholders)
+                  p: ({ node, children, ...props }) => {
+                    const text = String(children || '');
+                    if (text.includes('TERRAIN_HOOK:')) return null;
+                    return <p {...props}>{children}</p>;
+                  },
+                }}
+              >
+                {markdownBody.replace(/<!--\s*TERRAIN_HOOK:[^>]*-->/g, '')}
+              </ReactMarkdown>
             </div>
           </section>
         )}

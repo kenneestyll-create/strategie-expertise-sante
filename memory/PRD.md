@@ -122,13 +122,23 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - [ ] P2 : IA Prédictive V2
 - [ ] P3 : Module Devis personnalisé
 
+## Studio Éditorial — Changelog
+### 2026-05-04 — Hardening + Publish Bridge (v1.1)
+- [x] Prompt `SYSTEM_PROMPT_DRAFT` renforcé : interdiction % inventés, hooks ASCII fermés, fin de phrase obligatoire, longueur stricte 250-380 mots
+- [x] Garde-fou juridique inline : silence MDPH = rejet (jamais acceptation), RSDAE ≥ 1 an (pas 5), délais RAPO/pôle social, seuil IPP 10 %
+- [x] `max_tokens` 900 → 1400 pour éviter les sections tronquées
+- [x] Post-check + auto-retry des sections défaillantes (hook non fermé, clé non-ASCII, fin abrupte, trop courte)
+- [x] `/publish` branché sur collection `seo_pages` → l'article publié apparaît automatiquement sur `/guide/{slug}`
+- [x] `GuidePage.jsx` rend désormais `content.markdown_body` via react-markdown (prose styling aligné sur l'identité du site)
+
 ## Calendrier SEO — Rappels Phases
 ### Phase 1 (FAIT) :
 - [x] Optimisation `/calculatrice-ipp` : title/H1 "Calcul IPP", barème capital 2026 vérifié, 2 cas concrets, faute inexcusable, erreurs fréquentes, 5 FAQ Schema.org (~1100 mots)
 - [x] Enrichissement `/guide/refus-mdph-aah-que-faire` (cas "renouvellement AAH refusé")
+- [x] **2026-05-04** — Publication `/guide/refus-aah-rsdae-non-reconnue` (cible : refus RSDAE universel + longue-traîne motif 6). Maillage entrant ajouté depuis `refus-mdph-aah-que-faire`.
 
 ### Phase 2 (MI-MAI 2026 — dans 2-3 semaines) :
-- [ ] Vérifier dans Search Console : impressions "calcul IPP", "simulateur rente IPP", "renouvellement aah refusé"
+- [ ] Vérifier dans Search Console : impressions "calcul IPP", "simulateur rente IPP", "renouvellement aah refusé", "refus aah rsdae"
 - [ ] Si les positions montent → passer à Phase 3
 - [ ] Si stagnation → renforcer encore les pages existantes
 

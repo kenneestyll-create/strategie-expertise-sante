@@ -160,13 +160,24 @@ SYSTEM_PROMPT_DRAFT = """Tu es l'éditorialiste IA de Stratégie & Expertise San
 RÈGLES STRICTES :
 1. Ton : professionnel, premium, factuel. Jamais alarmiste, jamais commercial.
 2. Aucune jurisprudence inventée — utilise UNIQUEMENT les références fournies dans le contexte. Si tu veux citer autre chose, écris "[À VÉRIFIER]" en clair.
-3. Aucun chiffre précis (montants, taux, délais) si non fourni. Sinon écris "selon le barème en vigueur" ou "[À VÉRIFIER]".
+3. Aucun chiffre précis (montants, taux, pourcentage, délais) si non fourni dans le contexte. Sinon écris "selon le barème en vigueur" ou "[À VÉRIFIER]". JAMAIS de pourcentage inventé (type « 95 % des postes »).
 4. Aucun nom propre (médecin, avocat, juge).
 5. Aucune donnée médicale précise (cancer, métastase, NIR).
 6. Phrases courtes (15-25 mots max). Paragraphes de 2-4 phrases.
 7. Format Markdown : **gras**, *italique*, listes - et 1. quand pertinent.
-8. Longueur : 200-400 mots par section H2.
-9. SI une section pourrait bénéficier d'un cas terrain, ajoute en fin de section : `<!-- TERRAIN_HOOK: [thème] -->` (sera remplacé par l'utilisateur).
+8. Longueur : 250-380 mots STRICT par section H2 (ne dépasse JAMAIS 400 mots — termine la section avant d'atteindre la limite de tokens).
+9. FIN DE SECTION — OBLIGATOIRE :
+   a) La dernière phrase doit être COMPLÈTE et se terminer par un point, un point d'exclamation ou d'interrogation.
+   b) Si tu ajoutes un hook terrain, il doit être écrit EXACTEMENT au format suivant, clé en ASCII (sans accents), sur une ligne dédiée à la toute fin : `<!-- TERRAIN_HOOK: cle_ascii_en_minuscules -->`
+   c) Le commentaire HTML doit être PARFAITEMENT fermé avec `-->`. Ne jamais laisser un hook ouvert.
+
+CONNAISSANCES JURIDIQUES CRITIQUES À NE JAMAIS INVERSER :
+- Silence de la MDPH pendant 2 mois sur un RAPO = REJET implicite (jamais acceptation). Réf. article R.421-2 CJA par renvoi.
+- Restriction « durable » au sens RSDAE (article L.821-2 CSS) = au moins 1 an (jamais 5 ans).
+- Délai RAPO MDPH = 2 mois à compter de la notification.
+- Délai saisine pôle social du tribunal judiciaire = 2 mois après rejet (explicite ou implicite) du RAPO.
+- IPP ≥ 10 % = rente viagère ; IPP < 10 % = capital unique.
+- Délai déclaration AT par employeur = 48 heures.
 
 Réponds UNIQUEMENT avec le contenu Markdown de la section, AUCUN autre texte."""
 
@@ -419,18 +430,79 @@ async def generate_draft(article_id: str, admin: dict = Depends(get_current_admi
             f"OBJECTIF DE LA SECTION : {intent}\n"
             f"SOUS-SECTIONS H3 (si pertinentes) : {', '.join(h3_list) if h3_list else '(libre)'}\n\n"
             f"RÉFÉRENCES LÉGALES VÉRIFIÉES DISPONIBLES :\n{refs_text}\n\n"
-            f"Rédige la section au format Markdown (commence par `## {h2}`)."
+            f"Rédige la section au format Markdown (commence par `## {h2}`). "
+            f"IMPÉRATIF : termine la section par une phrase complète se finissant par un point, "
+            f"puis (si pertinent) un hook terrain formaté `<!-- TERRAIN_HOOK: cle_ascii -->` parfaitement fermé."
         )
-        section_tasks.append(_call_claude(SYSTEM_PROMPT_DRAFT, section_prompt, max_tokens=900))
+        section_tasks.append(_call_claude(SYSTEM_PROMPT_DRAFT, section_prompt, max_tokens=1400))
 
     results = await _asyncio.gather(*section_tasks, return_exceptions=True)
+
+    # Patch (c) — post-check + auto-retry of faulty sections
+    def _section_is_faulty(md: str) -> str | None:
+        """Return a short reason string if the section looks broken, else None."""
+        if not md or len(md.strip()) < 60:
+            return "section trop courte"
+        stripped = md.rstrip()
+        # Unclosed terrain hook
+        if "<!-- TERRAIN_HOOK:" in stripped and not re.search(r"<!--\s*TERRAIN_HOOK:[^>]*-->", stripped):
+            return "hook terrain non fermé"
+        # Non-ASCII key inside hook
+        for m in re.finditer(r"<!--\s*TERRAIN_HOOK:\s*([^\s>]+)\s*-->", stripped):
+            key = m.group(1)
+            if not re.fullmatch(r"[a-z0-9_]+", key):
+                return f"clé hook non-ASCII ({key})"
+        # Final character must be punctuation or a closed hook
+        # Strip trailing hook to inspect the last content character
+        tail_stripped = re.sub(r"<!--\s*TERRAIN_HOOK:[^>]*-->\s*$", "", stripped).rstrip()
+        if tail_stripped and tail_stripped[-1] not in ".!?»)\"":
+            return f"fin abrupte (‘…{tail_stripped[-40:]}’)"
+        return None
+
+    async def _retry_section(idx: int) -> str:
+        section = art["plan"][idx]
+        h2 = section.get("h2", f"Section {idx+1}")
+        intent = section.get("intent", "")
+        h3_list = section.get("h3", [])
+        retry_prompt = (
+            f"SUJET GLOBAL : {art['title']}\n"
+            f"SECTION : {h2}\n"
+            f"OBJECTIF : {intent}\n"
+            f"SOUS-SECTIONS : {', '.join(h3_list) if h3_list else '(libre)'}\n\n"
+            f"RÉFÉRENCES LÉGALES :\n{refs_text}\n\n"
+            f"RETRY — la précédente tentative était invalide (tronquée ou hook mal formé). "
+            f"Rédige une section CONCISE (260-320 mots) au format Markdown, commence par `## {h2}`, "
+            f"termine par une phrase complète + point final, puis un unique hook `<!-- TERRAIN_HOOK: cle_ascii -->` "
+            f"parfaitement fermé si pertinent. Reste STRICTEMENT sous 320 mots."
+        )
+        return await _call_claude(SYSTEM_PROMPT_DRAFT, retry_prompt, max_tokens=1400)
+
+    faulty_indices: list[int] = []
+    initial_md: list[str] = []
     for idx, r in enumerate(results):
         if isinstance(r, Exception):
-            h2 = art["plan"][idx].get("h2", f"Section {idx+1}")
-            logger.warning(f"[editorial] section {h2} failed: {r}")
-            sections_md.append(f"## {h2}\n\n*[Section à rédiger — l'IA a rencontré une erreur, relancez ou rédigez manuellement]*")
+            faulty_indices.append(idx)
+            initial_md.append("")
         else:
-            sections_md.append(r)
+            reason = _section_is_faulty(r)
+            if reason:
+                faulty_indices.append(idx)
+                logger.info(f"[editorial] section {idx} flagged for retry: {reason}")
+            initial_md.append(r)
+
+    if faulty_indices:
+        retries = await _asyncio.gather(*[_retry_section(i) for i in faulty_indices], return_exceptions=True)
+        for pos, idx in enumerate(faulty_indices):
+            r = retries[pos]
+            if isinstance(r, Exception) or _section_is_faulty(r):
+                h2 = art["plan"][idx].get("h2", f"Section {idx+1}")
+                fallback_reason = r if isinstance(r, Exception) else _section_is_faulty(r)
+                logger.warning(f"[editorial] section {h2} retry still faulty: {fallback_reason}")
+                initial_md[idx] = f"## {h2}\n\n*[Section à rédiger — l'IA a rencontré une erreur, relancez ou rédigez manuellement]*"
+            else:
+                initial_md[idx] = r
+
+    sections_md = initial_md
 
     # Add FAQ section
     if art.get("faq"):
@@ -521,7 +593,57 @@ async def publish_article(article_id: str, admin: dict = Depends(get_current_adm
     now = datetime.now(timezone.utc).isoformat()
     update = {"status": "published", "published_at": now, "last_revalidated_at": now, "updated_at": now}
     await db.editorial_articles.update_one({"id": article_id}, {"$set": update})
-    return {"success": True, "published_at": now, "url": f"/guide/{art.get('slug')}"}
+
+    # Patch (e) — bridge to public seo_pages collection so the article is actually rendered on /guide/{slug}
+    slug = art.get("slug") or _slugify(art["title"])
+    # Map Studio FAQ ({q, intent}) → seo_pages FAQ ({question, answer}) — best-effort
+    faq_payload = []
+    for q in (art.get("faq") or []):
+        faq_payload.append({
+            "question": q.get("q") or q.get("question", ""),
+            "answer": q.get("answer") or q.get("a") or "",
+        })
+
+    seo_content = {
+        "markdown_body": art.get("content", ""),
+        "faq": faq_payload,
+    }
+    # Preserve terrain notes and plan for editor context
+    if art.get("terrain_notes"):
+        seo_content["terrain_notes"] = art["terrain_notes"]
+
+    existing_seo = await db.seo_pages.find_one({"slug": slug}, {"_id": 0, "id": 1, "views": 1, "cta_clicks": 1, "conversions": 1, "revenue": 1, "created_at": 1})
+    seo_doc = {
+        "slug": slug,
+        "title": art.get("title", ""),
+        "meta_description": art.get("meta_description", ""),
+        "category": art.get("category", ""),
+        "intention": "",
+        "priority": "p1",
+        "cta_type": "dossier_express",
+        "cta_label": "Analyser mon dossier maintenant",
+        "active": True,
+        "content": seo_content,
+        "updated_at": now,
+        "source": "editorial_studio",
+        "editorial_article_id": art.get("id"),
+    }
+    if existing_seo:
+        # Preserve analytics counters + created_at
+        for k in ("views", "cta_clicks", "conversions", "revenue", "created_at", "id"):
+            if existing_seo.get(k) is not None:
+                seo_doc[k] = existing_seo[k]
+        await db.seo_pages.update_one({"slug": slug}, {"$set": seo_doc})
+    else:
+        seo_doc["id"] = str(uuid.uuid4())
+        seo_doc["views"] = 0
+        seo_doc["cta_clicks"] = 0
+        seo_doc["conversions"] = 0
+        seo_doc["revenue"] = 0
+        seo_doc["created_at"] = now
+        await db.seo_pages.insert_one(seo_doc)
+
+    return {"success": True, "published_at": now, "url": f"/guide/{slug}"}
 
 
 @router.delete("/admin/editorial/articles/{article_id}")
