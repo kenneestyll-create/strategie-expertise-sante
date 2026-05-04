@@ -17,6 +17,7 @@ from routes.seo_pages import router as seo_pages_router
 from routes.vip_guests import router as vip_guests_router
 from routes.strate import router as strate_router
 from routes.leads_pillar import router as leads_pillar_router
+from routes.editorial import router as editorial_router
 
 all_routers = [
     public_router,
@@ -38,4 +39,5 @@ all_routers = [
     vip_guests_router,
     strate_router,
     leads_pillar_router,
+    editorial_router,
 ]

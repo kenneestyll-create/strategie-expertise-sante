@@ -16,6 +16,7 @@ import { AdminQRStats } from '@/components/AdminQRStats';
 import { AdminForumSeed } from '@/components/AdminForumSeed';
 import { AdminStrateKpis } from '@/components/AdminStrateKpis';
 import { AdminPillarLeads } from '@/components/AdminPillarLeads';
+import { AdminEditorialStudio } from '@/components/AdminEditorialStudio';
 import { 
   Heart, 
   LogOut, 
@@ -65,7 +66,7 @@ import { AdminOnboardingTour, TOUR_KEY } from '@/components/AdminOnboardingTour'
 import { TarifsEditor, ChiffresClesEditor } from '@/components/ConfigEditors';
 import axios from 'axios';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { BarChart3, BellRing, Download, FlaskConical, PenTool, FileSearch, QrCode, Globe, BadgeCheck, Tag, ShieldCheck } from 'lucide-react';
+import { BarChart3, BellRing, Download, FlaskConical, PenTool, FileSearch, QrCode, Globe, BadgeCheck, Tag, ShieldCheck, Sparkles } from 'lucide-react';
 import { EmailTemplateEditor } from '@/components/EmailTemplateEditor';
 import { AdminConseilsStrate } from '@/components/AdminConseilsStrate';
 import { AdminSettingsTab } from '@/components/AdminSettingsTab';
@@ -1243,6 +1244,11 @@ export const AdminDashboard = () => {
               <TabsTrigger value="forum" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-forum">
                 <MessageSquare className="w-3.5 h-3.5 text-amber-600" />
                 Forum
+              </TabsTrigger>
+
+              <TabsTrigger value="editorial" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-editorial">
+                <Sparkles className="w-3.5 h-3.5 text-[#C9A84C]" />
+                Studio
               </TabsTrigger>
 
               <div className="w-px h-6 bg-border/60 mx-1 self-center flex-shrink-0" />
@@ -4480,6 +4486,9 @@ export const AdminDashboard = () => {
           </TabsContent>
           <TabsContent value="forum" className="space-y-6" data-testid="forum-tab-content">
             <AdminForumSeed />
+          </TabsContent>
+          <TabsContent value="editorial" className="space-y-6" data-testid="editorial-tab-content">
+            <AdminEditorialStudio />
           </TabsContent>
         </Tabs>
       </main>

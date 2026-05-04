@@ -228,6 +228,28 @@ const HELP_SECTIONS = [
     keywords: ['leads', 'seo', 'email', 'capture', 'mémo', 'memo', 'lead magnet', 'pilier', 'pillar', 'mdph', 'ipp', 'aah', 'expertise', 'newsletter', 'rgpd', 'consentement']
   },
   {
+    id: 'editorial',
+    tab: 'editorial',
+    icon: Sparkles,
+    title: 'Studio Éditorial — Production de guides SEO',
+    color: '#C9A84C',
+    summary: 'IA rédactrice contrainte + 7 garde-fous + validation ciblée pour publier 1 guide SEO/semaine en toute fiabilité (95-98%).',
+    steps: [
+      { label: 'Où le trouver ?', tab: 'editorial', text: 'Onglet "Studio" dans la barre de navigation principale (à côté de Forum). Vous arrivez sur la page d\'accueil avec proposals, KPIs et liste des articles.' },
+      { label: 'Choisir un sujet (3 options)', text: '1) Cliquez sur l\'un des 3 sujets proposés (re-tirables à volonté du pool de 30+). 2) Allez voir tout le pool. 3) Saisissez VOTRE propre sujet en bas. Les sujets choisis sont exclus du pool définitivement.' },
+      { label: 'Étape 1 — Plan IA', text: 'Cliquez "Générer le plan". L\'IA produit en 5 sec : 3 variantes de H1, slug URL, méta-description, plan H2/H3 + 5-8 questions FAQ. Tout modifiable.' },
+      { label: 'Étape 2 — Brouillon IA', text: 'Cliquez "Générer le brouillon". L\'IA rédige section par section en utilisant UNIQUEMENT la base de référence légale interne (~25 articles de loi, jurisprudences, chiffres pré-vérifiés). Tout ce qui sort de la base est marqué "[À VÉRIFIER]".' },
+      { label: 'Étape 3 — Validation ciblée', text: 'Onglet "À valider" : tableau de 5-15 drapeaux rouges à vérifier (lois, jurisprudences, chiffres, délais, termes médicaux, noms propres). Pour chacun : bouton "Vérifier" → ouvre Légifrance / service-public dans un nouvel onglet. Vous cochez "Validé" (vert) ou laissez en attente.' },
+      { label: 'Étape 4 — Publication bloquée tant que non-validé', text: 'Le bouton "Publier" reste GRISÉ tant qu\'au moins 1 drapeau rouge n\'est pas validé. Impossible de publier en oubliant un point. Conformité 100% garantie.' },
+      { label: 'Saisir vos chiffres Search Console', text: 'Onglet "Perf" de chaque article : champs "Période / Impressions / Clics / Position moy.". Saisie mensuelle 30 sec. CTR calculé auto. Historique conservé.' },
+      { label: 'Revalidation 6 mois', text: 'Tous les 6 mois après publication, alerte automatique sur la home du Studio : "X articles à revalider". Cliquez sur le titre → vérifiez que les chiffres et lois sont à jour → bouton "Toujours valable" OU mise à jour ciblée.' },
+      { label: 'Modules avancés (mode veille)', text: 'Bouton "Paramètres" (haut droite du Studio) : 2 toggles désactivés par défaut : RAG live web (vérification temps réel Légifrance, ~10-30€/mois) et Génération dynamique sujets (IA propose selon SC, ~5-15€/mois). À activer plus tard quand le rythme est tenu.' },
+      { label: 'Conformité juridique', text: '7 garde-fous actifs en permanence : 1) prompt rigide, 2) base interne, 3) scanner red-flags, 4) validation ciblée, 5) RAG interne, 6) revalidation 6 mois, 7) disclaimer auto. Aucune jurisprudence inventée, aucun chiffre fantaisiste, aucun nom propre, aucune donnée médicale sensible. Ne nécessite PAS la lecture phrase par phrase.' },
+      { label: 'Coût récurrent', text: '~3-5 €/mois en API IA (Claude Haiku 4.5 via Emergent LLM Key) pour 4 articles/mois. Aucun autre coût. Search Console = saisie manuelle = 0€.' },
+    ],
+    keywords: ['studio', 'éditorial', 'editorial', 'guide', 'seo', 'rédaction', 'ia', 'rédacteur', 'plan', 'brouillon', 'red flag', 'drapeau', 'validation', 'légifrance', 'jurisprudence', 'loi', 'sujet', 'pool', 'revalidation', 'rag', 'haiku', 'claude', 'mémo', 'rgpd', 'cnil', 'fiabilité', 'garde-fou']
+  },
+  {
     id: 'forum',
     tab: 'forum',
     icon: MessageSquare,
