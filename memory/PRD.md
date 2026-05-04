@@ -153,6 +153,12 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - [x] **Cohérence totale 10/10 PDF** : tous les documents générés par le site portent désormais un badge harmonisé adapté à leur nature (IA vs rédaction manuelle)
 - [x] Vérification visuelle automatisée à 100 % de confiance sur guide_mp (badge bien positionné, sources mentionnées, harmonie typographique préservée)
 
+### 2026-05-04 — Auto-seed des pages SEO au déploiement (v1.4)
+- [x] **Article `refus-aah-rsdae-non-reconnue` ajouté au fichier `seed_seo_pages.py`** (devient la 16e page du seed)
+- [x] **Hook startup `seed_missing_only(db)`** dans `server.py` : à chaque démarrage backend, vérifie chaque slug du seed et n'insère QUE les manquants — n'écrase JAMAIS les pages existantes (préserve views, cta_clicks, conversions, modifications manuelles)
+- [x] **Test de bout en bout** : suppression de l'article, redémarrage backend → log `SEO auto-seed: 1 new page(s) inserted (15 already present, 16 total in seed)` → article auto-recréé, pages existantes intactes
+- [x] **Méthode définitive pour les pages futures** : ajout au seed → Deploy → article live en prod, sans script ni intervention manuelle
+
 ## Calendrier SEO — Rappels Phases
 ### Phase 1 (FAIT) :
 - [x] Optimisation `/calculatrice-ipp` : title/H1 "Calcul IPP", barème capital 2026 vérifié, 2 cas concrets, faute inexcusable, erreurs fréquentes, 5 FAQ Schema.org (~1100 mots)

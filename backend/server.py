@@ -195,6 +195,16 @@ async def startup_db_client():
         await db.admins.insert_one(doc)
         logger.info("Default admin created on startup")
 
+    # Auto-seed missing SEO pages (idempotent — only inserts missing slugs, never overwrites)
+    try:
+        from seed_seo_pages import seed_missing_only
+        seo_report = await seed_missing_only(db)
+        if seo_report["created"] > 0:
+            logger.info(f"SEO auto-seed: {seo_report['created']} new page(s) inserted "
+                        f"({seo_report['skipped']} already present, {seo_report['total_in_seed']} total in seed)")
+    except Exception as e:
+        logger.warning(f"SEO auto-seed skipped (non-blocking): {e}")
+
     # Initialize cron config if not exists
     cron_config = await db.app_config.find_one({"key": "reminder_cron"}, {"_id": 0})
     if not cron_config:
