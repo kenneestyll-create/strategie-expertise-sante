@@ -131,6 +131,15 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - [x] `/publish` branché sur collection `seo_pages` → l'article publié apparaît automatiquement sur `/guide/{slug}`
 - [x] `GuidePage.jsx` rend désormais `content.markdown_body` via react-markdown (prose styling aligné sur l'identité du site)
 
+## StrategiIA + Dossier Express IA — Hardening juridique (v1.1)
+### 2026-05-04 — Protection juridique totale des prompts IA
+- [x] **Suppression des jurisprudences non sourcées** (Cass. 2e civ. 2022 silence CPAM, CE 2018 MDPH, Cass. 2e civ. 2020/2021 sans n° pourvoi) dans `STRATEGIIA_SYSTEM_PROMPT`, `DOSSIER_EXPRESS_SYSTEM_PROMPT` et `utils/llm.py` SYSTEM
+- [x] **Remplacement par articles de loi vérifiés** : L.411-1, L.461-1, L.452-1, L.431-1, L.434-2, R.441-10 CSS (AT/MP) ; L.821-1, L.821-2 CSS + L.114-1 CASF (AAH) ; L.141-1, R.141-1, L.142-4, L.142-8 CSS (expertise + recours)
+- [x] **Statistiques CNAM brutes retirées** (87% TMS, 9/14% IPP, 35/45% contentieux, 60% faute inexcusable) → remplacées par ordres de grandeur avec réserve obligatoire "selon les données publiques CNAM/CNSA, à actualiser"
+- [x] **Fourchettes d'indemnisation IP supprimées** (15k-100k€+) → remplacées par "montants variables selon la jurisprudence et les justificatifs — à évaluer au cas par cas"
+- [x] **Bloc CONNAISSANCES JURIDIQUES CRITIQUES À NE JAMAIS INVERSER** ajouté : silence MDPH = rejet, RSDAE ≥ 1 an, CE non compétent MDPH, silence CPAM AT/MP conditionné à dossier complet, IPP 10%, AT 48h
+- [x] **GARDE-FOU ANTI-HALLUCINATION TOLÉRANCE ZÉRO** : jurisprudence uniquement avec référence exacte (juridiction + date + n° pourvoi), sinon "selon la jurisprudence constante" ou omission ; interdiction formelle d'inventer article, décret, %, montant, barème, nom propre
+
 ## Calendrier SEO — Rappels Phases
 ### Phase 1 (FAIT) :
 - [x] Optimisation `/calculatrice-ipp` : title/H1 "Calcul IPP", barème capital 2026 vérifié, 2 cas concrets, faute inexcusable, erreurs fréquentes, 5 FAQ Schema.org (~1100 mots)
