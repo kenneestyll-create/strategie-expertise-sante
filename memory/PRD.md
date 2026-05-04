@@ -140,6 +140,12 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - [x] **Bloc CONNAISSANCES JURIDIQUES CRITIQUES À NE JAMAIS INVERSER** ajouté : silence MDPH = rejet, RSDAE ≥ 1 an, CE non compétent MDPH, silence CPAM AT/MP conditionné à dossier complet, IPP 10%, AT 48h
 - [x] **GARDE-FOU ANTI-HALLUCINATION TOLÉRANCE ZÉRO** : jurisprudence uniquement avec référence exacte (juridiction + date + n° pourvoi), sinon "selon la jurisprudence constante" ou omission ; interdiction formelle d'inventer article, décret, %, montant, barème, nom propre
 
+### 2026-05-04 — Trust Badge "Analyse IA — Références juridiques vérifiées" (v1.2)
+- [x] Badge sobre ajouté dans `utils/pdf.py` entre le CTA "Vous souhaitez aller plus loin ?" et le QR code, sur tous les rapports StrategiIA et Dossier Express IA
+- [x] Visuel harmonisé : même largeur que le CTA, fond ivoire chaud, barre verticale 2mm en accent service (or pour StrategiIA, bleu marine pour Dossier Express), titre bold + sous-titre italique muted
+- [x] Texte : "Analyse IA — Références juridiques vérifiées" + "Rapport appuyé sur des articles de loi officiels (Code de la Sécurité Sociale, CASF). Aucune jurisprudence citée sans référence exacte — outil d'aide à la décision."
+- [x] Sécurité visuelle : gestion automatique du saut de page si espace insuffisant pour badge + séparateur + QR + ligne contact
+
 ## Calendrier SEO — Rappels Phases
 ### Phase 1 (FAIT) :
 - [x] Optimisation `/calculatrice-ipp` : title/H1 "Calcul IPP", barème capital 2026 vérifié, 2 cas concrets, faute inexcusable, erreurs fréquentes, 5 FAQ Schema.org (~1100 mots)

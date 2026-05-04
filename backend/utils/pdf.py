@@ -720,6 +720,40 @@ def generate_secured_pdf(
 
     pdf.set_y(box_y + box_h + 6)
 
+    # ── Trust Badge: "Références vérifiées" ──
+    # Sobre, harmonieux avec le CTA box (même largeur, même ivoire, barre accent identique).
+    # Renforce la crédibilité juridique de l'analyse IA sans rompre la hiérarchie visuelle.
+    badge_y = pdf.get_y()
+    badge_h = 13
+    # Check space on current page — defer to next page if too tight
+    if pdf.h - 18 - badge_y < badge_h + 52:  # badge + separator + QR + contact line
+        pdf.add_page()
+        badge_y = pdf.get_y()
+    pdf.set_fill_color(*_IVORY_WARM)
+    pdf.rect(LM, badge_y, CW, badge_h, "F")
+    if is_strategiia:
+        pdf.set_fill_color(*_GOLD)
+    else:
+        pdf.set_fill_color(*_DE_ACCENT)
+    pdf.rect(LM, badge_y, 2, badge_h, "F")
+
+    # Check icon (leading) + title
+    pdf.set_xy(LM + 7, badge_y + 2.5)
+    pdf.set_font("LibSans", "B", 7.8)
+    pdf.set_text_color(*_BLACK)
+    pdf.cell(CW - 12, 4, _safe("Analyse IA — Références juridiques vérifiées"), new_x="LMARGIN", new_y="NEXT")
+
+    # Subtext
+    pdf.set_x(LM + 7)
+    pdf.set_font("LibSans", "", 6.8)
+    pdf.set_text_color(*_MUTED)
+    pdf.multi_cell(CW - 12, 3.2, _safe(
+        "Rapport appuyé sur des articles de loi officiels (Code de la Sécurité Sociale, CASF). "
+        "Aucune jurisprudence citée sans référence exacte — outil d'aide à la décision."
+    ))
+
+    pdf.set_y(badge_y + badge_h + 6)
+
     # ── QR Code + Contact ──
     qr_url = "https://strategie-expertise-sante.fr/contact?via=qr&source=" + ("strategiia" if is_strategiia else "dossier_express")
     qr_tmp_path = None
