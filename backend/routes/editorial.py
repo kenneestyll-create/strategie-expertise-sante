@@ -81,6 +81,7 @@ class SaveArticleInput(BaseModel):
     plan: Optional[List[dict]] = None
     terrain_notes: Optional[List[str]] = None
     faq: Optional[List[dict]] = None
+    structured_content: Optional[dict] = None
 
 
 class ValidateFlagInput(BaseModel):
@@ -530,7 +531,7 @@ async def save_article(article_id: str, input_data: SaveArticleInput, admin: dic
         raise HTTPException(status_code=404, detail="Article introuvable")
 
     update = {}
-    fields = ["title", "slug", "meta_description", "content", "plan", "terrain_notes", "faq"]
+    fields = ["title", "slug", "meta_description", "content", "plan", "terrain_notes", "faq", "structured_content"]
     for f in fields:
         v = getattr(input_data, f, None)
         if v is not None:
@@ -596,21 +597,37 @@ async def publish_article(article_id: str, admin: dict = Depends(get_current_adm
 
     # Patch (e) — bridge to public seo_pages collection so the article is actually rendered on /guide/{slug}
     slug = art.get("slug") or _slugify(art["title"])
-    # Map Studio FAQ ({q, intent}) → seo_pages FAQ ({question, answer}) — best-effort
-    faq_payload = []
-    for q in (art.get("faq") or []):
-        faq_payload.append({
-            "question": q.get("q") or q.get("question", ""),
-            "answer": q.get("answer") or q.get("a") or "",
-        })
+    structured = art.get("structured_content")
 
-    seo_content = {
-        "markdown_body": art.get("content", ""),
-        "faq": faq_payload,
-    }
-    # Preserve terrain notes and plan for editor context
-    if art.get("terrain_notes"):
-        seo_content["terrain_notes"] = art["terrain_notes"]
+    if structured:
+        # Phase 2 — use structured fields for pixel-perfect rendering identical to manual articles
+        seo_content = {
+            "reponse_rapide_titre": structured.get("reponse_rapide_titre", ""),
+            "reponse_rapide": structured.get("reponse_rapide", ""),
+            "contexte": structured.get("contexte", ""),
+            "limites": structured.get("limites", ""),
+            "blocages": structured.get("blocages", []),
+            "erreurs": structured.get("erreurs", []),
+            "strategie": structured.get("strategie", ""),
+            "orientation": structured.get("orientation", []),
+            "reassurance": structured.get("reassurance", ""),
+            "maillage": structured.get("maillage", []),
+            "faq": structured.get("faq", []),
+        }
+    else:
+        # Fallback — markdown body rendering (still usable but not pixel-perfect)
+        faq_payload = []
+        for q in (art.get("faq") or []):
+            faq_payload.append({
+                "question": q.get("q") or q.get("question", ""),
+                "answer": q.get("answer") or q.get("a") or "",
+            })
+        seo_content = {
+            "markdown_body": art.get("content", ""),
+            "faq": faq_payload,
+        }
+        if art.get("terrain_notes"):
+            seo_content["terrain_notes"] = art["terrain_notes"]
 
     existing_seo = await db.seo_pages.find_one({"slug": slug}, {"_id": 0, "id": 1, "views": 1, "cta_clicks": 1, "conversions": 1, "revenue": 1, "created_at": 1})
     seo_doc = {
@@ -647,14 +664,282 @@ async def publish_article(article_id: str, admin: dict = Depends(get_current_adm
 
 
 @router.delete("/admin/editorial/articles/{article_id}")
-async def archive_article(article_id: str, admin: dict = Depends(get_current_admin)):
-    """Soft-delete (archive)."""
-    res = await db.editorial_articles.update_one(
-        {"id": article_id}, {"$set": {"status": "archived", "updated_at": datetime.now(timezone.utc).isoformat()}}
-    )
-    if res.matched_count == 0:
+async def delete_article(article_id: str, hard: bool = False, admin: dict = Depends(get_current_admin)):
+    """Delete an article. ?hard=true → permanent removal + topic restored to pool.
+    Default (?hard=false) → soft archive (status=archived) + topic restored to pool.
+    """
+    art = await db.editorial_articles.find_one({"id": article_id}, {"_id": 0})
+    if not art:
         raise HTTPException(status_code=404, detail="Article introuvable")
-    return {"success": True}
+
+    # Restore topic to pool (if the draft was based on a seed topic)
+    if art.get("title"):
+        topic = await db.editorial_topics.find_one({"title": art["title"]}, {"_id": 0})
+        if topic:
+            await db.editorial_topics.update_one(
+                {"title": art["title"]},
+                {"$set": {"used": False}, "$unset": {"used_at": ""}},
+            )
+
+    if hard:
+        await db.editorial_articles.delete_one({"id": article_id})
+        return {"success": True, "deleted": "hard", "topic_restored": True}
+
+    await db.editorial_articles.update_one(
+        {"id": article_id},
+        {"$set": {"status": "archived", "updated_at": datetime.now(timezone.utc).isoformat()}},
+    )
+    return {"success": True, "deleted": "soft", "topic_restored": True}
+
+
+# ==================== STRUCTURED OUTPUT (Phase 2) ====================
+
+class StructureInput(BaseModel):
+    pass
+
+
+SYSTEM_PROMPT_STRUCTURE = """Tu es l'éditorialiste IA de Stratégie & Expertise Santé.
+
+MISSION : à partir d'un brouillon markdown, produire un OBJET JSON STRUCTURÉ aligné sur le format de publication SEO de la plateforme.
+
+Schéma JSON STRICT à respecter (toutes les clés sont obligatoires, valeurs non vides) :
+{
+  "reponse_rapide_titre": "Titre court de la réponse rapide (12-15 mots)",
+  "reponse_rapide": "Paragraphe synthétique 4-7 phrases répondant à la question principale, avec article de loi clé et délai si pertinent",
+  "contexte": "1 ou 2 paragraphes de mise en contexte juridique et stratégique (rattachés au cas du visiteur)",
+  "limites": "1 paragraphe expliquant ce que les sites institutionnels n'expliquent pas (angle morts, lacunes documentaires)",
+  "blocages": ["Point de blocage 1 — phrase 1-2", "Point 2", "Point 3", "Point 4", "Point 5"],
+  "erreurs": ["Erreur fréquente 1", "Erreur 2", "Erreur 3", "Erreur 4", "Erreur 5"],
+  "strategie": "1 long paragraphe stratégique synthétisant l'approche recommandée (avec piliers ou méthode si pertinent)",
+  "orientation": ["Action 1 datée et concrète", "Action 2", "Action 3", "Action 4", "Action 5"],
+  "reassurance": "1 paragraphe de réassurance non commercial (pas de promesse, pas de garantie)",
+  "maillage": [
+    {"slug": "guide-existant-1", "text": "Titre humain 1"},
+    {"slug": "guide-existant-2", "text": "Titre humain 2"},
+    {"slug": "guide-existant-3", "text": "Titre humain 3"}
+  ],
+  "faq": [
+    {"question": "Question 1 ?", "answer": "Réponse complète, 3-6 phrases, avec article de loi si pertinent"},
+    {"question": "Q2 ?", "answer": "..."},
+    ... 6 à 8 FAQ
+  ]
+}
+
+RÈGLES :
+1. Aucune jurisprudence inventée. N'utilise que les références déjà présentes dans le brouillon.
+2. Aucun chiffre/pourcentage non sourcé. Si un % apparaît dans le brouillon, le conserver tel quel ou le retirer si suspect.
+3. Préserver le ton premium, factuel, non-commercial.
+4. Les `blocages` et `erreurs` doivent être 5 items chacun (pas plus, pas moins).
+5. `orientation` : exactement 5 actions, ton actionnable.
+6. `faq` : 6 à 8 questions ; les réponses ne doivent jamais contenir « selon nous », « probablement » → toujours factuel.
+7. `maillage` : 3 slugs internes pertinents en lien avec le sujet (à partir des suggestions du brouillon ou inférés).
+8. Réponds UNIQUEMENT en JSON valide, AUCUN texte avant/après. Échappe correctement les guillemets internes."""
+
+
+@router.post("/admin/editorial/articles/{article_id}/structure")
+async def structure_article(article_id: str, _: StructureInput = None, admin: dict = Depends(get_current_admin)):
+    """Phase 2: Transform markdown draft into structured fields aligned with seo_pages schema.
+
+    Stores result in `structured_content` field of the article (does NOT replace `content`).
+    """
+    art = await db.editorial_articles.find_one({"id": article_id}, {"_id": 0})
+    if not art:
+        raise HTTPException(status_code=404, detail="Article introuvable")
+    if not art.get("content"):
+        raise HTTPException(status_code=400, detail="Aucun brouillon markdown à structurer. Générez d'abord le brouillon.")
+
+    # Strip TERRAIN_HOOK comments before structuring (they're editorial placeholders)
+    cleaned_md = re.sub(r"<!--\s*TERRAIN_HOOK:[^>]*-->", "", art["content"])
+
+    user_prompt = (
+        f"SUJET : {art['title']}\n"
+        f"CATÉGORIE : {art.get('category', '')}\n"
+        f"SLUG CIBLE : {art.get('slug', '')}\n\n"
+        f"BROUILLON MARKDOWN À TRANSFORMER :\n\n{cleaned_md}\n\n"
+        f"Produis maintenant l'objet JSON structuré selon le schéma."
+    )
+
+    try:
+        raw = await _call_claude(SYSTEM_PROMPT_STRUCTURE, user_prompt, max_tokens=4500)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"IA indisponible : {e}")
+
+    # Robust JSON extraction
+    raw = raw.strip()
+    if raw.startswith("```"):
+        raw = re.sub(r"^```(?:json)?\s*", "", raw)
+        raw = re.sub(r"\s*```$", "", raw)
+    structured = None
+    try:
+        structured = json_mod.loads(raw)
+    except Exception:
+        # Try first {...} block
+        m = re.search(r"\{.*\}", raw, re.DOTALL)
+        if m:
+            try:
+                structured = json_mod.loads(m.group(0))
+            except Exception:
+                structured = None
+
+    # Last-resort tolerant parser for typical AI JSON glitches (trailing commas, missing
+    # commas between items, single quotes, unescaped newlines). Standard library cannot.
+    if structured is None:
+        try:
+            from json_repair import repair_json
+            repaired = repair_json(raw, return_objects=True)
+            if isinstance(repaired, dict):
+                structured = repaired
+            elif isinstance(repaired, str):
+                structured = json_mod.loads(repaired)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"JSON IA non-récupérable : {e}")
+
+    if structured is None:
+        raise HTTPException(status_code=500, detail="JSON IA non-récupérable.")
+
+    # Lightweight schema validation (non-blocking but informative)
+    required_keys = ["reponse_rapide_titre", "reponse_rapide", "contexte", "limites",
+                     "blocages", "erreurs", "strategie", "orientation", "reassurance", "maillage", "faq"]
+    missing = [k for k in required_keys if k not in structured]
+    if missing:
+        logger.warning(f"[editorial.structure] missing keys: {missing}")
+
+    now = datetime.now(timezone.utc).isoformat()
+    await db.editorial_articles.update_one(
+        {"id": article_id},
+        {"$set": {"structured_content": structured, "structured_at": now, "updated_at": now}},
+    )
+    return {"success": True, "structured_content": structured, "missing_keys": missing}
+
+
+# ==================== MIGRATE TO SEED (Phase 3) ====================
+
+class MigrateInput(BaseModel):
+    cta_type: Optional[str] = "dossier_express"
+    cta_label: Optional[str] = "Analyser mon dossier maintenant"
+    intention: Optional[str] = ""
+    priority: Optional[str] = "p1"
+
+
+_SEED_FILE = "/app/backend/seed_seo_pages.py"
+_SEED_INSERT_MARKER = "]\n\nasync def seed():"
+
+
+@router.post("/admin/editorial/articles/{article_id}/migrate-to-seed")
+async def migrate_to_seed(article_id: str, input_data: MigrateInput, admin: dict = Depends(get_current_admin)):
+    """Phase 3: Append the structured article into seed_seo_pages.py PAGES list.
+
+    The user must then click 'Save to GitHub' + 'Deploy' to push to production.
+    The manual seed method remains active (idempotent — never overwrites).
+    """
+    art = await db.editorial_articles.find_one({"id": article_id}, {"_id": 0})
+    if not art:
+        raise HTTPException(status_code=404, detail="Article introuvable")
+
+    structured = art.get("structured_content")
+    if not structured:
+        raise HTTPException(status_code=400, detail="Aucun contenu structuré. Lancez d'abord 'Structurer pour publication'.")
+
+    flags = art.get("red_flags", [])
+    if any(not f.get("validated") for f in flags):
+        raise HTTPException(status_code=400, detail="Validez tous les drapeaux avant de migrer.")
+
+    slug = art.get("slug") or _slugify(art.get("title", ""))
+    title = art.get("title", "").replace('"', '\\"')
+    meta = art.get("meta_description", "").replace('"', '\\"')
+    category = art.get("category", "") or "general"
+
+    # Read seed file
+    if not os.path.isfile(_SEED_FILE):
+        raise HTTPException(status_code=500, detail=f"Fichier seed introuvable : {_SEED_FILE}")
+
+    with open(_SEED_FILE, "r", encoding="utf-8") as f:
+        seed_text = f.read()
+
+    # Check if slug already in seed
+    if f'"slug": "{slug}"' in seed_text:
+        raise HTTPException(status_code=409, detail=f"Le slug '{slug}' est déjà présent dans le seed. Modifiez le slug ou retirez l'ancienne version.")
+
+    # Build the Python entry as a JSON-like string (safe via repr-like serialization)
+    def _py(s):
+        if s is None:
+            return '""'
+        return json_mod.dumps(s, ensure_ascii=False)
+
+    blocages_lines = ",\n            ".join(_py(b) for b in (structured.get("blocages") or []))
+    erreurs_lines = ",\n            ".join(_py(e) for e in (structured.get("erreurs") or []))
+    orientation_lines = ",\n            ".join(_py(o) for o in (structured.get("orientation") or []))
+    maillage_items = ",\n            ".join(
+        '{"slug": ' + _py(m.get("slug", "")) + ', "text": ' + _py(m.get("text", "")) + '}'
+        for m in (structured.get("maillage") or [])
+    )
+    faq_items = ",\n            ".join(
+        '{"question": ' + _py(q.get("question", "")) + ', "answer": ' + _py(q.get("answer", "")) + '}'
+        for q in (structured.get("faq") or [])
+    )
+
+    block = f'''{{
+    "slug": "{slug}",
+    "title": {_py(title)},
+    "meta_description": {_py(meta)},
+    "category": "{category}",
+    "intention": "{input_data.intention or ''}",
+    "priority": "{input_data.priority or 'p1'}",
+    "cta_type": "{input_data.cta_type or 'dossier_express'}",
+    "cta_label": "{(input_data.cta_label or 'Analyser mon dossier maintenant').replace(chr(34), chr(92)+chr(34))}",
+    "content": {{
+        "reponse_rapide_titre": {_py(structured.get("reponse_rapide_titre", ""))},
+        "reponse_rapide": {_py(structured.get("reponse_rapide", ""))},
+        "contexte": {_py(structured.get("contexte", ""))},
+        "limites": {_py(structured.get("limites", ""))},
+        "blocages": [
+            {blocages_lines}
+        ],
+        "erreurs": [
+            {erreurs_lines}
+        ],
+        "strategie": {_py(structured.get("strategie", ""))},
+        "orientation": [
+            {orientation_lines}
+        ],
+        "reassurance": {_py(structured.get("reassurance", ""))},
+        "maillage": [
+            {maillage_items}
+        ],
+        "faq": [
+            {faq_items}
+        ]
+    }},
+}},
+'''
+
+    if _SEED_INSERT_MARKER not in seed_text:
+        raise HTTPException(status_code=500, detail="Marqueur d'insertion introuvable dans le seed (fichier modifié manuellement ?)")
+
+    new_text = seed_text.replace(_SEED_INSERT_MARKER, block + _SEED_INSERT_MARKER, 1)
+
+    with open(_SEED_FILE, "w", encoding="utf-8") as f:
+        f.write(new_text)
+
+    # Mark article migrated
+    await db.editorial_articles.update_one(
+        {"id": article_id},
+        {"$set": {
+            "migrated_to_seed": True,
+            "migrated_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }},
+    )
+
+    return {
+        "success": True,
+        "slug": slug,
+        "next_steps": [
+            "Cliquez sur 'Save to GitHub' dans Emergent",
+            "Cliquez ensuite sur 'Deploy' pour pousser en production",
+            f"L'article sera live à https://strategie-expertise-sante.fr/guide/{slug} après ~30 secondes",
+        ],
+    }
 
 
 # ==================== ENDPOINTS — PERFORMANCE (manual SC entry) ====================

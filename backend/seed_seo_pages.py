@@ -768,6 +768,7 @@ PAGES = [
         ]
     },
 },
+
 ]
 
 async def seed():
@@ -804,7 +805,6 @@ async def seed():
 
     print(f"\nDone. {created} created, {updated} updated. Total: {len(PAGES)} pages.")
 
-
 async def seed_missing_only(db) -> dict:
     """Idempotent auto-seed for startup: only INSERT missing slugs, never overwrite.
 
@@ -832,7 +832,6 @@ async def seed_missing_only(db) -> dict:
         await db.seo_pages.insert_one(doc)
         created += 1
     return {"created": created, "skipped": skipped, "total_in_seed": len(PAGES)}
-
 
 if __name__ == "__main__":
     asyncio.run(seed())

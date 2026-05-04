@@ -159,6 +159,35 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - [x] **Test de bout en bout** : suppression de l'article, redémarrage backend → log `SEO auto-seed: 1 new page(s) inserted (15 already present, 16 total in seed)` → article auto-recréé, pages existantes intactes
 - [x] **Méthode définitive pour les pages futures** : ajout au seed → Deploy → article live en prod, sans script ni intervention manuelle
 
+### 2026-05-04 — Studio Éditorial v2 : Structurer + Aperçu + Migrate-to-seed (v1.5)
+- [x] **Phase 1 — UX critique** : 3 nouveaux boutons dans l'éditeur Studio
+  - 🗑️ **Supprimer** (`hardDelete`) : suppression définitive du brouillon + restauration auto du sujet dans le pool
+  - ↩️ **Changer de sujet** (`changeTopic`) : abandon du brouillon + restauration sujet + retour à l'écran de choix
+  - 📥 **Archiver** : refait pour restaurer le sujet (était un soft-delete simple avant)
+- [x] **Phase 2 — Output structuré identique aux articles manuels** :
+  - Nouveau composant partagé `GuidePreviewBody.jsx` utilisé à la fois par `/guide/{slug}` (public) ET par le Studio admin (preview modal) → **garantit pixel-perfect parity**
+  - `GuidePage.jsx` refactorisé pour utiliser `GuidePreviewBody` → **upgrade bonus** : la FAQ est désormais visible sur les pages déployées (auparavant seulement Schema.org)
+  - Nouvel endpoint `POST /admin/editorial/articles/{id}/structure` : 2e passe IA qui transforme le markdown en JSON structuré (reponse_rapide, contexte, limites, blocages[], erreurs[], strategie, orientation[], reassurance, maillage[], faq[])
+  - Parser JSON tolérant via `json_repair` (gère virgules traînantes, échappements imparfaits) — installé dans requirements.txt
+  - Nouvel onglet **"Structurer"** dans l'éditeur avec formulaires admin pour éditer chaque bloc librement
+  - Bouton **"Aperçu Web"** ouvre une modal plein écran qui rend le contenu structuré exactement comme la page déployée
+- [x] **Phase 3 — Bridge Publish → seed_seo_pages.py (production)** :
+  - Nouvel endpoint `POST /admin/editorial/articles/{id}/migrate-to-seed` qui écrit programmatiquement l'article structuré dans `seed_seo_pages.py` (devant le marqueur `]\n\nasync def seed():`)
+  - Bouton **"Migrer vers production"** (vert) actif uniquement après structure + validation des red flags
+  - Vérification d'unicité de slug + validation flags + JSON-safe escaping
+  - Workflow définitif : Studio → Migrer → Save to GitHub → Deploy → article live sur strategie-expertise-sante.fr en ~30 sec
+  - **Roue de secours préservée** : la méthode manuelle (édition directe du seed via agent) reste 100 % opérationnelle, idempotente
+- [x] **Phase Bonus — Tutoriel admin mis à jour** dans `AdminHelpPanel.jsx` : 13 étapes au lieu de 9, intégrant Structurer / Aperçu Web / Migrer + Roue de secours + nouvelles actions de suppression
+- [x] **TEST END-TO-END RÉEL EXÉCUTÉ** : sujet "Burn-out reconnu en accident du travail" généré du début à la fin
+  - Plan IA généré en 19s (7 sections + 8 FAQ + 3 H1 options)
+  - Brouillon généré en ~30s (parallel section generation, 14 red flags scannés)
+  - Structure générée en 44s (11/11 clés, 5 blocages, 5 erreurs, 5 orientations, 5 FAQ)
+  - 14 flags validés
+  - Migration vers seed (+51 lignes)
+  - Backend redémarré → auto-seed picked up new article → preview HTTP 200 ✅
+  - Aperçu Web modal validé visuellement (10 sections rendues identiques à la page publiée)
+  - Article de test ensuite nettoyé (DB + seed file) pour que l'utilisateur puisse re-tester sur un environnement vierge
+
 ## Calendrier SEO — Rappels Phases
 ### Phase 1 (FAIT) :
 - [x] Optimisation `/calculatrice-ipp` : title/H1 "Calcul IPP", barème capital 2026 vérifié, 2 cas concrets, faute inexcusable, erreurs fréquentes, 5 FAQ Schema.org (~1100 mots)
