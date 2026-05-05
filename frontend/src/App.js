@@ -1,6 +1,6 @@
 import "@/App.css";
 import { lazy, Suspense, useEffect } from "react";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/sonner";
 import { Header } from "@/components/Header";
@@ -154,6 +154,7 @@ function App() {
                   <Route path="/calculatrice-ipp" element={<><Header /><CalculatriceIPPPage /><Footer /></>} />
                   <Route path="/calculatrice-aah" element={<><Header /><CalculatriceAAHPage /><Footer /></>} />
                   <Route path="/dossier-express" element={<><Header /><DossierExpressPage /><Footer /></>} />
+                  <Route path="/strategiia" element={<Navigate to="/?open=strategiia" replace />} />
                   <Route path="/dossier-express/suivi" element={<><Header /><SuiviDossierPage /><Footer /></>} />
                   <Route path="/forum" element={<><Header /><ForumPage /><Footer /></>} />
                   <Route path="/forum/inscription" element={<><Header /><ForumRegisterPage /><Footer /></>} />

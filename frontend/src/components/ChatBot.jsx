@@ -22,8 +22,7 @@ const WAITING_MESSAGES = [
 
 const LoadingBubble = () => {
   const [msgIndex, setMsgIndex] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const [isLong, setIsLong] = useState(false);
+  const [progress, setProgress] = useState(0);  const [isLong, setIsLong] = useState(false);
   const startRef = useRef(Date.now());
 
   useEffect(() => {
@@ -76,8 +75,40 @@ const LoadingBubble = () => {
   );
 };
 
-const StrateMascotIcon = ({ size = 40 }) => (
-  <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+/**
+ * CtaLink — wraps a Link to support special pseudo-routes used by Straté:
+ *  - "/strategiia" → does NOT navigate; dispatches the global window event
+ *    "strategiia:open" so the StrategiIA popup opens in place. Falls back to
+ *    /?open=strategiia query (preserves tracking) if the popup component isn't
+ *    mounted on the current page.
+ *  - any other href: standard react-router Link.
+ */
+const CtaLink = ({ href, src, track, onAfter, children }) => {
+  const isStrategiia = typeof href === 'string' && (href === '/strategiia' || href.startsWith('/strategiia?') || href.startsWith('/strategiia#'));
+  const handleClick = (e) => {
+    track && track(href, src);
+    if (isStrategiia) {
+      e.preventDefault();
+      try {
+        window.dispatchEvent(new CustomEvent('strategiia:open', { detail: { src } }));
+      } catch (_) { /* no-op */ }
+      onAfter && onAfter();
+      return;
+    }
+    onAfter && onAfter();
+  };
+  if (isStrategiia) {
+    // Use a button so prevent-default works cleanly; styled as a link wrapper.
+    return (
+      <a href="#" onClick={handleClick} className="block" data-testid="strate-cta-strategiia">{children}</a>
+    );
+  }
+  return (
+    <Link to={href} onClick={handleClick}>{children}</Link>
+  );
+};
+
+const StrateMascotIcon = ({ size = 40 }) => (  <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect x="4" y="8" width="32" height="24" rx="6" fill="#0a0a08" stroke="#C9A84C" strokeWidth="1.5"/>
     <rect x="10" y="14" width="6" height="5" rx="1.5" fill="#C9A84C"/>
     <rect x="24" y="14" width="6" height="5" rx="1.5" fill="#C9A84C"/>
@@ -473,26 +504,30 @@ export const ChatBot = () => {
               {!strateLoading && strateStep === 'route' && strateCtas && (
                 <div className="ml-11 space-y-2" data-testid="strate-final-ctas">
                   {strateCtas.primary && (
-                    <Link
-                      to={strateCtas.primary.href}
-                      onClick={() => { strateTrackClick(strateCtas.primary.href, strateCtas.primary.src); setIsOpen(false); }}
+                    <CtaLink
+                      href={strateCtas.primary.href}
+                      src={strateCtas.primary.src}
+                      track={strateTrackClick}
+                      onAfter={() => setIsOpen(false)}
                     >
                       <Button className="w-full justify-start gap-2 text-xs bg-[#C9A84C] hover:bg-[#B89640] text-[#0a0a08] font-semibold" data-testid="strate-primary-cta">
                         <ArrowRight className="w-3.5 h-3.5" />
                         {strateCtas.primary.label}
                       </Button>
-                    </Link>
+                    </CtaLink>
                   )}
                   {strateCtas.alternative && (
-                    <Link
-                      to={strateCtas.alternative.href}
-                      onClick={() => { strateTrackClick(strateCtas.alternative.href, strateCtas.alternative.src); setIsOpen(false); }}
+                    <CtaLink
+                      href={strateCtas.alternative.href}
+                      src={strateCtas.alternative.src}
+                      track={strateTrackClick}
+                      onAfter={() => setIsOpen(false)}
                     >
                       <Button variant="outline" className="w-full justify-start gap-2 text-xs" data-testid="strate-alt-cta">
                         <ArrowRight className="w-3.5 h-3.5" />
                         {strateCtas.alternative.label}
                       </Button>
-                    </Link>
+                    </CtaLink>
                   )}
                   <button
                     onClick={strateReset}
