@@ -178,6 +178,8 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
   - Workflow définitif : Studio → Migrer → Save to GitHub → Deploy → article live sur strategie-expertise-sante.fr en ~30 sec
   - **Roue de secours préservée** : la méthode manuelle (édition directe du seed via agent) reste 100 % opérationnelle, idempotente
 - [x] **Phase Bonus — Tutoriel admin mis à jour** dans `AdminHelpPanel.jsx` : 13 étapes au lieu de 9, intégrant Structurer / Aperçu Web / Migrer + Roue de secours + nouvelles actions de suppression
+- [x] **2026-02-XX — Bloc B Organigramme IA** : nouveau composant `AdminAgentsOrg.jsx` + endpoint `GET /api/admin/agents/registry` (`backend/routes/agents_registry.py`). Cartographie visuelle 3 niveaux (PDG → Straté/StratégiIA/Dossier Express → Planner/Writer/Critic/Structurer). Modal détail avec mission, modèle, garde-fous et prompt système (lecture seule, copy-to-clipboard). Onglet "Organigramme IA" dans Admin Dashboard.
+- [x] **2026-02-XX — Bloc C Tutoriel Studio mis à jour 14 étapes** : Studio Éditorial passe de 13 à 14 étapes intégrant le nouveau Critic juridique (architecture multi-agents Planner → Writer → Critic → Structurer). Ajout d'une nouvelle section dédiée "Organigramme IA — Cartographie des agents" (7 étapes) dans le Help Panel admin. maxHeight bumped to 1500px pour accueillir les sections longues.
 - [x] **TEST END-TO-END RÉEL EXÉCUTÉ** : sujet "Burn-out reconnu en accident du travail" généré du début à la fin
   - Plan IA généré en 19s (7 sections + 8 FAQ + 3 H1 options)
   - Brouillon généré en ~30s (parallel section generation, 14 red flags scannés)

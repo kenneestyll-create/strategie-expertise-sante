@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { HelpCircle, X, Search, ChevronRight, ArrowRight, Sparkles, BookOpen, Users, MessageSquare, Gift, Calendar, FolderOpen, Send, Zap, Brain, FileSearch, BarChart3, FileText, Star, Settings, Bell, PenTool, ChevronDown, RotateCcw, Mail } from 'lucide-react';
+import { HelpCircle, X, Search, ChevronRight, ArrowRight, Sparkles, BookOpen, Users, MessageSquare, Gift, Calendar, FolderOpen, Send, Zap, Brain, FileSearch, BarChart3, FileText, Star, Settings, Bell, PenTool, ChevronDown, RotateCcw, Mail, Crown } from 'lucide-react';
 
 const HELP_SECTIONS = [
   {
@@ -233,25 +233,43 @@ const HELP_SECTIONS = [
     icon: Sparkles,
     title: 'Studio Éditorial — Production de guides SEO',
     color: '#C9A84C',
-    summary: 'IA rédactrice contrainte + 7 garde-fous + validation ciblée pour publier 1 guide SEO/semaine en toute fiabilité (95-98%).',
+    summary: 'Architecture multi-agents (Planner → Writer → Critic juridique → Structurer) + 7 garde-fous + validation ciblée pour publier 1 guide SEO/semaine en toute fiabilité (95-98%).',
     steps: [
       { label: 'Où le trouver ?', tab: 'editorial', text: 'Onglet "Studio" dans la barre de navigation principale (à côté de Forum). Vous arrivez sur la page d\'accueil avec proposals, KPIs et liste des articles.' },
       { label: 'Choisir un sujet (3 options)', text: '1) Cliquez sur l\'un des 3 sujets proposés (re-tirables à volonté du pool de 30+). 2) Allez voir tout le pool. 3) Saisissez VOTRE propre sujet en bas. Les sujets choisis sont exclus du pool définitivement.' },
-      { label: 'Étape 1 — Plan IA', text: 'Cliquez "Générer le plan". L\'IA produit en 5 sec : 3 variantes de H1, slug URL, méta-description, plan H2/H3 + 5-8 questions FAQ. Tout modifiable.' },
-      { label: 'Étape 2 — Brouillon IA', text: 'Cliquez "Générer le brouillon". L\'IA rédige section par section en utilisant UNIQUEMENT la base de référence légale interne (~25 articles de loi, jurisprudences, chiffres pré-vérifiés). Tout ce qui sort de la base est marqué "[À VÉRIFIER]". Auto-retry des sections défaillantes.' },
-      { label: 'Étape 3 — Structurer pour publication (NOUVEAU)', text: 'Onglet "Structurer" → bouton "Générer la structure publiable". L\'IA convertit le brouillon markdown en blocs structurés (réponse rapide, contexte, blocages, erreurs, stratégie, orientation, FAQ, maillage). Vous pouvez ensuite éditer chaque bloc librement dans des formulaires admin.' },
-      { label: 'Étape 4 — Aperçu Web (NOUVEAU)', text: 'Bouton "Aperçu Web" en haut du brouillon : ouvre une modal qui rend l\'article EXACTEMENT comme il apparaîtra sur /guide/{slug}. Permet de valider visuellement avant publication.' },
-      { label: 'Étape 5 — Validation ciblée', text: 'Onglet "À valider" : tableau de 5-15 drapeaux rouges à vérifier (lois, jurisprudences, chiffres, délais, termes médicaux, noms propres). Pour chacun : bouton "Vérifier" → ouvre Légifrance / service-public dans un nouvel onglet. Vous cochez "Validé" (vert) ou laissez en attente.' },
-      { label: 'Étape 6 — Publication / Migration vers prod (NOUVEAU)', text: 'Deux chemins après validation : 1) "Publier (preview)" → article visible immédiatement sur /guide/{slug} en environnement preview pour test final. 2) "Migrer vers production" → écrit l\'article dans le fichier seed_seo_pages.py. Ensuite cliquez "Save to GitHub" puis "Deploy" dans Emergent : article live sur strategie-expertise-sante.fr en ~30 secondes.' },
-      { label: 'Roue de secours — Méthode manuelle', text: 'Le seed manuel reste actif comme filet de sécurité : si jamais le Studio bug, vous pouvez toujours demander à un agent Emergent d\'ajouter une page directement dans seed_seo_pages.py. Auto-seed au démarrage du backend → idempotent (ne touche jamais aux pages existantes).' },
-      { label: 'Supprimer / Changer de sujet (NOUVEAU)', text: 'Trois actions pour gérer vos brouillons : "Archiver" (suppression douce), "Supprimer" (suppression définitive), "Changer de sujet" (supprime + remet le sujet dans le pool). Toute suppression remet automatiquement le sujet dans le pool des 30 disponibles.' },
+      { label: 'Étape 1 — Plan IA (Planner)', text: 'Cliquez "Générer le plan". L\'agent Planner produit en 5 sec : 3 variantes de H1, slug URL, méta-description, plan H2/H3 + 5-8 questions FAQ. Tout modifiable.' },
+      { label: 'Étape 2 — Brouillon IA (Writer)', text: 'Cliquez "Générer le brouillon". L\'agent Writer rédige section par section en utilisant UNIQUEMENT la base de référence légale interne (~25 articles de loi, jurisprudences, chiffres pré-vérifiés). Tout ce qui sort de la base est marqué "[À VÉRIFIER]". Auto-retry des sections défaillantes.' },
+      { label: 'Étape 3 — Critic juridique (NOUVEAU)', text: 'Onglet "Critic" → bouton "Auditer le brouillon". Un agent critique relit le brouillon ligne par ligne et identifie : hallucinations légales, chiffres non sourcés, jurisprudences inventées, conseils médicaux non couverts par la base. Retour structuré avec score de fiabilité + corrections suggérées. Vous pouvez réviser le brouillon en 1 clic ("Appliquer les corrections").' },
+      { label: 'Étape 4 — Structurer pour publication', text: 'Onglet "Structurer" → bouton "Générer la structure publiable". L\'agent Structurer convertit le brouillon markdown en blocs structurés (réponse rapide, contexte, blocages, erreurs, stratégie, orientation, FAQ, maillage). Vous pouvez ensuite éditer chaque bloc librement dans des formulaires admin.' },
+      { label: 'Étape 5 — Aperçu Web pixel-perfect', text: 'Bouton "Aperçu Web" en haut du brouillon : ouvre une modal qui rend l\'article EXACTEMENT comme il apparaîtra sur /guide/{slug} (mêmes Trust Badges, même typographie, même mise en page que les guides en production). Permet de valider visuellement avant publication.' },
+      { label: 'Étape 6 — Validation ciblée', text: 'Onglet "À valider" : tableau de 5-15 drapeaux rouges à vérifier (lois, jurisprudences, chiffres, délais, termes médicaux, noms propres). Pour chacun : bouton "Vérifier" → ouvre Légifrance / service-public dans un nouvel onglet. Vous cochez "Validé" (vert) ou laissez en attente.' },
+      { label: 'Étape 7 — Publication / Migration vers prod', text: 'Deux chemins après validation : 1) "Publier (preview)" → article visible immédiatement sur /guide/{slug} en environnement preview pour test final. 2) "Migrer vers production" → écrit l\'article dans le fichier seed_seo_pages.py. Au prochain redémarrage du backend (ou Save to GitHub + Deploy), l\'auto-seed pousse l\'article en production en ~30 secondes. Idempotent : ne touche jamais aux pages existantes.' },
+      { label: 'Supprimer / Changer de sujet', text: 'Trois actions pour gérer vos brouillons : "Archiver" (suppression douce), "Supprimer" (suppression définitive), "Changer de sujet" (supprime + remet le sujet dans le pool). Toute suppression remet automatiquement le sujet dans le pool des 30 disponibles.' },
       { label: 'Saisir vos chiffres Search Console', text: 'Onglet "Perf" de chaque article : champs "Période / Impressions / Clics / Position moy.". Saisie mensuelle 30 sec. CTR calculé auto. Historique conservé.' },
       { label: 'Revalidation 6 mois', text: 'Tous les 6 mois après publication, alerte automatique sur la home du Studio : "X articles à revalider". Cliquez sur le titre → vérifiez que les chiffres et lois sont à jour → bouton "Toujours valable" OU mise à jour ciblée.' },
       { label: 'Modules avancés (mode veille)', text: 'Bouton "Paramètres" (haut droite du Studio) : 2 toggles désactivés par défaut : RAG live web (vérification temps réel Légifrance, ~10-30€/mois) et Génération dynamique sujets (IA propose selon SC, ~5-15€/mois). À activer plus tard quand le rythme est tenu.' },
-      { label: 'Conformité juridique', text: '7 garde-fous actifs en permanence : 1) prompt rigide, 2) base interne, 3) scanner red-flags, 4) validation ciblée, 5) RAG interne, 6) revalidation 6 mois, 7) disclaimer auto. Aucune jurisprudence inventée, aucun chiffre fantaisiste, aucun nom propre, aucune donnée médicale sensible.' },
-      { label: 'Coût récurrent', text: '~3-5 €/mois en API IA (Claude Haiku 4.5 via Emergent LLM Key) pour 4 articles/mois — incluant les nouvelles étapes Structuration. Aucun autre coût. Search Console = saisie manuelle = 0€.' },
+      { label: 'Conformité juridique — 7 garde-fous', text: '1) prompts rigides (Planner / Writer / Critic / Structurer), 2) base de référence interne, 3) scanner red-flags automatique, 4) Critic juridique (NOUVEAU), 5) validation ciblée manuelle, 6) revalidation 6 mois, 7) disclaimer auto + Trust Badges. Aucune jurisprudence inventée, aucun chiffre fantaisiste, aucun nom propre, aucune donnée médicale sensible. Voir l\'onglet "Organigramme IA" pour visualiser tous les prompts.' },
+      { label: 'Coût récurrent', text: '~3-5 €/mois en API IA (Claude Haiku 4.5 via Emergent LLM Key) pour 4 articles/mois — incluant les étapes Critic + Structuration. Aucun autre coût. Search Console = saisie manuelle = 0€.' },
     ],
-    keywords: ['studio', 'éditorial', 'editorial', 'guide', 'seo', 'rédaction', 'ia', 'rédacteur', 'plan', 'brouillon', 'red flag', 'drapeau', 'validation', 'légifrance', 'jurisprudence', 'loi', 'sujet', 'pool', 'revalidation', 'rag', 'haiku', 'claude', 'mémo', 'rgpd', 'cnil', 'fiabilité', 'garde-fou', 'structurer', 'aperçu', 'preview', 'migrer', 'seed', 'production', 'deploy', 'github', 'changer sujet', 'supprimer brouillon']
+    keywords: ['studio', 'éditorial', 'editorial', 'guide', 'seo', 'rédaction', 'ia', 'rédacteur', 'plan', 'brouillon', 'critic', 'critique', 'juridique', 'audit', 'red flag', 'drapeau', 'validation', 'légifrance', 'jurisprudence', 'loi', 'sujet', 'pool', 'revalidation', 'rag', 'haiku', 'claude', 'mémo', 'rgpd', 'cnil', 'fiabilité', 'garde-fou', 'structurer', 'aperçu', 'preview', 'migrer', 'seed', 'production', 'deploy', 'github', 'changer sujet', 'supprimer brouillon', 'planner', 'writer', 'agent', 'multi-agents', 'organigramme']
+  },
+  {
+    id: 'agents-org',
+    tab: 'agents-org',
+    icon: Crown,
+    title: 'Organigramme IA — Cartographie des agents',
+    color: '#C9A84C',
+    summary: 'Carte visuelle de votre équipe d\'agents IA (PDG, Straté, StratégiIA, Dossier Express, Studio) avec leurs prompts système et garde-fous en lecture seule.',
+    steps: [
+      { label: 'Où le trouver ?', tab: 'agents-org', text: 'Onglet "Organigramme IA" dans la barre principale (à côté de "Studio"). Visualise la hiérarchie complète de vos agents IA en un coup d\'œil.' },
+      { label: 'Pourquoi c\'est utile', text: 'Pour comprendre EXACTEMENT qui fait quoi dans votre écosystème IA, quels prompts sont en production, et quels garde-fous protègent vos visiteurs. Indispensable pour expliquer le fonctionnement à un partenaire, un investisseur, ou un audit RGPD/déontologique.' },
+      { label: 'Hiérarchie en 3 niveaux', text: 'Niveau 0 : PDG Fondateur (vous — vision, validation finale). Niveau 1 : 3 agents en contact direct visiteur/client → Straté (Réceptionniste IA), StratégiIA (Analyse premium), Dossier Express (Pré-expertise documentaire). Niveau 2 : Équipe éditoriale du Studio SEO → Planner, Writer, Critic Juridique, Structurer.' },
+      { label: 'Ouvrir le détail d\'un agent', text: 'Cliquez sur n\'importe quelle carte d\'agent → modal complet avec : Mission, Modèle utilisé (Claude Haiku/Sonnet), liste des garde-fous actifs, et le prompt système intégral (lecture seule). Bouton "Copier" pour le presse-papier.' },
+      { label: 'Source du prompt', text: 'Chaque modal indique le fichier source exact (ex : routes/editorial.py → CRITIC_PROMPT) et le nom de la variable. Vous savez toujours où modifier un prompt si nécessaire (en passant par l\'agent dev Emergent).' },
+      { label: 'Mise à jour automatique', text: 'L\'organigramme est piloté par /backend/routes/agents_registry.py. Chaque fois qu\'un nouvel agent est ajouté ou qu\'un prompt est modifié dans le code, l\'organigramme se met à jour automatiquement au prochain rechargement. Aucune maintenance manuelle.' },
+      { label: 'Conformité & audit', text: 'Pratique pour répondre à une question type : "Quels prompts utilise votre IA pour rédiger des articles juridiques ?" → vous montrez l\'organigramme + le prompt du Critic juridique. Transparence totale, traçabilité complète.' },
+    ],
+    keywords: ['organigramme', 'agents', 'agent', 'ia', 'cartographie', 'hiérarchie', 'pdg', 'straté', 'strategiia', 'dossier express', 'planner', 'writer', 'critic', 'critique', 'structurer', 'prompt', 'système', 'garde-fou', 'lecture seule', 'audit', 'transparence', 'registre', 'registry']
   },
   {
     id: 'forum',
@@ -357,7 +375,7 @@ const HelpCard = ({ section, isExpanded, onToggle, onNavigate, index }) => {
       
       <div
         className="overflow-hidden transition-all duration-400 ease-out"
-        style={{ maxHeight: isExpanded ? '500px' : '0', opacity: isExpanded ? 1 : 0 }}
+        style={{ maxHeight: isExpanded ? '1500px' : '0', opacity: isExpanded ? 1 : 0 }}
       >
         <div className="px-4 pb-4 pt-1 space-y-2.5">
           {section.steps.map((step, i) => (
