@@ -3,10 +3,13 @@
 Reads prompts in real-time from source files so the admin always sees current state.
 """
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from utils.auth import get_current_admin
 import os
 import re
+import io
 import importlib
+from datetime import datetime
 
 router = APIRouter()
 
@@ -175,3 +178,22 @@ async def get_agents_registry(admin: dict = Depends(get_current_admin)):
         ),
     ]
     return {"ceo": {"name": "PDG Fondateur", "role": "Vision, stratégie, validation finale"}, "agents": agents}
+
+
+@router.get("/admin/agents/registry/pdf")
+async def get_agents_registry_pdf(admin: dict = Depends(get_current_admin)):
+    """Generate a downloadable PDF of the AI org chart with full system prompts."""
+    from utils.pdf_agents_org import generate_agents_org_pdf
+
+    payload = await get_agents_registry(admin=admin)
+    try:
+        pdf_bytes = generate_agents_org_pdf(payload)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"PDF generation failed: {e}")
+
+    filename = f"organigramme-ia-ses-{datetime.now().strftime('%Y%m%d')}.pdf"
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )

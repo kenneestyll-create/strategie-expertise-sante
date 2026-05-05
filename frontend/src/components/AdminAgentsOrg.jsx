@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Phone, Sparkles, FileSearch, ClipboardList, PenTool, ShieldAlert, Layers, Copy, X } from 'lucide-react';
+import { Crown, Phone, Sparkles, FileSearch, ClipboardList, PenTool, ShieldAlert, Layers, Copy, X, Download, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -125,6 +125,7 @@ export const AdminAgentsOrg = () => {
   const { token } = useAuth();
   const [data, setData] = useState(null);
   const [selected, setSelected] = useState(null);
+  const [exporting, setExporting] = useState(false);
   const cfg = { headers: { Authorization: `Bearer ${token}` } };
 
   useEffect(() => {
@@ -133,6 +134,27 @@ export const AdminAgentsOrg = () => {
       .catch(() => toast.error("Erreur chargement organigramme"));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const exportPdf = async () => {
+    setExporting(true);
+    try {
+      const r = await axios.get(`${API}/admin/agents/registry/pdf`, { ...cfg, responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([r.data], { type: 'application/pdf' }));
+      const a = document.createElement('a');
+      a.href = url;
+      const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      a.download = `organigramme-ia-ses-${today}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("Organigramme exporté en PDF");
+    } catch {
+      toast.error("Erreur lors de l'export PDF");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   if (!data) return <p className="text-sm text-muted-foreground">Chargement de l'organigramme…</p>;
 
@@ -147,10 +169,22 @@ export const AdminAgentsOrg = () => {
       <Card className="border-[#C9A84C]/30 bg-gradient-to-br from-[#FAF8F3] to-white">
         <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Crown className="w-5 h-5 text-[#C9A84C]" /> Organigramme IA</CardTitle></CardHeader>
         <CardContent>
-          <p className="text-sm text-foreground/70">
-            Visualisez l'ensemble de votre équipe d'agents IA, leurs rôles et leurs garde-fous.
-            Cliquez sur une carte pour consulter le prompt système complet (lecture seule).
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <p className="text-sm text-foreground/70 flex-1">
+              Visualisez l'ensemble de votre équipe d'agents IA, leurs rôles et leurs garde-fous.
+              Cliquez sur une carte pour consulter le prompt système complet (lecture seule).
+            </p>
+            <Button
+              onClick={exportPdf}
+              disabled={exporting}
+              size="sm"
+              className="bg-[#1a1a2e] text-white hover:bg-[#2a2a3e] gap-2 shrink-0"
+              data-testid="agents-org-export-pdf"
+            >
+              {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+              Exporter en PDF
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
