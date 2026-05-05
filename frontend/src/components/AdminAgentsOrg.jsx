@@ -4,8 +4,10 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Phone, Sparkles, FileSearch, ClipboardList, PenTool, ShieldAlert, Layers, Copy, X, Download, Loader2 } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Crown, Phone, Sparkles, FileSearch, ClipboardList, PenTool, ShieldAlert, Layers, Copy, X, Download, Loader2, History } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { AdminAgentsVersions } from './AdminAgentsVersions';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -188,37 +190,54 @@ export const AdminAgentsOrg = () => {
         </CardContent>
       </Card>
 
-      {/* PDG niveau 0 */}
-      <div className="flex justify-center">
-        <div className="rounded-xl border-2 border-[#C9A84C] bg-gradient-to-br from-[#1a1a2e] to-[#0a0a14] text-white p-5 max-w-md text-center shadow-lg" data-testid="ceo-card">
-          <Crown className="w-8 h-8 text-[#C9A84C] mx-auto mb-2" />
-          <h3 className="font-semibold text-base">{data.ceo.name}</h3>
-          <p className="text-xs text-[#C9A84C] mt-1">{data.ceo.role}</p>
-        </div>
-      </div>
+      <Tabs defaultValue="overview" className="space-y-5">
+        <TabsList className="bg-card/80 backdrop-blur border border-border/60 p-1 rounded-lg">
+          <TabsTrigger value="overview" className="gap-1.5 text-xs px-3 py-1.5" data-testid="agents-subtab-overview">
+            <Crown className="w-3.5 h-3.5" /> Vue générale
+          </TabsTrigger>
+          <TabsTrigger value="versions" className="gap-1.5 text-xs px-3 py-1.5" data-testid="agents-subtab-versions">
+            <History className="w-3.5 h-3.5" /> Versions
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Connector visual */}
-      <div className="flex justify-center"><div className="w-px h-6 bg-[#C9A84C]/40" /></div>
-
-      {/* Agents niveau 1 */}
-      <div>
-        <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-3 font-semibold">Agents en contact direct visiteur / client</h4>
-        <div className="grid sm:grid-cols-3 gap-3">
-          {strate && <AgentCard agent={strate} onClick={() => setSelected(strate)} />}
-          {strategiia && <AgentCard agent={strategiia} onClick={() => setSelected(strategiia)} />}
-          {dossierExpress && <AgentCard agent={dossierExpress} onClick={() => setSelected(dossierExpress)} />}
-        </div>
-      </div>
-
-      {/* Editorial team */}
-      {editorialAgents.length > 0 && (
-        <div>
-          <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-3 font-semibold">Équipe éditoriale (Studio SEO)</h4>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {editorialAgents.map(a => <AgentCard key={a.id} agent={a} onClick={() => setSelected(a)} />)}
+        <TabsContent value="overview" className="space-y-6 mt-0">
+          {/* PDG niveau 0 */}
+          <div className="flex justify-center">
+            <div className="rounded-xl border-2 border-[#C9A84C] bg-gradient-to-br from-[#1a1a2e] to-[#0a0a14] text-white p-5 max-w-md text-center shadow-lg" data-testid="ceo-card">
+              <Crown className="w-8 h-8 text-[#C9A84C] mx-auto mb-2" />
+              <h3 className="font-semibold text-base">{data.ceo.name}</h3>
+              <p className="text-xs text-[#C9A84C] mt-1">{data.ceo.role}</p>
+            </div>
           </div>
-        </div>
-      )}
+
+          {/* Connector visual */}
+          <div className="flex justify-center"><div className="w-px h-6 bg-[#C9A84C]/40" /></div>
+
+          {/* Agents niveau 1 */}
+          <div>
+            <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-3 font-semibold">Agents en contact direct visiteur / client</h4>
+            <div className="grid sm:grid-cols-3 gap-3">
+              {strate && <AgentCard agent={strate} onClick={() => setSelected(strate)} />}
+              {strategiia && <AgentCard agent={strategiia} onClick={() => setSelected(strategiia)} />}
+              {dossierExpress && <AgentCard agent={dossierExpress} onClick={() => setSelected(dossierExpress)} />}
+            </div>
+          </div>
+
+          {/* Editorial team */}
+          {editorialAgents.length > 0 && (
+            <div>
+              <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-3 font-semibold">Équipe éditoriale (Studio SEO)</h4>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {editorialAgents.map(a => <AgentCard key={a.id} agent={a} onClick={() => setSelected(a)} />)}
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="versions" className="mt-0">
+          <AdminAgentsVersions />
+        </TabsContent>
+      </Tabs>
 
       <AgentDetailModal agent={selected} onClose={() => setSelected(null)} />
     </div>

@@ -205,6 +205,13 @@ async def startup_db_client():
     except Exception as e:
         logger.warning(f"SEO auto-seed skipped (non-blocking): {e}")
 
+    # Auto-snapshot AI agents state (idempotent — only creates if config hash differs)
+    try:
+        from routes.agents_versions import maybe_auto_snapshot
+        await maybe_auto_snapshot()
+    except Exception as e:
+        logger.warning(f"agents_versions auto-snapshot skipped (non-blocking): {e}")
+
     # Initialize cron config if not exists
     cron_config = await db.app_config.find_one({"key": "reminder_cron"}, {"_id": 0})
     if not cron_config:

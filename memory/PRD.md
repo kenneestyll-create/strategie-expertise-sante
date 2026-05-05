@@ -180,6 +180,16 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - [x] **Phase Bonus — Tutoriel admin mis à jour** dans `AdminHelpPanel.jsx` : 13 étapes au lieu de 9, intégrant Structurer / Aperçu Web / Migrer + Roue de secours + nouvelles actions de suppression
 - [x] **2026-02-XX — Bloc B Organigramme IA** : nouveau composant `AdminAgentsOrg.jsx` + endpoint `GET /api/admin/agents/registry` (`backend/routes/agents_registry.py`). Cartographie visuelle 3 niveaux (PDG → Straté/StratégiIA/Dossier Express → Planner/Writer/Critic/Structurer). Modal détail avec mission, modèle, garde-fous et prompt système (lecture seule, copy-to-clipboard). Onglet "Organigramme IA" dans Admin Dashboard.
 - [x] **2026-02-XX — Bloc C Tutoriel Studio mis à jour 14 étapes** : Studio Éditorial passe de 13 à 14 étapes intégrant le nouveau Critic juridique (architecture multi-agents Planner → Writer → Critic → Structurer). Ajout d'une nouvelle section dédiée "Organigramme IA — Cartographie des agents" (7 étapes) dans le Help Panel admin. maxHeight bumped to 1500px pour accueillir les sections longues.
+- [x] **2026-02-XX — Export PDF Organigramme IA** : nouvel utilitaire `/app/backend/utils/pdf_agents_org.py` + endpoint `GET /api/admin/agents/registry/pdf`. PDF premium 7 pages avec organigramme + annexe prompts intégraux. Bouton "Exporter en PDF" injecté dans `AdminAgentsOrg.jsx`.
+- [x] **2026-02-XX — V1 Versioning/Audit IA** : système complet de traçabilité gouvernance IA pour audit CNIL/déontologique.
+  - Nouvelle collection MongoDB `agents_versions` (snapshot complet : agents, prompts, red flags, base juridique, workflow config, hash SHA-256, changes_summary)
+  - `utils/agents_snapshot.py` : capture state, hash dédup, diff humain
+  - `routes/agents_versions.py` : POST snapshot manuel, GET liste paginée + recherche, GET détail, GET PDF audit
+  - `utils/pdf_agents_audit.py` : rapport d'audit chronologique + annexe empreintes SHA-256
+  - Hook auto-snapshot au démarrage du backend (idempotent — skip si hash identique)
+  - Restauration "copy-only" : aucun write-back automatique pour préserver intégrité Git
+  - Sous-onglets "Vue générale / Versions" dans `AdminAgentsOrg.jsx` + nouveau composant `AdminAgentsVersions.jsx` avec liste paginée, recherche, modal détail, copy config, export PDF audit
+  - Tests : v1 auto-créée au boot, idempotence vérifiée (snapshot manuel sans changement → no_change), PDF audit valide, modal détail rendu OK
 - [x] **TEST END-TO-END RÉEL EXÉCUTÉ** : sujet "Burn-out reconnu en accident du travail" généré du début à la fin
   - Plan IA généré en 19s (7 sections + 8 FAQ + 3 H1 options)
   - Brouillon généré en ~30s (parallel section generation, 14 red flags scannés)
