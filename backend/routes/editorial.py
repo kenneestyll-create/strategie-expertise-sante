@@ -523,6 +523,161 @@ async def generate_draft(article_id: str, admin: dict = Depends(get_current_admi
     return {"success": True, "content": full_md, "red_flags": red_flags}
 
 
+# ==================== JURIDICAL CRITIC (Bloc A) ====================
+
+SYSTEM_PROMPT_CRITIC = """Tu es l'AGENT CRITIQUE JURIDIQUE de Stratégie & Expertise Santé.
+
+MISSION UNIQUE : analyser un brouillon d'article juridique-santé et détecter TOUTE affirmation potentiellement INVENTÉE ou INVERSÉE, sans rien réécrire.
+
+TU NE RÉDIGES PAS. TU AUDITES.
+
+MÉTHODOLOGIE :
+1. Pour chaque référence légale citée (article L./R./D., décret, loi) :
+   - Présente-elle dans la BASE INTERNE fournie ?
+     → Si OUI : ✅ valide
+     → Si NON : 🔴 violation "REFERENCE_NON_VERIFIEE"
+2. Pour chaque jurisprudence citée (Cass., CE, CA) :
+   - A-t-elle un n° de pourvoi ou date précise ?
+     → Si OUI sans source vérifiable : 🟡 violation "JURISPRUDENCE_A_VERIFIER"
+     → Si NON (formulation vague) : 🔴 violation "JURISPRUDENCE_INVENTEE"
+3. Pour chaque chiffre/pourcentage/montant/délai :
+   - Présent dans la base interne OU formulé avec réserve ("selon les données publiques", "à actualiser") ?
+     → Si OUI : ✅ valide
+     → Si NON : 🔴 violation "CHIFFRE_NON_SOURCE"
+4. Inversions juridiques critiques (vérifie chacune) :
+   - "Silence MDPH = acceptation" → 🔴 INVERSION_GRAVE (la vérité : silence = rejet)
+   - "RSDAE ≥ 5 ans / 2 ans / etc." → 🔴 INVERSION_GRAVE (vérité : ≥ 1 an)
+   - "Conseil d'État compétent sur MDPH" → 🔴 INVERSION_GRAVE (vérité : pôle social tribunal jud.)
+   - "IPP < 10% = rente" → 🔴 INVERSION_GRAVE (vérité : capital unique)
+   - "Délai déclaration AT > 48h" → 🔴 INVERSION_GRAVE
+   - "Silence CPAM = acceptation TOUJOURS" → 🔴 INVERSION_GRAVE (vérité : seulement si dossier complet)
+5. Détecte aussi : noms propres réels (médecins, avocats, juges), données médicales sensibles (NIR, diagnostics nominatifs), promesses de résultat ("vous gagnerez", "garantie").
+
+FORMAT DE SORTIE — JSON STRICT, AUCUN AUTRE TEXTE :
+{
+  "verdict": "clean" | "warnings_only" | "critical_issues",
+  "violations": [
+    {
+      "severity": "critical" | "warning",
+      "type": "REFERENCE_NON_VERIFIEE" | "JURISPRUDENCE_INVENTEE" | "JURISPRUDENCE_A_VERIFIER" | "CHIFFRE_NON_SOURCE" | "INVERSION_GRAVE" | "NOM_PROPRE_REEL" | "PROMESSE_RESULTAT" | "DONNEE_MEDICALE_SENSIBLE",
+      "quote": "phrase exacte problématique extraite du brouillon",
+      "explanation": "raison précise en 1 phrase",
+      "suggested_fix": "phrase de remplacement neutre proposée"
+    }
+  ],
+  "summary": "synthèse en 2-3 phrases du verdict global"
+}
+
+RÈGLES :
+- Tu ne juges PAS la qualité littéraire, le ton ou le SEO. UNIQUEMENT la conformité juridique factuelle.
+- Sois EXIGEANT : préfère un faux positif à un faux négatif.
+- "verdict" = "critical_issues" dès qu'au moins 1 violation `severity=critical`.
+- "verdict" = "warnings_only" si uniquement warnings.
+- "verdict" = "clean" si aucune violation."""
+
+
+@router.post("/admin/editorial/articles/{article_id}/critic")
+async def critic_article(article_id: str, admin: dict = Depends(get_current_admin)):
+    """Bloc A — Audit juridique automatique du brouillon par un agent Critic dédié.
+
+    Stocke `critic_report` dans l'article. NE MODIFIE PAS le contenu.
+    """
+    art = await db.editorial_articles.find_one({"id": article_id}, {"_id": 0})
+    if not art:
+        raise HTTPException(status_code=404, detail="Article introuvable")
+    if not art.get("content"):
+        raise HTTPException(status_code=400, detail="Aucun brouillon à auditer.")
+
+    legal_refs = await db.editorial_legal_refs.find({}, {"_id": 0}).limit(80).to_list(80)
+    refs_text = "\n".join(f"- {r['label']}: {r['text']}" for r in legal_refs[:50])
+    cleaned_md = re.sub(r"<!--\s*TERRAIN_HOOK:[^>]*-->", "", art["content"])
+
+    user_prompt = (
+        f"BASE INTERNE DE RÉFÉRENCES VÉRIFIÉES :\n{refs_text}\n\n"
+        f"BROUILLON À AUDITER :\n\n{cleaned_md}\n\n"
+        f"Produis le rapport JSON d'audit selon le schéma."
+    )
+    try:
+        raw = await _call_claude(SYSTEM_PROMPT_CRITIC, user_prompt, max_tokens=3500)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"IA Critic indisponible : {e}")
+
+    raw = raw.strip()
+    if raw.startswith("```"):
+        raw = re.sub(r"^```(?:json)?\s*", "", raw)
+        raw = re.sub(r"\s*```$", "", raw)
+    report = None
+    try:
+        report = json_mod.loads(raw)
+    except Exception:
+        m = re.search(r"\{.*\}", raw, re.DOTALL)
+        if m:
+            try:
+                report = json_mod.loads(m.group(0))
+            except Exception:
+                report = None
+    if report is None:
+        try:
+            from json_repair import repair_json
+            repaired = repair_json(raw, return_objects=True)
+            if isinstance(repaired, dict):
+                report = repaired
+        except Exception:
+            pass
+    if report is None:
+        raise HTTPException(status_code=500, detail="Rapport Critic non parsable.")
+
+    # Defensive defaults
+    report.setdefault("verdict", "clean")
+    report.setdefault("violations", [])
+    report.setdefault("summary", "")
+
+    now = datetime.now(timezone.utc).isoformat()
+    await db.editorial_articles.update_one(
+        {"id": article_id},
+        {"$set": {"critic_report": report, "critic_at": now, "updated_at": now}},
+    )
+    return {"success": True, "critic_report": report}
+
+
+@router.post("/admin/editorial/articles/{article_id}/auto-revise")
+async def auto_revise_article(article_id: str, admin: dict = Depends(get_current_admin)):
+    """Bloc A — Réécriture conditionnelle des phrases flaggées par le Critic.
+
+    Remplace UNIQUEMENT les `quote` problématiques par les `suggested_fix` correspondants.
+    Re-scan red_flags après. Ne touche pas aux paragraphes valides.
+    """
+    art = await db.editorial_articles.find_one({"id": article_id}, {"_id": 0})
+    if not art:
+        raise HTTPException(status_code=404, detail="Article introuvable")
+    report = art.get("critic_report")
+    if not report or not report.get("violations"):
+        return {"success": True, "applied": 0, "message": "Aucune violation à corriger."}
+
+    content = art.get("content", "")
+    applied = 0
+    for v in report["violations"]:
+        quote = (v.get("quote") or "").strip()
+        fix = (v.get("suggested_fix") or "").strip()
+        if quote and fix and quote in content:
+            content = content.replace(quote, fix, 1)
+            applied += 1
+
+    new_flags = await _scan_red_flags(content)
+    now = datetime.now(timezone.utc).isoformat()
+    await db.editorial_articles.update_one(
+        {"id": article_id},
+        {"$set": {
+            "content": content,
+            "red_flags": new_flags,
+            "auto_revised_at": now,
+            "updated_at": now,
+            "critic_report": None,  # invalidate, must re-run critic
+        }},
+    )
+    return {"success": True, "applied": applied, "remaining_red_flags": len(new_flags)}
+
+
 @router.post("/admin/editorial/articles/{article_id}/save")
 async def save_article(article_id: str, input_data: SaveArticleInput, admin: dict = Depends(get_current_admin)):
     """Save edits + rescan red flags + version snapshot."""

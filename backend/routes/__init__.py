@@ -18,6 +18,7 @@ from routes.vip_guests import router as vip_guests_router
 from routes.strate import router as strate_router
 from routes.leads_pillar import router as leads_pillar_router
 from routes.editorial import router as editorial_router
+from routes.agents_registry import router as agents_registry_router
 
 all_routers = [
     public_router,
@@ -40,4 +41,5 @@ all_routers = [
     strate_router,
     leads_pillar_router,
     editorial_router,
+    agents_registry_router,
 ]

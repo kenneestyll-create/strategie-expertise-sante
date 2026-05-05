@@ -10,7 +10,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   PenTool, Sparkles, FileText, AlertTriangle, CheckCircle2, Calendar, Settings,
   Loader2, ArrowRight, BarChart3, RefreshCw, BookOpen, Plus, Archive, Eye, Send, ExternalLink,
-  Trash2, RotateCcw, Layers, GitBranch,
+  Trash2, RotateCcw, Layers, GitBranch, ShieldAlert, Wand2,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { GuidePreviewBody } from '@/components/GuidePreviewBody';
@@ -353,6 +353,32 @@ const EditorView = ({ articleId, onBack, cfg }) => {
   };
 
   const [structuring, setStructuring] = useState(false);
+  const [critiquing, setCritiquing] = useState(false);
+  const [autoRevising, setAutoRevising] = useState(false);
+  const runCritic = async () => {
+    setCritiquing(true);
+    try {
+      const r = await axios.post(`${API}/admin/editorial/articles/${articleId}/critic`, {}, cfg);
+      const v = r.data.critic_report?.verdict;
+      const violations = r.data.critic_report?.violations?.length || 0;
+      if (v === 'clean') toast.success("✅ Critic juridique : aucune violation détectée");
+      else if (v === 'warnings_only') toast.info(`⚠️ Critic : ${violations} avertissement(s) à examiner`);
+      else toast.warning(`🔴 Critic : ${violations} violation(s) critique(s) détectée(s)`);
+      setArticle({ ...article, critic_report: r.data.critic_report });
+    } catch (e) { toast.error(e?.response?.data?.detail || "Erreur Critic"); }
+    finally { setCritiquing(false); }
+  };
+  const runAutoRevise = async () => {
+    if (!window.confirm("Appliquer les corrections proposées par le Critic aux phrases problématiques ?\n\nLes paragraphes valides ne sont pas touchés. Le rapport Critic sera invalidé (à relancer après).")) return;
+    setAutoRevising(true);
+    try {
+      const r = await axios.post(`${API}/admin/editorial/articles/${articleId}/auto-revise`, {}, cfg);
+      toast.success(`${r.data.applied} correction(s) appliquée(s) — relancez le Critic pour confirmer`);
+      load();
+    } catch (e) { toast.error(e?.response?.data?.detail || "Erreur auto-révision"); }
+    finally { setAutoRevising(false); }
+  };
+
   const generateStructure = async () => {
     setStructuring(true);
     try {
@@ -447,6 +473,12 @@ const EditorView = ({ articleId, onBack, cfg }) => {
       <Tabs defaultValue="content" data-testid="editor-tabs">
         <TabsList>
           <TabsTrigger value="content" data-testid="tab-content">📝 Brouillon</TabsTrigger>
+          <TabsTrigger value="critic" data-testid="tab-critic">
+            <ShieldAlert className="w-3.5 h-3.5 mr-1" /> Critic juridique
+            {article.critic_report?.verdict === 'critical_issues' && <Badge className="ml-1 bg-red-100 text-red-800 border-red-200 text-[10px]">{(article.critic_report.violations || []).filter(v => v.severity === 'critical').length}</Badge>}
+            {article.critic_report?.verdict === 'warnings_only' && <Badge className="ml-1 bg-amber-100 text-amber-800 border-amber-200 text-[10px]">⚠</Badge>}
+            {article.critic_report?.verdict === 'clean' && <Badge className="ml-1 bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px]">✓</Badge>}
+          </TabsTrigger>
           <TabsTrigger value="structured" data-testid="tab-structured">
             <Layers className="w-3.5 h-3.5 mr-1" /> Structurer
             {article.structured_content && <Badge className="ml-1 bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px]">✓</Badge>}
@@ -498,6 +530,66 @@ const EditorView = ({ articleId, onBack, cfg }) => {
                 </Button>
               </div>
             </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="critic" data-testid="critic-tab-panel" className="space-y-3">
+          {!article.content ? (
+            <p className="text-sm text-muted-foreground italic mt-4">
+              Générez d'abord le brouillon avant de lancer l'audit Critic juridique.
+            </p>
+          ) : (
+            <>
+              <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4">
+                <p className="text-sm text-foreground/80 mb-3">
+                  <strong>Audit juridique automatique.</strong> Un agent Critic dédié analyse chaque référence légale,
+                  jurisprudence, chiffre et inversion potentielle. Il NE rédige PAS, il AUDITE et propose des corrections ciblées.
+                </p>
+                <div className="flex gap-2">
+                  <Button onClick={runCritic} disabled={critiquing} className="bg-amber-600 hover:bg-amber-700 text-white" data-testid="run-critic-btn">
+                    {critiquing ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Audit en cours…</> : <><ShieldAlert className="w-4 h-4 mr-2" /> {article.critic_report ? 'Relancer l\'audit' : 'Lancer l\'audit Critic'}</>}
+                  </Button>
+                  {article.critic_report?.violations?.some(v => v.suggested_fix) && (
+                    <Button onClick={runAutoRevise} disabled={autoRevising} variant="outline" className="border-amber-400" data-testid="auto-revise-btn">
+                      {autoRevising ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Application…</> : <><Wand2 className="w-4 h-4 mr-2" /> Appliquer corrections</>}
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {article.critic_report && (
+                <div className="space-y-3">
+                  <div className={`rounded-lg p-4 border ${
+                    article.critic_report.verdict === 'clean' ? 'bg-emerald-50 border-emerald-200' :
+                    article.critic_report.verdict === 'warnings_only' ? 'bg-amber-50 border-amber-200' :
+                    'bg-red-50 border-red-200'
+                  }`}>
+                    <p className="text-sm font-semibold mb-1">
+                      {article.critic_report.verdict === 'clean' && '✅ Verdict : aucune violation détectée'}
+                      {article.critic_report.verdict === 'warnings_only' && '⚠️ Verdict : avertissements à examiner'}
+                      {article.critic_report.verdict === 'critical_issues' && '🔴 Verdict : violations critiques détectées'}
+                    </p>
+                    <p className="text-xs text-foreground/80">{article.critic_report.summary}</p>
+                  </div>
+
+                  {(article.critic_report.violations || []).map((v, i) => (
+                    <div key={i} className={`rounded-lg p-3 border ${v.severity === 'critical' ? 'border-red-200 bg-red-50/50' : 'border-amber-200 bg-amber-50/50'}`} data-testid={`critic-violation-${i}`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge className={v.severity === 'critical' ? 'bg-red-100 text-red-800 border-red-200' : 'bg-amber-100 text-amber-800 border-amber-200'}>
+                          {v.severity === 'critical' ? '🔴 CRITIQUE' : '🟡 WARNING'}
+                        </Badge>
+                        <span className="text-[11px] font-mono text-muted-foreground">{v.type}</span>
+                      </div>
+                      <p className="text-xs text-foreground/70 italic mb-2">"{v.quote}"</p>
+                      <p className="text-xs text-foreground/80 mb-2"><strong>Pourquoi :</strong> {v.explanation}</p>
+                      {v.suggested_fix && (
+                        <p className="text-xs text-foreground/80"><strong>Correction proposée :</strong> <span className="text-emerald-700">{v.suggested_fix}</span></p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
 
