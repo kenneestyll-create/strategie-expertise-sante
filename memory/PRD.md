@@ -196,6 +196,10 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
   - Détection automatique : emails `@test.{com,fr,io,etc}`, `@example.*`, `+test`, `pytest`, `playwright`, noms commençant par "Test"/"Demo", compte admin, flag `is_test`.
   - Composant réutilisable `TestDataPurgeButton.jsx` avec modal preview + saisie "PURGER" stricte (bouton désactivé jusqu'à confirmation exacte).
   - **Aucune purge existante touchée** (Config "Préparation Production" inchangée).
+- [x] **2026-02-XX — Badges visuels "données de test" sur la nav admin** :
+  - Endpoint `GET /api/admin/test-cleanup/summary` : compte les données de test détectées sur 10 sections (contacts/avis/bookings/clients/relance/strategiia/dossier-express/feedback/editorial/forum). Cap à 5000 docs scannés par collection pour la performance.
+  - Composant inline `<TestBadge>` dans `AdminDashboard.jsx` : pastille ambre `[count]` (ou `99+`) sous chaque onglet concerné. Tooltip natif "X donnée(s) de test détectée(s)".
+  - Rafraîchissement automatique des badges après chaque purge (via `fetchData()` qui appelle déjà l'endpoint summary).
 - [x] **TEST END-TO-END RÉEL EXÉCUTÉ** : sujet "Burn-out reconnu en accident du travail" généré du début à la fin
   - Plan IA généré en 19s (7 sections + 8 FAQ + 3 H1 options)
   - Brouillon généré en ~30s (parallel section generation, 14 red flags scannés)

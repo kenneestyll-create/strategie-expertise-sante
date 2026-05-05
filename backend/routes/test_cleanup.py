@@ -211,3 +211,52 @@ async def preview_relance(admin: dict = Depends(get_current_admin)):
         "sample": sample,
         "note": "Les relances sont calculées depuis les contacts. Utilisez « Purger contacts » dans Config pour les supprimer.",
     }
+
+
+# ──────────────────────────── SUMMARY (badges on tab nav) ────────────────────────────
+async def _count_test_in(collection_name: str, name_keys: tuple[str, ...] = ("nom", "name", "title", "topic")) -> int:
+    """Count test records across a collection. Capped at 5000 docs scanned for safety."""
+    try:
+        docs = await db[collection_name].find({}, {"_id": 0}).limit(5000).to_list(5000)
+        return sum(1 for d in docs if _is_test_record(d, name_keys=name_keys))
+    except Exception:
+        return 0
+
+
+@router.get("/admin/test-cleanup/summary")
+async def test_cleanup_summary(admin: dict = Depends(get_current_admin)):
+    """Return per-section counts of detected test data — used by tab badges in admin nav.
+
+    Includes all tabs that may contain test residue, not just those with a dedicated
+    purge button (existing /admin/cleanup/* still authoritative for those).
+    """
+    contacts = await _count_test_in("contacts", name_keys=("nom", "name", "prenom"))
+    avis = await _count_test_in("avis", name_keys=("nom", "name", "auteur"))
+    bookings = await _count_test_in("bookings")
+    clients = await _count_test_in("client_users", name_keys=("nom", "name", "full_name"))
+    strategiia = await _count_test_in("strategiia_analyses", name_keys=("nom", "name", "user_name"))
+    dossier_express = await _count_test_in("dossier_express", name_keys=("nom", "name", "user_name"))
+    feedback = await _count_test_in("strategic_feedback", name_keys=("nom", "name", "topic"))
+
+    # Editorial uses its own detector
+    edit_docs = await db.editorial_articles.find(
+        {}, {"_id": 0, "topic": 1, "title": 1, "h1": 1, "subject": 1, "is_test": 1}
+    ).to_list(500)
+    editorial = sum(1 for d in edit_docs if _is_test_editorial(d))
+
+    # Forum: detect by username/title
+    forum = await _count_test_in("forum_topics", name_keys=("title", "author", "username"))
+    forum += await _count_test_in("forum_users", name_keys=("username", "pseudo", "name"))
+
+    return {
+        "contacts": contacts,
+        "avis": avis,
+        "bookings": bookings,
+        "clients": clients,
+        "relance": contacts,  # alias on contacts
+        "strategiia": strategiia,
+        "dossier-express": dossier_express,
+        "feedback": feedback,
+        "editorial": editorial,
+        "forum": forum,
+    }

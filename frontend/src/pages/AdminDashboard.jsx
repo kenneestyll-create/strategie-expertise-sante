@@ -745,6 +745,7 @@ export const AdminDashboard = () => {
   const [casAnonymises, setCasAnonymises] = useState({ items: [], total: 0 });
   const [premiumAnalyses, setPremiumAnalyses] = useState({ items: [], stats: { total: 0, en_attente: 0, en_cours: 0, valide: 0, envoye: 0, termine: 0 } });
   const [reviewDialog, setReviewDialog] = useState(null);
+  const [testCleanupSummary, setTestCleanupSummary] = useState({});
   const [dossierExpressAdmin, setDossierExpressAdmin] = useState({ items: [], stats: { total: 0, completed: 0, processing: 0, errors: 0, incidents: 0, delivered: 0, pending: 0 } });
   const [dossierViewDialog, setDossierViewDialog] = useState(null);
   const [deFilter, setDeFilter] = useState('all');
@@ -867,6 +868,7 @@ export const AdminDashboard = () => {
       axios.get(`${API}/admin/email/status`, axiosConfig).then(r => setEmailStatus(r.data)).catch(() => {});
       axios.get(`${API}/admin/completeness-notifications`, axiosConfig).then(r => setCompletenessNotifs(r.data)).catch(() => {});
       axios.get(`${API}/admin/relance-inactivité/history`, axiosConfig).then(r => setInactivityReminders(r.data)).catch(() => {});
+      axios.get(`${API}/admin/test-cleanup/summary`, axiosConfig).then(r => setTestCleanupSummary(r.data)).catch(() => {});
       axios.get(`${API}/admin/reminder-cron/status`, axiosConfig).then(r => setCronStatus(r.data)).catch(() => {});
       axios.get(`${API}/admin/engagement-kpis`, axiosConfig).then(r => setEngagementKpis(r.data)).catch(() => {});
       axios.get(`${API}/admin/kpi-alerts/check`, axiosConfig).then(r => setKpiAlerts(r.data)).catch(() => {});
@@ -1071,6 +1073,17 @@ export const AdminDashboard = () => {
     ));
   };
 
+  // Small badge showing count of detected test data on a tab
+  const TestBadge = ({ count }) => count > 0 ? (
+    <span
+      className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold border border-amber-300"
+      title={`${count} donnée(s) de test détectée(s)`}
+      data-testid="tab-test-badge"
+    >
+      {count > 99 ? '99+' : count}
+    </span>
+  ) : null;
+
   return (
     <div className={`min-h-screen bg-background transition-colors duration-300 ${isDark ? 'admin-dark' : ''}`}>
       {/* Header */}
@@ -1179,10 +1192,12 @@ export const AdminDashboard = () => {
               <TabsTrigger value="contacts" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
                 <Users className="w-3.5 h-3.5" />
                 Contacts
+                <TestBadge count={testCleanupSummary.contacts} />
               </TabsTrigger>
               <TabsTrigger value="avis" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
                 <MessageSquare className="w-3.5 h-3.5" />
                 Avis
+                <TestBadge count={testCleanupSummary.avis} />
               </TabsTrigger>
               <TabsTrigger value="referrals" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-referrals">
                 <Gift className="w-3.5 h-3.5" />
@@ -1191,14 +1206,17 @@ export const AdminDashboard = () => {
               <TabsTrigger value="bookings" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-bookings">
                 <Calendar className="w-3.5 h-3.5" />
                 RDV
+                <TestBadge count={testCleanupSummary.bookings} />
               </TabsTrigger>
               <TabsTrigger value="clients" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-clients">
                 <FolderOpen className="w-3.5 h-3.5" />
                 Clients
+                <TestBadge count={testCleanupSummary.clients} />
               </TabsTrigger>
               <TabsTrigger value="relance" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-relance">
                 <Send className="w-3.5 h-3.5" />
                 Relance
+                <TestBadge count={testCleanupSummary.relance} />
               </TabsTrigger>
               <TabsTrigger value="alertes" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all relative" data-testid="tab-alertes">
                 <Zap className="w-3.5 h-3.5" />
@@ -1218,6 +1236,7 @@ export const AdminDashboard = () => {
                 {premiumAnalyses.items.filter(i => i.type === 'strategiia' && i.status === 'en_attente').length > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-background">{premiumAnalyses.items.filter(i => i.type === 'strategiia' && i.status === 'en_attente').length}</span>
                 )}
+                <TestBadge count={testCleanupSummary.strategiia} />
               </TabsTrigger>
               <TabsTrigger value="dossier-express" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all relative" data-testid="tab-dossier-express">
                 <FileSearch className="w-3.5 h-3.5 text-amber-600" />
@@ -1225,6 +1244,7 @@ export const AdminDashboard = () => {
                 {premiumAnalyses.items.filter(i => i.type === 'dossier_express' && i.status === 'en_attente').length > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-background">{premiumAnalyses.items.filter(i => i.type === 'dossier_express' && i.status === 'en_attente').length}</span>
                 )}
+                <TestBadge count={testCleanupSummary['dossier-express']} />
               </TabsTrigger>
 
               <div className="w-px h-6 bg-border/60 mx-1 self-center flex-shrink-0" />
@@ -1244,14 +1264,17 @@ export const AdminDashboard = () => {
               <TabsTrigger value="feedback" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-feedback">
                 <MessageSquare className="w-3.5 h-3.5 text-indigo-600" />
                 Feedback
+                <TestBadge count={testCleanupSummary.feedback} />
               </TabsTrigger>
               <TabsTrigger value="forum" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-forum">
                 <MessageSquare className="w-3.5 h-3.5 text-amber-600" />
                 Forum
+                <TestBadge count={testCleanupSummary.forum} />
               </TabsTrigger>
               <TabsTrigger value="editorial" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-editorial">
                 <Sparkles className="w-3.5 h-3.5 text-[#C9A84C]" />
                 Studio
+                <TestBadge count={testCleanupSummary.editorial} />
               </TabsTrigger>
               <TabsTrigger value="agents-org" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-agents-org">
                 <Crown className="w-3.5 h-3.5 text-[#C9A84C]" />
