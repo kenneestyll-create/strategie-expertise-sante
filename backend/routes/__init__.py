@@ -20,6 +20,7 @@ from routes.leads_pillar import router as leads_pillar_router
 from routes.editorial import router as editorial_router
 from routes.agents_registry import router as agents_registry_router
 from routes.agents_versions import router as agents_versions_router
+from routes.test_cleanup import router as test_cleanup_router
 
 all_routers = [
     public_router,
@@ -44,4 +45,5 @@ all_routers = [
     editorial_router,
     agents_registry_router,
     agents_versions_router,
+    test_cleanup_router,
 ]

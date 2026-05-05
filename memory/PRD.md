@@ -190,6 +190,12 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
   - Restauration "copy-only" : aucun write-back automatique pour préserver intégrité Git
   - Sous-onglets "Vue générale / Versions" dans `AdminAgentsOrg.jsx` + nouveau composant `AdminAgentsVersions.jsx` avec liste paginée, recherche, modal détail, copy config, export PDF audit
   - Tests : v1 auto-créée au boot, idempotence vérifiée (snapshot manuel sans changement → no_change), PDF audit valide, modal détail rendu OK
+- [x] **2026-02-XX — Refonte tabs admin (desktop) + Purge tests par onglet** :
+  - Tabs desktop passés de 1 ligne scrollable à 2-3 lignes adaptatives flex-wrap (tous accessibles sans scroll horizontal). Mobile inchangé. Aucune régression sur les `data-testid`.
+  - Nouveau `routes/test_cleanup.py` : endpoints `/preview` + `/purge` pour Clients (`client_users`), RDV (`bookings`), Feedback (`strategic_feedback`), Editorial drafts, Relance (préview-only, redirige vers Config). Confirmation obligatoire `{"confirm": "PURGER"}`.
+  - Détection automatique : emails `@test.{com,fr,io,etc}`, `@example.*`, `+test`, `pytest`, `playwright`, noms commençant par "Test"/"Demo", compte admin, flag `is_test`.
+  - Composant réutilisable `TestDataPurgeButton.jsx` avec modal preview + saisie "PURGER" stricte (bouton désactivé jusqu'à confirmation exacte).
+  - **Aucune purge existante touchée** (Config "Préparation Production" inchangée).
 - [x] **TEST END-TO-END RÉEL EXÉCUTÉ** : sujet "Burn-out reconnu en accident du travail" généré du début à la fin
   - Plan IA généré en 19s (7 sections + 8 FAQ + 3 H1 options)
   - Brouillon généré en ~30s (parallel section generation, 14 red flags scannés)

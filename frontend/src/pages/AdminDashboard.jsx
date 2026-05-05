@@ -18,6 +18,7 @@ import { AdminStrateKpis } from '@/components/AdminStrateKpis';
 import { AdminPillarLeads } from '@/components/AdminPillarLeads';
 import { AdminEditorialStudio } from '@/components/AdminEditorialStudio';
 import { AdminAgentsOrg } from '@/components/AdminAgentsOrg';
+import { TestDataPurgeButton } from '@/components/TestDataPurgeButton';
 import { 
   Heart, 
   LogOut, 
@@ -1171,9 +1172,10 @@ export const AdminDashboard = () => {
             </select>
           </div>
 
-          {/* Desktop: Horizontal tabs — visible >= md */}
-          <div className="hidden md:block overflow-x-auto -mx-4 px-4 pb-1 scrollbar-thin" data-testid="admin-tabs-nav">
-            <TabsList className="inline-flex w-auto min-w-full gap-0.5 bg-card/80 backdrop-blur border border-border/60 p-1.5 rounded-xl shadow-sm">
+          {/* Desktop: 2-row tabs — visible >= md */}
+          <div className="hidden md:block" data-testid="admin-tabs-nav">
+            <TabsList className="flex flex-wrap w-full gap-1 bg-card/80 backdrop-blur border border-border/60 p-1.5 rounded-xl shadow-sm h-auto">
+              {/* ── Ligne 1 : Gestion quotidienne ── */}
               <TabsTrigger value="contacts" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
                 <Users className="w-3.5 h-3.5" />
                 Contacts
@@ -1206,8 +1208,10 @@ export const AdminDashboard = () => {
                 )}
               </TabsTrigger>
 
-              <div className="w-px h-6 bg-border/60 mx-1 self-center flex-shrink-0" />
+              {/* ── Forced line break ── */}
+              <div className="basis-full h-0" aria-hidden="true" />
 
+              {/* ── Ligne 2 : IA / Suivi / Configuration ── */}
               <TabsTrigger value="strategiia" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all relative" data-testid="tab-strategiia">
                 <Brain className="w-3.5 h-3.5" />
                 StratégiIA
@@ -1241,17 +1245,14 @@ export const AdminDashboard = () => {
                 <MessageSquare className="w-3.5 h-3.5 text-indigo-600" />
                 Feedback
               </TabsTrigger>
-
               <TabsTrigger value="forum" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-forum">
                 <MessageSquare className="w-3.5 h-3.5 text-amber-600" />
                 Forum
               </TabsTrigger>
-
               <TabsTrigger value="editorial" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-editorial">
                 <Sparkles className="w-3.5 h-3.5 text-[#C9A84C]" />
                 Studio
               </TabsTrigger>
-
               <TabsTrigger value="agents-org" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-agents-org">
                 <Crown className="w-3.5 h-3.5 text-[#C9A84C]" />
                 Organigramme IA
@@ -1776,6 +1777,9 @@ export const AdminDashboard = () => {
           </TabsContent>
           {/* Bookings Tab */}
           <TabsContent value="bookings" className="space-y-6">
+            <div className="flex justify-end">
+              <TestDataPurgeButton section="bookings" onPurged={() => fetchData()} />
+            </div>
             <div className="grid grid-cols-3 gap-4">
               <Card><CardContent className="p-4 flex items-center gap-3">
                 <Calendar className="w-8 h-8 text-accent" strokeWidth={1.5} />
@@ -1840,6 +1844,9 @@ export const AdminDashboard = () => {
 
           {/* Clients Tab */}
           <TabsContent value="clients" className="space-y-6">
+            <div className="flex justify-end">
+              <TestDataPurgeButton section="clients" onPurged={() => fetchData()} />
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <Card><CardContent className="p-4 flex items-center gap-3">
                 <Users className="w-8 h-8 text-accent" strokeWidth={1.5} />
@@ -1928,6 +1935,9 @@ export const AdminDashboard = () => {
 
           {/* Relance Tab */}
           <TabsContent value="relance" className="space-y-6">
+            <div className="flex justify-end">
+              <TestDataPurgeButton section="relance" onPurged={() => fetchData()} />
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Card><CardContent className="p-4 flex items-center gap-3">
                 <Mail className="w-8 h-8 text-accent" strokeWidth={1.5} />
@@ -4481,6 +4491,9 @@ export const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="feedback" className="space-y-6" data-testid="feedback-tab-content">
+            <div className="flex justify-end">
+              <TestDataPurgeButton section="feedback" onPurged={() => fetchData()} />
+            </div>
             <AdminStrategicFeedback axiosConfig={axiosConfig} />
           </TabsContent>
 
@@ -4494,6 +4507,9 @@ export const AdminDashboard = () => {
             <AdminForumSeed />
           </TabsContent>
           <TabsContent value="editorial" className="space-y-6" data-testid="editorial-tab-content">
+            <div className="flex justify-end">
+              <TestDataPurgeButton section="editorial" onPurged={() => fetchData()} />
+            </div>
             <AdminEditorialStudio />
           </TabsContent>
 
