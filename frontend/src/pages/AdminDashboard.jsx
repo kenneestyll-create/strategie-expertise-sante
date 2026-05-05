@@ -19,6 +19,7 @@ import { AdminPillarLeads } from '@/components/AdminPillarLeads';
 import { AdminEditorialStudio } from '@/components/AdminEditorialStudio';
 import { AdminAgentsOrg } from '@/components/AdminAgentsOrg';
 import { TestDataPurgeButton } from '@/components/TestDataPurgeButton';
+import { PurgeAllButton, DeleteRowButton } from '@/components/PurgeAllButton';
 import { 
   Heart, 
   LogOut, 
@@ -1635,6 +1636,17 @@ export const AdminDashboard = () => {
           </TabsContent>
           {/* Referrals Tab */}
           <TabsContent value="referrals" className="space-y-6">
+            <div className="flex flex-wrap justify-end gap-2">
+              <PurgeAllButton
+                endpoint="/admin/referrals/purge-all"
+                label="Vider tous les codes & utilisations"
+                dialogTitle="Vider Parrainage"
+                dialogDescription="Cette action supprimera TOUS les codes parrainage ET leur historique d'utilisation. Action irréversible."
+                resourceLabel="codes & utilisations"
+                onPurged={() => fetchData()}
+                testid="purge-all-referrals"
+              />
+            </div>
             {/* Referral Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <Card data-testid="referral-stat-codes">
@@ -1800,8 +1812,17 @@ export const AdminDashboard = () => {
           </TabsContent>
           {/* Bookings Tab */}
           <TabsContent value="bookings" className="space-y-6">
-            <div className="flex justify-end">
+            <div className="flex flex-wrap justify-end gap-2">
               <TestDataPurgeButton section="bookings" onPurged={() => fetchData()} />
+              <PurgeAllButton
+                endpoint="/admin/bookings/purge-all"
+                label="Vider tous les RDV"
+                dialogTitle="Vider tous les RDV"
+                dialogDescription="Cette action supprimera TOUS les rendez-vous (passés, présents, futurs). Action irréversible."
+                resourceLabel="RDV"
+                onPurged={() => fetchData()}
+                testid="purge-all-bookings"
+              />
             </div>
             <div className="grid grid-cols-3 gap-4">
               <Card><CardContent className="p-4 flex items-center gap-3">
@@ -1836,6 +1857,7 @@ export const AdminDashboard = () => {
                         <th className="text-left py-3 px-3 font-medium text-muted-foreground">Client</th>
                         <th className="text-left py-3 px-3 font-medium text-muted-foreground">Email</th>
                         <th className="text-center py-3 px-3 font-medium text-muted-foreground">Statut</th>
+                        <th className="text-right py-3 px-3 font-medium text-muted-foreground"></th>
                       </tr></thead>
                       <tbody>
                         {bookings.map((b, i) => (
@@ -1855,6 +1877,14 @@ export const AdminDashboard = () => {
                                 {b.status === 'confirme' ? 'Confirmé' : b.status === 'annule' ? 'Annulé' : 'Terminé'}
                               </Badge>
                             </td>
+                            <td className="py-3 px-3 text-right">
+                              <DeleteRowButton
+                                endpoint={`/admin/bookings/${b.id}`}
+                                onDeleted={() => fetchData()}
+                                confirmMessage={`Supprimer définitivement le RDV de ${b.name} (${b.date}) ?`}
+                                testid={`delete-booking-${i}`}
+                              />
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -1867,8 +1897,17 @@ export const AdminDashboard = () => {
 
           {/* Clients Tab */}
           <TabsContent value="clients" className="space-y-6">
-            <div className="flex justify-end">
+            <div className="flex flex-wrap justify-end gap-2">
               <TestDataPurgeButton section="clients" onPurged={() => fetchData()} />
+              <PurgeAllButton
+                endpoint="/admin/clients/purge-all"
+                label="Vider tous les clients"
+                dialogTitle="Vider tous les clients"
+                dialogDescription="Cette action supprimera TOUS les comptes clients ET leurs dossiers liés. Action irréversible."
+                resourceLabel="clients"
+                onPurged={() => fetchData()}
+                testid="purge-all-clients"
+              />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <Card><CardContent className="p-4 flex items-center gap-3">
@@ -1947,6 +1986,12 @@ export const AdminDashboard = () => {
                           >
                             <AlertTriangle className="w-3 h-3" /> Documents à renvoyer
                           </Button>
+                          <DeleteRowButton
+                            endpoint={`/admin/clients/${client.id}`}
+                            onDeleted={() => fetchData()}
+                            confirmMessage={`Supprimer définitivement le client ${client.name} ET tous ses dossiers ?`}
+                            testid={`delete-client-${client.id}`}
+                          />
                         </div>
                       </div>
                     ))}
@@ -1958,8 +2003,17 @@ export const AdminDashboard = () => {
 
           {/* Relance Tab */}
           <TabsContent value="relance" className="space-y-6">
-            <div className="flex justify-end">
+            <div className="flex flex-wrap justify-end gap-2">
               <TestDataPurgeButton section="relance" onPurged={() => fetchData()} />
+              <PurgeAllButton
+                endpoint="/admin/abandoned-checkouts/purge-all"
+                label="Vider le panier abandonné"
+                dialogTitle="Vider tous les paniers abandonnés"
+                dialogDescription="Cette action supprimera TOUTES les entrées de panier abandonné. Action irréversible."
+                resourceLabel="paniers abandonnés"
+                onPurged={() => fetchData()}
+                testid="purge-all-abandoned"
+              />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Card><CardContent className="p-4 flex items-center gap-3">
@@ -2018,6 +2072,12 @@ export const AdminDashboard = () => {
                               <Send className="w-3 h-3" />Relancer
                             </Button>
                           )}
+                          <DeleteRowButton
+                            endpoint={`/admin/abandoned-checkouts/${item.id}`}
+                            onDeleted={() => fetchData()}
+                            confirmMessage={`Supprimer ce panier abandonné de ${item.email} ?`}
+                            testid={`delete-abandoned-${i}`}
+                          />
                         </div>
                       </div>
                     ))}
@@ -2029,6 +2089,17 @@ export const AdminDashboard = () => {
 
           {/* Urgent Alerts Tab */}
           <TabsContent value="alertes" className="space-y-6" data-testid="alertes-tab-content">
+            <div className="flex flex-wrap justify-end gap-2">
+              <PurgeAllButton
+                endpoint="/admin/alertes-urgentes/purge-all"
+                label="Vider toutes les alertes"
+                dialogTitle="Vider toutes les alertes urgentes"
+                dialogDescription="Cette action supprimera TOUTES les alertes urgentes (test ET réelles). Action irréversible."
+                resourceLabel="alertes"
+                onPurged={() => fetchData()}
+                testid="purge-all-alertes"
+              />
+            </div>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{urgentAlerts.total}</p><p className="text-xs text-muted-foreground">Total alertes</p></CardContent></Card>
               <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-red-600">{urgentAlerts.non_traite}</p><p className="text-xs text-muted-foreground">Non traitées</p></CardContent></Card>
@@ -2091,6 +2162,18 @@ export const AdminDashboard = () => {
 
           {/* StratégiIA Tab */}
           <TabsContent value="strategiia" className="space-y-6" data-testid="strategiia-tab-content">
+            <div className="flex flex-wrap justify-end gap-2">
+              <TestDataPurgeButton section="strategiia" onPurged={() => fetchData()} />
+              <PurgeAllButton
+                endpoint="/admin/strategiia-analyses/purge-all"
+                label="Remettre à zéro tous les chiffres"
+                dialogTitle="Remettre à zéro StratégiIA"
+                dialogDescription="Cette action supprimera TOUTES les analyses StratégiIA (analyses, cas anonymisés, premium liés). Tous les compteurs reviendront à 0. Action irréversible."
+                resourceLabel="analyses"
+                onPurged={() => fetchData()}
+                testid="purge-all-strategiia"
+              />
+            </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{strategiiaData.total_analyses}</p><p className="text-xs text-muted-foreground">Analyses totales</p></CardContent></Card>
               <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-accent">{strategiiaData.premium}</p><p className="text-xs text-muted-foreground">Analyses premium</p></CardContent></Card>
@@ -3130,6 +3213,17 @@ export const AdminDashboard = () => {
 
           {/* Admin Documents Tab */}
           <TabsContent value="documents" className="space-y-6" data-testid="admin-documents-tab">
+            <div className="flex flex-wrap justify-end gap-2">
+              <PurgeAllButton
+                endpoint="/admin/documents/purge-all"
+                label="Vider tous les documents admin"
+                dialogTitle="Vider tous les documents admin"
+                dialogDescription="Cette action supprimera TOUS les documents stockés en base administrateur. Action irréversible."
+                resourceLabel="documents"
+                onPurged={() => fetchData()}
+                testid="purge-all-admin-docs"
+              />
+            </div>
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">Documents clients</h3>
               <div className="flex gap-2">
@@ -3905,6 +3999,17 @@ export const AdminDashboard = () => {
             <ProductionCleanupCard axiosConfig={axiosConfig} />
           </TabsContent>
           <TabsContent value="notifications" className="space-y-6" data-testid="notifications-tab-content">
+            <div className="flex flex-wrap justify-end gap-2">
+              <PurgeAllButton
+                endpoint="/admin/completeness-notifications/purge-all"
+                label="Vider les notifications de complétude"
+                dialogTitle="Vider toutes les notifications de complétude"
+                dialogDescription="Cette action supprimera TOUT l'historique des notifications de complétude (envoyées, échouées, ignorées). Tous les KPIs reviendront à 0. Action irréversible."
+                resourceLabel="notifications"
+                onPurged={() => fetchData()}
+                testid="purge-all-completeness"
+              />
+            </div>
             {/* Engagement KPIs Dashboard */}
             {engagementKpis && (
               <Card data-testid="engagement-kpis-card">
@@ -4514,8 +4619,17 @@ export const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="feedback" className="space-y-6" data-testid="feedback-tab-content">
-            <div className="flex justify-end">
+            <div className="flex flex-wrap justify-end gap-2">
               <TestDataPurgeButton section="feedback" onPurged={() => fetchData()} />
+              <PurgeAllButton
+                endpoint="/admin/strategic-feedback/purge-all"
+                label="Vider tous les retours"
+                dialogTitle="Vider tous les retours d'expérience"
+                dialogDescription="Cette action supprimera TOUS les retours d'expérience stratégiques (test ET réels). Action irréversible."
+                resourceLabel="retours"
+                onPurged={() => fetchData()}
+                testid="purge-all-feedback"
+              />
             </div>
             <AdminStrategicFeedback axiosConfig={axiosConfig} />
           </TabsContent>

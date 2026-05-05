@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, RefreshCw, MessageCircle, AlertTriangle, HelpCircle, Briefcase, Heart, Filter, Zap, TrendingUp, Eye, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
+import { DeleteRowButton } from './PurgeAllButton';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -355,9 +356,19 @@ export const AdminStrategicFeedback = ({ axiosConfig }) => {
                       })}
                       {fb.source && <Badge variant="outline" className="text-[8px]">{fb.source}</Badge>}
                     </div>
-                    <span className="text-[10px] text-muted-foreground">
-                      {fb.created_at ? new Date(fb.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-muted-foreground">
+                        {fb.created_at ? new Date(fb.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''}
+                      </span>
+                      {fb.id && (
+                        <DeleteRowButton
+                          endpoint={`/admin/strategic-feedback/${fb.id}`}
+                          onDeleted={() => fetchAll()}
+                          confirmMessage="Supprimer ce retour d'expérience ?"
+                          testid={`delete-feedback-${i}`}
+                        />
+                      )}
+                    </div>
                   </div>
                   {fb.frein && (
                     <div>

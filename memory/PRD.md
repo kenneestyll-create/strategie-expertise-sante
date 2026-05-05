@@ -200,6 +200,21 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
   - Endpoint `GET /api/admin/test-cleanup/summary` : compte les données de test détectées sur 10 sections (contacts/avis/bookings/clients/relance/strategiia/dossier-express/feedback/editorial/forum). Cap à 5000 docs scannés par collection pour la performance.
   - Composant inline `<TestBadge>` dans `AdminDashboard.jsx` : pastille ambre `[count]` (ou `99+`) sous chaque onglet concerné. Tooltip natif "X donnée(s) de test détectée(s)".
   - Rafraîchissement automatique des badges après chaque purge (via `fetchData()` qui appelle déjà l'endpoint summary).
+- [x] **2026-02-XX — Capacités destructives complètes pour go-live production** :
+  - Nouveau `routes/admin_cleanup.py` : 9 endpoints purge-all + 7 endpoints DELETE individuels. Tous protégés par `{"confirm": "PURGER"}` pour les bulk, simple confirm browser pour les unitaires.
+  - **Bookings (RDV)** : `DELETE /admin/bookings/{id}` + `POST /admin/bookings/purge-all`
+  - **Clients** : `DELETE /admin/clients/{id}` (cascade dossiers) + `POST /admin/clients/purge-all`
+  - **Abandoned checkouts (Relance)** : `GET` liste + `DELETE /admin/abandoned-checkouts/{id}` + `POST /admin/abandoned-checkouts/purge-all`
+  - **Alertes urgentes** : `DELETE /admin/alertes-urgentes/{id}` + `POST /admin/alertes-urgentes/purge-all`
+  - **Referrals** : `DELETE /admin/referrals/codes/{id}` + `POST /admin/referrals/purge-all` (codes + uses)
+  - **StrategiIA** : `POST /admin/strategiia-analyses/purge-all` (reset all stats)
+  - **Completeness notifications** : `POST /admin/completeness-notifications/purge-all`
+  - **Strategic feedback** : `DELETE /admin/strategic-feedback/{id}` + `POST /admin/strategic-feedback/purge-all`
+  - **Admin documents** : `DELETE /admin/documents/{id}` + `POST /admin/documents/purge-all`
+  - 2 nouveaux composants frontend mutualisés : `<PurgeAllButton>` (bouton + dialog confirmation "PURGER") et `<DeleteRowButton>` (icône poubelle inline avec confirm browser).
+  - Boutons injectés sur 8 onglets : RDV, Clients, Relance, Alertes, Parrainage, StrategiIA, Notifs, Feedback. Per-row delete sur RDV, Clients, Relance, Feedback.
+  - Tests : 9/9 endpoints purge-all rejettent `{}` avec HTTP 400, 7/7 DELETE retournent 404 sur ID bidon, 8/8 boutons UI visibles dans smoke test.
+  - Aucune régression : zéro endpoint existant modifié, `data-testid` préservés.
 - [x] **TEST END-TO-END RÉEL EXÉCUTÉ** : sujet "Burn-out reconnu en accident du travail" généré du début à la fin
   - Plan IA généré en 19s (7 sections + 8 FAQ + 3 H1 options)
   - Brouillon généré en ~30s (parallel section generation, 14 red flags scannés)
