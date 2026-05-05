@@ -353,8 +353,8 @@ export const ChatBot = () => {
                 </p>
                 {strateEnabled && !showFallbackChat && (
                   <Link
-                    to="/rdv?src=strate_human_header"
-                    onClick={() => { strateTrackClick('/rdv?src=strate_human_header', 'strate_human_header'); setIsOpen(false); }}
+                    to="/agenda?src=strate_human_header"
+                    onClick={() => { strateTrackClick('/agenda?src=strate_human_header', 'strate_human_header'); setIsOpen(false); }}
                     className="inline-flex items-center gap-1 text-[10px] text-[#C9A84C] hover:underline mt-0.5"
                     data-testid="strate-expert-link-header"
                   >
@@ -459,8 +459,8 @@ export const ChatBot = () => {
               {!strateLoading && strateStep === 'sensitive' && (
                 <div className="ml-11 space-y-2" data-testid="strate-sensitive">
                   <Link
-                    to="/rdv?src=strate_sensitive_redirect"
-                    onClick={() => { strateTrackClick('/rdv?src=strate_sensitive_redirect', 'strate_sensitive_redirect'); setIsOpen(false); }}
+                    to="/agenda?src=strate_sensitive_redirect"
+                    onClick={() => { strateTrackClick('/agenda?src=strate_sensitive_redirect', 'strate_sensitive_redirect'); setIsOpen(false); }}
                   >
                     <Button className="w-full gap-2 text-xs" data-testid="strate-sensitive-expert-btn">
                       <Headphones className="w-3.5 h-3.5" /> Parler à un expert

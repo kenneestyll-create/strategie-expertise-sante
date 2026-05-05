@@ -148,6 +148,7 @@ function App() {
                   <Route path="/politique-confidentialite" element={<><Header /><PolitiqueConfidentialitePage /><Footer /></>} />
                   <Route path="/parrainage" element={<><Header /><ReferralPage /><Footer /></>} />
                   <Route path="/agenda" element={<><Header /><AgendaPage /><Footer /></>} />
+                  <Route path="/rdv" element={<><Header /><AgendaPage /><Footer /></>} />
                   <Route path="/simulateur" element={<><Header /><SimulateurPage /><Footer /></>} />
                   <Route path="/espace-client" element={<><Header /><EspaceClientPage /><Footer /></>} />
                   <Route path="/calculatrice-ipp" element={<><Header /><CalculatriceIPPPage /><Footer /></>} />
