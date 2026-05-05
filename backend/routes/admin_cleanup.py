@@ -94,20 +94,21 @@ async def purge_all_abandoned(payload: dict = Body(default=None), admin: dict = 
     return {"deleted": res.deleted_count}
 
 
-# ────────────────── ALERTES URGENTES ──────────────────
+# ────────────────── ALERTES URGENTES (collection: urgent_alerts) ──────────────────
 @router.delete("/admin/alertes-urgentes/{alert_id}")
 async def delete_alert(alert_id: str, admin: dict = Depends(get_current_admin)):
-    res = await db.alertes_urgentes.delete_one({"id": alert_id})
+    res = await db.urgent_alerts.delete_one({"id": alert_id})
     if res.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Alerte introuvable")
+    logger.info(f"admin_cleanup: urgent_alert {alert_id} deleted by {admin.get('email')}")
     return {"deleted": res.deleted_count}
 
 
 @router.post("/admin/alertes-urgentes/purge-all")
 async def purge_all_alerts(payload: dict = Body(default=None), admin: dict = Depends(get_current_admin)):
     _confirm_or_400(payload)
-    res = await db.alertes_urgentes.delete_many({})
-    logger.info(f"admin_cleanup: ALL alertes purged ({res.deleted_count}) by {admin.get('email')}")
+    res = await db.urgent_alerts.delete_many({})
+    logger.info(f"admin_cleanup: ALL urgent_alerts purged ({res.deleted_count}) by {admin.get('email')}")
     return {"deleted": res.deleted_count}
 
 
@@ -171,18 +172,48 @@ async def purge_all_feedback(payload: dict = Body(default=None), admin: dict = D
     return {"deleted": res.deleted_count}
 
 
-# ────────────────── ADMIN DOCUMENTS ──────────────────
+# ────────────────── ADMIN DOCUMENTS (client_documents collection) ──────────────────
 @router.delete("/admin/documents/{doc_id}")
 async def delete_admin_doc(doc_id: str, admin: dict = Depends(get_current_admin)):
-    res = await db.admin_documents.delete_one({"id": doc_id})
+    res = await db.client_documents.delete_one({"id": doc_id})
     if res.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Document introuvable")
+    logger.info(f"admin_cleanup: client_document {doc_id} deleted by {admin.get('email')}")
     return {"deleted": res.deleted_count}
 
 
 @router.post("/admin/documents/purge-all")
 async def purge_all_admin_docs(payload: dict = Body(default=None), admin: dict = Depends(get_current_admin)):
     _confirm_or_400(payload)
-    res = await db.admin_documents.delete_many({})
-    logger.info(f"admin_cleanup: ALL admin_documents purged ({res.deleted_count}) by {admin.get('email')}")
+    res = await db.client_documents.delete_many({})
+    logger.info(f"admin_cleanup: ALL client_documents purged ({res.deleted_count}) by {admin.get('email')}")
+    return {"deleted": res.deleted_count}
+
+
+@router.get("/admin/documents/test-preview")
+async def preview_test_docs(admin: dict = Depends(get_current_admin)):
+    """Detect test documents by filename pattern."""
+    import re as _re
+    docs = await db.client_documents.find(
+        {}, {"_id": 0, "id": 1, "filename": 1, "client_id": 1, "status": 1, "created_at": 1}
+    ).limit(2000).to_list(2000)
+    pat = _re.compile(r"(?:^test[_-]|test_document|test\.pdf|sample|dummy|playwright|pytest)", _re.I)
+    items = [d for d in docs if pat.search(d.get("filename") or "")]
+    sample = [{"id": i.get("id"), "filename": i.get("filename"), "status": i.get("status")} for i in items[:50]]
+    return {"count": len(items), "sample": sample}
+
+
+@router.post("/admin/documents/purge-tests")
+async def purge_test_docs(payload: dict = Body(default=None), admin: dict = Depends(get_current_admin)):
+    _confirm_or_400(payload)
+    import re as _re
+    docs = await db.client_documents.find(
+        {}, {"_id": 0, "id": 1, "filename": 1}
+    ).limit(2000).to_list(2000)
+    pat = _re.compile(r"(?:^test[_-]|test_document|test\.pdf|sample|dummy|playwright|pytest)", _re.I)
+    ids = [d["id"] for d in docs if pat.search(d.get("filename") or "") and d.get("id")]
+    if not ids:
+        return {"deleted": 0}
+    res = await db.client_documents.delete_many({"id": {"$in": ids}})
+    logger.info(f"admin_cleanup: {res.deleted_count} test documents purged by {admin.get('email')}")
     return {"deleted": res.deleted_count}

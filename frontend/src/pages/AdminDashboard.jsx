@@ -2151,6 +2151,12 @@ export const AdminDashboard = () => {
                               <CheckCircle className="w-3 h-3" /> Traiter
                             </Button>
                           )}
+                          <DeleteRowButton
+                            endpoint={`/admin/alertes-urgentes/${alert.id}`}
+                            onDeleted={() => fetchData()}
+                            confirmMessage={`Supprimer définitivement cette alerte de ${alert.nom} ?`}
+                            testid={`delete-alert-${alert.id}`}
+                          />
                         </div>
                       </div>
                     ))}
@@ -3215,10 +3221,19 @@ export const AdminDashboard = () => {
           <TabsContent value="documents" className="space-y-6" data-testid="admin-documents-tab">
             <div className="flex flex-wrap justify-end gap-2">
               <PurgeAllButton
+                endpoint="/admin/documents/purge-tests"
+                label="Purger les documents de test"
+                dialogTitle="Purger les documents de test"
+                dialogDescription="Supprime les documents dont le nom contient 'test_', 'sample', 'dummy', 'pytest', 'playwright'. Action irréversible."
+                resourceLabel="documents de test"
+                onPurged={() => fetchData()}
+                testid="purge-test-docs"
+              />
+              <PurgeAllButton
                 endpoint="/admin/documents/purge-all"
-                label="Vider tous les documents admin"
-                dialogTitle="Vider tous les documents admin"
-                dialogDescription="Cette action supprimera TOUS les documents stockés en base administrateur. Action irréversible."
+                label="Vider tous les documents"
+                dialogTitle="Vider tous les documents clients"
+                dialogDescription="Cette action supprimera TOUS les documents clients (test ET réels). Action irréversible."
                 resourceLabel="documents"
                 onPurged={() => fetchData()}
                 testid="purge-all-admin-docs"
@@ -3318,6 +3333,15 @@ export const AdminDashboard = () => {
                                     <XCircle className="w-3 h-3 mr-1" /> Illisible
                                   </Button>
                                 )}
+                                <DeleteRowButton
+                                  endpoint={`/admin/documents/${doc.id}`}
+                                  onDeleted={async () => {
+                                    const r = await axios.get(`${API}/admin/documents${docStatusFilter ? `?status=${docStatusFilter}` : ''}`, axiosConfig);
+                                    setAdminDocs(r.data);
+                                  }}
+                                  confirmMessage={`Supprimer définitivement le document "${doc.filename || doc.id}" ?`}
+                                  testid={`delete-doc-${doc.id}`}
+                                />
                               </div>
                             </td>
                           </tr>
