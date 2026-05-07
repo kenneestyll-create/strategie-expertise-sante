@@ -76,6 +76,14 @@ export const PolitiqueConfidentialitePage = () => {
       footer: "Ces sous-traitants sont tenus contractuellement au respect de la confidentialité et du RGPD."
     },
     {
+      icon: Server, title: "8 bis. Outils d'analyse comportementale",
+      content: "Afin d'améliorer en continu l'ergonomie du site et la pertinence des contenus, nous utilisons un outil d'analyse comportementale anonymisée :",
+      list: [
+        "Microsoft Clarity (Microsoft Corporation, États-Unis) : enregistrement anonyme des interactions de navigation (clics, scroll, parcours) sous forme de heatmaps et sessions agrégées. Aucune donnée personnelle, médicale ou identifiante n'est transmise. Les champs de formulaire et zones sensibles sont masqués automatiquement. Données conservées 30 jours maximum, à des fins exclusives d'amélioration UX. Conforme RGPD."
+      ],
+      footer: "Vous pouvez désactiver le suivi comportemental en activant le paramètre « Do Not Track » de votre navigateur."
+    },
+    {
       icon: Trash2, title: "9. Vos droits",
       content: "Conformément au RGPD, vous disposez des droits suivants :",
       list: [
