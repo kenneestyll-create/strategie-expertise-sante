@@ -192,6 +192,26 @@ async def _process_files_payload(files_data: list) -> dict:
     except Exception as e:
         logger.warning(f"Object storage not available for base64 file persistence: {e}")
 
+    # Admin alert + log if any file's OCR failed entirely (status=vision_error / vision_empty / extraction_failed)
+    failed_results = [r for r in results if r.get("status") in {"vision_error", "vision_empty", "extraction_failed", "decode_error"}]
+    if failed_results:
+        try:
+            details_lines = "\n".join(f"  - {r['name']}: status={r['status']} | method={r['method']}" for r in failed_results)
+            logger.error(f"[OCR-FAIL] {len(failed_results)}/{len(results)} files failed extraction:\n{details_lines}")
+            try:
+                await _notify_admin_incident(
+                    "extract-pipeline",
+                    "n/a",
+                    "n/a",
+                    "Dossier Express IA",
+                    "Extraction OCR (Gemini Vision)",
+                    f"{len(failed_results)}/{len(results)} fichiers ont echoue:\n{details_lines}",
+                )
+            except Exception as alert_err:
+                logger.warning(f"Failed to send OCR-FAIL admin alert: {alert_err}")
+        except Exception as e:
+            logger.warning(f"OCR failure reporting error: {e}")
+
     return {
         "extracted_text": combined.strip(),
         "files_processed": len(results),

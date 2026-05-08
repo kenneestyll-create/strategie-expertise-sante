@@ -45,8 +45,8 @@ async def extract_pdf_with_gemini(file_bytes: bytes, name: str) -> tuple[str, st
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContentWithMimeType
     except ImportError as e:
-        logger.error(f"PDF '{name}': emergentintegrations not available: {e}")
-        return "", "Gemini Vision indisponible (lib manquante)", 0, "extraction_failed"
+        logger.error(f"PDF '{name}': emergentintegrations IMPORT FAILED: type={type(e).__name__} msg={e}", exc_info=True)
+        return "", f"Gemini Vision lib manquante: {type(e).__name__}: {str(e)[:80]}", 0, "extraction_failed"
 
     api_key = os.environ.get("EMERGENT_LLM_KEY")
     if not api_key:
@@ -112,11 +112,12 @@ async def _gemini_extract_single(file_bytes: bytes, name: str, total_pages: int,
             logger.info(f"PDF '{name}': Gemini Vision OK ({len(response)} chars, {total_pages} pages)")
             return response.strip(), method, total_pages, "vision_extracted"
 
-        logger.warning(f"PDF '{name}': Gemini returned empty/too short response")
-        return "", f"PDF — {total_pages} page{'s' if total_pages > 1 else ''}, Gemini sans resultat", total_pages, "vision_empty"
+        logger.warning(f"PDF '{name}': Gemini returned empty/too short response (len={len(response) if response else 0})")
+        return "", f"PDF — {total_pages} page{'s' if total_pages > 1 else ''}, Gemini reponse vide", total_pages, "vision_empty"
     except Exception as e:
-        logger.error(f"PDF '{name}': Gemini Vision (single) failed: {e}")
-        return "", f"Gemini Vision erreur: {str(e)[:80]}", total_pages, "vision_error"
+        err_type = type(e).__name__
+        logger.error(f"PDF '{name}': Gemini Vision (single) FAILED: type={err_type} msg={e}", exc_info=True)
+        return "", f"Gemini Vision erreur ({err_type}): {str(e)[:100]}", total_pages, "vision_error"
     finally:
         if tmp_path and os.path.exists(tmp_path):
             try:
@@ -139,6 +140,7 @@ async def _gemini_extract_chunked(file_bytes: bytes, name: str, total_pages: int
 
     chunks_text: list[str] = []
     failures = 0
+    last_error: str = ""
 
     for chunk_start in range(0, src_pages, chunk_size):
         chunk_end = min(chunk_start + chunk_size, src_pages)
@@ -178,10 +180,14 @@ async def _gemini_extract_chunked(file_bytes: bytes, name: str, total_pages: int
                 logger.info(f"PDF '{name}': chunk {chunk_start+1}-{chunk_end} OK ({len(response)} chars)")
             else:
                 failures += 1
-                logger.warning(f"PDF '{name}': chunk {chunk_start+1}-{chunk_end} empty")
+                resp_len = len(response) if response else 0
+                last_error = f"reponse vide (len={resp_len})"
+                logger.warning(f"PDF '{name}': chunk {chunk_start+1}-{chunk_end} empty (len={resp_len})")
         except Exception as e:
             failures += 1
-            logger.error(f"PDF '{name}': chunk {chunk_start+1}-{chunk_end} failed: {e}")
+            err_type = type(e).__name__
+            last_error = f"{err_type}: {str(e)[:120]}"
+            logger.error(f"PDF '{name}': chunk {chunk_start+1}-{chunk_end} FAILED: type={err_type} msg={e}", exc_info=True)
         finally:
             if tmp_path and os.path.exists(tmp_path):
                 try:
@@ -190,7 +196,8 @@ async def _gemini_extract_chunked(file_bytes: bytes, name: str, total_pages: int
                     pass
 
     if not chunks_text:
-        return "", f"PDF — {total_pages} pages, Gemini Vision chunked echoue", total_pages, "vision_error"
+        err_suffix = f" — derniere erreur: {last_error}" if last_error else ""
+        return "", f"PDF — {total_pages} pages, Gemini Vision chunked echoue{err_suffix}", total_pages, "vision_error"
 
     extracted = "\n\n".join(chunks_text)
     chunks_done = len(chunks_text)
