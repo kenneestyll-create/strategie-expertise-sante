@@ -457,7 +457,20 @@ export const DossierExpressPage = () => {
           const pct = Math.round((uploaded / total) * 100);
           setPollStatus(prev => ({ ...prev, chunk_progress: `${filename}: ${pct}%` }));
         };
-        const extraction = await extractTextFromFiles(files, form.documents_text || '', onChunkProgress);
+        // Listen for server-side extraction progress (Gemini Vision) — shows real-time elapsed estimate
+        const handleUploadProgress = (event) => {
+          const detail = event?.detail || {};
+          if (detail.phase === 'extraction' && detail.message) {
+            setPollStatus(prev => ({ ...prev, chunk_progress: detail.message }));
+          }
+        };
+        if (typeof window !== 'undefined') window.addEventListener('upload-progress', handleUploadProgress);
+        let extraction;
+        try {
+          extraction = await extractTextFromFiles(files, form.documents_text || '', onChunkProgress);
+        } finally {
+          if (typeof window !== 'undefined') window.removeEventListener('upload-progress', handleUploadProgress);
+        }
         setPollStatus(prev => ({ ...prev, chunk_progress: null }));
         documentsText = extraction.combinedText;
         documentDetails = extraction.results || [];
@@ -1005,7 +1018,7 @@ export const DossierExpressPage = () => {
 
     const STEPS = [
       { key: 'uploading', label: 'Documents bien reçus et sécurisés', icon: Shield, detail: 'Vos pièces sont conservées de manière confidentielle.' },
-      { key: 'reading', label: 'Lecture des pièces transmises', icon: FileText, detail: 'Identification et extraction du contenu de chaque document.' },
+      { key: 'reading', label: 'Lecture des pièces transmises', icon: FileText, detail: 'Identification et extraction par IA de chaque document — peut durer 60 à 90s par PDF scanné.' },
       { key: 'analyzing_1', label: 'Analyse documentaire et chronologie', icon: FileSearch, detail: 'Reconstitution de votre parcours à partir des pièces fournies.' },
       { key: 'analyzing_2', label: 'Cadre juridique et points de vigilance', icon: Brain, detail: 'Croisement avec les textes de loi, jurisprudences et barèmes applicables.' },
       { key: 'analyzing_3', label: 'Stratégie et estimation des préjudices', icon: TrendingUp, detail: 'Construction des recommandations et chiffrage personnalisé.' },
@@ -1084,10 +1097,12 @@ export const DossierExpressPage = () => {
               <span className="text-[11px] text-muted-foreground">{Math.round(progressPct)}%</span>
             </div>
 
-            {/* Chunk upload progress */}
+            {/* Live progress (chunk upload OR Gemini extraction status) */}
             {pollStatus?.chunk_progress && (
               <div className="text-[11px] text-amber-600 text-center mb-3 animate-pulse" data-testid="chunk-progress">
-                Transfert : {pollStatus.chunk_progress}
+                {pollStatus.chunk_progress.includes('IA') || pollStatus.chunk_progress.includes('Préparation')
+                  ? pollStatus.chunk_progress
+                  : `Transfert : ${pollStatus.chunk_progress}`}
               </div>
             )}
 

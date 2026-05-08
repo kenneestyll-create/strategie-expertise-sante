@@ -264,6 +264,29 @@ async function extractBase64(files, existingOcrText = '') {
   let storedFiles = [];
 
   if (filesToExtract.some(f => f.data)) {
+    // Dispatch periodic progress events while waiting for server (Gemini Vision can take 60-90s per scanned PDF)
+    let extractionTimerId = null;
+    const startExtractionTimer = () => {
+      const startTime = Date.now();
+      const totalScannableFiles = filesToExtract.filter(f => f.data && (f.type === 'application/pdf' || f.name?.toLowerCase().endsWith('.pdf'))).length;
+      extractionTimerId = setInterval(() => {
+        if (typeof window === 'undefined') return;
+        const elapsed = Math.round((Date.now() - startTime) / 1000);
+        let msg;
+        if (elapsed < 5) {
+          msg = 'Préparation de l\'extraction…';
+        } else if (totalScannableFiles > 1) {
+          msg = `Lecture IA des PDFs en cours (~${Math.max(60, totalScannableFiles * 60)}s estimées) — ${elapsed}s écoulées`;
+        } else {
+          msg = `Lecture IA en cours (~60-90s pour PDFs scannés) — ${elapsed}s écoulées`;
+        }
+        window.dispatchEvent(new CustomEvent('upload-progress', { detail: { phase: 'extraction', message: msg, elapsed } }));
+      }, 2000);
+    };
+    const stopExtractionTimer = () => {
+      if (extractionTimerId) { clearInterval(extractionTimerId); extractionTimerId = null; }
+    };
+
     try {
       const res = await axios.post(`${API}/extract-document-text`, { files: filesToExtract }, {
         timeout: 300000,
@@ -273,14 +296,17 @@ async function extractBase64(files, existingOcrText = '') {
             if (typeof window !== 'undefined') {
               window.dispatchEvent(new CustomEvent('upload-progress', { detail: { percent: pct, phase: 'upload' } }));
             }
+            if (pct >= 100 && !extractionTimerId) startExtractionTimer();
           }
         },
       });
+      stopExtractionTimer();
       combinedText = res.data.extracted_text || '';
       details = res.data.details || [];
       storedFiles = res.data.stored_files || [];
       extractedCount = details.filter(d => d.has_text).length;
     } catch (err) {
+      stopExtractionTimer();
       // Retry once on timeout/network error
       if (err.code === 'ECONNABORTED' || err.message?.includes('timeout') || !err.response) {
         try {
