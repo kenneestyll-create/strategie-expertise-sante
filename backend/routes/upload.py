@@ -165,13 +165,13 @@ async def _run_extraction(extraction_id, assembled_files):
         stored = _extraction_results.get(extraction_id, {}).get("stored_files", [])
         _extraction_results[extraction_id] = {"status": "processing", "progress": "Extraction OCR en cours...", "stored_files": stored}
 
-        import routes.strategiia as strat_module
+        import routes.dossier_express as dossier_module
 
         class MockRequest:
             async def json(self):
                 return {"files": assembled_files}
 
-        result = await strat_module.extract_document_text(MockRequest())
+        result = await dossier_module.extract_document_text(MockRequest())
         _extraction_results[extraction_id] = {"status": "done", "result": result, "stored_files": stored}
     except Exception as e:
         logger.error(f"Async extraction {extraction_id} failed: {e}")
@@ -207,13 +207,13 @@ async def extract_chunked_files(request_body: dict):
         return {"async": True, "extraction_id": extraction_id, "stored_files": stored_files, "message": "Extraction en cours — fichier volumineux"}
 
     # For smaller payloads, process synchronously (faster)
-    import routes.strategiia as strat_module
+    import routes.dossier_express as dossier_module
 
     class MockRequest:
         async def json(self):
             return {"files": assembled_files}
 
-    result = await strat_module.extract_document_text(MockRequest())
+    result = await dossier_module.extract_document_text(MockRequest())
     result["stored_files"] = stored_files
     return result
 
