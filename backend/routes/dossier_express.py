@@ -206,6 +206,100 @@ async def _update_dossier_step(dossier_id: str, processing_step: str, delivery_s
 # _generate_section_llmchat -> imported from utils/llm.py
 # _generate_dossier_report_multistage -> imported from utils/llm.py
 
+
+async def _send_dossier_express_confirmation(dossier_id: str, email: str, name: str):
+    """Immediate reassurance email — sent right after documents reception, BEFORE the long IA analysis.
+
+    Goal: free the user psychologically so they can close the tab without anxiety.
+    Non-blocking: failure must NOT stop the analysis pipeline.
+    """
+    if not email or not RESEND_AVAILABLE or not resend.api_key:
+        return
+    safe_name = name or "Madame, Monsieur"
+    short_id = (dossier_id or "")[:8].upper() or "—"
+
+    email_html = f"""<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f4f2ed;font-family:Arial,'Helvetica Neue',sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f2ed;padding:32px 16px;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+<tr><td style="background:#1a1a1a;padding:28px 32px;border-radius:8px 8px 0 0;">
+  <table width="100%"><tr>
+    <td><span style="color:#ffffff;font-size:18px;font-weight:bold;letter-spacing:0.5px;">Strategie & Expertise Sante</span><br/>
+    <span style="color:#c9a84c;font-size:11px;letter-spacing:3px;text-transform:uppercase;">PIONNIER EN FRANCE</span></td>
+    <td align="right"><span style="color:#999;font-size:12px;">Confirmation de prise en charge</span></td>
+  </tr></table>
+</td></tr>
+<tr><td style="background:#ffffff;padding:36px 32px 24px;">
+  <p style="font-size:15px;color:#1a1a1a;margin:0 0 20px;">Bonjour {safe_name},</p>
+  <p style="font-size:15px;color:#333;line-height:1.6;margin:0 0 16px;">
+    Votre demande Dossier Express IA est bien recue et en cours de traitement.
+  </p>
+  <div style="border-left:3px solid #c9a84c;padding:14px 20px;margin:0 0 24px;background:#faf8f3;">
+    <p style="font-size:13px;color:#555;line-height:1.5;margin:0 0 6px;">
+      <strong style="color:#1a1a1a;">Reference dossier :</strong> #{short_id}
+    </p>
+    <p style="font-size:13px;color:#555;line-height:1.5;margin:0;">
+      <strong style="color:#1a1a1a;">Livraison estimee :</strong> sous 2 heures par email.
+    </p>
+  </div>
+  <p style="font-size:14px;color:#333;line-height:1.65;margin:0 0 14px;">
+    Nos agents IA analysent en ce moment chaque piece transmise, croisent votre situation
+    avec les barèmes, jurisprudences et points de vigilance applicables, puis produisent
+    votre rapport personnalise.
+  </p>
+  <p style="font-size:14px;color:#333;line-height:1.65;margin:0 0 24px;">
+    <strong>Vous pouvez fermer cette page</strong> — tout est en cours cote serveur.
+    Le rapport vous parviendra par email avec votre PDF en piece jointe.
+  </p>
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 22px;">
+    <tr><td style="padding:14px 20px;background:#faf8f3;border-radius:6px;">
+      <p style="font-size:12px;color:#888;line-height:1.55;margin:0 0 6px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">
+        Une question ?
+      </p>
+      <p style="font-size:13px;color:#333;line-height:1.6;margin:0;">
+        Repondez simplement a cet email en mentionnant votre reference #{short_id}.
+        Notre equipe vous repondra rapidement.
+      </p>
+    </td></tr>
+  </table>
+  <div style="border-top:1px solid #e8e3d6;padding:14px 0 0;margin:8px 0 0;">
+    <p style="font-size:11px;color:#888;line-height:1.6;margin:0;text-align:center;">
+      &#128274; Vos documents sont traites dans un cadre strictement confidentiel,
+      uniquement pour repondre a votre demande. Conservation limitee a la duree
+      necessaire au traitement de votre dossier.
+    </p>
+  </div>
+</td></tr>
+<tr><td style="background:#1a1a1a;padding:20px 32px;border-radius:0 0 8px 8px;text-align:center;">
+  <p style="color:#c9a84c;font-size:13px;font-style:italic;margin:0 0 8px;font-weight:600;">
+    Strategie & Expertise Sante — Votre bouclier.
+  </p>
+  <p style="color:#888;font-size:11px;margin:0;">
+    strategie-expertise-sante.fr &nbsp;|&nbsp; Cet email est une simple confirmation de prise en charge.
+  </p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>"""
+
+    try:
+        await asyncio.to_thread(resend.Emails.send, {
+            "from": SENDER_EMAIL,
+            "to": [email],
+            "subject": f"Votre Dossier Express IA est bien recu — Reference #{short_id}",
+            "html": email_html,
+        })
+        logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] confirmation email sent to {email}")
+    except Exception as e:
+        # Non-blocking: log only, never disrupt the analysis pipeline
+        logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}] confirmation email failed (non-blocking): {e}")
+
+
 async def _process_dossier_express(dossier_id: str, email: str, name: str, situation: str, type_dossier: str, regime: str, documents_text: str, premium_pdf: bool = False, improvement_optout: bool = False):
     """Full pipeline with granular step tracking, timing instrumentation, and fail-safe notifications."""
     import time
@@ -215,6 +309,9 @@ async def _process_dossier_express(dossier_id: str, email: str, name: str, situa
 
     # === STEP 1: Documents received ===
     await _update_dossier_step(dossier_id, "documents_recus", "en_attente_traitement")
+
+    # === STEP 1bis: Immediate confirmation email (reassurance — frees the user from waiting on the page) ===
+    asyncio.create_task(_send_dossier_express_confirmation(dossier_id, email, name))
 
     # === STEP 2: Check LLM availability ===
     if not _has_llm_key():
