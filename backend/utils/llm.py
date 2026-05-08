@@ -222,6 +222,27 @@ async def generate_dossier_report_multistage(dossier_id: str, name: str, type_do
     Each section stays under the 60s proxy timeout. Sections run in parallel batches.
     Returns the assembled full report or raises Exception on failure."""
 
+    # === PHASE 2 INSTRUMENTATION (point F): log what reaches Claude ===
+    # Claude Sonnet 4.5 has a 200k token context window (~750k chars).
+    # We allow up to 120k chars of documents_text per section call (≈30-40k tokens),
+    # leaving ample room for the system prompt + situation + section instructions.
+    # Previous limit was [:8000] which truncated 50k+ char extractions to ~16%.
+    DOCS_LIMIT_CHARS = 120_000
+    docs_full_len = len(documents_text or "")
+    docs_passed = (documents_text or "")[:DOCS_LIMIT_CHARS]
+    docs_truncated = docs_full_len > DOCS_LIMIT_CHARS
+
+    logger.info(
+        f"[DOSSIER_EXPRESS][{dossier_id}][F] docs_full_chars={docs_full_len} "
+        f"docs_passed_chars={len(docs_passed)} truncated={docs_truncated} "
+        f"limit={DOCS_LIMIT_CHARS}"
+    )
+    if docs_truncated:
+        logger.warning(
+            f"[DOSSIER_EXPRESS][{dossier_id}][F] documents_text truncated "
+            f"({docs_full_len} → {DOCS_LIMIT_CHARS} chars). Increase DOCS_LIMIT_CHARS if needed."
+        )
+
     context = f"""Client : {name}
 Type de dossier : {type_dossier}
 Regime : {regime}
@@ -230,9 +251,10 @@ SITUATION :
 {situation}
 
 DOCUMENTS FOURNIS :
-{documents_text[:8000] if documents_text else "(Aucun document textuel fourni)"}
+{docs_passed if docs_passed else "(Aucun document textuel fourni)"}
 {case_context}"""
 
+    # === PHASE 1 — Prompt renforcé : citation nominale obligatoire ===
     SYSTEM = (
         "Tu es l'expert Dossier Express IA de Strategie & Expertise Sante. "
         "Specialise en analyse documentaire de dossiers de maladies professionnelles et accidents du travail. "
@@ -245,6 +267,18 @@ DOCUMENTS FOURNIS :
         "Tu n'inventes JAMAIS de pourcentage ni de montant sans source. "
         "Silence MDPH sur RAPO = REJET implicite (jamais acceptation). "
         "Silence CPAM AT/MP = reconnaissance implicite seulement si dossier complet (R.441-10 CSS), jamais generalisable. "
+        # === CITATION NOMINALE OBLIGATOIRE DES EXPERTS ===
+        "REGLE STRICTE — TRAITEMENT DES EXPERTISES MEDICALES : "
+        "Lorsque plusieurs expertises medicales sont presentes dans les documents, "
+        "tu DOIS citer CHAQUE expert NOMINATIVEMENT (Dr Nom complet) au moins une fois "
+        "dans la section concernee. Tu DOIS resumer individuellement les conclusions de "
+        "CHAQUE expertise meme si elles sont similaires ou contradictoires. "
+        "INTERDICTION ABSOLUE de fusionner silencieusement plusieurs expertises dans une "
+        "conclusion globale sans nommer chaque expert. Si tu detectes 3 expertises (ex: "
+        "Dr Hirsch, Dr Caillon, Dr Lerede), les 3 noms doivent apparaitre dans le rapport "
+        "avec leurs conclusions specifiques (date, taux d'IPP retenu, conclusion PTIA, etc.). "
+        "Cette regle prime sur toute consideration de concision. "
+        # === FIN REGLE ===
         "REGLES : Reponds en francais. Verification croisee x3. Nuance intelligente. "
         "Ne genere aucune URL. Ce rapport est un outil d'aide a la decision, pas un avis juridique."
     )
@@ -263,6 +297,16 @@ Redige UNIQUEMENT la section suivante du rapport de PRE-EXPERTISE DOCUMENTAIRE :
 ## Pieces detectees
 Liste structuree des categories documentaires reconnues dans les pieces fournies. Pour chaque categorie, indique le nombre de pieces et une description courte.
 Categories possibles : Certificats medicaux, Comptes rendus specialises (IRM, scanner, EMG), Arrets de travail, Expertises medicales, Courriers administratifs, Decisions/notifications, Examens/imagerie, Attestations/correspondances.
+
+REGLE OBLIGATOIRE — EXPERTISES MEDICALES :
+Si plusieurs expertises sont presentes, tu DOIS lister CHAQUE expert NOMINATIVEMENT
+(Dr Nom complet, date de l'expertise, assureur/instance, conclusion principale).
+Exemple de format attendu :
+- Expertise du Dr [Nom] (date, mandataire) : conclusion principale en 1 ligne
+- Expertise du Dr [Nom] (date, mandataire) : conclusion principale en 1 ligne
+- Expertise du Dr [Nom] (date, mandataire) : conclusion principale en 1 ligne
+INTERDICTION de regrouper plusieurs expertises sous "expertises favorables/defavorables" sans nommer chaque expert.
+
 Montre ce que tu as reconnu et exploite, pas seulement ce que tu as compte.
 Commence directement par ## Pieces detectees"""),
 
@@ -291,8 +335,17 @@ Commence directement par ## Cadre juridique applicable"""),
 Redige UNIQUEMENT les 2 sections suivantes du rapport de PRE-EXPERTISE DOCUMENTAIRE :
 ## Points forts du dossier
 Elements favorables identifies dans les pieces : preuves solides, coherences entre documents, elements medico-administratifs robustes. Explique POURQUOI chaque point est un atout strategique.
+
+REGLE — EXPERTISES MEDICALES :
+Si plusieurs expertises sont en presence (favorables et/ou contradictoires), tu DOIS
+analyser CHACUNE NOMINATIVEMENT (Dr Nom + date) avec sa conclusion specifique. Exemple :
+- L'expertise du Dr [Nom] (date) conclut a... ce qui constitue un atout car...
+- L'expertise du Dr [Nom] (date) conclut a... ce qui constitue un atout car...
+INTERDICTION de fusionner les conclusions des experts dans une formulation generique.
+
 ## Points de vigilance et pieces manquantes
 Lacunes documentaires, incoherences detectees, risques identifies, documents supplementaires a obtenir pour renforcer le dossier. Formulations nuancees.
+Si une expertise est INCOMPLETE dans les pieces fournies (ex: rapport partiel, pages manquantes), signale-le explicitement par expert nomme.
 Commence directement par ## Points forts du dossier"""),
 
         ("strategie_prejudices", f"""{context}

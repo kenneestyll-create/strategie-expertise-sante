@@ -79,9 +79,14 @@ async def _extract_one_file(name: str, file_bytes: bytes, file_type: str, size_k
             status = "text_error"
 
     preview = extracted[:200].strip() if extracted else ""
+    # Per-file text limit raised from 8000 → 60000 chars to preserve full expertises.
+    # A typical scanned medical expertise = ~25-50k chars. The downstream LLM context
+    # window (Claude 200k tokens) is the only meaningful cap and it's enforced
+    # centrally in llm.py via DOCS_LIMIT_CHARS.
+    PER_FILE_LIMIT = 60_000
     return {
         "name": name,
-        "text": extracted[:8000],
+        "text": extracted[:PER_FILE_LIMIT],
         "method": method,
         "pages": pages,
         "size_kb": size_kb,
@@ -217,8 +222,25 @@ async def _process_files_payload(files_data: list) -> dict:
         except Exception as e:
             logger.warning(f"OCR failure reporting error: {e}")
 
+    # === PHASE 2 INSTRUMENTATION (points A → E) ===
+    # A: pages detected per source file (from extraction details)
+    # B: ~ same as A (currently we send everything we detected to Gemini — no filter)
+    # C: text actually extracted (text_length per file)
+    # D: combined text length sent into the dossier_express pipeline
+    # E: any silent failures captured above
+    combined_clean = combined.strip()
+    a_total_pages = sum(r.get("pages", 0) for r in results)
+    c_total_chars = sum(r.get("text_length", 0) for r in results)
+    e_failed = len(failed_results)
+    inst_lines = [f"  - {r['name']}: pages={r.get('pages', 0)} text_chars={r.get('text_length', 0)} status={r.get('status')}" for r in results]
+    logger.info(
+        f"[EXTRACT-PIPELINE][A-E] files={len(results)} pages_total={a_total_pages} "
+        f"text_chars_per_file_sum={c_total_chars} combined_chars={len(combined_clean)} "
+        f"failed={e_failed}\n" + "\n".join(inst_lines)
+    )
+
     return {
-        "extracted_text": combined.strip(),
+        "extracted_text": combined_clean,
         "files_processed": len(results),
         "details": [{
             "name": r["name"],
@@ -535,7 +557,7 @@ DESCRIPTION DE LA SITUATION :
 {situation}
 
 CONTENU DES DOCUMENTS FOURNIS :
-{documents_text[:12000] if documents_text else "(Aucun document textuel fourni)"}
+{documents_text[:120000] if documents_text else "(Aucun document textuel fourni)"}
 {case_context}{assurance_context}{contestation_context}{mdph_context}
 
 {DOSSIER_EXPRESS_PROMPT}"""
