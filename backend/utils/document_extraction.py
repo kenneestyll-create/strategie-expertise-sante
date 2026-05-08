@@ -194,6 +194,14 @@ async def _gemini_extract_chunked(file_bytes: bytes, name: str, total_pages: int
                     os.unlink(tmp_path)
                 except Exception:
                     pass
+            # Release sub-PDF buffer + pypdf objects after each chunk.
+            # On 512MB tier, every freed MB matters before next chunk renders.
+            try:
+                del sub_buf, sub_bytes, writer
+            except Exception:
+                pass
+            import gc
+            gc.collect()
 
     if not chunks_text:
         err_suffix = f" — derniere erreur: {last_error}" if last_error else ""
@@ -297,7 +305,9 @@ async def extract_pdf_full_pipeline(file_bytes: bytes, name: str):
         ocr_quality = []
         for i in range(pages_to_ocr):
             page = pdf_doc[i]
-            bitmap = page.render(scale=2)
+            # DPI 150 (scale=1.5) instead of 200 (scale=2) → 50% less RAM per bitmap
+            # Gemini OCR validated at 150 DPI in research; Tesseract too with lang='fra+eng'
+            bitmap = page.render(scale=1.5)
             pil_image = bitmap.to_pil()
             text, quality = ocr_page(pil_image, i + 1, name, enhanced=False)
             if text:
@@ -313,11 +323,11 @@ async def extract_pdf_full_pipeline(file_bytes: bytes, name: str):
             pdf_doc.close()
             return extracted, method, total_pages, "ocr_extracted"
 
-        # Enhanced OCR last attempt
+        # Enhanced OCR last attempt (DPI 200 scale=2 — was 300/scale=3, halved for 512MB tier)
         enhanced_pages = []
         for i in range(pages_to_ocr):
             page = pdf_doc[i]
-            bitmap = page.render(scale=3)
+            bitmap = page.render(scale=2)
             pil_image = bitmap.to_pil()
             text, quality = ocr_page(pil_image, i + 1, name, enhanced=True)
             if text:

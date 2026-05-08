@@ -131,8 +131,10 @@ async def _process_files_payload(files_data: list) -> dict:
         size_kb = round(len(file_bytes) / 1024, 1)
         work.append((idx, name, file_bytes, file_type, size_kb))
 
-    # Parallel extraction with bounded concurrency
-    sem = asyncio.Semaphore(4)
+    # Sequential extraction (Starter 512MB tier — Semaphore=1 keeps memory peak low).
+    # Each Gemini chunk allocates ~30-50 MB transient (PdfReader + PdfWriter + base64 buffer).
+    # With Semaphore=4 (parallel), peak goes >300MB → OOM-kill on 512MB tier.
+    sem = asyncio.Semaphore(1)
 
     async def _bounded(idx, name, fbytes, ftype, skb):
         async with sem:
@@ -141,6 +143,9 @@ async def _process_files_payload(files_data: list) -> dict:
             except Exception as e:
                 logger.error(f"Extraction failed for {name}: {e}")
                 r = _skip_result(name, f"extraction erreur: {str(e)[:60]}", 0, skb, "extraction_error")
+            # Aggressive GC between extractions to release pypdf/pypdfium2 internal buffers
+            import gc
+            gc.collect()
             return idx, r
 
     if work:
