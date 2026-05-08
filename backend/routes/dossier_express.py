@@ -434,19 +434,26 @@ CONTENU DES DOCUMENTS FOURNIS :
         # Step updates during single call for UX feedback
         await _update_dossier_step(dossier_id, "analyse_ia", "en_attente_traitement", {"progress_step": "analyzing_1"})
 
-        for attempt in range(3):
+        for attempt in range(2):
             try:
                 session_id_llm = f"dexpress_{dossier_id[:8]}_{attempt}"
-                analysis = await llm_call(
-                    ANTHROPIC_API_KEY, session_id_llm, enhanced_de_system, user_msg,
-                    "anthropic", "claude-sonnet-4-5-20250929", max_tokens=8000
+                analysis = await asyncio.wait_for(
+                    llm_call(
+                        ANTHROPIC_API_KEY, session_id_llm, enhanced_de_system, user_msg,
+                        "anthropic", "claude-sonnet-4-5-20250929", max_tokens=8000
+                    ),
+                    timeout=180.0  # 3 min hard cap per attempt → max 6 min total before fallback
                 )
                 logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] PATH A native reussie (tentative {attempt+1}, {len(analysis or '')} chars)")
                 break
+            except asyncio.TimeoutError:
+                last_error = "PATH A timeout (180s)"
+                logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}] PATH A native tentative {attempt+1}/2 TIMEOUT 180s, bascule vers PATH B")
+                break  # don't retry on timeout — fall through to PATH B (multistage)
             except Exception as e:
                 last_error = str(e)
-                logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}] PATH A native tentative {attempt+1}/3 echouee: {last_error[:120]}")
-                if attempt < 2:
+                logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}] PATH A native tentative {attempt+1}/2 echouee: {last_error[:120]}")
+                if attempt < 1:
                     await asyncio.sleep(3)
 
     # PATH B: Emergent proxy — multi-stage pipeline (handles 60s timeout structurally)

@@ -39,17 +39,23 @@ async def check_llm_health() -> dict:
 
 
 def llm_sync_call(api_key, session_id, system_message, user_text, provider, model, max_tokens=6000):
-    """Run LLM call synchronously. Native Anthropic SDK if key available."""
+    """Run LLM call synchronously via Anthropic SDK with streaming + explicit timeout.
+    Streaming avoids proxy/gateway timeouts on long generations.
+    """
     import anthropic
     if api_key:
-        client = anthropic.Anthropic(api_key=api_key)
-        response = client.messages.create(
+        client = anthropic.Anthropic(api_key=api_key, timeout=120.0)
+        # Stream the response to avoid request timeout on long generations
+        full_text_parts = []
+        with client.messages.stream(
             model=model,
             max_tokens=max_tokens,
             system=system_message,
             messages=[{"role": "user", "content": user_text}],
-        )
-        return response.content[0].text
+        ) as stream:
+            for chunk in stream.text_stream:
+                full_text_parts.append(chunk)
+        return "".join(full_text_parts)
     raise Exception("Cle Anthropic native requise pour appel synchrone")
 
 
