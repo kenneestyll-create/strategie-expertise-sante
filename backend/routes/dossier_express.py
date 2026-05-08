@@ -50,83 +50,105 @@ router = APIRouter()
 
 # ==================== DOSSIER EXPRESS ====================
 
-@router.post("/extract-document-text")
-async def extract_document_text(request: Request):
-    """Extract text from uploaded documents with full pipeline: pdfplumber → OCR → metadata."""
-    import io
-    body = await request.json()
-    files_data = body.get("files", [])
+def _skip_result(name: str, method: str, pages: int, size_kb: float, status: str) -> dict:
+    return {
+        "name": name, "text": "", "method": method, "pages": pages,
+        "size_kb": size_kb, "status": status, "preview": "", "text_length": 0,
+    }
+
+
+async def _extract_one_file(name: str, file_bytes: bytes, file_type: str, size_kb: float) -> dict:
+    """Run extraction for a single already-decoded file."""
+    extracted = ""
+    method = "non supporté"
+    pages = 0
+    status = "unsupported"
+
+    if file_type == "application/pdf" or name.lower().endswith(".pdf"):
+        extracted, method, pages, status = await _extract_pdf_full_pipeline(file_bytes, name)
+    elif file_type and file_type.startswith("image/"):
+        extracted, method, status = await asyncio.to_thread(_extract_image_ocr, file_bytes, name)
+        pages = 1
+    elif file_type in ("text/plain",) or name.lower().endswith(".txt"):
+        try:
+            extracted = file_bytes.decode("utf-8", errors="replace")
+            method = "lecture texte directe"
+            status = "text_extracted"
+        except Exception:
+            method = "erreur lecture texte"
+            status = "text_error"
+
+    preview = extracted[:200].strip() if extracted else ""
+    return {
+        "name": name,
+        "text": extracted[:8000],
+        "method": method,
+        "pages": pages,
+        "size_kb": size_kb,
+        "status": status,
+        "preview": preview,
+        "text_length": len(extracted),
+    }
+
+
+async def _process_files_payload(files_data: list) -> dict:
+    """Decode → validate → extract in PARALLEL (bounded) → assemble combined result.
+
+    Bounded concurrency (4) protects Gemini rate limits while still cutting wall-clock time
+    drastically when the user uploads multiple PDFs (5 PDFs ≈ 90s instead of 450s).
+    """
     if not files_data:
-        return {"extracted_text": "", "files_processed": 0, "details": []}
+        return {"extracted_text": "", "files_processed": 0, "details": [], "stored_files": []}
 
-    MAX_FILE_SIZE_LOCAL = MAX_FILE_SIZE
-    MAX_TOTAL_SIZE_LOCAL = MAX_TOTAL_SIZE
-    MAX_FILES_LOCAL = MAX_FILES
+    if len(files_data) > MAX_FILES:
+        raise HTTPException(status_code=400, detail=f"Maximum {MAX_FILES} fichiers autorises")
 
-    if len(files_data) > MAX_FILES_LOCAL:
-        raise HTTPException(status_code=400, detail=f"Maximum {MAX_FILES_LOCAL} fichiers autorises")
+    files_data = files_data[:MAX_FILES]
 
-    results = []
+    # Pre-pass: decode + validate (order-dependent total_size accumulation)
+    placeholders: list = [None] * len(files_data)
+    work: list = []  # list of tuples: (idx, name, file_bytes, file_type, size_kb)
     total_size = 0
-    for file_info in files_data[:MAX_FILES_LOCAL]:
+    for idx, file_info in enumerate(files_data):
         name = file_info.get("name", "unknown")
         file_type = file_info.get("type", "")
         data_b64 = file_info.get("data", "")
         if not data_b64:
-            results.append({"name": name, "text": "", "method": "pas de données", "pages": 0, "size_kb": 0, "status": "no_data"})
+            placeholders[idx] = _skip_result(name, "pas de données", 0, 0, "no_data")
             continue
-
         try:
             file_bytes = base64.b64decode(data_b64)
         except Exception:
-            results.append({"name": name, "text": "", "method": "erreur decodage", "pages": 0, "size_kb": 0, "status": "decode_error"})
+            placeholders[idx] = _skip_result(name, "erreur decodage", 0, 0, "decode_error")
             continue
-
-        if len(file_bytes) > MAX_FILE_SIZE_LOCAL:
-            results.append({"name": name, "text": "", "method": "fichier trop volumineux", "pages": 0, "size_kb": round(len(file_bytes) / 1024, 1), "status": "too_large"})
+        if len(file_bytes) > MAX_FILE_SIZE:
+            placeholders[idx] = _skip_result(name, "fichier trop volumineux", 0, round(len(file_bytes) / 1024, 1), "too_large")
             continue
-
         total_size += len(file_bytes)
-        if total_size > MAX_TOTAL_SIZE_LOCAL:
-            results.append({"name": name, "text": "", "method": "taille totale depassee", "pages": 0, "size_kb": round(len(file_bytes) / 1024, 1), "status": "total_exceeded"})
+        if total_size > MAX_TOTAL_SIZE:
+            placeholders[idx] = _skip_result(name, "taille totale depassee", 0, round(len(file_bytes) / 1024, 1), "total_exceeded")
             continue
-
         size_kb = round(len(file_bytes) / 1024, 1)
-        extracted = ""
-        method = "non supporté"
-        pages = 0
-        status = "unsupported"
+        work.append((idx, name, file_bytes, file_type, size_kb))
 
-        if file_type == "application/pdf" or name.lower().endswith(".pdf"):
-            # Pipeline is now async (Gemini Vision support) — await directly
-            extracted, method, pages, status = await _extract_pdf_full_pipeline(file_bytes, name)
+    # Parallel extraction with bounded concurrency
+    sem = asyncio.Semaphore(4)
 
-        elif file_type and file_type.startswith("image/"):
-            extracted, method, status = await asyncio.to_thread(
-                _extract_image_ocr, file_bytes, name
-            )
-            pages = 1
-
-        elif file_type in ("text/plain",) or name.lower().endswith(".txt"):
+    async def _bounded(idx, name, fbytes, ftype, skb):
+        async with sem:
             try:
-                extracted = file_bytes.decode("utf-8", errors="replace")
-                method = "lecture texte directe"
-                status = "text_extracted"
-            except Exception:
-                method = "erreur lecture texte"
-                status = "text_error"
+                r = await _extract_one_file(name, fbytes, ftype, skb)
+            except Exception as e:
+                logger.error(f"Extraction failed for {name}: {e}")
+                r = _skip_result(name, f"extraction erreur: {str(e)[:60]}", 0, skb, "extraction_error")
+            return idx, r
 
-        preview = extracted[:200].strip() if extracted else ""
-        results.append({
-            "name": name,
-            "text": extracted[:8000],
-            "method": method,
-            "pages": pages,
-            "size_kb": size_kb,
-            "status": status,
-            "preview": preview,
-            "text_length": len(extracted)
-        })
+    if work:
+        gathered = await asyncio.gather(*[_bounded(*w) for w in work])
+        for idx, r in gathered:
+            placeholders[idx] = r
+
+    results = [p for p in placeholders if p is not None]
 
     combined = ""
     for r in results:
@@ -136,11 +158,11 @@ async def extract_document_text(request: Request):
         else:
             combined += "[Contenu non extractible]\n"
 
-    # Store original files to Object Storage (best-effort)
+    # Store original files to Object Storage (best-effort, off-thread)
     stored_files = []
     try:
         from utils.storage import upload_file as storage_upload
-        for file_info in files_data[:MAX_FILES_LOCAL]:
+        for file_info in files_data:
             data_b64 = file_info.get("data", "")
             if not data_b64:
                 continue
@@ -148,10 +170,9 @@ async def extract_document_text(request: Request):
                 raw_bytes = base64.b64decode(data_b64)
                 fname = file_info.get("name", "unknown")
                 ftype = file_info.get("type", "application/octet-stream")
-                result = storage_upload("dossier-originals", fname, raw_bytes, ftype)
+                result = await asyncio.to_thread(storage_upload, "dossier-originals", fname, raw_bytes, ftype)
                 doc_id = str(uuid.uuid4())
                 result["file_id"] = doc_id
-
                 doc_meta = {
                     "id": doc_id,
                     "original_filename": fname,
@@ -182,10 +203,68 @@ async def extract_document_text(request: Request):
             "size_kb": r["size_kb"],
             "status": r["status"],
             "preview": r.get("preview", ""),
-            "text_length": r.get("text_length", 0)
+            "text_length": r.get("text_length", 0),
         } for r in results],
-        "stored_files": stored_files
+        "stored_files": stored_files,
     }
+
+
+@router.post("/extract-document-text")
+async def extract_document_text(request: Request):
+    """Extract text from uploaded documents (base64 path).
+
+    - Small payload (≤ 5 MB and ≤ 2 PDFs): synchronous response (parallelized).
+    - Heavy payload: returns immediately with `{async: true, extraction_id}`. The frontend
+      polls /api/upload/extract-status/{id} for the result. This avoids ingress proxy
+      timeouts (~120s) when the user uploads many scanned PDFs (each takes 60-90s on Gemini).
+    """
+    body = await request.json()
+    files_data = body.get("files", [])
+    if not files_data:
+        return {"extracted_text": "", "files_processed": 0, "details": [], "stored_files": []}
+
+    # Heuristic: estimate workload to decide sync vs async
+    pdf_count = 0
+    total_decoded = 0
+    for fi in files_data[:MAX_FILES]:
+        data_b64 = fi.get("data", "")
+        if not data_b64:
+            continue
+        # base64 size ≈ 4/3 of decoded; estimate decoded size cheaply
+        total_decoded += int(len(data_b64) * 0.75)
+        ftype = fi.get("type", "")
+        name = fi.get("name", "")
+        if ftype == "application/pdf" or name.lower().endswith(".pdf"):
+            pdf_count += 1
+
+    HEAVY_PDF_COUNT = 2          # > 2 PDFs → async
+    HEAVY_TOTAL_BYTES = 5 * 1024 * 1024  # > 5 MB → async
+
+    if pdf_count > HEAVY_PDF_COUNT or total_decoded > HEAVY_TOTAL_BYTES:
+        # Async mode: register a background task and return immediately
+        from routes.upload import _extraction_results
+        extraction_id = str(uuid.uuid4())
+        _extraction_results[extraction_id] = {"status": "queued", "stored_files": []}
+
+        async def _run():
+            try:
+                _extraction_results[extraction_id] = {"status": "processing", "progress": "Extraction OCR en parallèle...", "stored_files": []}
+                result = await _process_files_payload(files_data)
+                _extraction_results[extraction_id] = {"status": "done", "result": result, "stored_files": result.get("stored_files", [])}
+            except Exception as e:
+                logger.error(f"Async base64 extraction {extraction_id} failed: {e}")
+                _extraction_results[extraction_id] = {"status": "error", "error": str(e)}
+
+        asyncio.create_task(_run())
+        return {
+            "async": True,
+            "extraction_id": extraction_id,
+            "stored_files": [],
+            "message": f"Extraction en cours — {pdf_count} PDF(s), {round(total_decoded/1024/1024, 1)} MB",
+        }
+
+    # Sync mode: small payload, parallelized internally
+    return await _process_files_payload(files_data)
 
 
 

@@ -301,10 +301,46 @@ async function extractBase64(files, existingOcrText = '') {
         },
       });
       stopExtractionTimer();
-      combinedText = res.data.extracted_text || '';
-      details = res.data.details || [];
-      storedFiles = res.data.stored_files || [];
-      extractedCount = details.filter(d => d.has_text).length;
+
+      // Async mode: server returned a polling ID (heavy payload, multiple PDFs)
+      if (res.data.async && res.data.extraction_id) {
+        const extractionId = res.data.extraction_id;
+        storedFiles = res.data.stored_files || [];
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('upload-progress', { detail: { phase: 'extraction', message: 'Extraction IA en parallèle — PDFs multiples détectés...' } }));
+        }
+        startExtractionTimer();
+        let pollResult = null;
+        for (let attempt = 0; attempt < 180; attempt++) {
+          await new Promise(r => setTimeout(r, 2000));
+          try {
+            const pollRes = await axios.get(`${API}/upload/extract-status/${extractionId}`, { timeout: 15000 });
+            if (pollRes.data.status === 'done') {
+              pollResult = pollRes.data;
+              break;
+            } else if (pollRes.data.status === 'error') {
+              console.warn('Async base64 extraction error:', pollRes.data.error);
+              break;
+            }
+          } catch (e) { /* poll retry */ }
+        }
+        stopExtractionTimer();
+        if (pollResult) {
+          combinedText = pollResult.extracted_text || '';
+          details = pollResult.details || [];
+          if (pollResult.stored_files && pollResult.stored_files.length) storedFiles = pollResult.stored_files;
+          extractedCount = details.filter(d => d.has_text).length;
+        } else {
+          for (const f of filesToExtract) {
+            combinedText += `\n--- ${f.name} ---\n[Extraction en cours — délai dépassé]\n`;
+          }
+        }
+      } else {
+        combinedText = res.data.extracted_text || '';
+        details = res.data.details || [];
+        storedFiles = res.data.stored_files || [];
+        extractedCount = details.filter(d => d.has_text).length;
+      }
     } catch (err) {
       stopExtractionTimer();
       // Retry once on timeout/network error
