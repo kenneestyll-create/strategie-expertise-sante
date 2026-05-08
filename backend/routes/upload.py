@@ -192,15 +192,24 @@ async def extract_chunked_files(request_body: dict):
     # Store original files to Object Storage (non-blocking best-effort)
     stored_files = await asyncio.to_thread(_store_files_to_object_storage, assembled_files)
 
-    # Calculate total data size
+    # Calculate total data size and PDF count
     total_data = sum(len(f.get("data", "")) for f in assembled_files)
+    pdf_count = sum(
+        1 for f in assembled_files
+        if f.get("type") == "application/pdf" or f.get("name", "").lower().endswith(".pdf")
+    )
 
-    # For large payloads (> 15MB base64 ~ 10MB raw), process asynchronously
-    if total_data > 15 * 1024 * 1024:
+    # Heuristic ALIGNED with /api/extract-document-text: > 2 PDFs OR > 5 MB raw → async
+    # (avoids ingress proxy timeouts ~120s when multiple scanned PDFs hit Gemini)
+    HEAVY_PDF_COUNT = 2
+    HEAVY_RAW_BYTES = 5 * 1024 * 1024  # 5 MB raw decoded — same as extract-document-text
+    # base64 size ≈ 4/3 of decoded; total_data is base64 length here
+    estimated_raw = int(total_data * 0.75)
+    if pdf_count > HEAVY_PDF_COUNT or estimated_raw > HEAVY_RAW_BYTES:
         extraction_id = str(uuid.uuid4())
         _extraction_results[extraction_id] = {"status": "queued", "stored_files": stored_files}
         asyncio.create_task(_run_extraction(extraction_id, assembled_files))
-        return {"async": True, "extraction_id": extraction_id, "stored_files": stored_files, "message": "Extraction en cours — fichier volumineux"}
+        return {"async": True, "extraction_id": extraction_id, "stored_files": stored_files, "message": f"Extraction en cours — {pdf_count} PDF(s), {estimated_raw/1024/1024:.1f} MB"}
 
     # For smaller payloads, process synchronously (faster)
     from routes.dossier_express import _process_files_payload
