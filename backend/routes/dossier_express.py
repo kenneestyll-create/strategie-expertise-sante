@@ -203,7 +203,7 @@ async def _process_files_payload(files_data: list) -> dict:
         logger.warning(f"Object storage not available for base64 file persistence: {e}")
 
     # Admin alert + log if any file's OCR failed entirely (status=vision_error / vision_empty / extraction_failed)
-    failed_results = [r for r in results if r.get("status") in {"vision_error", "vision_empty", "extraction_failed", "decode_error"}]
+    failed_results = [r for r in results if r.get("status") in {"vision_error", "vision_empty", "extraction_failed", "decode_error", "vision_partial", "extraction_error"}]
     if failed_results:
         try:
             details_lines = "\n".join(f"  - {r['name']}: status={r['status']} | method={r['method']}" for r in failed_results)
@@ -1048,6 +1048,60 @@ async def admin_dossier_express(admin: dict = Depends(get_current_admin)):
     return {"items": dossiers, "stats": stats}
 
 
+@router.get("/admin/dossier-express/extraction-debug")
+async def admin_extraction_debug(admin: dict = Depends(get_current_admin), limit: int = 5):
+    """ADMIN — DEBUG ENDPOINT for Phase 2 instrumentation.
+
+    Returns the last N dossiers with detailed per-file extraction info:
+    - method used (Gemini Vision, pdfplumber, Tesseract, etc.)
+    - status of each file (vision_extracted, vision_error, vision_partial, etc.)
+    - text length per file
+    - pages detected
+    - documents_text length actually stored
+
+    Use case: when a production dossier shows "non extractible", call this
+    endpoint to see EXACTLY which file failed and with which error label.
+    """
+    cursor = db.dossier_express.find(
+        {},
+        {
+            "_id": 0,
+            "id": 1, "name": 1, "email": 1, "created_at": 1,
+            "processing_step": 1, "delivery_status": 1, "status": 1,
+            "document_details": 1, "documents_text": 1,
+        },
+    ).sort("created_at", -1).limit(limit)
+    items = []
+    async for d in cursor:
+        details = d.get("document_details") or []
+        docs_text = d.get("documents_text") or ""
+        per_file = []
+        for f in details:
+            per_file.append({
+                "name": f.get("name"),
+                "method": f.get("method"),
+                "status": f.get("status"),
+                "pages": f.get("pages"),
+                "text_length": f.get("text_length"),
+                "size_kb": f.get("size_kb"),
+                "preview": (f.get("preview") or "")[:120],
+            })
+        items.append({
+            "id": d.get("id"),
+            "name": d.get("name"),
+            "email": d.get("email"),
+            "created_at": d.get("created_at"),
+            "processing_step": d.get("processing_step"),
+            "delivery_status": d.get("delivery_status"),
+            "status": d.get("status"),
+            "files_count": len(per_file),
+            "files": per_file,
+            "documents_text_length": len(docs_text),
+            "documents_text_preview": docs_text[:500] if docs_text else "",
+        })
+    return {"items": items, "count": len(items)}
+
+
 @router.post("/admin/dossier-express/{dossier_id}/retry")
 async def admin_retry_dossier(dossier_id: str, admin: dict = Depends(get_current_admin)):
     """Admin endpoint to retry a failed dossier processing from scratch."""
@@ -1105,6 +1159,7 @@ async def dossier_express_admin_bypass(request: Request):
     type_dossier = body.get("type_dossier", "")
     regime = body.get("regime", "")
     documents_text = body.get("documents_text", "")
+    document_details = body.get("document_details", [])
     premium_pdf = body.get("premium_pdf", False)
     improvement_optout = body.get("improvement_optout", False)
     email = payload.get("email", "admin@test")
@@ -1123,6 +1178,7 @@ async def dossier_express_admin_bypass(request: Request):
         "type_dossier": type_dossier,
         "regime": regime,
         "documents_text": documents_text,
+        "document_details": document_details,
         "status": "processing",
         "delivery_status": "en_attente_traitement",
         "processing_step": "checkout_valide",
