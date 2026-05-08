@@ -261,19 +261,24 @@ async def extract_document_text(request: Request):
     HEAVY_TOTAL_BYTES = 5 * 1024 * 1024  # > 5 MB → async
 
     if pdf_count > HEAVY_PDF_COUNT or total_decoded > HEAVY_TOTAL_BYTES:
-        # Async mode: register a background task and return immediately
-        from routes.upload import _extraction_results
+        # Async mode: register a background task and return immediately.
+        # State is persisted in MongoDB (resilient to server restarts/OOM).
+        from routes.upload import _set_extraction
         extraction_id = str(uuid.uuid4())
-        _extraction_results[extraction_id] = {"status": "queued", "stored_files": []}
+        await _set_extraction(extraction_id, {"status": "queued", "stored_files": []})
 
         async def _run():
+            from routes.upload import _set_extraction as _set
             try:
-                _extraction_results[extraction_id] = {"status": "processing", "progress": "Extraction OCR en parallèle...", "stored_files": []}
+                await _set(extraction_id, {"status": "processing", "progress": "Extraction OCR en parallèle...", "stored_files": []})
                 result = await _process_files_payload(files_data)
-                _extraction_results[extraction_id] = {"status": "done", "result": result, "stored_files": result.get("stored_files", [])}
+                await _set(extraction_id, {"status": "done", "result": result, "stored_files": result.get("stored_files", [])})
             except Exception as e:
-                logger.error(f"Async base64 extraction {extraction_id} failed: {e}")
-                _extraction_results[extraction_id] = {"status": "error", "error": str(e)}
+                logger.error(f"Async base64 extraction {extraction_id} failed: {e}", exc_info=True)
+                try:
+                    await _set(extraction_id, {"status": "error", "error": str(e)[:500]})
+                except Exception:
+                    pass
 
         asyncio.create_task(_run())
         return {

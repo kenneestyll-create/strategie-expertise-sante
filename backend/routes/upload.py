@@ -64,7 +64,63 @@ CHUNK_SIZE = 2 * 1024 * 1024  # 2 MB
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
 MAX_TOTAL_SIZE = 100 * 1024 * 1024  # 100 MB
 
-# In-memory store for async extraction results (cleared on completion)
+
+# ===================================================================
+# MongoDB-backed extraction state (resilient to process restarts/OOM)
+# ===================================================================
+# Replaces the previous in-memory `_extraction_results` dict so that if the
+# server restarts mid-extraction (e.g. OOM on the 512MB Starter tier), the
+# polling endpoint can still recover the state instead of returning 404.
+#
+# Collection: `extraction_results`
+#   { id: "<uuid>", status, progress?, result?, stored_files?, error?, updated_at, created_at_dt }
+# A TTL index on `created_at_dt` (1h) auto-cleans abandoned entries.
+
+_EXTRACTION_TTL_INIT_DONE = False
+
+
+async def _ensure_extraction_ttl():
+    global _EXTRACTION_TTL_INIT_DONE
+    if _EXTRACTION_TTL_INIT_DONE:
+        return
+    try:
+        await db.extraction_results.create_index(
+            "created_at_dt",
+            expireAfterSeconds=3600,  # 1h
+        )
+        _EXTRACTION_TTL_INIT_DONE = True
+    except Exception as e:
+        logger.warning(f"extraction_results TTL index init failed: {e}")
+
+
+async def _set_extraction(eid: str, state: dict):
+    """Persist extraction state to MongoDB."""
+    await _ensure_extraction_ttl()
+    doc = {
+        "id": eid,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        **{k: v for k, v in state.items() if k != "id"},
+    }
+    await db.extraction_results.update_one(
+        {"id": eid},
+        {"$set": doc, "$setOnInsert": {"created_at_dt": datetime.now(timezone.utc)}},
+        upsert=True,
+    )
+
+
+async def _get_extraction(eid: str):
+    return await db.extraction_results.find_one({"id": eid}, {"_id": 0, "created_at_dt": 0})
+
+
+async def _delete_extraction(eid: str):
+    try:
+        await db.extraction_results.delete_one({"id": eid})
+    except Exception:
+        pass
+
+
+# Legacy alias kept for backwards compatibility with any external import path.
+# All real reads/writes now go through the async helpers above.
 _extraction_results = {}
 
 
@@ -160,18 +216,30 @@ def _reassemble_files(upload_id, files_meta):
 
 
 async def _run_extraction(extraction_id, assembled_files):
-    """Background task: run OCR extraction and store result."""
+    """Background task: run OCR extraction and store result in MongoDB."""
     try:
-        stored = _extraction_results.get(extraction_id, {}).get("stored_files", [])
-        _extraction_results[extraction_id] = {"status": "processing", "progress": "Extraction OCR en cours...", "stored_files": stored}
+        prev = await _get_extraction(extraction_id) or {}
+        stored = prev.get("stored_files", [])
+        await _set_extraction(extraction_id, {
+            "status": "processing",
+            "progress": "Extraction OCR en cours...",
+            "stored_files": stored,
+        })
 
         from routes.dossier_express import _process_files_payload
 
         result = await _process_files_payload(assembled_files)
-        _extraction_results[extraction_id] = {"status": "done", "result": result, "stored_files": stored}
+        await _set_extraction(extraction_id, {
+            "status": "done",
+            "result": result,
+            "stored_files": stored,
+        })
     except Exception as e:
-        logger.error(f"Async extraction {extraction_id} failed: {e}")
-        _extraction_results[extraction_id] = {"status": "error", "error": str(e)}
+        logger.error(f"Async extraction {extraction_id} failed: {e}", exc_info=True)
+        try:
+            await _set_extraction(extraction_id, {"status": "error", "error": str(e)[:500]})
+        except Exception:
+            pass
 
 
 @router.post("/extract")
@@ -207,7 +275,7 @@ async def extract_chunked_files(request_body: dict):
     estimated_raw = int(total_data * 0.75)
     if pdf_count > HEAVY_PDF_COUNT or estimated_raw > HEAVY_RAW_BYTES:
         extraction_id = str(uuid.uuid4())
-        _extraction_results[extraction_id] = {"status": "queued", "stored_files": stored_files}
+        await _set_extraction(extraction_id, {"status": "queued", "stored_files": stored_files})
         asyncio.create_task(_run_extraction(extraction_id, assembled_files))
         return {"async": True, "extraction_id": extraction_id, "stored_files": stored_files, "message": f"Extraction en cours — {pdf_count} PDF(s), {estimated_raw/1024/1024:.1f} MB"}
 
@@ -221,19 +289,20 @@ async def extract_chunked_files(request_body: dict):
 
 @router.get("/extract-status/{extraction_id}")
 async def get_extraction_status(extraction_id: str):
-    """Poll for async extraction result."""
-    data = _extraction_results.get(extraction_id)
+    """Poll for async extraction result. Backed by MongoDB so survives server restarts."""
+    data = await _get_extraction(extraction_id)
     if not data:
         raise HTTPException(404, "Extraction non trouvee")
 
-    if data["status"] == "done":
-        result = data["result"]
+    status = data.get("status")
+    if status == "done":
+        result = data.get("result") or {}
         stored = data.get("stored_files", [])
-        del _extraction_results[extraction_id]
+        await _delete_extraction(extraction_id)
         return {"status": "done", "stored_files": stored, **result}
-    elif data["status"] == "error":
+    elif status == "error":
         error = data.get("error", "Erreur inconnue")
-        del _extraction_results[extraction_id]
+        await _delete_extraction(extraction_id)
         return {"status": "error", "error": error}
     else:
-        return {"status": data["status"], "progress": data.get("progress", "")}
+        return {"status": status, "progress": data.get("progress", "")}
