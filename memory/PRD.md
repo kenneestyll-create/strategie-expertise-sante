@@ -201,6 +201,20 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
   - Composant inline `<TestBadge>` dans `AdminDashboard.jsx` : pastille ambre `[count]` (ou `99+`) sous chaque onglet concerné. Tooltip natif "X donnée(s) de test détectée(s)".
   - Rafraîchissement automatique des badges après chaque purge (via `fetchData()` qui appelle déjà l'endpoint summary).
 - [x] **2026-02-XX — Capacités destructives complètes pour go-live production** :
+- [x] **2026-05-XX — Microsoft Clarity installé en production-only** : tracking comportemental anonymisé (heatmaps, recordings) sur `strategie-expertise-sante.fr` uniquement. Project ID `wnags8voqf`. Section RGPD ajoutée dans la politique de confidentialité.
+- [x] **2026-05-XX — Fix critique OCR Dossier Express IA** : la production ne dispose pas du binaire Tesseract → **toutes les extractions de PDFs scannés échouaient silencieusement** (régression majeure remontée par l'utilisateur).
+  - **Refactor pipeline d'extraction** dans `utils/document_extraction.py` : architecture 3 niveaux **sans dépendance binaire système** :
+    1. pdfplumber (Python pur, gratuit, instantané) pour PDFs avec texte natif
+    2. **Gemini 2.5 Pro Vision** (cloud, ~0,05€/PDF, robuste) pour PDFs scannés
+    3. Tesseract OCR (legacy, optionnel) en fallback de dernier recours
+  - **Auto-chunking intelligent** : PDFs lourds (>3MB ou >6 pages) découpés automatiquement via `pypdf` en sous-PDFs de 4 pages pour éviter les timeouts/502 Gemini.
+  - **Tests pratiques validés** sur 3 vrais PDFs médicaux fournis par l'utilisateur :
+    - Caillon (227KB, texte natif) → pdfplumber, 0,4s, 12 130 caractères extraits, **0€**
+    - Hirsch (811KB, scanné) → Gemini 2 chunks, 68s, 13 030 caractères, qualité parfaite, **~0,05€**
+    - Lerede (5,4MB, scanné lourd) → Gemini 3 chunks, 96s, 25 741 caractères, qualité supérieure à Tesseract, **~0,08€**
+  - Endpoint `/api/extract-document-text` testé E2E : status=text_extracted, méthode + page count corrects.
+  - **Coût total Dossier Express** : 0€ pour PDFs avec texte natif, 0,05-0,15€ pour PDFs scannés. Marge intacte sur prix de vente 29€/dossier.
+  - Pipeline rendu async : `_extract_pdf_full_pipeline` est maintenant `async`, appelée directement avec `await` au lieu de `asyncio.to_thread`.
   - Nouveau `routes/admin_cleanup.py` : 9 endpoints purge-all + 7 endpoints DELETE individuels. Tous protégés par `{"confirm": "PURGER"}` pour les bulk, simple confirm browser pour les unitaires.
   - **Bookings (RDV)** : `DELETE /admin/bookings/{id}` + `POST /admin/bookings/purge-all`
   - **Clients** : `DELETE /admin/clients/{id}` (cascade dossiers) + `POST /admin/clients/purge-all`

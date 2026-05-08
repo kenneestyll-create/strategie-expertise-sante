@@ -98,9 +98,8 @@ async def extract_document_text(request: Request):
         status = "unsupported"
 
         if file_type == "application/pdf" or name.lower().endswith(".pdf"):
-            extracted, method, pages, status = await asyncio.to_thread(
-                _extract_pdf_full_pipeline, file_bytes, name
-            )
+            # Pipeline is now async (Gemini Vision support) — await directly
+            extracted, method, pages, status = await _extract_pdf_full_pipeline(file_bytes, name)
 
         elif file_type and file_type.startswith("image/"):
             extracted, method, status = await asyncio.to_thread(
