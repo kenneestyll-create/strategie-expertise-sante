@@ -592,7 +592,7 @@ export const DossierExpressPage = () => {
                   <Button
                     size="lg"
                     className="rounded-full px-8 gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold text-base shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-all hover:scale-[1.02]"
-                    onClick={() => setStep('form')}
+                    onClick={() => { setStep('form'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                     data-testid="dossier-express-cta"
                   >
                     Analyser mon dossier — 97 €
@@ -800,7 +800,7 @@ export const DossierExpressPage = () => {
                   <Button
                     size="lg"
                     className="rounded-full px-10 gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold shadow-lg shadow-amber-500/20 hover:scale-[1.02] transition-all"
-                    onClick={() => setStep('form')}
+                    onClick={() => { setStep('form'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                     data-testid="dossier-express-cta-bottom"
                   >
                     Commencer — 97 €
