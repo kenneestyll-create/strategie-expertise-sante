@@ -176,13 +176,13 @@ export const ContactPage = () => {
                     <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
                       <info.icon className="w-5 h-5 text-accent" strokeWidth={1.5} />
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="text-sm text-muted-foreground">{info.title}</p>
                       {info.link ? (
                         <a 
                           href={info.link} 
-                          className="font-medium hover:text-accent transition-colors break-all"
-                          style={{ overflowWrap: 'anywhere' }}
+                          className="font-medium hover:text-accent transition-colors text-[13px] xs:text-sm sm:text-base block break-words hyphens-none"
+                          style={{ overflowWrap: 'break-word', wordBreak: 'normal' }}
                         >
                           {info.value}
                         </a>
