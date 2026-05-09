@@ -441,6 +441,14 @@ export const DossierExpressPage = () => {
     let documentsText = "";
     let documentDetails = [];
     let storedFiles = [];
+
+    // Phase 1+2 UX — switch IMMEDIATELY to processing screen so the user sees rich progress
+    // (steps timeline, segmented bar, rotating reassurance messages) instead of an opaque
+    // "Envoi et analyse en cours…" with just a spinner during OCR extraction (60-180s).
+    setPollStatus({ progress_step: 'extracting', files_count: files.length, documents_extracted: false });
+    setStep('processing');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     try {
       if (files.length > 0) {
         const hasLargeFiles = files.some(f => f.size > 5 * 1024 * 1024);
@@ -521,14 +529,17 @@ export const DossierExpressPage = () => {
       const headers = isAdminBypass ? { 'Authorization': `Bearer ${adminToken}` } : {};
       const res = await axios.post(endpoint, payload, { headers });
       setDossierId(res.data.dossier_id);
+      // Already in 'processing' mode (set early at submit start). Just refresh poll status to enter the analysis steps.
       setPollStatus({ progress_step: 'uploading', files_count: files.length, documents_extracted: documentsText.length > 50 });
-      setStep('processing');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
       sessionStorage.removeItem('dossier_express_form');
       sessionStorage.removeItem('dossier_express_premium_pdf');
       sessionStorage.removeItem('dossier_express_admin_bypass');
       if (isAdminBypass) toast.success("Dossier soumis — analyse IA en cours (mode admin).");
     } catch (err) {
+      // Submission failed — revert from 'processing' back to 'form' so the user can retry.
+      setStep('form');
+      setPollStatus(null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       if (err.response?.status === 402) {
         toast.error("Paiement requis. Veuillez procéder au paiement d'abord.");
       } else if (err.response?.status === 400) {
@@ -624,6 +635,56 @@ export const DossierExpressPage = () => {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Analyse croisée — Différenciation premium */}
+        <section className="section-padding bg-gradient-to-b from-background to-amber-50/30 dark:to-amber-500/[0.03]" data-testid="cross-analysis-section">
+          <div className="max-w-5xl mx-auto">
+            <div className="grid lg:grid-cols-[1fr_auto_1fr] gap-8 lg:gap-10 items-center">
+              <div className="space-y-3 reveal">
+                <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 mb-1">
+                  <Brain className="w-3 h-3 mr-1.5" />
+                  Différenciation premium
+                </Badge>
+                <h2 className="text-2xl sm:text-3xl font-semibold leading-tight">
+                  Analyse croisée de plusieurs<br />
+                  <span className="text-amber-600 dark:text-amber-400">expertises médicales</span>
+                </h2>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Dossier Express IA <strong className="text-foreground">ne se contente pas de résumer</strong> vos rapports. L'outil identifie chaque praticien, compare leurs conclusions et met en lumière les <strong className="text-foreground">divergences médicales exploitables</strong> — taux d'IPP, dates de consolidation, qualification PTIA, points de fragilité — pour transformer chaque contradiction en levier stratégique pour votre recours.
+                </p>
+              </div>
+
+              {/* Vertical divider with icon */}
+              <div className="hidden lg:flex flex-col items-center gap-3">
+                <div className="w-px h-16 bg-gradient-to-b from-transparent via-amber-500/30 to-transparent" />
+                <div className="w-10 h-10 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
+                  <FileSearch className="w-5 h-5 text-amber-600" />
+                </div>
+                <div className="w-px h-16 bg-gradient-to-b from-transparent via-amber-500/30 to-transparent" />
+              </div>
+
+              {/* Right column — concrete benefits */}
+              <ul className="space-y-3 reveal">
+                {[
+                  { label: "Chaque expert nommément cité", desc: "Dr Untel, date, mandataire, conclusion" },
+                  { label: "Comparaison taux IPP & consolidation", desc: "Détection automatique des écarts" },
+                  { label: "Identification des contradictions", desc: "Points exploitables en arbitrage médical" },
+                  { label: "Synthèse stratégique unifiée", desc: "Au-delà du simple résumé OCR" },
+                ].map((b, i) => (
+                  <li key={i} className="flex items-start gap-3" data-testid={`cross-analysis-benefit-${i}`}>
+                    <div className="w-6 h-6 rounded-full bg-amber-500/15 flex-shrink-0 flex items-center justify-center mt-0.5">
+                      <CheckCircle className="w-3.5 h-3.5 text-amber-600" />
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium block">{b.label}</span>
+                      <span className="text-xs text-muted-foreground">{b.desc}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </section>
@@ -1017,8 +1078,9 @@ export const DossierExpressPage = () => {
     }
 
     const STEPS = [
+      { key: 'extracting', label: 'Lecture intelligente de vos pièces', icon: FileSearch, detail: 'Extraction OCR cloud sécurisée — peut prendre 60 à 90s par PDF scanné.' },
       { key: 'uploading', label: 'Documents bien reçus et sécurisés', icon: Shield, detail: 'Vos pièces sont conservées de manière confidentielle.' },
-      { key: 'reading', label: 'Lecture des pièces transmises', icon: FileText, detail: 'Identification et extraction par IA de chaque document — peut durer 60 à 90s par PDF scanné.' },
+      { key: 'reading', label: 'Identification des pièces transmises', icon: FileText, detail: 'Catégorisation et indexation des éléments médicaux et administratifs.' },
       { key: 'analyzing_1', label: 'Analyse documentaire et chronologie', icon: FileSearch, detail: 'Reconstitution de votre parcours à partir des pièces fournies.' },
       { key: 'analyzing_2', label: 'Cadre juridique et points de vigilance', icon: Brain, detail: 'Croisement avec les textes de loi, jurisprudences et barèmes applicables.' },
       { key: 'analyzing_3', label: 'Stratégie et estimation des préjudices', icon: TrendingUp, detail: 'Construction des recommandations et chiffrage personnalisé.' },
@@ -1080,19 +1142,33 @@ export const DossierExpressPage = () => {
               <p className="text-xs text-amber-600/70">{activeStep.detail}</p>
             </div>
 
-            {/* Progress bar */}
-            <div className="relative w-full bg-muted rounded-full h-2 mb-1 overflow-hidden" data-testid="progress-bar">
-              <div
-                className="h-full rounded-full transition-all duration-1000 ease-out"
-                style={{
-                  width: `${progressPct}%`,
-                  background: 'linear-gradient(90deg, #f59e0b, #d97706)'
-                }}
-              />
+            {/* Segmented progress bar — one segment per step, fills in sequence */}
+            <div className="grid gap-1 mb-1" style={{ gridTemplateColumns: `repeat(${STEPS.length}, 1fr)` }} data-testid="progress-bar">
+              {STEPS.map((_, i) => {
+                const isCompleted = i < mappedIdx || pollStatus?.status === 'completed';
+                const isCurrent = i === mappedIdx && pollStatus?.status !== 'completed';
+                return (
+                  <div
+                    key={i}
+                    className="relative h-1.5 rounded-full overflow-hidden bg-muted/70"
+                    data-testid={`progress-segment-${i}`}
+                  >
+                    <div
+                      className={`absolute inset-0 rounded-full transition-all duration-700 ${
+                        isCompleted
+                          ? 'bg-gradient-to-r from-amber-500 to-amber-600 w-full'
+                          : isCurrent
+                          ? 'bg-gradient-to-r from-amber-500 to-amber-600 w-full animate-pulse'
+                          : 'w-0'
+                      }`}
+                    />
+                  </div>
+                );
+              })}
             </div>
             <div className="flex items-center justify-between mb-6">
               <span className="text-[11px] text-muted-foreground tabular-nums" data-testid="elapsed-time">
-                {elapsedMin > 0 ? `${elapsedMin} min ${String(elapsedSecRemainder).padStart(2, '0')} s` : `${elapsedSec} s`}
+                ⏱ {elapsedMin > 0 ? `${elapsedMin} min ${String(elapsedSecRemainder).padStart(2, '0')} s` : `${elapsedSec} s`} <span className="text-muted-foreground/60">— estimé 3 à 5 min</span>
               </span>
               <span className="text-[11px] text-muted-foreground">{Math.round(progressPct)}%</span>
             </div>
@@ -1179,7 +1255,7 @@ export const DossierExpressPage = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <span className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                         <Clock className="w-3 h-3 text-accent/60" />
-                        Durée estimée : 1 à 3 minutes
+                        Durée estimée : 3 à 5 minutes selon le volume
                       </span>
                       <span className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                         <Lock className="w-3 h-3 text-accent/60" />
@@ -1198,6 +1274,14 @@ export const DossierExpressPage = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* "Vous pouvez fermer cette page" reassurance footer — Niveau 3 */}
+            <div className="mt-5 px-4 py-3 rounded-lg bg-muted/40 border border-border/40 flex items-start gap-2.5" data-testid="leave-page-reassurance">
+              <Mail className="w-3.5 h-3.5 text-muted-foreground/70 mt-0.5 flex-shrink-0" />
+              <p className="text-[11px] text-muted-foreground/80 leading-relaxed">
+                <strong className="text-foreground/80">Vous pouvez fermer cette page en toute confiance.</strong> Votre dossier est traité côté serveur — un email vous sera automatiquement envoyé à <span className="font-mono text-foreground/70">{form.email || 'votre adresse'}</span> dès que le rapport est prêt. Aucune donnée n'est perdue.
+              </p>
+            </div>
 
           </div>
         </section>
