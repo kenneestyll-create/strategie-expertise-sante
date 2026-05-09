@@ -277,6 +277,24 @@ export const DossierExpressPage = () => {
   const ctaBottomRef = useReveal();
   const testimonialsRef = useRevealChildren();
 
+  // ROBUST scroll-to-top on step change.
+  // Using useEffect ensures the scroll happens AFTER React has rendered the new step's DOM,
+  // avoiding the race condition where setStep + sync scroll fires before re-render. We use
+  // instant scroll (no smooth) because Samsung Internet and several mobile browsers ignore
+  // smooth-scroll calls coming from synthetic events. We also reset to (0, 0) twice (raf)
+  // to defeat any reveal-on-scroll observers that briefly re-anchor the page.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    });
+  }, [step]);
+
   // Fetch weekly count
   useEffect(() => {
     axios.get(`${API}/dossier-express/weekly-count`)
@@ -592,7 +610,7 @@ export const DossierExpressPage = () => {
                   <Button
                     size="lg"
                     className="rounded-full px-8 gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold text-base shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-all hover:scale-[1.02]"
-                    onClick={() => { setStep('form'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    onClick={() => setStep('form')}
                     data-testid="dossier-express-cta"
                   >
                     Analyser mon dossier — 97 €
@@ -800,7 +818,7 @@ export const DossierExpressPage = () => {
                   <Button
                     size="lg"
                     className="rounded-full px-10 gap-2 bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold shadow-lg shadow-amber-500/20 hover:scale-[1.02] transition-all"
-                    onClick={() => { setStep('form'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    onClick={() => setStep('form')}
                     data-testid="dossier-express-cta-bottom"
                   >
                     Commencer — 97 €
