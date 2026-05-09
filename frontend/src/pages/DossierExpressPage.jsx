@@ -661,7 +661,7 @@ export const DossierExpressPage = () => {
         <section className="section-padding bg-gradient-to-b from-background to-amber-50/30 dark:to-amber-500/[0.03]" data-testid="cross-analysis-section">
           <div className="max-w-5xl mx-auto">
             <div className="grid lg:grid-cols-[1fr_auto_1fr] gap-8 lg:gap-10 items-center">
-              <div className="space-y-3 reveal">
+              <div className="space-y-3">
                 <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 mb-1">
                   <Brain className="w-3 h-3 mr-1.5" />
                   Différenciation premium
@@ -685,7 +685,7 @@ export const DossierExpressPage = () => {
               </div>
 
               {/* Right column — concrete benefits */}
-              <ul className="space-y-3 reveal">
+              <ul className="space-y-3">
                 {[
                   { label: "Chaque expert nommément cité", desc: "Dr Untel, date, mandataire, conclusion" },
                   { label: "Comparaison taux IPP & consolidation", desc: "Détection automatique des écarts" },

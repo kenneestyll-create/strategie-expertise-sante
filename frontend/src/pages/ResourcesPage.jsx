@@ -1090,6 +1090,12 @@ export const ResourcesPage = () => {
                           title: "Charges spécifiques et exceptionnelles",
                           condition: "Dépenses permanentes ou ponctuelles liées au handicap",
                           content: "Charges spécifiques (récurrentes) : couches, protections, alimentation spéciale — jusqu'à 100 €/mois. Charges exceptionnelles (ponctuelles) : réparation de matériel, frais de formation — jusqu'à 1 800 € sur 3 ans."
+                        },
+                        {
+                          id: "aide-parentalite",
+                          title: "Aide à la parentalité",
+                          condition: "Parent en situation de handicap, enfant de moins de 7 ans à charge",
+                          content: "Soutien financier dédié au parent handicapé pour assumer ses responsabilités éducatives. Aide humaine : 450 €/mois versés à partir des 3 ans du plus jeune enfant et jusqu'à ses 7 ans. Aide technique (3 versements forfaitaires) : 1 200 € aux 3 ans du plus jeune enfant, puis 1 000 € aux 6 ans de chaque enfant."
                         }
                       ].map(aide => (
                         <AccordionItem key={aide.id} value={aide.id} data-testid={`aide-${aide.id}`}>
@@ -1118,7 +1124,7 @@ export const ResourcesPage = () => {
                         <Heart className="w-5 h-5 text-accent" /> AAH — Allocation Adultes Handicapés
                       </h3>
                       <p className="text-sm text-muted-foreground mb-3">
-                        Aide financière mensuelle (max 971,37 €) pour les personnes avec un taux d'incapacité ≥ 80%,
+                        Aide financière mensuelle (max 1 041,59 €) pour les personnes avec un taux d'incapacité ≥ 80%,
                         ou 50-79% avec restriction substantielle d'accès à l'emploi.
                       </p>
                       <Link to="/calculatrice-aah" className="text-sm text-accent font-medium hover:underline flex items-center gap-1">

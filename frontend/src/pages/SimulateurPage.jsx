@@ -136,7 +136,7 @@ const getResults = (answers, autreTexte = '') => {
     }
   } else if (situation === 'mdph') {
     profile = 'Demande MDPH (Handicap)';
-    droits.push("AAH — Allocation aux Adultes Handicapés (jusqu'à 971,37€/mois)");
+    droits.push("AAH — Allocation aux Adultes Handicapés (jusqu'à 1 041,59€/mois)");
     droits.push("RQTH — Reconnaissance de la Qualité de Travailleur Handicapé");
     droits.push("CMI — Carte Mobilité Inclusion (invalidité, priorité, stationnement)");
     droits.push("PCH — Prestation de Compensation du Handicap");
