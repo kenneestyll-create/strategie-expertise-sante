@@ -1,6 +1,11 @@
-# Robots.txt dynamique servi par le backend: /api/robots.txt
-# Ce fichier est un fallback statique.
+# Robots.txt — Strategie-Expertise-Sante.fr
+# Le robots.txt dynamique est servi par le backend: /api/robots.txt
+# Ce fichier statique est servi en fallback à la racine du domaine.
+
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /admin/login
 Disallow: /espace-client
+
+Sitemap: https://strategie-expertise-sante.fr/sitemap.xml

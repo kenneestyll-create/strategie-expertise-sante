@@ -36,6 +36,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://strategie-expertise-sante.fr/medecin-conseil</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://strategie-expertise-sante.fr/tarifs</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
@@ -53,7 +58,7 @@
   <url>
     <loc>https://strategie-expertise-sante.fr/calculatrice-ipp</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://strategie-expertise-sante.fr/calculatrice-aah</loc>
@@ -101,17 +106,17 @@
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://strategie-expertise-sante.fr/parrainage</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
-  </url>
-  <url>
-    <loc>https://strategie-expertise-sante.fr/espace-client</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
     <loc>https://strategie-expertise-sante.fr/mentions-legales</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  <url>
+    <loc>https://strategie-expertise-sante.fr/cgv</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  <url>
+    <loc>https://strategie-expertise-sante.fr/politique-confidentialite</loc>
     <changefreq>yearly</changefreq>
     <priority>0.2</priority>
   </url>
@@ -142,6 +147,61 @@
   </url>
   <url>
     <loc>https://strategie-expertise-sante.fr/guide/refus-maladie-professionnelle-cpam-recours</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://strategie-expertise-sante.fr/guide/faute-inexcusable-employeur</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://strategie-expertise-sante.fr/guide/inaptitude-travail-droits-recours</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://strategie-expertise-sante.fr/guide/rente-accident-travail-calcul-contestation</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://strategie-expertise-sante.fr/guide/recours-tribunal-judiciaire-pole-social</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://strategie-expertise-sante.fr/guide/delai-prescription-maladie-professionnelle</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://strategie-expertise-sante.fr/guide/comment-preparer-expertise-medicale</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://strategie-expertise-sante.fr/guide/comment-demander-rqth-strategic</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://strategie-expertise-sante.fr/guide/comment-faire-reconnaitre-maladie-professionnelle</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://strategie-expertise-sante.fr/guide/maladie-professionnelle-definition-droits</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://strategie-expertise-sante.fr/guide/ptia-definition-droits-strategie</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://strategie-expertise-sante.fr/guide/refus-aah-rsdae-non-reconnue</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
