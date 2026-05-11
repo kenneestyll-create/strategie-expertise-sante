@@ -81,6 +81,7 @@ const AdminDashboard = lazy(() => import("@/pages/AdminDashboard").then(m => ({ 
 const ReferralPage = lazy(() => import("@/pages/ReferralPage").then(m => ({ default: m.ReferralPage })));
 const AgendaPage = lazy(() => import("@/pages/AgendaPage").then(m => ({ default: m.AgendaPage })));
 const SimulateurPage = lazy(() => import("@/pages/SimulateurPage").then(m => ({ default: m.SimulateurPage })));
+const SimulateurHubPreviewPage = lazy(() => import("@/pages/SimulateurHubPreviewPage"));
 const EspaceClientPage = lazy(() => import("@/pages/EspaceClientPage").then(m => ({ default: m.EspaceClientPage })));
 const CalculatriceIPPPage = lazy(() => import("@/pages/CalculatriceIPPPage").then(m => ({ default: m.CalculatriceIPPPage })));
 const CalculatriceAAHPage = lazy(() => import("@/pages/CalculatriceAAHPage").then(m => ({ default: m.CalculatriceAAHPage })));
@@ -150,6 +151,7 @@ function App() {
                   <Route path="/agenda" element={<><Header /><AgendaPage /><Footer /></>} />
                   <Route path="/rdv" element={<><Header /><AgendaPage /><Footer /></>} />
                   <Route path="/simulateur" element={<><Header /><SimulateurPage /><Footer /></>} />
+                  <Route path="/simulateur-hub-preview" element={<><Header /><SimulateurHubPreviewPage /><Footer /></>} />
                   <Route path="/espace-client" element={<><Header /><EspaceClientPage /><Footer /></>} />
                   <Route path="/calculatrice-ipp" element={<><Header /><CalculatriceIPPPage /><Footer /></>} />
                   <Route path="/calculatrice-aah" element={<><Header /><CalculatriceAAHPage /><Footer /></>} />
