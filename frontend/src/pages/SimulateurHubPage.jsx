@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calculator, Briefcase, Stethoscope, HeartPulse, Scale, ChevronRight, ShieldAlert, Sparkles } from 'lucide-react';
 
-const PROD_HUB_URL = 'https://strategie-expertise-sante.fr/simulateur';
+const HUB_URL = 'https://strategie-expertise-sante.fr/simulateur';
 
 // ============================================================
 // FAQ — 5 questions enrichies (~1000 mots cumulés)
@@ -272,7 +272,7 @@ function StructuredData() {
       '@type': 'BreadcrumbList',
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Accueil', item: 'https://strategie-expertise-sante.fr/' },
-        { '@type': 'ListItem', position: 2, name: 'Simulateurs', item: PROD_HUB_URL },
+        { '@type': 'ListItem', position: 2, name: 'Simulateurs', item: HUB_URL },
       ],
     };
     const faq = {
@@ -307,33 +307,20 @@ function StructuredData() {
 }
 
 // ============================================================
-// Page principale
+// Page principale — HUB SEO d'orientation (Production)
 // ============================================================
-export default function SimulateurHubPreviewPage() {
-  // Override the static <meta name="robots"> from index.html.
-  // Helmet alone fails because the tag is already present in HTML and
-  // react-helmet-async appends instead of replacing in some cases.
-  useEffect(() => {
-    const meta = document.querySelector('meta[name="robots"]');
-    const previous = meta ? meta.getAttribute('content') : null;
-    if (meta) meta.setAttribute('content', 'noindex, nofollow');
-    return () => {
-      if (meta && previous !== null) meta.setAttribute('content', previous);
-    };
-  }, []);
-
+export default function SimulateurHubPage() {
   return (
     <>
       <Helmet
         title="Simulateurs d'indemnisation : IPP, AAH, accident du travail | Stratégie & Expertise Santé"
         meta={[
-          { name: 'robots', content: 'noindex, nofollow' },
           {
             name: 'description',
-            content: "Hub d'orientation vers les simulateurs spécialisés : rente IPP (accident du travail, maladie professionnelle), AAH et cumul revenus, faute inexcusable.",
+            content: "Accédez aux simulateurs adaptés : rente IPP (accident du travail, maladie professionnelle), AAH et cumul revenus, faute inexcusable. Estimation rapide et orientation experte.",
           },
         ]}
-        link={[{ rel: 'canonical', href: PROD_HUB_URL }]}
+        link={[{ rel: 'canonical', href: HUB_URL }]}
       />
       <StructuredData />
 
@@ -363,6 +350,47 @@ export default function SimulateurHubPreviewPage() {
           <MiniSimuLight />
         </section>
 
+        {/* Paragraphe SEO d'orientation (~250 mots) */}
+        <section className="max-w-5xl mx-auto px-5 sm:px-8 pb-4" data-testid="hub-seo-intro">
+          <div className="rounded-2xl border border-zinc-900 bg-zinc-900/30 p-6 sm:p-8">
+            <h2 className="text-xl sm:text-2xl font-light text-zinc-100 mb-4">
+              Trois régimes d'indemnisation, trois logiques juridiques distinctes
+            </h2>
+            <div className="space-y-3 text-sm sm:text-base text-zinc-400 leading-relaxed">
+              <p>
+                En France, l'indemnisation d'une atteinte durable à la santé ne suit pas une logique unique.
+                Trois régimes principaux coexistent, chacun avec ses propres règles de calcul, ses délais de prescription
+                et ses voies de recours. Comprendre lequel s'applique à votre situation est la première étape stratégique
+                avant tout chiffrage.
+              </p>
+              <p>
+                L'<strong className="text-zinc-300">accident du travail (AT)</strong> est un événement soudain survenu
+                par le fait ou à l'occasion du travail. La présomption d'imputabilité joue automatiquement lorsque
+                l'accident survient au temps et au lieu de travail. L'indemnisation prend la forme d'une rente viagère
+                au-delà de 10 % d'IPP, ou d'un capital unique en deçà. Le salaire de référence est celui des 12 mois
+                précédant l'arrêt.
+              </p>
+              <p>
+                La <strong className="text-zinc-300">maladie professionnelle (MP)</strong> obéit au même régime
+                d'indemnisation, mais sa reconnaissance suit un parcours bien plus exigeant : inscription au tableau,
+                conditions médico-administratives, ou passage devant le CRRMP en cas de pathologie hors-tableau.
+                Le délai de prescription débute à la connaissance du lien entre la pathologie et le travail —
+                un point souvent décisif.
+              </p>
+              <p>
+                L'<strong className="text-zinc-300">Allocation aux Adultes Handicapés (AAH)</strong> répond à une
+                tout autre logique : prestation sociale non contributive, conditionnée par un taux d'incapacité
+                ≥ 80 % ou ≥ 50 % avec RSDAE. Depuis la déconjugalisation de 2022, seuls vos revenus personnels
+                comptent. Le cumul avec un salaire est possible mais soumis à un abattement progressif.
+              </p>
+              <p className="text-zinc-500 italic text-sm">
+                Sélectionnez ci-dessous le simulateur correspondant à votre situation pour accéder à un calcul
+                détaillé adapté aux spécificités de votre régime.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Arbre de décision */}
         <section className="max-w-5xl mx-auto px-5 sm:px-8 py-8">
           <div className="mb-6">
@@ -389,10 +417,10 @@ export default function SimulateurHubPreviewPage() {
           <FAQSection />
         </section>
 
-        {/* Footer note preview */}
+        {/* Footer note */}
         <section className="max-w-5xl mx-auto px-5 sm:px-8 py-10 border-t border-zinc-900">
           <p className="text-xs text-zinc-600 italic">
-            Page d'orientation. Les simulateurs spécialisés seront accessibles prochainement.
+            Page d'orientation. Les simulateurs spécialisés sont déployés progressivement.
             Pour une analyse personnalisée et opposable, faites étudier votre dossier par notre équipe.
           </p>
         </section>

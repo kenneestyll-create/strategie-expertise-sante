@@ -1,11 +1,19 @@
 # HUB SIMULATEUR — BLUEPRINT D'ARCHITECTURE
-*Document de préparation — Mode preview uniquement — Date: 2026-02-11*
+*Document de référence — Mise à jour: 2026-05-14 (post Option B v2 activée)*
 
 ---
 
-## 🎯 Objectif
+## 🎯 Statut actuel : Option B v2 EXÉCUTÉE (14/05/2026)
 
-Préparer l'activation d'une architecture **topic cluster** (hub + spokes) autour des simulateurs d'indemnisation, **sans impact production** tant que l'Étape 1 (correction sitemap) n'a pas été validée par les gates de décision SEO à J+21.
+| Élément | État |
+|---|---|
+| HUB `/simulateur` en preview | ✅ Activé (noindex retiré, canonical self) |
+| Pages filles Vague 1 | ✅ Préparées en preview-only (AT + MP) |
+| Sauvegarde rollback | ✅ `SimulateurPage.jsx.bak.20260514` |
+| Déploiement production | ⏳ En attente (action utilisateur) |
+| Gates HUB | ⏳ À mesurer post-déploiement |
+
+**Voir `/app/memory/HUB_DEPLOYMENT_LOG.md` pour les détails complets.**
 
 ---
 
