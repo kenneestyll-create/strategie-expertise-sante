@@ -2717,3 +2717,159 @@ async def send_weekly_report_now(admin=Depends(get_current_admin)):
     except Exception as e:
         logger.error(f"Weekly report send error: {e}")
         return {"success": False, "error": str(e)}
+
+
+
+# ==================== KIT PROFESSIONNEL ADMIN ====================
+# Pipeline IA confidentiel — strictement admin S.E.S
+# - Auto-genere apres chaque dossier client (background task)
+# - Visible uniquement dans l'admin
+# - Aucun envoi au client
+
+@router.get("/admin/dossier-express/{dossier_id}/kit-professionnel")
+async def get_kit_professionnel(dossier_id: str, admin: dict = Depends(get_current_admin)):
+    """Recupere le kit professionnel admin pour un dossier."""
+    kit = await db.kit_professionnel.find_one({"dossier_id": dossier_id}, {"_id": 0})
+    if not kit:
+        # Verifier si le dossier existe pour distinguer "pas encore genere" vs "introuvable"
+        dossier = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0, "id": 1, "status": 1})
+        if not dossier:
+            raise HTTPException(status_code=404, detail="Dossier introuvable")
+        return {
+            "exists": False,
+            "dossier_id": dossier_id,
+            "message": "Kit pas encore genere. Cliquez sur 'Generer' pour le creer."
+        }
+    return {"exists": True, **kit}
+
+
+@router.post("/admin/dossier-express/{dossier_id}/kit-professionnel/regenerate")
+async def regenerate_kit_professionnel(dossier_id: str, admin: dict = Depends(get_current_admin)):
+    """Re-genere le kit professionnel (manuel)."""
+    from services.kit_professionnel import generate_kit_professionnel
+    try:
+        kit = await generate_kit_professionnel(dossier_id)
+        return {"success": True, "regenerated_count": kit.get("regenerated_count", 0)}
+    except Exception as e:
+        logger.exception(f"Kit regenerate error for {dossier_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Erreur generation : {str(e)[:200]}")
+
+
+@router.post("/admin/dossier-express/{dossier_id}/kit-professionnel/notes")
+async def update_kit_notes(dossier_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    """Sauvegarde les notes admin du kit (persistees MongoDB)."""
+    body = await request.json()
+    notes = body.get("notes", "")
+    if not isinstance(notes, str):
+        raise HTTPException(status_code=400, detail="Notes doivent etre une chaine")
+    result = await db.kit_professionnel.update_one(
+        {"dossier_id": dossier_id},
+        {"$set": {"admin_notes": notes, "notes_updated_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=False
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Kit introuvable pour ce dossier")
+    return {"success": True, "saved_chars": len(notes)}
+
+
+@router.get("/admin/dossier-express/{dossier_id}/kit-professionnel/pdf")
+async def export_kit_pdf(dossier_id: str, admin: dict = Depends(get_current_admin)):
+    """Export PDF du kit professionnel (telechargement)."""
+    kit = await db.kit_professionnel.find_one({"dossier_id": dossier_id}, {"_id": 0})
+    if not kit:
+        raise HTTPException(status_code=404, detail="Kit introuvable. Generez-le d'abord.")
+
+    dossier = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0, "name": 1, "type_dossier": 1})
+    client_name = (dossier or {}).get("name", "Client")
+
+    try:
+        from fpdf import FPDF
+        import re
+
+        pdf = FPDF()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.add_page()
+        # En-tete
+        pdf.set_font("Helvetica", "B", 14)
+        pdf.set_text_color(180, 83, 9)
+        pdf.cell(0, 10, "KIT PROFESSIONNEL - USAGE INTERNE S.E.S", ln=True)
+        pdf.set_font("Helvetica", "", 9)
+        pdf.set_text_color(60, 60, 60)
+        safe_name = (client_name or "Client").encode("latin-1", "replace").decode("latin-1")
+        pdf.cell(0, 6, f"Dossier : {safe_name} - Reference : {dossier_id[:12]}", ln=True)
+        pdf.ln(2)
+        # Avertissement
+        pdf.set_fill_color(254, 243, 199)
+        pdf.set_text_color(146, 64, 14)
+        pdf.set_font("Helvetica", "B", 9)
+        pdf.cell(0, 5, "CONFIDENTIEL - Document genere par IA - Validation humaine obligatoire", ln=True, fill=True)
+        pdf.set_font("Helvetica", "", 8)
+        pdf.cell(0, 5, "Ne JAMAIS transmettre au client. Usage interne uniquement.", ln=True, fill=True)
+        pdf.ln(4)
+
+        sections_order = [
+            ("synthese_strategique", "1. Synthese strategique"),
+            ("diagnostic_juridique", "2. Diagnostic juridique"),
+            ("plan_action_chronologique", "3. Plan d'action chronologique"),
+            ("lettres_types", "4. Lettres-types"),
+            ("arguments_contestation", "5. Arguments de contestation"),
+            ("pieces_a_reclamer", "6. Pieces a reclamer"),
+            ("calendrier_suivi", "7. Calendrier de suivi"),
+        ]
+
+        def write_section(label, content):
+            pdf.set_font("Helvetica", "B", 12)
+            pdf.set_text_color(180, 83, 9)
+            pdf.cell(0, 8, label, ln=True)
+            pdf.set_font("Helvetica", "", 10)
+            pdf.set_text_color(31, 41, 55)
+            cleaned = re.sub(r"^#{1,6}\s*", "", content, flags=re.MULTILINE).strip()
+            cleaned = cleaned.replace("**", "")
+            for raw_line in cleaned.split("\n"):
+                # Latin-1 + nettoyage caracteres de controle
+                safe = "".join(ch if ord(ch) >= 32 or ch in "\t" else " " for ch in raw_line)
+                safe = safe.encode("latin-1", "replace").decode("latin-1")
+                # Decoupe par segments de 90 chars max pour eviter FPDFException
+                while len(safe) > 90:
+                    pos = safe.rfind(" ", 0, 90)
+                    if pos < 30:
+                        pos = 90
+                    chunk, safe = safe[:pos].rstrip(), safe[pos:].lstrip()
+                    if chunk:
+                        try:
+                            pdf.multi_cell(0, 5, chunk)
+                        except Exception:
+                            pass
+                if safe.strip():
+                    try:
+                        pdf.multi_cell(0, 5, safe)
+                    except Exception:
+                        pass
+                else:
+                    pdf.ln(2)
+            pdf.ln(3)
+
+        for key, label in sections_order:
+            text = kit.get(key, "") or "(section non generee)"
+            write_section(label, text)
+
+        # Notes admin
+        notes = kit.get("admin_notes", "") or ""
+        if notes.strip():
+            write_section("8. Notes internes", notes)
+
+        pdf_bytes = pdf.output(dest="S")
+        if isinstance(pdf_bytes, str):
+            pdf_bytes = pdf_bytes.encode("latin-1")
+        elif isinstance(pdf_bytes, bytearray):
+            pdf_bytes = bytes(pdf_bytes)
+
+        filename = f"Kit_Pro_{(client_name or 'Client').replace(' ', '_')}_{dossier_id[:8]}.pdf"
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+        )
+    except Exception as e:
+        logger.exception(f"Kit PDF export error for {dossier_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Erreur export PDF : {str(e)[:200]}")

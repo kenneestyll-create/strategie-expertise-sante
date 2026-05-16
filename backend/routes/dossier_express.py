@@ -832,6 +832,18 @@ CONTENU DES DOCUMENTS FOURNIS :
 
     logger.info(f"[DOSSIER_EXPRESS][{dossier_id}][COMPLETE] path={llm_path_used} total={t_total}s | context={timings.get('context_prep',0)}s llm={timings.get('llm_generation',0)}s pdf={timings.get('pdf_generation',0)}s storage={timings.get('storage',0)}s email={timings.get('email',0)}s | chars={len(analysis)} pdf={len(pdf_bytes)}B")
 
+    # === KIT PROFESSIONNEL ADMIN (pipeline parallele, non bloquant) ===
+    # Generation differee en background : le client recoit son PDF immediatement,
+    # le kit admin est genere en arriere-plan (~60-90s) sans impacter le flux client.
+    # Le texte OCR est deja present dans le dossier sous le champ "documents_text"
+    # (defini par le pipeline existant). Aucune persistance supplementaire requise.
+    try:
+        from services.kit_professionnel import trigger_kit_generation_background
+        asyncio.create_task(trigger_kit_generation_background(dossier_id))
+        logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] Kit Professionnel admin scheduled (background)")
+    except Exception as kit_err:
+        logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}] Kit admin scheduling failed (non-blocking): {kit_err}")
+
     if not email_sent:
         # Partial success — PDF exists but email failed. Notify client via fallback
         await _notify_client_delay(email, name, "Dossier Express IA")

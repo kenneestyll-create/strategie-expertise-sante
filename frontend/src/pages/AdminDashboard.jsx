@@ -69,7 +69,8 @@ import { AdminOnboardingTour, TOUR_KEY } from '@/components/AdminOnboardingTour'
 import { TarifsEditor, ChiffresClesEditor } from '@/components/ConfigEditors';
 import axios from 'axios';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { BarChart3, BellRing, Download, FlaskConical, PenTool, FileSearch, QrCode, Globe, BadgeCheck, Tag, ShieldCheck, Sparkles, Crown } from 'lucide-react';
+import { BarChart3, BellRing, Download, FlaskConical, PenTool, FileSearch, QrCode, Globe, BadgeCheck, Tag, ShieldCheck, Sparkles, Crown, Lock } from 'lucide-react';
+import KitProfessionnelTab from '@/components/admin/KitProfessionnelTab';
 import { EmailTemplateEditor } from '@/components/EmailTemplateEditor';
 import { AdminConseilsStrate } from '@/components/AdminConseilsStrate';
 import { AdminSettingsTab } from '@/components/AdminSettingsTab';
@@ -2821,6 +2822,9 @@ export const AdminDashboard = () => {
                           <span className="ml-1 text-[10px] bg-emerald-100 text-emerald-700 rounded-full px-1.5">relu</span>
                         )}
                       </TabsTrigger>
+                      <TabsTrigger value="kit-pro" className="gap-1.5 text-xs text-amber-700" data-testid="tab-kit-pro">
+                        <Lock className="w-3.5 h-3.5" /> Kit Pro
+                      </TabsTrigger>
                     </TabsList>
 
                     {/* ——— TAB: Analyse ——— */}
@@ -3143,6 +3147,11 @@ export const AdminDashboard = () => {
                           </Button>
                         </div>
                       </div>
+                    </TabsContent>
+
+                    {/* ——— TAB: Kit Professionnel (CONFIDENTIEL ADMIN) ——— */}
+                    <TabsContent value="kit-pro" className="mt-0" data-testid="kit-pro-tab-content">
+                      <KitProfessionnelTab dossierId={dossierViewDialog.id} token={adminToken} />
                     </TabsContent>
                   </Tabs>
 
