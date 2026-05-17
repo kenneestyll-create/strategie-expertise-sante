@@ -205,6 +205,15 @@ async def startup_db_client():
     except Exception as e:
         logger.warning(f"SEO auto-seed skipped (non-blocking): {e}")
 
+    # Apply pending SEO title/description migrations (idempotent — tracks applied IDs in seo_migrations)
+    try:
+        from utils.seo_migrations import apply_pending_migrations
+        mig_report = await apply_pending_migrations(db)
+        if mig_report["applied"]:
+            logger.info(f"SEO migrations applied: {mig_report['applied']}")
+    except Exception as e:
+        logger.warning(f"SEO migrations skipped (non-blocking): {e}")
+
     # Auto-seed Kit Professionnel prompts (idempotent — only inserts if collection empty)
     try:
         from services.kit_professionnel import ensure_kit_prompts_seeded

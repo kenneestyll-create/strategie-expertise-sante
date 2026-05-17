@@ -154,8 +154,8 @@ PAGES = [
 },
 {
     "slug": "accident-travail-non-declare-employeur",
-    "title": "Accident du travail non déclaré : droits et recours",
-    "meta_description": "Votre employeur refuse de déclarer votre accident du travail ? Vos droits, les erreurs à éviter et la stratégie pour obtenir la prise en charge.",
+    "title": "Accident du Travail Non Déclaré par l'Employeur : Vos Recours",
+    "meta_description": "Employeur qui refuse la déclaration AT ? Procédure CPAM, sanctions employeur, mise en demeure. Délai 2 ans pour faire valoir vos droits.",
     "category": "accident_travail",
     "intention": "urgence",
     "priority": "p0",
@@ -253,8 +253,8 @@ PAGES = [
 # ═══════════════════════════════════════════════════════════════
 {
     "slug": "faute-inexcusable-employeur",
-    "title": "Faute inexcusable employeur : conditions et indemnisation",
-    "meta_description": "Votre employeur connaissait le danger ? Découvrez les conditions de la faute inexcusable et comment obtenir une indemnisation complémentaire.",
+    "title": "Faute Inexcusable de l'Employeur : Conditions + Indemnités",
+    "meta_description": "Faute inexcusable : 3 conditions à prouver, indemnisation complémentaire CPAM + employeur. Délai 2 ans. Guide étape par étape pour saisir le pôle social.",
     "category": "accident_travail",
     "intention": "perte_financiere",
     "priority": "p0",
@@ -437,8 +437,8 @@ PAGES = [
 },
 {
     "slug": "delai-prescription-maladie-professionnelle",
-    "title": "Délai prescription maladie professionnelle : vos droits",
-    "meta_description": "Les délais en maladie professionnelle sont stricts. Découvrez les pièges fréquents et la stratégie pour préserver vos droits à temps.",
+    "title": "Délai de Prescription Maladie Professionnelle CPAM",
+    "meta_description": "Combien de temps pour déclarer une maladie professionnelle ? Délais CPAM (2 ans), prescription civile (5 ans), cas particuliers et erreurs à éviter.",
     "category": "accident_travail",
     "intention": "urgence",
     "priority": "p0",
