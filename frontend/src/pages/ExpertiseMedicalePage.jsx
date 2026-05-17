@@ -52,18 +52,17 @@ export const ExpertiseMedicalePage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Expertise médicale : préparer, comprendre, contester" description="Tout ce qu'il faut savoir avant une expertise médicale : préparation stratégique, pièges à éviter, dires contradictoires et recours en cas de rapport défavorable." path="/expertise-medicale" />
+      <SEO title="Expertise Médicale : Stratégie Assureur, MDPH, Tribunal" description="Stratégie pour une expertise médicale face à l'assureur, en procédure MDPH ou au tribunal. Préparation, dires contradictoires, contre-expertise." path="/expertise-medicale" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-3xl">
             <span className="text-sm font-medium text-accent uppercase tracking-wider">Guide pratique</span>
             <h1 className="text-4xl sm:text-5xl font-semibold mt-2 mb-6" data-testid="expertise-title">
-              Expertise médicale : comment s'y préparer
+              Expertise médicale : stratégie face à l'assureur et au tribunal
             </h1>
             <p className="text-lg text-muted-foreground">
-              Une expertise médicale est une étape déterminante dans de nombreuses procédures 
-              liées à la santé, au handicap ou à l'indemnisation d'un dommage corporel.
+              Une expertise médicale est une étape déterminante dans les procédures face à un assureur, en démarche MDPH ou devant le tribunal.
             </p>
           </div>
         </div>
