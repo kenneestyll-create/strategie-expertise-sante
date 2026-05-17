@@ -153,7 +153,7 @@ export const CalculatriceIPPPage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Calcul IPP : simulateur rente et indemnisation AT/MP" description="Calculez votre taux d'IPP et estimez le montant de votre rente accident du travail. Simulateur gratuit basé sur le barème AT/MP officiel." path="/calculatrice-ipp" />
+      <SEO title="Simulateur Rente IPP 2026 : Calcul + Contestation" description="Calculez votre rente IPP gratuitement (AT/MP). Formule officielle, simulateur en ligne, conseils d'expert pour contester un taux trop bas." path="/calculatrice-ipp" />
       {/* Hero */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
@@ -571,23 +571,31 @@ export const CalculatriceIPPPage = () => {
 
 const ippFaqData = [
   {
-    question: "Comment est calculée la rente IPP ?",
-    answer: "La rente est calculée à partir de votre salaire annuel de référence et de votre taux d'IPP. Le taux est divisé en deux tranches : la partie jusqu'à 50% est divisée par 2, la partie au-delà de 50% est multipliée par 1,5. Le résultat, appelé taux utile, est multiplié par le salaire de référence pour obtenir le montant annuel de la rente."
+    question: "Comment est calculée la rente IPP ?",
+    answer: "La rente est calculée à partir de votre salaire annuel de référence et de votre taux d'IPP. Le taux est divisé en deux tranches : la partie jusqu'à 50% est divisée par 2, la partie au-delà de 50% est multipliée par 1,5. Le résultat, appelé taux utile, est multiplié par le salaire de référence pour obtenir le montant annuel de la rente."
   },
   {
-    question: "Quelle est la différence entre capital et rente ?",
-    answer: "En dessous de 10% d'IPP, vous recevez un capital forfaitaire versé en une seule fois (de 479€ à 4 794€ selon le taux, barème 2026). À partir de 10%, vous percevez une rente viagère versée trimestriellement ou mensuellement, calculée sur votre salaire et votre taux. La rente est nettement plus avantageuse sur le long terme."
+    question: "Quelle est la différence entre capital et rente ?",
+    answer: "En dessous de 10% d'IPP, vous recevez un capital forfaitaire versé en une seule fois (de 479€ à 4 794€ selon le taux, barème 2026). À partir de 10%, vous percevez une rente viagère versée trimestriellement ou mensuellement, calculée sur votre salaire et votre taux. La rente est nettement plus avantageuse sur le long terme."
   },
   {
-    question: "Peut-on contester un taux d'IPP ?",
+    question: "Le simulateur fonctionne-t-il pour une maladie professionnelle ?",
+    answer: "Oui. Le calcul de la rente est identique pour un accident du travail (AT) et une maladie professionnelle (MP) reconnue par la CPAM. Le barème AT/MP s'applique à l'identique : capital forfaitaire en dessous de 10% d'IPP, rente viagère au-delà. La seule différence concerne la procédure de reconnaissance en amont (déclaration MP via formulaire dédié)."
+  },
+  {
+    question: "Peut-on contester un taux d'IPP ?",
     answer: "Oui, vous disposez de 2 mois à compter de la notification pour saisir la Commission Médicale de Recours Amiable (CMRA). Il est fortement conseillé de comparer votre taux avec le barème indicatif AT/MP et de vous faire accompagner par un médecin de recours pour l'expertise."
   },
   {
-    question: "La rente IPP est-elle imposable ?",
+    question: "Faute inexcusable de l'employeur : la rente IPP est-elle majorée ?",
+    answer: "Oui. Si la faute inexcusable de l'employeur est reconnue par le pôle social du tribunal judiciaire, votre rente IPP est majorée et vous bénéficiez en plus d'une indemnisation complémentaire couvrant les préjudices personnels (souffrances physiques et morales, préjudice esthétique, d'agrément, perte de chance de promotion professionnelle). Le simulateur ci-dessus calcule la rente de base, à laquelle s'ajoute la majoration."
+  },
+  {
+    question: "La rente IPP est-elle imposable ?",
     answer: "Non. La rente d'incapacité permanente versée par la Sécurité sociale au titre d'un accident du travail ou d'une maladie professionnelle est totalement exonérée d'impôt sur le revenu, de CSG et de CRDS. Elle ne doit pas être déclarée dans vos revenus."
   },
   {
-    question: "Peut-on cumuler rente IPP et salaire ?",
+    question: "Peut-on cumuler rente IPP et salaire ?",
     answer: "Oui. La rente d'incapacité permanente est cumulable avec un salaire. Elle compense la perte de capacité de gain liée aux séquelles, et non l'impossibilité de travailler. Vous pouvez donc reprendre une activité professionnelle tout en continuant à percevoir votre rente."
   }
 ];
