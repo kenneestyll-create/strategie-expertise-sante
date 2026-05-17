@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { HelpCircle, X, Search, ChevronRight, ArrowRight, Sparkles, BookOpen, Users, MessageSquare, Gift, Calendar, FolderOpen, Send, Zap, Brain, FileSearch, BarChart3, FileText, Star, Settings, Bell, PenTool, ChevronDown, RotateCcw, Mail, Crown } from 'lucide-react';
+import { HelpCircle, X, Search, ChevronRight, ArrowRight, Sparkles, BookOpen, Users, MessageSquare, Gift, Calendar, FolderOpen, Send, Zap, Brain, FileSearch, BarChart3, FileText, Star, Settings, Bell, PenTool, ChevronDown, RotateCcw, Mail, Crown, Lock } from 'lucide-react';
 
 const HELP_SECTIONS = [
   {
@@ -129,6 +129,26 @@ const HELP_SECTIONS = [
       { label: 'Livraison', text: 'Générez le PDF final et envoyez-le au client. Le statut passe à "Livré".' },
     ],
     keywords: ['dossier express', 'payant', '97', 'analyse', 'pdf', 'livraison', 'expert', 'revue', 'document']
+  },
+  {
+    id: 'kit-pro',
+    tab: 'dossier-express',
+    icon: Lock,
+    title: '🔒 Kit Professionnel IA — Confidentiel admin',
+    color: '#C9A84C',
+    summary: 'Dossier de travail interne ultra-détaillé généré par IA pour chaque Dossier Express. Strictement réservé à l\'admin — ne jamais transmettre tel quel au client.',
+    steps: [
+      { label: 'Où le trouver ?', tab: 'dossier-express', text: 'Onglet "Dossier Express" → liste "Relecture expert". Cliquez "Consulter l\'analyse" (ou "Relire / Valider") sur n\'importe quelle ligne. Dans la modale qui s\'ouvre, 5 onglets en haut : Analyse | Documents uploadés | Prévisualisation PDF | Revue expert | 🔒 Kit Pro (dernier onglet, libellé doré avec cadenas).' },
+      { label: 'À quoi ça sert', text: 'Le Kit Pro est votre "boîte à outils experte" pour préparer chaque dossier : stratégie, contestations, lettres prêtes à l\'emploi, calendrier de suivi. Il vous fait gagner 1 à 2h de travail par dossier en pré-mâchant l\'analyse juridique approfondie.' },
+      { label: 'Les 7 sections générées', text: '1) Synthèse stratégique (vue d\'ensemble + chances de succès). 2) Diagnostic juridique (régime applicable, points forts/faibles). 3) Plan d\'action chronologique (étapes à suivre). 4) Lettres-types prêtes à personnaliser. 5) Arguments de contestation (taux IPP, refus, expertise). 6) Pièces à réclamer au client. 7) Calendrier de suivi (échéances à respecter).' },
+      { label: 'Génération / Régénération', text: 'Si le kit n\'existe pas encore pour ce dossier, cliquez sur "Générer le kit" — l\'IA met 30 à 60 secondes pour produire les 7 sections. Si vous voulez le rafraîchir après mise à jour du dossier, cliquez "Régénérer". L\'ancien contenu est remplacé.' },
+      { label: 'Notes admin internes', text: 'En bas du Kit Pro, une zone "Notes admin" vous permet de consigner vos observations privées (axes de plaidoirie, points de vigilance, contacts clés, etc.). Cliquez "Enregistrer les notes" pour sauvegarder. Ces notes ne sont JAMAIS visibles par le client — elles restent dans votre dossier de travail.' },
+      { label: 'Export PDF', text: 'Bouton "Télécharger le PDF" en haut du Kit Pro → génère un PDF premium reprenant les 7 sections + vos notes admin. À utiliser uniquement pour vos archives ou un échange interne (avocat partenaire, médecin conseil). NE PAS envoyer au client.' },
+      { label: 'Confidentialité stricte', text: 'Le Kit Pro contient des analyses brutes (taux d\'incertitude, stratégies de contestation, faiblesses identifiées) qui ne sont PAS destinées au client. Le client reçoit uniquement le PDF "Dossier Express IA" (analyse + revue expert), pas le Kit Pro. Cadenas doré = signal visuel "confidentiel".' },
+      { label: 'Validation humaine obligatoire', text: 'Le Kit Pro est généré par IA (Claude Sonnet). Vous DEVEZ relire chaque section avant de l\'utiliser : l\'IA peut se tromper sur un détail juridique, un montant, une référence d\'article. Considérez le kit comme un "premier jet expert" — votre relecture humaine reste le filet de sécurité final.' },
+      { label: 'Bonnes pratiques', text: 'Workflow recommandé : 1) Ouvrir le dossier → onglet Analyse pour le contexte. 2) Onglet Documents pour vérifier les pièces. 3) Onglet 🔒 Kit Pro → générer / lire les 7 sections. 4) Consigner vos notes admin. 5) Retour onglet "Revue expert" pour rédiger la version client définitive en s\'appuyant sur le kit.' },
+    ],
+    keywords: ['kit', 'kit pro', 'kit professionnel', 'kit-pro', 'confidentiel', 'admin', 'synthèse', 'stratégique', 'diagnostic juridique', 'plan d\'action', 'lettres-types', 'lettre type', 'contestation', 'arguments', 'pièces', 'calendrier', 'suivi', 'notes', 'admin_notes', 'régénérer', 'régénération', 'pdf', 'export', 'cadenas', 'lock', 'consulter l\'analyse', 'relire']
   },
   {
     id: 'analytics',
