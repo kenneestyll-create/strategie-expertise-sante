@@ -205,6 +205,13 @@ async def startup_db_client():
     except Exception as e:
         logger.warning(f"SEO auto-seed skipped (non-blocking): {e}")
 
+    # Auto-seed Kit Professionnel prompts (idempotent — only inserts if collection empty)
+    try:
+        from services.kit_professionnel import ensure_kit_prompts_seeded
+        await ensure_kit_prompts_seeded()
+    except Exception as e:
+        logger.warning(f"Kit Pro prompts seed skipped (non-blocking): {e}")
+
     # Auto-snapshot AI agents state (idempotent — only creates if config hash differs)
     try:
         from routes.agents_versions import maybe_auto_snapshot

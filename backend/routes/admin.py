@@ -2873,3 +2873,97 @@ async def export_kit_pdf(dossier_id: str, admin: dict = Depends(get_current_admi
     except Exception as e:
         logger.exception(f"Kit PDF export error for {dossier_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Erreur export PDF : {str(e)[:200]}")
+
+
+
+# ==================== KIT PROFESSIONNEL — VERSIONING PROMPTS ====================
+# Lecture/modification des prompts versionnes depuis l'admin
+# (1 system prompt + 7 sous-prompts par section)
+
+@router.get("/admin/kit-pro/prompts")
+async def get_kit_pro_prompts(admin: dict = Depends(get_current_admin)):
+    """Recupere les prompts actifs du Kit Professionnel (system + 7 sections)."""
+    from services.kit_professionnel import (
+        get_active_kit_prompts, KIT_SECTIONS_ORDER, KIT_MODEL_NAME, KIT_PROMPT_VERSION_DEFAULT
+    )
+    active = await get_active_kit_prompts()
+    return {
+        "version": active["version"],
+        "model": KIT_MODEL_NAME,
+        "default_version": KIT_PROMPT_VERSION_DEFAULT,
+        "system_prompt": active["system"],
+        "section_prompts": active["sections"],
+        "sections_order": KIT_SECTIONS_ORDER,
+    }
+
+
+@router.post("/admin/kit-pro/prompts")
+async def update_kit_pro_prompts(request: Request, admin: dict = Depends(get_current_admin)):
+    """Met a jour les prompts du Kit Professionnel (system + sections) avec versioning."""
+    body = await request.json()
+    system_prompt = body.get("system_prompt", "")
+    section_prompts = body.get("section_prompts", {})
+    new_version = (body.get("version") or "").strip()
+
+    if not isinstance(system_prompt, str) or not system_prompt.strip():
+        raise HTTPException(status_code=400, detail="system_prompt requis (non vide)")
+    if not isinstance(section_prompts, dict) or not section_prompts:
+        raise HTTPException(status_code=400, detail="section_prompts requis (dict non vide)")
+
+    from services.kit_professionnel import KIT_SECTIONS_ORDER
+    missing = [s for s in KIT_SECTIONS_ORDER if not (section_prompts.get(s) or "").strip()]
+    if missing:
+        raise HTTPException(status_code=400, detail=f"Sections manquantes ou vides : {missing}")
+
+    if not new_version:
+        existing = await db.kit_pro_prompts.find_one({"_id": "current"}) or {}
+        prev = existing.get("version", "v1.0")
+        try:
+            major, minor = prev.replace("v", "").split(".")
+            new_version = f"v{major}.{int(minor) + 1}"
+        except Exception:
+            new_version = f"v{int(datetime.now(timezone.utc).timestamp())}"
+
+    update_doc = {
+        "version": new_version,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "updated_by": admin.get("email") if isinstance(admin, dict) else "admin",
+        "system_prompt": system_prompt,
+        "section_prompts": section_prompts,
+    }
+    await db.kit_pro_prompts.update_one(
+        {"_id": "current"},
+        {"$set": update_doc},
+        upsert=True
+    )
+    try:
+        await db.kit_pro_prompts_history.insert_one({
+            **update_doc,
+            "archived_at": datetime.now(timezone.utc).isoformat(),
+        })
+    except Exception:
+        pass
+    return {"success": True, "version": new_version}
+
+
+@router.post("/admin/kit-pro/prompts/reset")
+async def reset_kit_pro_prompts(admin: dict = Depends(get_current_admin)):
+    """Reinitialise les prompts aux valeurs par defaut codees."""
+    from services.kit_professionnel import (
+        KIT_SYSTEM_PROMPT_DEFAULT, KIT_SECTION_PROMPTS_DEFAULT,
+        KIT_PROMPT_VERSION_DEFAULT, KIT_MODEL_NAME,
+    )
+    update_doc = {
+        "version": KIT_PROMPT_VERSION_DEFAULT,
+        "model": KIT_MODEL_NAME,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "updated_by": admin.get("email") if isinstance(admin, dict) else "admin",
+        "system_prompt": KIT_SYSTEM_PROMPT_DEFAULT,
+        "section_prompts": KIT_SECTION_PROMPTS_DEFAULT,
+    }
+    await db.kit_pro_prompts.update_one(
+        {"_id": "current"},
+        {"$set": update_doc},
+        upsert=True
+    )
+    return {"success": True, "version": KIT_PROMPT_VERSION_DEFAULT}

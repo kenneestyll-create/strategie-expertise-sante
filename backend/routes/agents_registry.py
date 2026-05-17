@@ -177,7 +177,70 @@ async def get_agents_registry(admin: dict = Depends(get_current_admin)):
             ],
         ),
     ]
-    return {"ceo": {"name": "PDG Fondateur", "role": "Vision, stratégie, validation finale"}, "agents": agents}
+
+    # ============================================================
+    # CATEGORIE : Outils internes admin (confidentiel admin-only)
+    # ============================================================
+    internal_agents = []
+    try:
+        # Lecture en temps réel du prompt versionné Kit Pro (MongoDB > fallback code)
+        from services.kit_professionnel import (
+            get_active_kit_prompts, KIT_MODEL_NAME, KIT_SECTIONS_ORDER
+        )
+        active = await get_active_kit_prompts()
+        kit_system_prompt = active["system"]
+        kit_version = active["version"]
+        # Concaténer les sous-prompts dans une vue lisible
+        sections_view = "\n\n".join(
+            f"### Section : {sid}\n{active['sections'].get(sid, '')}"
+            for sid in KIT_SECTIONS_ORDER
+        )
+        full_prompt = (
+            f"=== SYSTEM PROMPT (rôle de l'agent) ===\n{kit_system_prompt}\n\n"
+            f"=== SOUS-PROMPTS PAR SECTION (7 sections) ===\n{sections_view}"
+        )
+        internal_agents.append({
+            "id": "kit_professionnel",
+            "name": "Kit Professionnel IA",
+            "role": "Assistant Métier Admin (CONFIDENTIEL)",
+            "mission": (
+                "Génère automatiquement après chaque dossier client un kit professionnel CONFIDENTIEL "
+                "destiné strictement à l'usage interne. Transforme l'analyse Dossier Express en plan d'action "
+                "opérationnel structuré : 7 sections (synthèse, diagnostic juridique, plan d'action, lettres-types, "
+                "arguments, pièces à réclamer, calendrier). Versioning du prompt depuis MongoDB. JAMAIS transmis au client."
+            ),
+            "model": f"{KIT_MODEL_NAME} (Claude Sonnet 4.5)",
+            "file_path": "/app/backend/services/kit_professionnel.py",
+            "prompt_var": f"kit_pro_prompts (MongoDB) · version: {kit_version}",
+            "prompt": full_prompt,
+            "guardrails": [
+                "⚠️ STRICTEMENT CONFIDENTIEL — Document jamais transmis au client",
+                "Validation humaine obligatoire avant tout envoi à un tiers",
+                "Déclenchement automatique en background après chaque dossier finalisé (non bloquant)",
+                "Génération séquentielle (Sémaphore implicite) — préservation RAM 512MB",
+                "Double fallback LLM : PATH B (proxy Emergent) → PATH A (Anthropic SDK direct)",
+                "Versioning prompt depuis MongoDB avec fallback code si indisponible",
+                "Authentification admin obligatoire sur les 4 endpoints",
+                "Pas de double extraction OCR : réutilise documents_text + analysis du dossier",
+            ],
+            "kpis": {
+                "categorie": "🔒 Outils internes admin",
+                "sections_generees": 7,
+                "version_prompt": kit_version,
+                "endpoints_admin": 4,
+            },
+            "category": "internal",
+        })
+    except Exception as e:
+        # Garde-fou : si le registry échoue à charger Kit Pro, on n'affiche rien plutôt que de crasher
+        import logging
+        logging.getLogger(__name__).warning(f"Kit Pro agent card load failed: {e}")
+
+    return {
+        "ceo": {"name": "PDG Fondateur", "role": "Vision, stratégie, validation finale"},
+        "agents": agents,
+        "internal_agents": internal_agents,
+    }
 
 
 @router.get("/admin/agents/registry/pdf")

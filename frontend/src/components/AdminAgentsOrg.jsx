@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Crown, Phone, Sparkles, FileSearch, ClipboardList, PenTool, ShieldAlert, Layers, Copy, X, Download, Loader2, History } from 'lucide-react';
+import { Crown, Phone, Sparkles, FileSearch, ClipboardList, PenTool, ShieldAlert, Layers, Copy, X, Download, Loader2, History, Lock } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { AdminAgentsVersions } from './AdminAgentsVersions';
 
@@ -165,6 +165,7 @@ export const AdminAgentsOrg = () => {
   const strategiia = data.agents.find(a => a.id === 'strategiia');
   const dossierExpress = data.agents.find(a => a.id === 'dossier_express');
   const editorialAgents = data.agents.filter(a => a.id.startsWith('editorial_'));
+  const internalAgents = data.internal_agents || [];
 
   return (
     <div className="space-y-6" data-testid="admin-agents-org">
@@ -229,6 +230,22 @@ export const AdminAgentsOrg = () => {
               <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-3 font-semibold">Équipe éditoriale (Studio SEO)</h4>
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {editorialAgents.map(a => <AgentCard key={a.id} agent={a} onClick={() => setSelected(a)} />)}
+              </div>
+            </div>
+          )}
+
+          {/* Outils internes admin (confidentiel) */}
+          {internalAgents.length > 0 && (
+            <div data-testid="internal-agents-section">
+              <div className="flex items-center gap-2 mb-3">
+                <Lock className="w-3.5 h-3.5 text-amber-700" />
+                <h4 className="text-xs uppercase tracking-wider text-amber-800 font-semibold">Outils internes admin</h4>
+                <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                  Confidentiel
+                </span>
+              </div>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {internalAgents.map(a => <AgentCard key={a.id} agent={a} onClick={() => setSelected(a)} />)}
               </div>
             </div>
           )}
