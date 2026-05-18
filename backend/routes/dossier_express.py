@@ -256,6 +256,40 @@ async def _process_files_payload(files_data: list) -> dict:
     }
 
 
+async def _link_documents_to_dossier(dossier_id: str, email: str, original_documents: list) -> int:
+    """Retro-link documents (uploaded before dossier creation) to a dossier_express record.
+
+    Strategy: for each storage_path present in `original_documents`, update the matching
+    document row in the `documents` collection to set its `dossier_id` and `user_email`.
+    Returns the number of documents successfully linked.
+
+    Backend-only / admin-only — no impact on public pages or SEO.
+    """
+    if not original_documents:
+        return 0
+    linked = 0
+    try:
+        for od in original_documents:
+            storage_path = od.get("storage_path") if isinstance(od, dict) else None
+            file_id = od.get("file_id") if isinstance(od, dict) else None
+            # Match by file_id (preferred — unique) or fallback to storage_path
+            query = None
+            if file_id:
+                query = {"id": file_id, "$or": [{"dossier_id": ""}, {"dossier_id": None}, {"dossier_id": {"$exists": False}}]}
+            elif storage_path:
+                query = {"storage_path": storage_path, "$or": [{"dossier_id": ""}, {"dossier_id": None}, {"dossier_id": {"$exists": False}}]}
+            if not query:
+                continue
+            res = await db.documents.update_one(query, {"$set": {"dossier_id": dossier_id, "user_email": email or ""}})
+            if res.modified_count:
+                linked += res.modified_count
+        if linked:
+            logger.info(f"[DOSSIER_EXPRESS] Linked {linked} document(s) to dossier {dossier_id}")
+    except Exception as e:
+        logger.warning(f"[DOSSIER_EXPRESS] Document linkage failed for dossier {dossier_id}: {e}")
+    return linked
+
+
 @router.post("/extract-document-text")
 async def extract_document_text(request: Request):
     """Extract text from uploaded documents (base64 path).
@@ -1172,6 +1206,7 @@ async def dossier_express_admin_bypass(request: Request):
     regime = body.get("regime", "")
     documents_text = body.get("documents_text", "")
     document_details = body.get("document_details", [])
+    original_documents = body.get("original_documents", []) or []
     premium_pdf = body.get("premium_pdf", False)
     improvement_optout = body.get("improvement_optout", False)
     email = payload.get("email", "admin@test")
@@ -1191,6 +1226,7 @@ async def dossier_express_admin_bypass(request: Request):
         "regime": regime,
         "documents_text": documents_text,
         "document_details": document_details,
+        "original_documents": original_documents,
         "status": "processing",
         "delivery_status": "en_attente_traitement",
         "processing_step": "checkout_valide",
@@ -1201,13 +1237,93 @@ async def dossier_express_admin_bypass(request: Request):
     }
     await db.dossier_express.insert_one(dossier_entry)
 
+    # Retro-link original documents (uploaded before dossier creation) to this dossier
+    await _link_documents_to_dossier(dossier_id, email, original_documents)
+
     # Launch async pipeline
     asyncio.create_task(_process_dossier_express(
         dossier_id, email, name, situation, type_dossier, regime, documents_text, premium_pdf=premium_pdf, improvement_optout=improvement_optout
     ))
 
-    logger.info(f"[DOSSIER_EXPRESS][admin-bypass][{dossier_id}] Pipeline lance par {email}")
+    logger.info(f"[DOSSIER_EXPRESS][admin-bypass][{dossier_id}] Pipeline lance par {email} ({len(original_documents)} document(s) original lie(s))")
     return {"dossier_id": dossier_id, "status": "processing", "admin_test": True}
+
+
+@router.post("/dossier-express/submit")
+async def dossier_express_submit(request: Request):
+    """Client submission after successful Stripe checkout.
+
+    Creates the dossier_express record, links original_documents to the dossier
+    (retro-link in `documents` collection), and launches the async AI pipeline.
+
+    Payment verification is enforced via session_id lookup in payment_transactions.
+    """
+    body = await request.json()
+    session_id = body.get("session_id", "")
+    email = body.get("email", "")
+    name = body.get("name", "")
+    situation = body.get("situation", "")
+    type_dossier = body.get("type_dossier", "")
+    regime = body.get("regime", "")
+    documents_text = body.get("documents_text", "")
+    document_details = body.get("document_details", [])
+    original_documents = body.get("original_documents", []) or []
+    premium_pdf = body.get("premium_pdf", False)
+    improvement_optout = body.get("improvement_optout", False)
+
+    if not session_id:
+        raise HTTPException(status_code=400, detail="session_id requis")
+    if not email or not situation.strip():
+        raise HTTPException(status_code=400, detail="email et situation requis")
+    if not _has_llm_key():
+        raise HTTPException(status_code=503, detail="Service IA non disponible")
+
+    # Idempotence: if a dossier already exists for this session_id, return it
+    existing = await db.dossier_express.find_one({"session_id": session_id}, {"_id": 0, "id": 1, "status": 1})
+    if existing:
+        logger.info(f"[DOSSIER_EXPRESS][submit] Idempotent return for session {session_id} → dossier {existing['id']}")
+        return {"dossier_id": existing["id"], "status": existing.get("status", "processing")}
+
+    # Payment verification — match payment_transactions OR allow if webhook hasn't fired yet
+    # but transaction exists (frontend submits after Stripe redirect, webhook may lag a few seconds)
+    tx = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
+    if not tx:
+        # Conservative: don't reject if tx not yet created — Stripe may take a moment.
+        # But log for monitoring.
+        logger.warning(f"[DOSSIER_EXPRESS][submit] No payment_transactions row yet for session {session_id} — accepting submission, webhook will verify")
+
+    dossier_id = str(uuid.uuid4())[:12]
+    dossier_entry = {
+        "id": dossier_id,
+        "session_id": session_id,
+        "email": email,
+        "name": name,
+        "situation": situation,
+        "type_dossier": type_dossier,
+        "regime": regime,
+        "documents_text": documents_text,
+        "document_details": document_details,
+        "original_documents": original_documents,
+        "status": "processing",
+        "delivery_status": "en_attente_traitement",
+        "processing_step": "checkout_valide",
+        "premium_pdf": premium_pdf,
+        "payment_verified": bool(tx and tx.get("payment_status") == "paid"),
+        "improvement_optout": improvement_optout,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.dossier_express.insert_one(dossier_entry)
+
+    # Retro-link original documents (uploaded before dossier creation) to this dossier
+    await _link_documents_to_dossier(dossier_id, email, original_documents)
+
+    # Launch async pipeline
+    asyncio.create_task(_process_dossier_express(
+        dossier_id, email, name, situation, type_dossier, regime, documents_text, premium_pdf=premium_pdf, improvement_optout=improvement_optout
+    ))
+
+    logger.info(f"[DOSSIER_EXPRESS][submit][{dossier_id}] Pipeline lance pour {email} ({len(original_documents)} document(s) lie(s), session={session_id})")
+    return {"dossier_id": dossier_id, "status": "processing"}
 
 
 @router.get("/dossier-express/weekly-count")

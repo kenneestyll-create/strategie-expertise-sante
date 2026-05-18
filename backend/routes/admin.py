@@ -819,8 +819,8 @@ async def preview_strategiia_pdf(analysis_id: str, admin: dict = Depends(get_cur
 @router.get("/admin/dossier-express/{dossier_id}/original-documents")
 async def get_dossier_original_documents(dossier_id: str, admin: dict = Depends(get_current_admin)):
     """List original documents stored for a dossier (for admin download)."""
-    dossier = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0, "original_documents": 1, "document_details": 1})
-    if not dossier:
+    dossier = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0, "id": 1, "original_documents": 1, "document_details": 1})
+    if dossier is None:
         raise HTTPException(status_code=404, detail="Dossier non trouvé")
     return {
         "original_documents": dossier.get("original_documents", []),
@@ -831,8 +831,8 @@ async def get_dossier_original_documents(dossier_id: str, admin: dict = Depends(
 @router.get("/admin/dossier-express/{dossier_id}/documents/{file_id}/download")
 async def download_dossier_document(dossier_id: str, file_id: str, admin: dict = Depends(get_current_admin)):
     """Download an original client document from Object Storage."""
-    dossier = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0, "original_documents": 1})
-    if not dossier:
+    dossier = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0, "id": 1, "original_documents": 1})
+    if dossier is None:
         raise HTTPException(status_code=404, detail="Dossier non trouvé")
     original_docs = dossier.get("original_documents", [])
     target_doc = None
