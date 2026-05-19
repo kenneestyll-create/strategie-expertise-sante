@@ -3151,7 +3151,7 @@ export const AdminDashboard = () => {
 
                     {/* ——— TAB: Kit Professionnel (CONFIDENTIEL ADMIN) ——— */}
                     <TabsContent value="kit-pro" className="mt-0" data-testid="kit-pro-tab-content">
-                      <KitProfessionnelTab dossierId={dossierViewDialog.id} token={adminToken} />
+                      <KitProfessionnelTab dossierId={dossierViewDialog.id} token={token} />
                     </TabsContent>
                   </Tabs>
 
@@ -4059,7 +4059,6 @@ export const AdminDashboard = () => {
                         const link = document.createElement('a');
                         link.href = `${API}/admin/export/relances-csv`;
                         link.download = 'relances_kpis_export.csv';
-                        const token = adminToken;
                         fetch(`${API}/admin/export/relances-csv`, { headers: { Authorization: `Bearer ${token}` } })
                           .then(r => r.blob())
                           .then(blob => { link.href = URL.createObjectURL(blob); link.click(); toast.success('Export CSV téléchargé'); })
@@ -4106,8 +4105,8 @@ export const AdminDashboard = () => {
                     <Button size="sm" variant="outline" className="h-7 text-[10px] px-3"
                       onClick={async () => {
                         try {
-                          await axios.post(`${API}/admin/kpi-alerts/config`, kpiAlertConfig, { headers: { Authorization: `Bearer ${adminToken}` } });
-                          const r = await axios.get(`${API}/admin/kpi-alerts/check`, { headers: { Authorization: `Bearer ${adminToken}` } });
+                          await axios.post(`${API}/admin/kpi-alerts/config`, kpiAlertConfig, { headers: { Authorization: `Bearer ${token}` } });
+                          const r = await axios.get(`${API}/admin/kpi-alerts/check`, { headers: { Authorization: `Bearer ${token}` } });
                           setKpiAlerts(r.data);
                           toast.success('Seuils mis à jour');
                         } catch { toast.error('Erreur'); }
@@ -4332,7 +4331,7 @@ export const AdminDashboard = () => {
                         onClick={async () => {
                           const newVal = !cronStatus.enabled;
                           try {
-                            await axios.post(`${API}/admin/reminder-cron/toggle`, { enabled: newVal }, { headers: { Authorization: `Bearer ${adminToken}` } });
+                            await axios.post(`${API}/admin/reminder-cron/toggle`, { enabled: newVal }, { headers: { Authorization: `Bearer ${token}` } });
                             setCronStatus(s => ({ ...s, enabled: newVal }));
                             toast.success(newVal ? 'Cron automatique activé' : 'Cron automatique désactivé');
                           } catch { toast.error('Erreur'); }
@@ -4350,9 +4349,9 @@ export const AdminDashboard = () => {
                         setRunningReminders(true);
                         setLastReminderResults(null);
                         try {
-                          const r = await axios.post(`${API}/admin/relance-inactivité/run`, {}, { headers: { Authorization: `Bearer ${adminToken}` } });
+                          const r = await axios.post(`${API}/admin/relance-inactivité/run`, {}, { headers: { Authorization: `Bearer ${token}` } });
                           setLastReminderResults(r.data.results);
-                          const h = await axios.get(`${API}/admin/relance-inactivité/history`, { headers: { Authorization: `Bearer ${adminToken}` } });
+                          const h = await axios.get(`${API}/admin/relance-inactivité/history`, { headers: { Authorization: `Bearer ${token}` } });
                           setInactivityReminders(h.data);
                         } catch (e) { /* silent */ }
                         setRunningReminders(false);
@@ -4469,7 +4468,7 @@ export const AdminDashboard = () => {
                               <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px]"
                                 onClick={async () => {
                                   try {
-                                    await axios.post(`${API}/admin/relance-inactivité/toggle-pause`, { client_id: r.client_id, paused: true }, { headers: { Authorization: `Bearer ${adminToken}` } });
+                                    await axios.post(`${API}/admin/relance-inactivité/toggle-pause`, { client_id: r.client_id, paused: true }, { headers: { Authorization: `Bearer ${token}` } });
                                     toast.success('Relances pausées pour ce client');
                                   } catch { toast.error('Erreur'); }
                                 }}
@@ -4512,8 +4511,8 @@ export const AdminDashboard = () => {
                               { name: 'urgent', label: 'Ton urgent' },
                             ],
                             min_sends: 50,
-                          }, { headers: { Authorization: `Bearer ${adminToken}` } });
-                          const r = await axios.get(`${API}/admin/ab-tests`, { headers: { Authorization: `Bearer ${adminToken}` } });
+                          }, { headers: { Authorization: `Bearer ${token}` } });
+                          const r = await axios.get(`${API}/admin/ab-tests`, { headers: { Authorization: `Bearer ${token}` } });
                           setAbTests(r.data.tests || []);
                           toast.success('Test A/B créé et activé');
                         } catch { toast.error('Erreur'); }
@@ -4548,8 +4547,8 @@ export const AdminDashboard = () => {
                             {test.status === 'active' && (
                               <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px]"
                                 onClick={async () => {
-                                  await axios.post(`${API}/admin/ab-tests/${test.id}/toggle`, { status: 'paused' }, { headers: { Authorization: `Bearer ${adminToken}` } });
-                                  const r = await axios.get(`${API}/admin/ab-tests`, { headers: { Authorization: `Bearer ${adminToken}` } });
+                                  await axios.post(`${API}/admin/ab-tests/${test.id}/toggle`, { status: 'paused' }, { headers: { Authorization: `Bearer ${token}` } });
+                                  const r = await axios.get(`${API}/admin/ab-tests`, { headers: { Authorization: `Bearer ${token}` } });
                                   setAbTests(r.data.tests || []);
                                   toast.success('Test pausé');
                                 }}
@@ -4558,8 +4557,8 @@ export const AdminDashboard = () => {
                             {test.status === 'paused' && (
                               <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px]"
                                 onClick={async () => {
-                                  await axios.post(`${API}/admin/ab-tests/${test.id}/toggle`, { status: 'active' }, { headers: { Authorization: `Bearer ${adminToken}` } });
-                                  const r = await axios.get(`${API}/admin/ab-tests`, { headers: { Authorization: `Bearer ${adminToken}` } });
+                                  await axios.post(`${API}/admin/ab-tests/${test.id}/toggle`, { status: 'active' }, { headers: { Authorization: `Bearer ${token}` } });
+                                  const r = await axios.get(`${API}/admin/ab-tests`, { headers: { Authorization: `Bearer ${token}` } });
                                   setAbTests(r.data.tests || []);
                                   toast.success('Test réactivé');
                                 }}
@@ -4615,8 +4614,8 @@ export const AdminDashboard = () => {
                                 </div>
                                 <Button size="sm" className="bg-green-600 hover:bg-green-700 text-xs gap-1" data-testid="promote-winner-btn"
                                   onClick={async () => {
-                                    await axios.post(`${API}/admin/ab-tests/${test.id}/promote`, { variant_name: res.winner.variant }, { headers: { Authorization: `Bearer ${adminToken}` } });
-                                    const r = await axios.get(`${API}/admin/ab-tests`, { headers: { Authorization: `Bearer ${adminToken}` } });
+                                    await axios.post(`${API}/admin/ab-tests/${test.id}/promote`, { variant_name: res.winner.variant }, { headers: { Authorization: `Bearer ${token}` } });
+                                    const r = await axios.get(`${API}/admin/ab-tests`, { headers: { Authorization: `Bearer ${token}` } });
                                     setAbTests(r.data.tests || []);
                                     toast.success(`Variante "${res.winner.variant}" promue comme template principal`);
                                   }}
