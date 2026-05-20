@@ -12,11 +12,26 @@ const ENVIRONMENT = process.env.REACT_APP_ENVIRONMENT || "production";
 const BUILD_DATE =
   process.env.REACT_APP_BUILD_DATE || new Date().toISOString().slice(0, 10);
 
+// ===== DIAGNOSTIC LOG (temporary, remove once Sentry confirmed working) =====
+// eslint-disable-next-line no-console
+console.log("[SENTRY INIT CHECK]", {
+  dsn_present: !!SENTRY_DSN,
+  dsn_prefix: SENTRY_DSN ? SENTRY_DSN.slice(0, 35) + "..." : null,
+  env: ENVIRONMENT,
+  will_init: !!(SENTRY_DSN && ENVIRONMENT === "production"),
+});
+
 if (SENTRY_DSN && ENVIRONMENT === "production") {
   Sentry.init({
     dsn: SENTRY_DSN,
     environment: ENVIRONMENT,
     release: `production-${BUILD_DATE}`,
+
+    // Explicit integrations : ensure global error + unhandled rejection capture.
+    integrations: [
+      Sentry.browserApiErrorsIntegration(),
+      Sentry.globalHandlersIntegration({ onerror: true, onunhandledrejection: true }),
+    ],
 
     // Strict scope : runtime errors only.
     tracesSampleRate: 0,
@@ -56,6 +71,26 @@ if (SENTRY_DSN && ENVIRONMENT === "production") {
       return event;
     },
   });
+
+  // ===== DIAGNOSTIC : log every event going to Sentry (remove once confirmed) =====
+  Sentry.addEventProcessor((event) => {
+    // eslint-disable-next-line no-console
+    console.log("[SENTRY EVENT CAPTURED]", {
+      type: event.type || "error",
+      message: event.message,
+      exception: event.exception?.values?.[0]?.value,
+      event_id: event.event_id,
+    });
+    return event;
+  });
+
+  // Expose for manual testing : window.__sentryTest() in console
+  if (typeof window !== "undefined") {
+    window.__sentryTest = () => {
+      Sentry.captureException(new Error("AGENT TEST SENTRY FINAL"));
+      return Sentry.flush(2000);
+    };
+  }
 }
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
