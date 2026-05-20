@@ -17,6 +17,7 @@ import { AdminForumSeed } from '@/components/AdminForumSeed';
 import { AdminStrateKpis } from '@/components/AdminStrateKpis';
 import { AdminPillarLeads } from '@/components/AdminPillarLeads';
 import { AdminEditorialStudio } from '@/components/AdminEditorialStudio';
+import { AdminVideoFactory } from '@/components/AdminVideoFactory';
 import { AdminAgentsOrg } from '@/components/AdminAgentsOrg';
 import { TestDataPurgeButton } from '@/components/TestDataPurgeButton';
 import { PurgeAllButton, DeleteRowButton } from '@/components/PurgeAllButton';
@@ -1172,6 +1173,7 @@ export const AdminDashboard = () => {
               <optgroup label="IA & Production">
                 <option value="strategiia">{`StrategiIA${premiumAnalyses.items.filter(i => i.type === 'strategiia' && i.status === 'en_attente').length > 0 ? ` (${premiumAnalyses.items.filter(i => i.type === 'strategiia' && i.status === 'en_attente').length})` : ''}`}</option>
                 <option value="dossier-express">{`Dossier Express${premiumAnalyses.items.filter(i => i.type === 'dossier_express' && i.status === 'en_attente').length > 0 ? ` (${premiumAnalyses.items.filter(i => i.type === 'dossier_express' && i.status === 'en_attente').length})` : ''}`}</option>
+                <option value="video-factory">Video Factory</option>
               </optgroup>
               <optgroup label="Suivi">
                 <option value="analytics">Analytique</option>
@@ -1277,6 +1279,10 @@ export const AdminDashboard = () => {
                 <Sparkles className="w-3.5 h-3.5 text-[#C9A84C]" />
                 Studio
                 <TestBadge count={testCleanupSummary.editorial} />
+              </TabsTrigger>
+              <TabsTrigger value="video-factory" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-video-factory">
+                <Video className="w-3.5 h-3.5 text-[#C9A84C]" />
+                Video Factory
               </TabsTrigger>
               <TabsTrigger value="agents-org" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-agents-org">
                 <Crown className="w-3.5 h-3.5 text-[#C9A84C]" />
@@ -4680,6 +4686,10 @@ export const AdminDashboard = () => {
               <TestDataPurgeButton section="editorial" onPurged={() => fetchData()} />
             </div>
             <AdminEditorialStudio />
+          </TabsContent>
+
+          <TabsContent value="video-factory" className="space-y-6" data-testid="video-factory-tab-content">
+            <AdminVideoFactory />
           </TabsContent>
 
           <TabsContent value="agents-org" className="space-y-6" data-testid="agents-org-tab-content">
