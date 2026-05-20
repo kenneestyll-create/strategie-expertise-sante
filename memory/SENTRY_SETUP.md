@@ -52,26 +52,21 @@ Sentry.init({
 
 ### Étape 3 — Coller le DSN dans Emergent prod
 
-#### Option A : via l'interface Emergent (recommandé)
+**Méthode officielle Emergent** : demander à l'agent Emergent (dans le chat du projet) d'ajouter les variables dans `/app/frontend/.env`. Emergent propage automatiquement ces variables dans les Secrets de production lors du build / Re-deploy.
 
-1. Aller sur le dashboard Emergent du projet
-2. Sélectionner l'environnement **Production**
-3. Variables d'environnement frontend → ajouter :
-   - `REACT_APP_SENTRY_DSN` = `<votre DSN copié>`
-   - `REACT_APP_ENVIRONMENT` = `production`
-   - `REACT_APP_BUILD_DATE` = (optionnel, sinon date auto à l'init)
-4. Sauvegarder
-5. **Redéployer** (Save to GitHub → Deploy)
+**Procédure** :
+1. Dans le chat de votre projet Emergent, demander à l'agent :
+   > "Ajoute dans `/app/frontend/.env` : `REACT_APP_SENTRY_DSN=<votre_DSN>` et `REACT_APP_ENVIRONMENT=production`"
+2. L'agent modifie le fichier `.env`
+3. Aller sur Secrets → vérifier que `REACT_APP_SENTRY_DSN` et `REACT_APP_ENVIRONMENT` apparaissent dans la liste (avec valeurs cachées)
+4. Cliquer **`Re-deploy changes`** (bouton noir en bas à droite de l'écran Manage Deployments)
+5. Attendre 10-15 minutes la fin du redéploiement
 
-#### Option B : via le fichier .env (dev local seulement, à éviter en prod)
+✅ **Confirmé fonctionnel le 2026-05-20** : modification `.env` preview → propagation automatique Secrets prod.
 
-Modifier `/app/frontend/.env` :
-```
-REACT_APP_SENTRY_DSN=https://xxxxxxxxxxxxxxxxxxxxxxxx@o123456.ingest.sentry.io/7654321
-REACT_APP_ENVIRONMENT=production
-```
+#### Alternative manuelle (si besoin)
 
-⚠️ Ne **JAMAIS commit le DSN dans Git** (même s'il est techniquement public). Utiliser Emergent env vars.
+Aller directement dans l'onglet Secrets et cliquer "Edit" → scroller pour trouver "+ Add new key" → ajouter manuellement. Mais la méthode ci-dessus (via agent) est plus rapide.
 
 ---
 
