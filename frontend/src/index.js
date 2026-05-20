@@ -27,6 +27,9 @@ if (SENTRY_DSN && ENVIRONMENT === "production") {
     environment: ENVIRONMENT,
     release: `production-${BUILD_DATE}`,
 
+    // DIAGNOSTIC : enables verbose Sentry SDK logs in console (remove once confirmed)
+    debug: true,
+
     // Explicit integrations : ensure global error + unhandled rejection capture.
     integrations: [
       Sentry.browserApiErrorsIntegration(),
