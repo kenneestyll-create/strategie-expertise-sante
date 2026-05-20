@@ -66,11 +66,33 @@ if (SENTRY_DSN && ENVIRONMENT === "production") {
     ],
 
     // Belt-and-suspenders : even if all else fails, never send from preview/dev.
-    beforeSend(event) {
+    beforeSend(event, hint) {
       const host = window.location.hostname || "";
-      if (host.includes("preview.emergentagent.com")) return null;
-      if (host.includes("preview.emergent.sh")) return null;
-      if (host === "localhost" || host === "127.0.0.1") return null;
+      // eslint-disable-next-line no-console
+      console.log("[SENTRY beforeSend]", {
+        host,
+        event_type: event.type || "error",
+        event_message: event.message,
+        exception: event.exception?.values?.[0]?.value,
+        hint_originalException: hint?.originalException?.message,
+      });
+      if (host.includes("preview.emergentagent.com")) {
+        // eslint-disable-next-line no-console
+        console.warn("[SENTRY DROP] beforeSend → preview.emergentagent.com");
+        return null;
+      }
+      if (host.includes("preview.emergent.sh")) {
+        // eslint-disable-next-line no-console
+        console.warn("[SENTRY DROP] beforeSend → preview.emergent.sh");
+        return null;
+      }
+      if (host === "localhost" || host === "127.0.0.1") {
+        // eslint-disable-next-line no-console
+        console.warn("[SENTRY DROP] beforeSend → localhost");
+        return null;
+      }
+      // eslint-disable-next-line no-console
+      console.log("[SENTRY PASS] beforeSend → event will be sent");
       return event;
     },
   });
@@ -90,8 +112,45 @@ if (SENTRY_DSN && ENVIRONMENT === "production") {
   // Expose for manual testing : window.__sentryTest() in console
   if (typeof window !== "undefined") {
     window.__sentryTest = () => {
-      Sentry.captureException(new Error("AGENT TEST SENTRY FINAL"));
-      return Sentry.flush(2000);
+      const err = new Error("RAW_EVENT_" + Date.now());
+      // eslint-disable-next-line no-console
+      console.log("[SENTRY TEST] calling captureException with:", err.message);
+      const id = Sentry.captureException(err);
+      // eslint-disable-next-line no-console
+      console.log("[SENTRY TEST] captureException returned event_id:", id);
+      return Sentry.flush(3000).then((flushed) => {
+        // eslint-disable-next-line no-console
+        console.log("[SENTRY TEST] flush result:", flushed);
+        return { event_id: id, flushed };
+      });
+    };
+
+    // Dump full Sentry client options + integrations (P0 audit helper)
+    window.__sentryDump = () => {
+      const client = Sentry.getClient();
+      if (!client) {
+        // eslint-disable-next-line no-console
+        console.error("[SENTRY DUMP] No client — Sentry NOT initialised");
+        return null;
+      }
+      const opts = client.getOptions();
+      const dump = {
+        dsn: opts.dsn,
+        environment: opts.environment,
+        release: opts.release,
+        debug: opts.debug,
+        enabled: opts.enabled,
+        sampleRate: opts.sampleRate,
+        tracesSampleRate: opts.tracesSampleRate,
+        ignoreErrors: opts.ignoreErrors,
+        denyUrls: opts.denyUrls,
+        allowUrls: opts.allowUrls,
+        beforeSend_defined: typeof opts.beforeSend === "function",
+        integrations: (opts.integrations || []).map((i) => i.name),
+      };
+      // eslint-disable-next-line no-console
+      console.log("[SENTRY DUMP] client options:", dump);
+      return dump;
     };
   }
 }
