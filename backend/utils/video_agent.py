@@ -522,3 +522,343 @@ def estimate_cost_eur(batch_size: int, model: str = DEFAULT_MODEL) -> float:
         return round(0.020 * batch_size, 4)
     # Fallback conservateur
     return round(0.010 * batch_size, 4)
+
+
+# ============================================================================
+# V3 — SEO LANDING SYNCHRONISATION
+# ============================================================================
+# Génère une page SEO (markdown + métadonnées) STRICTEMENT dérivée du pack
+# vidéo : aucun nouveau message, aucune divergence. Le CTA et le service
+# cible sont copiés depuis la vidéo (override backend = garantie 100%).
+#
+# UTM différencié : utm_source=seo&utm_medium=organic (vs vidéo TikTok/short)
+# pour permettre l'attribution Analytics distincte SEO vs vidéo.
+
+SEO_LANDING_SYSTEM_PROMPT = """# IDENTITÉ
+Tu es S.E.S SEO Landing Engine.
+Tu produis des pages web (markdown structuré) destinées à être publiées sur
+strategie-expertise-sante.fr/guide/{slug} en tant que page d'atterrissage
+SEO d'une vidéo courte (TikTok/Shorts/Reels).
+
+# PUBLIC
+Personnes 35-65 ans, recherche organique Google :
+- mots-clés douleur AT/MP/MDPH/IPP/CPAM/expertise médicale
+- méfiance institutionnelle
+- besoin de réponses claires et factuelles
+
+# OBJECTIF
+Transformer un pack vidéo existant en page SEO complète, SANS DIVERGENCE
+de message. Tu RÉUTILISES :
+- le hook (transformé en intro accrocheuse)
+- le script (développé en blocs H2/H3 avec phrases pleines)
+- le CTA (verbatim, jamais modifié)
+- les hashtags (transformés en mots-clés SEO contextuels)
+
+INTERDICTION ABSOLUE :
+- inventer des chiffres absents de la vidéo
+- inventer des jurisprudences ou références légales non présentes
+- changer le service cible (0€/29€/97€) ou le CTA
+- ajouter de nouvelles promesses
+
+# RÈGLES DE QUALITÉ SEO
+- meta_title : 50-60 caractères, mot-clé principal en début
+- meta_description : 140-160 caractères, action + bénéfice + nuance
+- h1 : ≤70 caractères, percutant, contient le mot-clé principal
+- intro : 100-180 mots, accroche reprenant le hook vidéo + promesse
+- 3 à 5 blocs H2 (chacun 80-150 mots, sans bullet excessif)
+- 3 à 5 questions FAQ (questions réelles que se pose la cible)
+- slug : kebab-case, 3-7 mots, sans accent, sans stopword inutile
+- internal_links_suggestions : 2 à 4 chemins internes pertinents (ex /expertise-medicale, /calculatrice-ipp, /guide/comment-contester-decision-cpam)
+
+# COMPLIANCE (STRICT, IDENTIQUE VIDÉO)
+INTERDIT : "garanti", "100%", "assuré", "vous allez gagner X €",
+"la CPAM ment", "remboursement automatique", diagnostic médical personnalisé.
+AUTORISÉ : "vous pourriez", "dans certains cas", "selon votre situation",
+"en moyenne", chiffres contextualisés.
+
+# UTM (OBLIGATOIRE, DIFFÉRENT DE LA VIDÉO)
+Format strict : ?utm_source=seo&utm_medium=organic&utm_campaign={format_used}
+
+# SCHEMA JSON DE SORTIE (RESPECT ABSOLU)
+{
+  "seo_pdf": {
+    "slug": "kebab-case-3-7-mots",
+    "h1": "≤70 caractères",
+    "meta_title": "50-60 caractères",
+    "meta_description": "140-160 caractères",
+    "intro": "100-180 mots de paragraphe d'ouverture",
+    "blocks": [
+      {"h2": "...", "body": "80-150 mots"}
+    ],
+    "faq": [
+      {"q": "Question utilisateur réelle ?", "a": "Réponse 40-80 mots."}
+    ],
+    "internal_links_suggestions": ["/expertise-medicale", "/calculatrice-ipp"],
+    "keywords": ["mot-clé 1", "mot-clé 2", "mot-clé 3"],
+    "video_embed_placeholder": "<!-- COLLER L'URL YOUTUBE OU TIKTOK ICI APRES PUBLICATION -->",
+    "compliance_passed": true
+  }
+}
+
+# INSTRUCTION FINALE
+Aucun texte hors JSON. Pas de markdown autour du JSON. Pas de commentaires.
+Si compromis nécessaire, priorité : fidélité au pack vidéo > SEO > style.
+"""
+
+
+def build_seo_landing_user_prompt(video: Dict[str, Any], plateforme: str) -> str:
+    """Assemble le prompt utilisateur : le pack vidéo finalisé sert d'input."""
+    seo = video.get("seo") or {}
+    cta = video.get("cta") or {}
+    hooks = " | ".join(video.get("hook_variants") or [])
+    parts = [
+        "Transforme ce pack vidéo en page SEO d'atterrissage cohérente.",
+        "",
+        f"FORMAT_VIDEO : {video.get('format_used')} — {video.get('format_label')}",
+        f"PLATEFORME_VIDEO_SOURCE : {plateforme}",
+        f"HOOKS (à transformer en intro) : {hooks}",
+        "",
+        "SCRIPT VIDÉO (référence absolue, à développer en blocs H2) :",
+        f"\"\"\"{video.get('script', '')}\"\"\"",
+        "",
+        f"SEO_TITRE_VIDEO : {seo.get('title', '')}",
+        f"SEO_DESCRIPTION_VIDEO : {seo.get('description', '')}",
+        f"HASHTAGS : {', '.join(seo.get('hashtags') or [])}",
+        "",
+        "CTA À REPRENDRE VERBATIM (interdit de le modifier) :",
+        f"  text = \"{cta.get('text', '')}\"",
+        f"  target_service = \"{cta.get('target_service', '')}\"",
+        f"  base_url = \"{(cta.get('url_with_utm') or '').split('?')[0]}\"",
+        "",
+        "Réponds uniquement avec le JSON strict, aucun texte autour.",
+    ]
+    return "\n".join(parts)
+
+
+async def call_seo_landing_llm(
+    user_prompt: str,
+    model: str = DEFAULT_MODEL,
+    max_tokens: int = 6000,
+    temperature: float = 0.5,
+) -> str:
+    """Appel LLM dédié SEO landing — séparé du LLM vidéo pour conserver la
+    qualité de chaque livrable. Mêmes patterns d'auth que call_video_factory_llm.
+    """
+    if ANTHROPIC_API_KEY:
+        import anthropic
+        client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY, timeout=90.0)
+        resp = await client.messages.create(
+            model=model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            system=[
+                {
+                    "type": "text",
+                    "text": SEO_LANDING_SYSTEM_PROMPT,
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
+            messages=[{"role": "user", "content": user_prompt}],
+        )
+        return resp.content[0].text.strip()
+
+    if EMERGENT_LLM_KEY:
+        import httpx
+        from emergentintegrations.llm.utils import get_integration_proxy_url
+        proxy_url = get_integration_proxy_url()
+        url = f"{proxy_url}/llm/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {EMERGENT_LLM_KEY}",
+            "Content-Type": "application/json",
+        }
+        payload = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": SEO_LANDING_SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ],
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+        }
+        async with httpx.AsyncClient(timeout=httpx.Timeout(90.0, connect=15.0)) as h:
+            r = await h.post(url, headers=headers, json=payload)
+            if r.status_code != 200:
+                raise RuntimeError(f"LLM proxy {r.status_code}: {r.text[:200]}")
+            return r.json()["choices"][0]["message"]["content"].strip()
+
+    raise RuntimeError("Aucune clé LLM disponible.")
+
+
+def _slugify(text: str) -> str:
+    """Slug kebab-case ASCII safe, fallback si LLM retourne vide ou casseur."""
+    import unicodedata
+    norm = unicodedata.normalize("NFKD", (text or "").lower())
+    ascii_text = norm.encode("ascii", "ignore").decode("ascii")
+    cleaned = re.sub(r"[^a-z0-9]+", "-", ascii_text).strip("-")
+    return cleaned[:80] or "page-seo"
+
+
+def validate_and_normalize_seo_landing(
+    parsed: Dict[str, Any],
+    video: Dict[str, Any],
+    format_id: str,
+) -> Tuple[Dict[str, Any], List[str]]:
+    """Audit objectif Python + override CTA pour garantie 100% non-divergence.
+    Retourne (seo_pdf normalisé, warnings).
+    """
+    warnings: List[str] = []
+    if not isinstance(parsed, dict) or "seo_pdf" not in parsed:
+        raise ValueError("JSON SEO invalide : clé 'seo_pdf' manquante.")
+
+    seo = parsed["seo_pdf"]
+    if not isinstance(seo, dict):
+        raise ValueError("seo_pdf doit être un objet.")
+
+    # Slug
+    slug = (seo.get("slug") or "").strip()
+    if not re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)*", slug or "") or len(slug) > 80:
+        fallback = _slugify(seo.get("h1") or video.get("seo", {}).get("title") or format_id)
+        warnings.append(f"slug invalide '{slug}', normalisé en '{fallback}'.")
+        slug = fallback
+    seo["slug"] = slug
+
+    # h1
+    seo["h1"] = (seo.get("h1") or "").strip()
+    if len(seo["h1"]) > 70:
+        warnings.append("h1 >70 caractères.")
+    elif not seo["h1"]:
+        warnings.append("h1 vide.")
+
+    # Meta
+    seo["meta_title"] = (seo.get("meta_title") or "").strip()
+    seo["meta_description"] = (seo.get("meta_description") or "").strip()
+
+    # Intro
+    seo["intro"] = (seo.get("intro") or "").strip()
+    intro_wc = len(re.findall(r"\b\w+\b", seo["intro"]))
+    if intro_wc < 60:
+        warnings.append(f"intro courte ({intro_wc} mots).")
+
+    # Blocks
+    blocks = seo.get("blocks") or []
+    if not isinstance(blocks, list):
+        blocks = []
+    cleaned_blocks = []
+    for b in blocks[:5]:
+        if isinstance(b, dict):
+            cleaned_blocks.append({
+                "h2": (b.get("h2") or "").strip(),
+                "body": (b.get("body") or "").strip(),
+            })
+    if len(cleaned_blocks) < 3:
+        warnings.append(f"blocks <3 ({len(cleaned_blocks)}).")
+    seo["blocks"] = cleaned_blocks
+
+    # FAQ
+    faq = seo.get("faq") or []
+    if not isinstance(faq, list):
+        faq = []
+    cleaned_faq = []
+    for f in faq[:5]:
+        if isinstance(f, dict):
+            cleaned_faq.append({
+                "q": (f.get("q") or "").strip(),
+                "a": (f.get("a") or "").strip(),
+            })
+    seo["faq"] = cleaned_faq
+
+    # Keywords / internal_links
+    seo["keywords"] = [k for k in (seo.get("keywords") or []) if isinstance(k, str)]
+    seo["internal_links_suggestions"] = [
+        k for k in (seo.get("internal_links_suggestions") or []) if isinstance(k, str)
+    ]
+
+    # Video embed placeholder
+    seo["video_embed_placeholder"] = (
+        seo.get("video_embed_placeholder")
+        or "<!-- COLLER L'URL YOUTUBE OU TIKTOK ICI APRES PUBLICATION -->"
+    )
+
+    # === CTA OVERRIDE (anti-divergence absolue) ===
+    video_cta = video.get("cta") or {}
+    base_url = (video_cta.get("url_with_utm") or "").split("?")[0]
+    seo["cta_block"] = {
+        "text": video_cta.get("text") or "",
+        "target_service": video_cta.get("target_service") or "",
+        "url_with_utm": f"{base_url}?utm_source=seo&utm_medium=organic&utm_campaign={format_id}" if base_url else "",
+    }
+
+    # === Compliance audit (mêmes regex que la vidéo) ===
+    all_text = " ".join([
+        seo["h1"], seo["meta_title"], seo["meta_description"], seo["intro"],
+        " ".join(b.get("body", "") for b in seo["blocks"]),
+        " ".join(b.get("h2", "") for b in seo["blocks"]),
+        " ".join(f.get("a", "") for f in seo["faq"]),
+    ])
+    forbidden = _contains_forbidden(all_text)
+    seo["compliance_passed"] = (len(forbidden) == 0)
+    if forbidden:
+        seo["compliance_notes"] = f"Mots/formules suspectes : {forbidden}"
+        warnings.append(f"seo_pdf compliance FAIL ({len(forbidden)} pattern(s)).")
+    else:
+        seo["compliance_notes"] = None
+
+    # Word count info
+    full_text = " ".join([
+        seo["intro"],
+        " ".join(b.get("body", "") for b in seo["blocks"]),
+        " ".join(f.get("a", "") for f in seo["faq"]),
+    ])
+    seo["word_count"] = len(re.findall(r"\b\w+\b", full_text))
+
+    # Markdown export (pratique pour copier-coller dans Studio Éditorial)
+    seo["markdown"] = _build_markdown(seo)
+
+    return seo, warnings
+
+
+def _build_markdown(seo: Dict[str, Any]) -> str:
+    """Compile une version markdown de la page SEO pour copier-coller rapide."""
+    lines = []
+    lines.append(f"# {seo.get('h1', '')}")
+    lines.append("")
+    lines.append(f"_Meta title:_ {seo.get('meta_title', '')}")
+    lines.append(f"_Meta description:_ {seo.get('meta_description', '')}")
+    lines.append(f"_Slug:_ /guide/{seo.get('slug', '')}")
+    lines.append("")
+    embed = seo.get("video_embed_placeholder") or ""
+    if embed:
+        lines.append(embed)
+        lines.append("")
+    intro = seo.get("intro", "")
+    if intro:
+        lines.append(intro)
+        lines.append("")
+    for b in seo.get("blocks") or []:
+        if b.get("h2"):
+            lines.append(f"## {b['h2']}")
+        if b.get("body"):
+            lines.append(b["body"])
+        lines.append("")
+    faq = seo.get("faq") or []
+    if faq:
+        lines.append("## Questions fréquentes")
+        for f in faq:
+            lines.append(f"### {f.get('q', '')}")
+            lines.append(f.get("a", ""))
+            lines.append("")
+    cta = seo.get("cta_block") or {}
+    if cta.get("text") and cta.get("url_with_utm"):
+        lines.append("---")
+        lines.append("")
+        lines.append(f"**[{cta['text']}]({cta['url_with_utm']})**")
+    return "\n".join(lines).strip()
+
+
+def estimate_seo_landing_cost_eur(model: str = DEFAULT_MODEL) -> float:
+    """Coût supplémentaire pour 1 page SEO en plus de la vidéo."""
+    if model.startswith("claude-haiku"):
+        return 0.005
+    if model.startswith("claude-sonnet"):
+        return 0.018
+    return 0.008

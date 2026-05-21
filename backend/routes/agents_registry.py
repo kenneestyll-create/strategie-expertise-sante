@@ -176,6 +176,26 @@ async def get_agents_registry(admin: dict = Depends(get_current_admin)):
                 "5 blocages, 5 erreurs, 5 orientations, 6-8 FAQ exactement",
             ],
         ),
+        _agent_card(
+            id="video_factory",
+            name="Video Factory Engine",
+            role="Production vidéo + SEO synchronisée (V3)",
+            mission="Produit en 1 appel LLM un pack vidéo court (TikTok/Shorts/Reels) : hook×3, script 70-150 mots, storyboard 6 plans, sous-titres .srt, pack SEO, CTA unique + UTM, conversion_score, disclaimer. Modes : forced/weighted/fallback/free (mode auditable par badge UI). Boucle d'apprentissage V2 : poids par format normalisés à partir des métriques (views/CTR/conv), floor exploration 10%, garde anti-monoculture >65%/7j. V3 : si pdf_enabled=true, 2e appel LLM dérive une page SEO d'atterrissage STRICTEMENT du pack vidéo (CTA verbatim, UTM différencié utm_source=seo&utm_medium=organic).",
+            model="Claude Haiku 4.5",
+            file_path="/app/backend/utils/video_agent.py",
+            prompt_var="SYSTEM_PROMPT | SEO_LANDING_SYSTEM_PROMPT",
+            source_module="utils.video_agent",
+            guardrails=[
+                "7 formats verrouillés F1-F7 (aucune invention/fusion possible)",
+                "CTA mapping urgence→service en règle dure (faible→0€, moyen→29€, critique→97€)",
+                "Override Python du CTA après LLM (anti-divergence absolue, garantie 100%)",
+                "Compliance regex backend : 'garanti / 100% / CPAM ment / promesse financière' → fail",
+                "Page SEO V3 ne peut JAMAIS diverger du pack vidéo (CTA copié verbatim, UTM différencié)",
+                "Floor exploration ε-greedy 10% par format + garde monoculture 65%/7j → reroll",
+                "Log JSON structuré info-level par génération (audit-able : video_id, format, mode, weights_snapshot, conversion_score, ts)",
+                "Schéma JSON strict (Pydantic) + retry unique sur JSON malformé (température 0.1)",
+            ],
+        ),
     ]
 
     # ============================================================

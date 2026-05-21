@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Copy, Download, Video as VideoIcon, Sparkles, Trash2, RefreshCw, CheckCircle2, AlertTriangle, BarChart3, TrendingUp } from 'lucide-react';
+import { Loader2, Copy, Download, Video as VideoIcon, Sparkles, Trash2, RefreshCw, CheckCircle2, AlertTriangle, BarChart3, TrendingUp, FileText } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -57,6 +57,132 @@ const downloadFile = (filename, content, mime = 'text/plain') => {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+};
+
+const SeoPdfCard = ({ seoPdf, runId }) => {
+  if (!seoPdf) return null;
+  return (
+    <Card data-testid="seo-pdf-card" className="border-border/60 border-l-4 border-l-orange-400">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge className="bg-orange-500/10 text-orange-700 border-orange-500/30 gap-1">
+                <FileText className="w-3 h-3" /> Page SEO synchronisée
+              </Badge>
+              <CardTitle className="text-base">{seoPdf.h1}</CardTitle>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1 font-mono">
+              /guide/{seoPdf.slug} · {seoPdf.word_count} mots · {(seoPdf.blocks || []).length} blocs · {(seoPdf.faq || []).length} FAQ
+            </p>
+          </div>
+          {seoPdf.compliance_passed ? (
+            <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-500/30 gap-1">
+              <CheckCircle2 className="w-3 h-3" /> SEO Compliance OK
+            </Badge>
+          ) : (
+            <Badge className="bg-amber-500/10 text-amber-700 border-amber-500/30 gap-1" data-testid="seo-compliance-warning">
+              <AlertTriangle className="w-3 h-3" /> SEO à relire
+            </Badge>
+          )}
+        </div>
+        {seoPdf.compliance_notes && (
+          <p className="text-xs text-amber-700 mt-2" data-testid="seo-compliance-notes">{seoPdf.compliance_notes}</p>
+        )}
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <section>
+          <h4 className="text-sm font-semibold uppercase tracking-wide mb-1">Méta SEO</h4>
+          <div className="space-y-1 text-sm">
+            <p><span className="text-muted-foreground text-xs uppercase mr-2">Title</span>{seoPdf.meta_title}</p>
+            <p><span className="text-muted-foreground text-xs uppercase mr-2">Description</span>{seoPdf.meta_description}</p>
+            {(seoPdf.keywords || []).length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {seoPdf.keywords.map((k, i) => (
+                  <Badge key={i} variant="outline" className="text-xs font-mono">{k}</Badge>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section>
+          <h4 className="text-sm font-semibold uppercase tracking-wide mb-1">Intro ({((seoPdf.intro || '').split(/\s+/).filter(Boolean).length)} mots)</h4>
+          <p className="text-sm bg-muted/40 rounded-md px-3 py-2 whitespace-pre-wrap leading-relaxed">{seoPdf.intro}</p>
+        </section>
+
+        <section>
+          <h4 className="text-sm font-semibold uppercase tracking-wide mb-2">Blocs H2</h4>
+          <div className="space-y-2">
+            {(seoPdf.blocks || []).map((b, i) => (
+              <div key={i} className="text-sm border border-border/50 rounded-md px-3 py-2">
+                <p className="font-semibold mb-1">{b.h2}</p>
+                <p className="text-sm">{b.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {(seoPdf.faq || []).length > 0 && (
+          <section>
+            <h4 className="text-sm font-semibold uppercase tracking-wide mb-2">FAQ ({seoPdf.faq.length})</h4>
+            <div className="space-y-2">
+              {seoPdf.faq.map((f, i) => (
+                <details key={i} className="text-sm border border-border/40 rounded-md px-3 py-2">
+                  <summary className="cursor-pointer font-medium">{f.q}</summary>
+                  <p className="mt-2 text-sm">{f.a}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section className="rounded-md bg-foreground/5 border border-border/60 px-3 py-3" data-testid="seo-cta-block">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
+            CTA SEO (verbatim vidéo) → {seoPdf.cta_block?.target_service}
+          </p>
+          <p className="text-sm font-medium">{seoPdf.cta_block?.text}</p>
+          <a href={seoPdf.cta_block?.url_with_utm} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline font-mono break-all" data-testid="seo-cta-url">
+            {seoPdf.cta_block?.url_with_utm}
+          </a>
+        </section>
+
+        {(seoPdf.internal_links_suggestions || []).length > 0 && (
+          <p className="text-xs text-muted-foreground">
+            <span className="uppercase mr-1">Liens internes suggérés :</span>
+            {seoPdf.internal_links_suggestions.join(' · ')}
+          </p>
+        )}
+
+        <div className="flex flex-wrap gap-2 pt-2 border-t border-border/40">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => copyToClipboard(seoPdf.markdown || '', 'Markdown page SEO')}
+            data-testid={`copy-seo-markdown-${runId || 'live'}`}
+          >
+            <Copy className="w-3.5 h-3.5 mr-1" /> Copier le markdown complet
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => downloadFile(`ses-seo-${seoPdf.slug}.md`, seoPdf.markdown || '', 'text/markdown')}
+            data-testid={`download-seo-md-${runId || 'live'}`}
+          >
+            <Download className="w-3.5 h-3.5 mr-1" /> Télécharger .md
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => copyToClipboard(JSON.stringify(seoPdf, null, 2), 'Pack SEO JSON')}
+            data-testid={`copy-seo-json-${runId || 'live'}`}
+          >
+            <Copy className="w-3.5 h-3.5 mr-1" /> Copier JSON
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 };
 
 const VideoCard = ({ video, idx, runId, onMarkPublished, onOpenMetrics }) => {
@@ -251,6 +377,7 @@ export const AdminVideoFactory = () => {
     batch_size: 1,
     forced_format: '',
     use_performance_weights: true,
+    pdf_enabled: false,
   });
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -519,6 +646,14 @@ export const AdminVideoFactory = () => {
                     />
                     Utiliser les poids de performance (si dispos)
                   </label>
+                  <label className="flex items-center gap-2 text-sm pb-2" data-testid="toggle-pdf-enabled">
+                    <input
+                      type="checkbox"
+                      checked={form.pdf_enabled}
+                      onChange={(e) => setForm({ ...form, pdf_enabled: e.target.checked })}
+                    />
+                    Générer la page SEO synchronisée (+~0,005€)
+                  </label>
                   <Button type="submit" disabled={loading} className="gap-2 ml-auto" data-testid="btn-generate">
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                     {loading ? 'Génération…' : 'Générer le pack vidéo'}
@@ -552,6 +687,7 @@ export const AdminVideoFactory = () => {
               {result.videos.map((v, i) => (
                 <VideoCard key={i} video={v} idx={i} runId={result.run_id} onMarkPublished={markPublished} onOpenMetrics={openMetricsModal} />
               ))}
+              {result.seo_pdf && <SeoPdfCard seoPdf={result.seo_pdf} runId={result.run_id} />}
             </div>
           )}
         </TabsContent>
@@ -592,6 +728,7 @@ export const AdminVideoFactory = () => {
                 {(run.videos || []).map((v, i) => (
                   <VideoCard key={i} video={v} idx={i} runId={run.id} onMarkPublished={markPublished} onOpenMetrics={openMetricsModal} />
                 ))}
+                {run.seo_pdf && <SeoPdfCard seoPdf={run.seo_pdf} runId={run.id} />}
               </CardContent>
             </Card>
           ))}

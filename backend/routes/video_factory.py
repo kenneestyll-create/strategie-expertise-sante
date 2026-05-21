@@ -27,6 +27,10 @@ from utils.video_agent import (
     safe_parse_json,
     validate_and_normalize,
     estimate_cost_eur,
+    build_seo_landing_user_prompt,
+    call_seo_landing_llm,
+    validate_and_normalize_seo_landing,
+    estimate_seo_landing_cost_eur,
 )
 from utils.video_performance import (
     ALL_FORMATS,
@@ -72,10 +76,16 @@ class GenerateInput(BaseModel):
         None,
         description="Force un format F1-F7 (override de la pondération).",
     )
+    pdf_enabled: bool = Field(
+        False,
+        description="Si True, génère en plus une page SEO d'atterrissage (markdown + meta) "
+                    "strictement dérivée de la 1re vidéo générée (anti-divergence garantie).",
+    )
 
 
 class GenerateOutput(BaseModel):
     run_id: str
+    content_id: str  # V3 alias : content_id = run_id (1 doc Mongo unifié vidéo + SEO)
     model_used: str
     estimated_cost_eur: float
     videos: list
@@ -84,6 +94,8 @@ class GenerateOutput(BaseModel):
     forced_format: Optional[str] = None
     used_weights: bool = False
     mode: str = "free"  # forced | weighted | fallback | free
+    seo_pdf: Optional[Dict] = None
+    compliance_passed: bool = True  # ET logique : video.compliance_passed ET seo_pdf.compliance_passed
 
 
 # ============================================================================
@@ -189,6 +201,38 @@ async def generate_videos(req: GenerateInput, admin=Depends(get_current_admin)):
     except ValueError as e:
         raise HTTPException(502, f"Sortie LLM invalide : {e}")
 
+    # --- 4b. (V3) SEO Landing synchronisé — uniquement si pdf_enabled=true ---
+    seo_pdf = None
+    seo_warnings: List[str] = []
+    if req.pdf_enabled and normalized.get("videos"):
+        first_video = normalized["videos"][0]
+        try:
+            seo_user_prompt = build_seo_landing_user_prompt(first_video, req.plateforme)
+            seo_raw = await call_seo_landing_llm(
+                user_prompt=seo_user_prompt,
+                model=DEFAULT_MODEL,
+                max_tokens=6000,
+                temperature=0.5,
+            )
+            seo_parsed = safe_parse_json(seo_raw)
+            seo_pdf, seo_warnings = validate_and_normalize_seo_landing(
+                parsed=seo_parsed,
+                video=first_video,
+                format_id=first_video.get("format_used", "F1"),
+            )
+            warnings = list(warnings) + [f"seo: {w}" for w in seo_warnings]
+        except json_mod.JSONDecodeError as e:
+            logger.warning(f"[video-factory] SEO JSON parse error: {e}")
+            warnings.append("seo: JSON malformé (page SEO ignorée)")
+        except Exception as e:
+            logger.error(f"[video-factory] SEO landing generation failed: {e}")
+            warnings.append(f"seo: échec génération ({str(e)[:80]})")
+
+    # Compliance racine = ET logique (vidéo + seo_pdf si présent)
+    all_videos_pass = all(v.get("compliance_passed", True) for v in normalized.get("videos", []))
+    seo_passes = (seo_pdf is None) or bool(seo_pdf.get("compliance_passed", True))
+    root_compliance = bool(all_videos_pass and seo_passes)
+
     # --- 5. Sauvegarde Mongo ---
     run_id = str(uuid.uuid4())
     created_at = datetime.now(timezone.utc).isoformat()
@@ -200,11 +244,14 @@ async def generate_videos(req: GenerateInput, admin=Depends(get_current_admin)):
         "model_used": DEFAULT_MODEL,
         "videos": normalized.get("videos", []),
         "warnings": warnings,
-        "estimated_cost_eur": estimate_cost_eur(req.batch_size, DEFAULT_MODEL),
+        "estimated_cost_eur": estimate_cost_eur(req.batch_size, DEFAULT_MODEL)
+            + (estimate_seo_landing_cost_eur(DEFAULT_MODEL) if seo_pdf else 0.0),
         "status": "draft",
         "forced_format_resolved": chosen_forced,
         "used_weights": used_weights,
         "mode": mode,
+        "seo_pdf": seo_pdf,
+        "compliance_passed": root_compliance,
     }
     try:
         await db.video_factory_runs.insert_one(record)
@@ -231,6 +278,7 @@ async def generate_videos(req: GenerateInput, admin=Depends(get_current_admin)):
 
     return GenerateOutput(
         run_id=run_id,
+        content_id=run_id,
         model_used=DEFAULT_MODEL,
         estimated_cost_eur=record["estimated_cost_eur"],
         videos=normalized.get("videos", []),
@@ -239,6 +287,8 @@ async def generate_videos(req: GenerateInput, admin=Depends(get_current_admin)):
         forced_format=chosen_forced,
         used_weights=used_weights,
         mode=mode,
+        seo_pdf=seo_pdf,
+        compliance_passed=root_compliance,
     )
 
 
