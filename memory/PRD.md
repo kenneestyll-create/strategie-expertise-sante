@@ -292,6 +292,35 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - **Fichiers modifiés** : `frontend/src/components/AdminAgentsOrg.jsx` (rewrite complet, 339 lignes), `backend/routes/agents_registry.py` (lignes 17-39).
 - **Pytest généré** : `/app/backend/tests/test_admin_agents_org_refonte.py`.
 
+## Changelog 2026-05-21 — Video Factory V4.1 Rendering Layer (Iteration 200)
+- [x] **NOUVEAU : Preview vidéo 9:16 TikTok-style** (composant `VideoPreviewPlayer.jsx`, 347 lignes)
+  - Cadre téléphone strict 9:16 (320×569 px) avec notch, HUD plateforme + chrono
+  - Gradients minimalistes par scène (Option B1 : 7 gradients S.E.S navy/or/violet/slate)
+  - Lecture scène par scène : Hook intro (3s) → Scènes storyboard (durée du `duree_sec` LLM) → CTA outro (3s)
+  - Sous-titres simulés en bas (text bg-black/55 backdrop-blur, troncature 90 chars)
+  - Timeline progress dorée (transition CSS 100ms ease-linear)
+  - Contrôles : Play/Pause, Reset, sourdine
+  - RAF loop indépendant (avance le visuel même sans audio)
+- [x] **Voix-off OpenAI TTS HD** (Option A2 — Emergent LLM Key déjà disponible)
+  - Endpoint backend `POST /api/admin/video-factory/{run_id}/voice-over` avec validations (voice whitelist 9 voix, char_count ≤ 4000, video_idx 0-4)
+  - Endpoint `DELETE /api/admin/video-factory/{run_id}/voice-over/{video_idx}` ($unset)
+  - Modèle `tts-1-hd`, voix par défaut `onyx` (grave, autoritaire — ton médical/juridique)
+  - UI : sélecteur 5 voix françaises crédibles (Onyx, Sage, Alloy, Nova, Coral)
+  - Stockage MongoDB : `videos[idx].voice_over = { audio_base64, voice, model, speed, char_count, generated_at, admin_email }`
+  - Coût : ~0,003 €/vidéo (script 500 chars ≈ MP3 700 KB pour 30s d'audio)
+  - Audio synchronisé à la timeline visuelle (data:audio/mp3;base64,... dans `<audio ref>`)
+- [x] **Organigramme** : Card `video_factory` mise à jour (role « Production vidéo + SEO + Preview/Voix-off (V4.1) », mission V4.1, 10 garde-fous dont 2 nouveaux sur la voix-off)
+- [x] **Tuto Admin** : Section Video Factory enrichie avec étape V4.1 + mots-clés (voix off, tts, openai, onyx, sage, alloy, nova, coral, 9:16, lecteur, player, v4)
+- **Architecture** : 100% additif, ZÉRO touche aux pipelines V1 (génération Claude Haiku), V2 (boucle apprentissage epsilon-greedy), V3 (SEO landing synchronisée), CTA mapping, formats F1-F7, schéma Mongo existant.
+- **Testing E2E** : Iteration 200 — **100% backend (pytest 12/12)** + **100% frontend** (Play/Pause/Reset fonctionnels, voice generation + audio sync OK, badge ✓ onyx, zéro régression SEO/V3).
+- **Fichiers modifiés/créés** :
+  - `backend/routes/video_factory.py` (+~110 lignes, ajout endpoints TTS)
+  - `backend/routes/agents_registry.py` (mise à jour card video_factory)
+  - `frontend/src/components/VideoPreviewPlayer.jsx` (NEW, 347 lignes)
+  - `frontend/src/components/AdminVideoFactory.jsx` (import + section preview + state updaters)
+  - `frontend/src/components/AdminHelpPanel.jsx` (étape V4.1 + keywords)
+  - `backend/tests/test_video_factory_v4_voice_over.py` (NEW, 12 tests pytest)
+
 ## Credentials Admin
 - Admin: admin@accompagn-sante.fr / Admin2024!
 - Backup Admin: backup@strategie-expertise-sante.fr / AdminSecours2026!
