@@ -188,9 +188,9 @@ async def get_agents_registry(admin: dict = Depends(get_current_admin)):
         _agent_card(
             id="video_factory",
             name="Video Factory Engine",
-            role="Production vidéo + SEO + Preview/Voix-off (V4.1)",
-            mission="Produit en 1 appel LLM un pack vidéo court (TikTok/Shorts/Reels) : hook×3, script 70-150 mots, storyboard 6 plans, sous-titres .srt, pack SEO, CTA unique + UTM, conversion_score, disclaimer. Modes : forced/weighted/fallback/free (mode auditable par badge UI). Boucle d'apprentissage V2 : poids par format normalisés à partir des métriques (views/CTR/conv), floor exploration 10%, garde anti-monoculture >65%/7j. V3 : si pdf_enabled=true, 2e appel LLM dérive une page SEO d'atterrissage STRICTEMENT du pack vidéo (CTA verbatim, UTM différencié utm_source=seo&utm_medium=organic). V4.1 : couche de rendering — lecteur 9:16 TikTok-style (gradients minimalistes, scènes animées, sous-titres simulés, timeline) + voix-off OpenAI TTS HD via Emergent LLM Key (voix au choix : Onyx/Sage/Alloy/Nova/Coral), MP3 base64 stocké par vidéo. Aucun impact sur V1/V2/V3.",
-            model="Claude Haiku 4.5 (script) + OpenAI tts-1-hd (voix off)",
+            role="Production vidéo + SEO + Preview/Voix-off/Export (V4.2)",
+            mission="Produit en 1 appel LLM un pack vidéo court (TikTok/Shorts/Reels) : hook×3, script 70-150 mots, storyboard 6 plans, sous-titres .srt, pack SEO, CTA unique + UTM, conversion_score, disclaimer. Modes : forced/weighted/fallback/free. Boucle V2 : poids par format normalisés (views/CTR/conv), floor 10%, garde monoculture 65%/7j. V3 : page SEO d'atterrissage STRICTEMENT dérivée du pack vidéo (CTA verbatim, UTM différencié). V4.1 : couche rendering — lecteur 9:16 TikTok-style + voix-off OpenAI TTS HD via Emergent LLM Key (5 voix : Onyx/Sage/Alloy/Nova/Coral), MP3 base64 stocké par vidéo. V4.2 : export client-side .webm 9:16 720×1280 VP9 via MediaRecorder + AudioContext, sous-titres incrustés style TikTok (mode D1 phrase par scène, highlights or sur MAJUSCULES et chiffres), durée max 60s, ZÉRO endpoint backend. Aucun impact sur V1/V2/V3.",
+            model="Claude Haiku 4.5 (script) + OpenAI tts-1-hd (voix off) + MediaRecorder VP9 (export)",
             file_path="/app/backend/utils/video_agent.py",
             prompt_var="SYSTEM_PROMPT | SEO_LANDING_SYSTEM_PROMPT",
             source_module="utils.video_agent",
@@ -205,6 +205,9 @@ async def get_agents_registry(admin: dict = Depends(get_current_admin)):
                 "Schéma JSON strict (Pydantic) + retry unique sur JSON malformé (température 0.1)",
                 "V4.1 — Voix-off : la couche TTS ne modifie JAMAIS le script généré V3 (texte lu = videos[idx].script intégral, garde-fou anti-régénération)",
                 "V4.1 — Stockage base64 dans videos[idx].voice_over (additif, ne casse aucun consommateur V1/V2/V3 existant)",
+                "V4.2 — Export client-side uniquement (MediaRecorder + AudioContext) : aucun endpoint backend, aucune dépendance serveur, aucune fuite de données",
+                "V4.2 — Bouton Export DÉSACTIVÉ si voice_over absent (garde-fou UX : pas de vidéo muette accidentelle)",
+                "V4.2 — Durée d'export bornée à 60s max avec warning UI explicite (anti-OOM navigateur sur scripts trop longs)",
             ],
         ),
     ]

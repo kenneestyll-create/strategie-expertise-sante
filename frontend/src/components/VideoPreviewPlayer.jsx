@@ -11,8 +11,9 @@ import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Play, Pause, RotateCcw, Mic, Loader2, VolumeX, Volume2 } from 'lucide-react';
+import { Play, Pause, RotateCcw, Mic, Loader2, VolumeX, Volume2, Download, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { exportVideoAsWebm, downloadBlob, EXPORT_MAX_DURATION_SEC } from '@/lib/videoExporter';
 
 // 7 gradients minimalistes (cycliques selon format / index scène)
 const GRADIENTS = [
@@ -56,6 +57,8 @@ export const VideoPreviewPlayer = ({ video, runId, videoIdx, onVoiceOverGenerate
   const [voice, setVoice] = useState('onyx');
   const [generating, setGenerating] = useState(false);
   const [muted, setMuted] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [exportPct, setExportPct] = useState(0);
   const audioRef = useRef(null);
   const rafRef = useRef(null);
   const startTsRef = useRef(0);
@@ -178,6 +181,37 @@ export const VideoPreviewPlayer = ({ video, runId, videoIdx, onVoiceOverGenerate
       toast.error(e?.response?.data?.detail || 'Génération voix off échouée');
     } finally {
       setGenerating(false);
+    }
+  };
+
+  // ── V4.2 — Export .webm ──
+  const handleExport = async () => {
+    if (!hasAudio) {
+      toast.error('Générez d\'abord la voix off (V4.1).');
+      return;
+    }
+    setExporting(true);
+    setExportPct(0);
+    // Stop preview playback during export to free AudioContext
+    setPlaying(false);
+    if (totalDuration > EXPORT_MAX_DURATION_SEC) {
+      toast.warning(`Vidéo > ${EXPORT_MAX_DURATION_SEC}s : tronquée à ${EXPORT_MAX_DURATION_SEC}s à l'export.`);
+    }
+    try {
+      const blob = await exportVideoAsWebm({
+        scenes,
+        voiceOverBase64: audioBase64,
+        onProgress: (pct) => setExportPct(pct),
+      });
+      const fmt = (video.format_used || `v${videoIdx + 1}`).toLowerCase();
+      const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      downloadBlob(blob, `ses-video-${fmt}-${stamp}.webm`);
+      toast.success(`Vidéo exportée (${(blob.size / 1024 / 1024).toFixed(1)} Mo)`);
+    } catch (e) {
+      toast.error(e?.message || 'Export vidéo échoué');
+    } finally {
+      setExporting(false);
+      setExportPct(0);
     }
   };
 
@@ -337,6 +371,48 @@ export const VideoPreviewPlayer = ({ video, runId, videoIdx, onVoiceOverGenerate
         </div>
         <p className="text-[10px] text-muted-foreground leading-relaxed">
           OpenAI TTS HD · synchronisée à la lecture. Coût ~0,003 €/vidéo.
+        </p>
+      </div>
+
+      {/* V4.2 — Export vidéo finale (.webm 9:16, sous-titres burned-in, audio synchronisé) */}
+      <div className="w-full max-w-[360px] rounded-lg border border-border/60 p-3 bg-muted/30 space-y-2" data-testid="export-section">
+        <div className="flex items-center gap-2">
+          <Download className="w-4 h-4 text-[#C9A84C]" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-foreground/80">Export vidéo finale</span>
+          <Badge variant="outline" className="text-[10px] font-normal">V4.2</Badge>
+        </div>
+
+        {totalDuration > EXPORT_MAX_DURATION_SEC && (
+          <div className="flex items-start gap-1.5 text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1.5" data-testid="export-duration-warning">
+            <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" />
+            <span>Durée {Math.ceil(totalDuration)}s &gt; {EXPORT_MAX_DURATION_SEC}s — la vidéo sera tronquée à {EXPORT_MAX_DURATION_SEC}s.</span>
+          </div>
+        )}
+
+        <Button
+          size="sm"
+          onClick={handleExport}
+          disabled={!hasAudio || exporting}
+          className="w-full bg-[#1a1a2e] hover:bg-[#2a2a3e] text-white font-semibold gap-1.5 disabled:opacity-50"
+          data-testid="export-button"
+        >
+          {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+          {exporting ? `Rendering ${Math.round(exportPct)}%` : '📥 Exporter vidéo finale'}
+        </Button>
+
+        {exporting && (
+          <div className="h-1.5 rounded-full bg-muted overflow-hidden" data-testid="export-progress">
+            <div
+              className="h-full bg-[#C9A84C] transition-[width] duration-100"
+              style={{ width: `${exportPct}%` }}
+            />
+          </div>
+        )}
+
+        <p className="text-[10px] text-muted-foreground leading-relaxed">
+          {hasAudio
+            ? '.webm 9:16 (720×1280, VP9), sous-titres incrustés style TikTok, audio synchronisé. Prêt à publier.'
+            : 'Activé après génération de la voix off.'}
         </p>
       </div>
     </div>
