@@ -267,7 +267,9 @@ export const VideoPreviewPlayer = ({ video, runId, videoIdx, onVoiceOverGenerate
         {/* Notch */}
         <div className="absolute top-2 left-1/2 -translate-x-1/2 w-20 h-5 bg-black rounded-full z-30" aria-hidden="true" />
 
-        {/* V4.4 — Canvas miroir (renderer unique preview/export) si scene_type défini */}
+        {/* V4.4 — Canvas miroir (renderer unique preview/export) si scene_type défini.
+            Quand actif : le canvas EST la source unique de vérité (preview ↔ export).
+            Z-10 reste correct car on désactive aussi les overlays HTML doublons en dessous. */}
         {hasSceneType && (
           <canvas
             ref={previewCanvasRef}
@@ -289,8 +291,10 @@ export const VideoPreviewPlayer = ({ video, runId, videoIdx, onVoiceOverGenerate
         {/* Subtle vignette */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/0 to-black/50 pointer-events-none" />
 
-        {/* Scene content */}
-        {currentScene.scene && (
+        {/* Scene content (HTML overlay) — masqué quand le Scene Engine prend le relais
+            (le canvas miroir hasSceneType rend déjà hook/scene/cta + captions de façon
+            authoritative ; on évite ainsi tout doublon visuel). */}
+        {!hasSceneType && currentScene.scene && (
           <div key={currentScene.idx} className="absolute inset-0 flex flex-col justify-center px-6 z-10 animate-fade-in">
             {currentScene.scene.kind === 'hook' && (
               <div className="text-center">
@@ -329,8 +333,8 @@ export const VideoPreviewPlayer = ({ video, runId, videoIdx, onVoiceOverGenerate
           </div>
         )}
 
-        {/* Simulated captions (bottom) */}
-        {currentScene.scene && currentScene.scene.kind !== 'cta' && (
+        {/* Simulated captions (bottom) — masquées si Scene Engine actif (drawCaptionBox côté canvas) */}
+        {!hasSceneType && currentScene.scene && currentScene.scene.kind !== 'cta' && (
           <div className="absolute bottom-12 left-4 right-4 z-20">
             <p className="text-white text-[13px] font-semibold text-center bg-black/55 rounded-md px-2 py-1.5 leading-snug backdrop-blur-sm">
               {(currentScene.scene.text || '').slice(0, 90)}
