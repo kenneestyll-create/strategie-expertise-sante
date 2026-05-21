@@ -127,9 +127,13 @@ const AgentDrawer = ({ agent, open, onOpenChange }) => {
   const meta = AGENT_META[agent.id] || AGENT_META.editorial_writer;
   const Icon = meta.icon;
 
-  const copyPrompt = () => {
-    navigator.clipboard.writeText(agent.prompt || '');
-    toast.success('Prompt copié dans le presse-papier');
+  const copyPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(agent.prompt || '');
+      toast.success('Prompt copié dans le presse-papier');
+    } catch {
+      toast.error('Impossible de copier le prompt');
+    }
   };
 
   return (

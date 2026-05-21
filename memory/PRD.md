@@ -271,6 +271,27 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 ### Phase 3 (JUIN 2026 — après validation Phase 2) :
 - [ ] Créer `/guide/tableau-57-maladie-professionnelle` (guide complet, fort potentiel)
 
+## Changelog 2026-05-21 — Refonte Organigramme IA (Iteration 199)
+- [x] **BUG FIX critique** : Video Factory n'apparaissait pas dans l'Organigramme — l'ancien composant frontend (`AdminAgentsOrg.jsx`) hardcodait seulement 3 cartes (`strate`, `strategiia`, `dossier_express`) et ignorait `video_factory`. Le backend (`agents_registry.py`) le servait correctement depuis l'iteration précédente, mais aucune route frontend ne le rendait.
+- [x] **Refonte visuelle Option A** (style Notion/Linear, périmètre C1 — refonte visuelle uniquement, mêmes données) :
+  - **Cartes compactes ≤ 110px** : avatar coloré 36×36 avec tint léger + nom + rôle 1 ligne. Bordure dorée S.E.S au hover + élévation subtile + accent line de couleur à gauche.
+  - **Drawer latéral à droite** (shadcn Sheet) à la place de la modale centrale : meilleure densité d'info sans interrompre le contexte.
+  - **5 groupes hiérarchisés** avec connecteurs SVG gradient or :
+    - Niveau 0 : PDG Fondateur (carte navy + or)
+    - Groupe 1 : Agents au contact direct client (Straté, StratégIA, Dossier Express)
+    - Groupe 2 : Studio Marketing IA — Acquisition (Video Factory) ← **nouveau**
+    - Groupe 3 : Studio Éditorial SEO (Planner, Writer, Critic, Structurer)
+    - Groupe 4 : Outils internes admin (Kit Pro, badge Confidentiel)
+    - Catch-all : "Autres agents" pour futurs agents non mappés (defensive)
+  - **Groupes pliables** (Collapsible) avec chevron + badge de compte
+  - **Toggle Switch « Vue détaillée »** : par défaut compact, switch ON révèle la mission line-clamp-2 sous chaque carte
+  - **Couleurs respectant la charte S.E.S** : or `#C9A84C`, navy `#1a1a2e`, beige `#FAF8F3`. Chaque agent a une couleur d'accent distinctive (bleu pour Straté, or pour StratégIA, indigo pour Dossier Express, orange pour Video Factory, vert pour éditorial, rouge pour Critic, ambre pour Kit Pro)
+- [x] **Fix backend mineur** : `_read_var_from_module` dans `agents_registry.py` gère maintenant les `prompt_var` multi-variables séparées par `|` (ex: `"SYSTEM_PROMPT | SEO_LANDING_SYSTEM_PROMPT"` pour Video Factory). Splits le var_name, getattr chaque variable, concatène avec divider `=== VARNAME ===\n...`. Le prompt complet de Video Factory fait maintenant 8462 caractères au lieu de "(non disponible)".
+- [x] **Defensive copy** : `copyPrompt` dans le drawer enveloppé dans try/catch async (évite l'unhandled rejection `NotAllowedError` en contexte sans permission clipboard).
+- **Testing E2E** : Iteration 199 — 100% backend (pytest 8/8) + 95% frontend (toast copié, 9 cartes, drawer fonctionnel, prompt video_factory >5000 chars, PDF export OK).
+- **Fichiers modifiés** : `frontend/src/components/AdminAgentsOrg.jsx` (rewrite complet, 339 lignes), `backend/routes/agents_registry.py` (lignes 17-39).
+- **Pytest généré** : `/app/backend/tests/test_admin_agents_org_refonte.py`.
+
 ## Credentials Admin
 - Admin: admin@accompagn-sante.fr / Admin2024!
 - Backup Admin: backup@strategie-expertise-sante.fr / AdminSecours2026!
