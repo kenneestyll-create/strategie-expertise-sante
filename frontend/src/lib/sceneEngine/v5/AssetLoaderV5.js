@@ -53,4 +53,64 @@ export class AssetLoaderV5 {
     }
     return results;
   }
+
+  /**
+   * Charge une vidéo et retourne un HTMLVideoElement prêt pour drawImage.
+   * La vidéo est muted (pas d'audio, on a la voix-off TTS), playsInline,
+   * loop si la durée du plan dépasse la vidéo. Attend readyState >= 2 (HAVE_CURRENT_DATA).
+   * @param {string} url - URL MP4
+   * @param {object} opts - {loop: boolean, timeoutMs: number}
+   * @returns {Promise<HTMLVideoElement>}
+   */
+  static loadVideo(url, opts = {}) {
+    const { loop = true, timeoutMs = 15000 } = opts;
+    return new Promise((resolve, reject) => {
+      const v = document.createElement('video');
+      try {
+        const isCrossOrigin = url.startsWith('http') && !url.startsWith(window.location.origin);
+        if (isCrossOrigin) v.crossOrigin = 'anonymous';
+      } catch (_) { /* ignore */ }
+      v.muted = true;
+      v.defaultMuted = true;
+      v.setAttribute('muted', '');
+      v.setAttribute('playsinline', '');
+      v.playsInline = true;
+      v.loop = loop;
+      v.preload = 'auto';
+      v.autoplay = true;
+      let done = false;
+      const finish = (ok, value) => {
+        if (done) return;
+        done = true;
+        clearTimeout(t);
+        ok ? resolve(value) : reject(value);
+      };
+      const t = setTimeout(() => {
+        finish(false, new Error(`AssetLoaderV5.loadVideo timeout (${timeoutMs}ms): ${url}`));
+      }, timeoutMs);
+      // 'loadeddata' déclenche dès la 1ère frame décodée (suffisant pour drawImage).
+      // Plus fiable que 'canplaythrough' en hidden DOM ou throttled.
+      v.addEventListener('loadeddata', () => {
+        // tentative de play (silencieuse sur Chromium en muted)
+        v.play().catch(() => { /* OK même sans play, drawImage marche */ });
+        finish(true, v);
+      });
+      v.addEventListener('error', (e) => {
+        const code = v.error ? v.error.code : 'unknown';
+        const msg = v.error ? v.error.message : '';
+        finish(false, new Error(`AssetLoaderV5.loadVideo error code=${code} msg=${msg} url=${url}`));
+      });
+      // Mount hidden but with non-zero dimensions to ensure browser allocates decoder
+      v.style.position = 'fixed';
+      v.style.left = '-9999px';
+      v.style.top = '0';
+      v.style.width = '64px';
+      v.style.height = '64px';
+      v.style.opacity = '0';
+      v.style.pointerEvents = 'none';
+      document.body.appendChild(v);
+      v.src = url;
+      v.load();
+    });
+  }
 }

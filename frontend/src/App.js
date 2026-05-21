@@ -79,6 +79,7 @@ const PolitiqueConfidentialitePage = lazy(() => import("@/pages/PolitiqueConfide
 const AdminLoginPage = lazy(() => import("@/pages/AdminLoginPage").then(m => ({ default: m.AdminLoginPage })));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
 const V5PhaseATest = lazy(() => import("@/pages/V5PhaseATest"));
+const V5PhaseBTest = lazy(() => import("@/pages/V5PhaseBTest"));
 const ReferralPage = lazy(() => import("@/pages/ReferralPage").then(m => ({ default: m.ReferralPage })));
 const AgendaPage = lazy(() => import("@/pages/AgendaPage").then(m => ({ default: m.AgendaPage })));
 const SimulateurPage = lazy(() => import("@/pages/SimulateurHubPage"));
@@ -175,6 +176,7 @@ function App() {
                   <Route path="/admin/login" element={<AdminLoginPage />} />
                   <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
                   <Route path="/admin/v5-phaseA-test" element={<ProtectedRoute><V5PhaseATest /></ProtectedRoute>} />
+                  <Route path="/admin/v5-phaseB-test" element={<ProtectedRoute><V5PhaseBTest /></ProtectedRoute>} />
                 </Routes>
               </Suspense>
               <HideOnAdmin>
