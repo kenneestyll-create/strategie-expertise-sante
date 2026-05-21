@@ -140,6 +140,7 @@ export const ContactPage = () => {
 
   return (
     <main className="page-transition pt-20">
+      <SEO title="Contact" description="Contactez Stratégie & Expertise Santé pour une première consultation gratuite de 10 minutes sur votre dossier maladie professionnelle, AT/MP ou MDPH." path="/contact" />
       {/* Hero Section */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">

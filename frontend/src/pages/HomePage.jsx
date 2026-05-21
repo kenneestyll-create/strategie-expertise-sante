@@ -353,7 +353,7 @@ export const HomePage = () => {
                       width="1024"
                       height="1536"
                       loading="eager"
-                      fetchpriority="high"
+                      fetchPriority="high"
                       decoding="async"
                     />
                     {/* Fondu haut — intégration douce */}

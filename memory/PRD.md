@@ -275,3 +275,17 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - Admin: admin@accompagn-sante.fr / Admin2024!
 - Backup Admin: backup@strategie-expertise-sante.fr / AdminSecours2026!
 - Client test: demo@test.com / Password123!
+
+## Changelog 2026-05-21 — P1/P2 Surgical Fixes (Iteration 198)
+- [x] **P1 SEO — Doublon meta description résolu** :
+  - Supprimé `<meta name="description">` statique de `frontend/public/index.html`
+  - Les pages utilisent maintenant uniquement react-helmet-async via `<SEO/>` (zero duplication, vérifié DOM count = 1 sur `/`, `/contact`, etc.)
+  - ContactPage : déplacement du `<SEO/>` hors du bloc conditionnel `if (submitted)` pour qu'il soit toujours monté
+- [x] **P2 LCP optimisé (~6s → estim. <2s)** : Conversion hero PNG (2.0 MB) → WebP (65 KB, **97% reduction**)
+  - Création de 2 variantes WebP : desktop (1024px, 65 KB) + mobile (640px, 33 KB)
+  - `<img>` mis à jour avec `srcSet` responsive, `width/height` explicites (anti-CLS), `fetchPriority="high"` (camelCase JSX), `decoding="async"`
+  - Préchargement via `<link rel="preload" as="image" fetchpriority="high" media="...">` dans `index.html` (desktop + mobile)
+- [x] **P2 Dossier Express — UX > 10 fichiers** : Message d'erreur amélioré avec suggestion fusion PDF (ilovepdf.com, smallpdf.com). Ajout d'un hint inline permanent (`data-testid="merge-pdf-hint"`) dans la dropzone. Comptage précis des fichiers tronqués au lieu d'un message générique
+- [x] **P2 Guide Admin — Téléchargement PDF** : Ajout dans `AdminHelpPanel.jsx` d'une étape « Documents uploadés — Télécharger les PDF originaux » dans la section Dossier Express, avec mots-clés enrichis (télécharger/telecharger/download/documents uploadés/pré-signed/s3)
+- **Testing E2E** : Iteration 198 (6/7 PASS initial, regression `/contact` détectée puis corrigée, re-vérifié 1 meta description sur `/` et `/contact`).
+- **Fichiers modifiés** : `frontend/public/index.html`, `frontend/src/App.js`, `frontend/src/pages/HomePage.jsx`, `frontend/src/pages/ContactPage.jsx`, `frontend/src/components/DocumentUploader.jsx`, `frontend/src/components/AdminHelpPanel.jsx`. Assets ajoutés : `frontend/public/hero_paris_edited.webp`, `frontend/public/hero_paris_edited_mobile.webp`.
