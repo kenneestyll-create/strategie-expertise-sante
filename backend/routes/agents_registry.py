@@ -18,12 +18,21 @@ def _read_var_from_module(module_path: str, var_name: str) -> str:
     """Return the *current* value of a string variable from a Python module.
 
     Imports the module fresh to reflect any hot-reloaded changes.
+    If var_name contains ``|`` (e.g. "VAR_A | VAR_B"), concatenates the values
+    of each named variable separated by a labelled divider — used by agents
+    whose prompt is split across multiple constants (e.g. Video Factory).
     """
     try:
         spec_path = module_path.replace("/", ".").replace(".py", "")
-        # Already-imported modules are returned from sys.modules; reload to be safe.
         mod = importlib.import_module(spec_path)
         importlib.reload(mod)
+        if "|" in var_name:
+            parts = []
+            for v in [x.strip() for x in var_name.split("|") if x.strip()]:
+                val = getattr(mod, v, None)
+                if isinstance(val, str) and val:
+                    parts.append(f"=== {v} ===\n{val}")
+            return "\n\n".join(parts)
         val = getattr(mod, var_name, None)
         if isinstance(val, str):
             return val
