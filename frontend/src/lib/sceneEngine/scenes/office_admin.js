@@ -30,16 +30,18 @@ export class OfficeAdminScene extends Scene {
     this.tracker = new CueTracker(chunksToCues(this.chunks));
     const totalDur = this.chunks.length ? this.chunks[this.chunks.length - 1].endSec : 20;
     const zoomMax = this.motionRule?.camera?.zoomRange?.[1] || 1.06;
-    // 1 SEUL mouvement caméra : slow zoom continu
+    const speed = this.motionRule?.speed || 1.0;
+    // 1 SEUL mouvement caméra : slow zoom continu (durée fixe, plus de speed sur camera pour rester sobre)
     this.camera.startMove({
       toX: 0, toY: 0, toZoom: zoomMax,
-      duration: totalDur, startTime: 0, easing: 'calm',
+      duration: totalDur, startTime: 0, easing: this.motionRule?.easing || 'calm',
     });
 
-    // Timings d'apparition séquentielle (en s) — pas plus de 1 nouveau objet à la fois
-    this.t_doc_in = 0.3;
-    this.t_stamp_in = Math.min(2.2, totalDur * 0.35);
-    this.t_text_in = Math.min(3.2, totalDur * 0.50);
+    // Timings d'apparition séquentielle (en s) — pas plus de 1 nouveau objet à la fois.
+    // F1 (pédagogique, speed=0.75) => plus lent ; F5 (administratif, speed=1.0) => standard.
+    this.t_doc_in = 0.3 / speed;
+    this.t_stamp_in = Math.min(2.5 / speed, totalDur * 0.40);
+    this.t_text_in = Math.min(3.5 / speed, totalDur * 0.55);
 
     this.layers = [
       { z: LAYER.DECOR,   draw: (ctx) => this._drawGridFloor(ctx) },
@@ -126,18 +128,24 @@ export class OfficeAdminScene extends Scene {
     ctx.restore();
   }
 
-  /** Tampon qui descend et s'appose ; "thump" (zoom 1.4 → 1.0) sur impact */
+  /** Tampon qui descend et s'appose ; "thump" (zoom 1.4 → 1.0) sur impact.
+   *  La vitesse + intensité du thump suivent motionRule.speed/intensity (signature F1 vs F5).
+   */
   _drawStamp(ctx) {
     const t = (this.audioTime - this.t_stamp_in);
     if (t < 0) return;
-    const dur = 0.8;
+    const speed = this.motionRule?.speed || 1.0;
+    const intensity = this.motionRule?.intensity || 'medium';
+    const dur = 0.8 / speed;
     const tt = Math.min(1, t / dur);
-    // scale anim : 1.5 → 1.0 avec back-out (impact)
-    const scale = lerp(1.5, 1.0, tt, easings.easeBackOut);
+    // scale anim : intensity high → bounce + large, low → calmer
+    const startScale = intensity === 'high' ? 1.7 : (intensity === 'low' ? 1.35 : 1.5);
+    const scale = lerp(startScale, 1.0, tt, easings.easeBackOut);
     // alpha fade-in rapide
-    const alpha = Math.min(1, t / 0.25);
-    // post-impact pulse subtle (1 cycle léger)
-    const postPulse = tt >= 1 ? 0.96 + 0.04 * Math.cos((t - dur) * 10) * Math.exp(-(t - dur) * 5) : 1;
+    const alpha = Math.min(1, t / (0.25 / speed));
+    // post-impact pulse subtle (1 cycle léger, plus marqué si high)
+    const pulseAmp = intensity === 'high' ? 0.06 : 0.04;
+    const postPulse = tt >= 1 ? (1 - pulseAmp) + pulseAmp * Math.cos((t - dur) * 10) * Math.exp(-(t - dur) * 5) : 1;
     const finalScale = scale * postPulse;
 
     const cx = this.width / 2 + 80; // décalé bas-droit sur le document

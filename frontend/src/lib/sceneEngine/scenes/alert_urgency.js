@@ -23,7 +23,8 @@ export class AlertUrgencyScene extends Scene {
     // Camera zoom minimal continu (F6/F7 plus rapide)
     const totalDur = this.chunks.length ? this.chunks[this.chunks.length - 1].endSec : 20;
     const zoomMax = this.motionRule?.camera?.zoomRange?.[1] || 1.10;
-    this.camera.startMove({ toX: 0, toY: 0, toZoom: zoomMax, duration: totalDur, startTime: 0, easing: 'dramatic' });
+    const easeName = this.motionRule?.easing || 'dramatic';
+    this.camera.startMove({ toX: 0, toY: 0, toZoom: zoomMax, duration: totalDur, startTime: 0, easing: easeName });
 
     this.layers = [
       { z: LAYER.DECOR,   draw: (ctx) => this._drawWarningRing(ctx) },

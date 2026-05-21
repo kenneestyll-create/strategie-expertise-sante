@@ -35,10 +35,11 @@ export class StatsFocusScene extends Scene {
     this.figureCurrent = 0;
     this.tracker = new CueTracker(chunksToCues(this.chunks));
 
-    // Slow zoom continu sur toute la durée audio
+    // Slow zoom continu sur toute la durée audio (durée scalée par motionRule.speed)
     const totalDur = this.chunks.length ? this.chunks[this.chunks.length - 1].endSec : 20;
     const zoomMax = this.motionRule?.camera?.zoomRange?.[1] || 1.06;
-    this.camera.startMove({ toX: 0, toY: 0, toZoom: zoomMax, duration: totalDur, startTime: 0, easing: 'calm' });
+    const easeName = this.motionRule?.easing || 'calm';
+    this.camera.startMove({ toX: 0, toY: 0, toZoom: zoomMax, duration: totalDur, startTime: 0, easing: easeName });
 
     // Bar chart : 4 barres avec hauteurs cibles (max 6 objets animés total)
     this.bars = [0.4, 0.62, 0.78, 1.0]; // ratios cibles
@@ -80,14 +81,17 @@ export class StatsFocusScene extends Scene {
   _drawBarChart(ctx) {
     // 4 barres verticales en bas, accent = motionRule.accent
     const accent = this.motionRule?.accent || '#3b82f6';
+    const intensity = this.motionRule?.intensity || 'medium';
     const barW = 60;
     const gap = 30;
     const baseY = this.height * 0.7;
     const totalW = this.bars.length * barW + (this.bars.length - 1) * gap;
     const startX = (this.width - totalW) / 2;
     const maxH = 220;
+    // alpha barres : low=0.55, medium=0.70, high=0.85 — signature d'intensité
+    const baseAlpha = intensity === 'high' ? 0.85 : (intensity === 'low' ? 0.55 : 0.70);
     ctx.fillStyle = accent;
-    ctx.globalAlpha = 0.7;
+    ctx.globalAlpha = baseAlpha;
     for (let i = 0; i < this.bars.length; i++) {
       const h = this.barHeights[i] * maxH;
       ctx.fillRect(startX + i * (barW + gap), baseY - h, barW, h);

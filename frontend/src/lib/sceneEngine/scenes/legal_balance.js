@@ -41,9 +41,10 @@ export class LegalBalanceScene extends Scene {
 
     const totalDur = this.chunks.length ? this.chunks[this.chunks.length - 1].endSec : 20;
     const zoomMax = this.motionRule?.camera?.zoomRange?.[1] || 1.05;
+    const easeName = this.motionRule?.easing || 'calm';
     this.camera.startMove({
       toX: 0, toY: 0, toZoom: zoomMax,
-      duration: totalDur, startTime: 0, easing: 'calm',
+      duration: totalDur, startTime: 0, easing: easeName,
     });
 
     this.layers = [
@@ -170,13 +171,16 @@ export class LegalBalanceScene extends Scene {
     const w = ctx.measureText(txt).width;
     ctx.fillText(txt, (this.width - w) / 2, this.height * 0.15);
 
-    // Underline subtle
-    ctx.strokeStyle = 'rgba(201,168,76,0.5)';
-    ctx.lineWidth = 1;
+    // Underline subtle (accent bordeaux F4 ou or par défaut, suivant motionRule)
+    const underline = this.motionRule?.accent || 'rgba(201,168,76,0.5)';
+    ctx.strokeStyle = underline;
+    ctx.globalAlpha = 0.6;
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo((this.width - w) / 2 - 8, this.height * 0.15 + 8);
     ctx.lineTo((this.width + w) / 2 + 8, this.height * 0.15 + 8);
     ctx.stroke();
+    ctx.globalAlpha = 1;
 
     // Sub-anchor citation (italic serif) under balance
     const chunk = this.chunks.find((c) => this.audioTime >= c.startSec && this.audioTime < c.endSec);

@@ -140,15 +140,18 @@ export class TestimonyQuoteScene extends Scene {
     ctx.restore();
   }
 
-  /** Signature anonyme + ligne dorée fine séparatrice */
+  /** Signature anonyme + ligne dorée fine séparatrice (accent ambre F3 si défini) */
   _drawSignature(ctx) {
     const t = Math.min(1, (this.audioTime - 1.5) / 0.8);
     if (t <= 0) return;
     const alpha = easings.easeOutCalm(t);
     ctx.save();
     ctx.globalAlpha = alpha;
-    // Ligne dorée fine
-    ctx.strokeStyle = GOLD_SOFT;
+    // Couleur d'accent : F3 ambre #f59e0b, fallback or
+    const accent = this.motionRule?.accent || GOLD_SOFT;
+    // Ligne accent fine
+    ctx.strokeStyle = accent;
+    ctx.globalAlpha = alpha * 0.7;
     ctx.lineWidth = 1;
     const lw = 100;
     const yLine = this.height * 0.74;
@@ -157,8 +160,9 @@ export class TestimonyQuoteScene extends Scene {
     ctx.lineTo((this.width + lw) / 2, yLine);
     ctx.stroke();
     // Signature texte (typo sobre)
+    ctx.globalAlpha = alpha;
     ctx.font = '500 18px Inter, system-ui, sans-serif';
-    ctx.fillStyle = 'rgba(201,168,76,0.85)';
+    ctx.fillStyle = accent;
     ctx.letterSpacing = '0.14em';
     const sig = 'TÉMOIGNAGE ANONYMISÉ';
     const sw = ctx.measureText(sig).width;

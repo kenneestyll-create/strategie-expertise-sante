@@ -14,6 +14,9 @@ import { SceneFactory } from './sceneEngine/register.js';
 export const EXPORT_WIDTH = 720;
 export const EXPORT_HEIGHT = 1280;
 export const EXPORT_FPS = 30;
+export const EXPORT_FPS_DEGRADED = 24;     // Auto-degrade target (Sprint 4)
+export const EXPORT_FPS_PROBE_FRAMES = 10; // # frames de mesure perf avant export
+export const EXPORT_FPS_DEGRADE_THRESHOLD_MS = 33; // > 33ms/frame moyenne ⇒ on degrade
 export const EXPORT_MAX_DURATION_SEC = 60;
 export const GOLD = '#C9A84C';
 
@@ -330,7 +333,30 @@ export async function exportVideoAsWebm({ scenes, voiceOverBase64, onProgress, v
     drawFrame(ctx, scenes, 0, totalDuration);
   }
 
-  const videoStream = canvas.captureStream(EXPORT_FPS);
+  // ── Sprint 4 — Probe FPS : mesure 10 frames de draw réel pour décider 30 ou 24 FPS.
+  //    Approche déterministe : 1 décision avant export, pas de switching mid-stream
+  //    (évite les artéfacts audio/vidéo). Jamais sous 24 FPS, jamais drop audio.
+  let chosenFps = EXPORT_FPS;
+  let probeMeanMs = 0;
+  try {
+    const probeStart = performance.now();
+    for (let i = 0; i < EXPORT_FPS_PROBE_FRAMES; i++) {
+      const t = (i / EXPORT_FPS_PROBE_FRAMES) * Math.min(2, totalDuration);
+      if (useSceneEngine) { sceneEngine.update(0, t); sceneEngine.draw(ctx); }
+      else { drawFrame(ctx, scenes, t, totalDuration); }
+    }
+    probeMeanMs = (performance.now() - probeStart) / EXPORT_FPS_PROBE_FRAMES;
+    if (probeMeanMs > EXPORT_FPS_DEGRADE_THRESHOLD_MS) {
+      chosenFps = EXPORT_FPS_DEGRADED;
+    }
+  } catch (_) { /* probe robuste : fallback FPS=30 */ }
+  // Log structuré pour debug + traçabilité
+  try {
+    // eslint-disable-next-line no-console
+    console.info(`[scene-engine] export fps probe: mean=${probeMeanMs.toFixed(2)}ms/frame → ${chosenFps} FPS`);
+  } catch (_) { /* ignore */ }
+
+  const videoStream = canvas.captureStream(chosenFps);
 
   // Audio pipeline
   const audioEl = new Audio(`data:audio/mp3;base64,${voiceOverBase64}`);
