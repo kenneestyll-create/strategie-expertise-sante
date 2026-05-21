@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { HelpCircle, X, Search, ChevronRight, ArrowRight, Sparkles, BookOpen, Users, MessageSquare, Gift, Calendar, FolderOpen, Send, Zap, Brain, FileSearch, BarChart3, FileText, Star, Settings, Bell, PenTool, ChevronDown, RotateCcw, Mail, Crown, Lock } from 'lucide-react';
+import { HelpCircle, X, Search, ChevronRight, ArrowRight, Sparkles, BookOpen, Users, MessageSquare, Gift, Calendar, FolderOpen, Send, Zap, Brain, FileSearch, BarChart3, FileText, Star, Settings, Bell, PenTool, ChevronDown, RotateCcw, Mail, Crown, Lock, Video } from 'lucide-react';
 
 const HELP_SECTIONS = [
   {
@@ -272,6 +272,33 @@ const HELP_SECTIONS = [
       { label: 'Coût récurrent', text: '~3-5 €/mois en API IA (Claude Haiku 4.5 via Emergent LLM Key) pour 4 articles/mois — incluant les étapes Critic + Structuration. Aucun autre coût. Search Console = saisie manuelle = 0€.' },
     ],
     keywords: ['studio', 'éditorial', 'editorial', 'guide', 'seo', 'rédaction', 'ia', 'rédacteur', 'plan', 'brouillon', 'critic', 'critique', 'juridique', 'audit', 'red flag', 'drapeau', 'validation', 'légifrance', 'jurisprudence', 'loi', 'sujet', 'pool', 'revalidation', 'rag', 'haiku', 'claude', 'mémo', 'rgpd', 'cnil', 'fiabilité', 'garde-fou', 'structurer', 'aperçu', 'preview', 'migrer', 'seed', 'production', 'deploy', 'github', 'changer sujet', 'supprimer brouillon', 'planner', 'writer', 'agent', 'multi-agents', 'organigramme']
+  },
+  {
+    id: 'video-factory',
+    tab: 'video-factory',
+    icon: Video,
+    title: 'Video Factory V2 — Production vidéo IA + boucle apprentissage',
+    color: '#C9A84C',
+    summary: 'Studio interne autonome pour produire des packs vidéos courts (TikTok / Shorts / Reels) prêts à filmer + publier. 1 brief → 1 pack complet (hook, script, storyboard, .srt, SEO, CTA + UTM). Boucle V2 : saisissez vues / CTR / conversion après publication, les futures générations privilégient automatiquement les formats qui convertissent (floor exploration 10%).',
+    steps: [
+      { label: 'Où le trouver ?', tab: 'video-factory', text: 'Onglet "Video Factory" dans la barre de navigation admin (entre "Studio" et "Organigramme IA"). 3 sous-onglets : Générer / Historique / Performances.' },
+      { label: 'Sous-onglet Générer — Remplir le brief', text: 'Topic libre (5-500 caractères) + Service cible (auto / 0€ / 29€ / 97€) + Intention (émotion / autorité / éducatif) + Urgence (faible / moyen / critique) + Plateforme (TikTok / YouTube Shorts / Facebook Reels / Instagram Reels) + Nb vidéos (1-5).' },
+      { label: 'Mapping CTA automatique (règle dure)', text: 'Si service = auto → urgence critique = 97€ Dossier Express, urgence moyen = 29€ Analyse PDF, urgence faible = 0€ Diagnostic gratuit. Sinon, le service choisi est imposé. 1 SEUL CTA par vidéo, URL pré-mâchée avec UTM (?utm_source={plateforme}&utm_medium=short&utm_campaign={format}) pour traçabilité Analytics.' },
+      { label: '7 formats verrouillés (F1-F7)', text: 'F1 Erreurs en expertise médicale · F2 Explications chiffrées (IPP, indemnisation) · F3 Cas réel anonymisé · F4 Analyse CPAM / médecin-conseil · F5 Réaction à un courrier administratif · F6 Erreurs de vocabulaire · F7 Checklist préparation dossier. L\'IA ne peut PAS inventer un nouveau format.' },
+      { label: 'Forcer un format (optionnel)', text: 'Sélecteur "Forcer un format" en bas du form. Si vide = laissé à l\'IA OU choisi par la pondération si des poids existent (toggle "Utiliser les poids de performance"). Si renseigné = format imposé strictement.' },
+      { label: 'Génération (~5-10s)', text: 'Cliquez "Générer le pack vidéo". Modèle utilisé : Claude Haiku 4.5 (1 seul appel LLM, cache activé). Coût ~0,006 €/vidéo. Si batch_size=5 → 5 vidéos en 1 appel, ~0,03 €.' },
+      { label: 'Lecture du pack généré', text: 'Pour chaque vidéo : badges Format + Conversion ★/5 + Viral ★/5 (estimatif IA), Compliance OK ou À relire. 6 sections : Hooks (3 variantes A/B/C ≤12 mots) · Script (70-150 mots, parlé naturel) · Storyboard (6 plans max, type face-cam/broll/texte) · Sous-titres .srt (≤7-10 mots/segment, exportable) · Pack SEO (titre <60 car., description <200 car., 5-7 hashtags) · CTA unique avec URL UTM. Disclaimer pied de carte : "Contenu informatif, ne constitue pas un conseil…"' },
+      { label: 'Actions par vidéo', text: 'Boutons par section : Copier (hooks/script/.srt/SEO/CTA), Télécharger .srt, Exporter JSON complet, Saisir métriques (ouvre modal V2), Marquer publié.' },
+      { label: 'Workflow de production (en moins de 10 min)', text: '1) Lire le hook le plus fort des 3. 2) Lire le script — auto-éditer 1-2 mots si besoin. 3) Filmer face caméra (téléphone OK) en suivant le storyboard. 4) Importer dans CapCut / DaVinci. 5) Télécharger le .srt et le glisser dans l\'éditeur. 6) Ajouter B-roll Pexels avec les "broll_search_term" du storyboard. 7) Publier sur la plateforme cible. 8) Coller titre + description + hashtags depuis le pack SEO. 9) Coller le lien CTA en bio (URL avec UTM déjà prête).' },
+      { label: 'Compliance automatique', text: 'Garde-fous backend : interdits "garanti / 100% / la CPAM ment / vous gagnerez X€" → audit regex objectif. Si fail → badge "À relire" et note précisant les patterns détectés. La pédagogie + "vous pourriez" + "dans certains cas" + cas anonymisés restent autorisés.' },
+      { label: 'Sous-onglet Historique', text: 'Toutes vos générations passées (20 plus récentes), triées par date desc. Pour chaque run : nombre de vidéos, plateforme, urgence, statut (draft / published / archived), date. Boutons : Supprimer le run, et sur chaque vidéo Saisir métriques + Marquer publié.' },
+      { label: 'Sous-onglet Performances (V2 — boucle d\'apprentissage)', text: 'Vue d\'ensemble des poids par format F1-F7 avec barres horizontales. Pour chaque format : moyennes views / CTR / conversion + nombre d\'échantillons. Tableau des 50 dernières métriques saisies. Bouton "Rafraîchir" pour reprendre les derniers calculs.' },
+      { label: 'Saisir des métriques après publication', text: 'Depuis Historique → cliquez "Saisir métriques" sur une vidéo publiée → Modal demande : Vues totales, CTR (%), Taux de conversion (%), Note optionnelle. Au moment de l\'enregistrement, le backend recalcule automatiquement les poids par format (formule : 0.5×conversion + 0.3×CTR + 0.2×views, normalisée). Floor d\'exploration 10% par format garanti — aucun format n\'est jamais abandonné.' },
+      { label: 'Cycle vertueux', text: 'Dès la 1re métrique saisie, les futures générations (avec toggle "Utiliser les poids" activé, par défaut) tirent un format au hasard pondéré par les poids. Plus vous saisissez de métriques, plus la machine privilégie les formats qui convertissent réellement. Vous gardez 10% d\'exploration pour découvrir de nouveaux gagnants.' },
+      { label: 'Modèle & coûts', text: 'Claude Haiku 4.5 (Emergent LLM Key, prompt caching Anthropic). ~0,006 €/vidéo. 20 vidéos/mois = 0,13 €/mois. 100 = 0,64 €/mois. 1000 = 6,40 €/mois. Aucune API externe payante.' },
+      { label: 'Limites et bonnes pratiques', text: '• Toujours relire le script en 10s avant tournage (la compliance est très solide mais l\'IA reste perfectible). • Filmer VOUS-MÊME pour conserver l\'authenticité founder (pas d\'avatar IA). • Saisir métriques 48-72h après publication (laisser le temps aux vues). • Ne pas mélanger plateformes (1 vidéo = 1 plateforme cible) pour bonne attribution UTM.' },
+    ],
+    keywords: ['video', 'vidéo', 'factory', 'tiktok', 'shorts', 'reels', 'instagram', 'youtube', 'facebook', 'hook', 'script', 'storyboard', 'srt', 'sous-titres', 'seo', 'cta', 'utm', 'haiku', 'claude', 'metrics', 'métriques', 'performance', 'poids', 'conversion', 'ctr', 'views', 'vues', 'pondération', 'exploration', 'floor', 'compliance', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'format', 'batch', 'disclaimer', 'historique', 'pack vidéo', 'production', 'editor', 'capcut']
   },
   {
     id: 'agents-org',

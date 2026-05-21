@@ -21,11 +21,19 @@ from utils.auth import get_current_admin
 from utils.video_agent import (
     DEFAULT_MODEL,
     MAX_BATCH_SIZE,
+    FORMAT_LABELS,
     build_user_prompt,
     call_video_factory_llm,
     safe_parse_json,
     validate_and_normalize,
     estimate_cost_eur,
+)
+from utils.video_performance import (
+    ALL_FORMATS,
+    pick_format_weighted,
+    recompute_and_save_weights,
+    get_latest_weights,
+    get_weights_summary,
 )
 
 router = APIRouter(prefix="/admin/video-factory", tags=["video-factory"])
@@ -48,6 +56,17 @@ class GenerateInput(BaseModel):
     urgence: str = Field("moyen")
     plateforme: str = Field("TikTok")
     batch_size: int = Field(1, ge=1, le=MAX_BATCH_SIZE)
+    use_performance_weights: bool = Field(
+        True,
+        description=(
+            "Si True et qu'un snapshot de poids existe, le backend choisit le "
+            "format dominant pondéré et l'impose au LLM via forced_format."
+        ),
+    )
+    forced_format: Optional[str] = Field(
+        None,
+        description="Force un format F1-F7 (override de la pondération).",
+    )
 
 
 class GenerateOutput(BaseModel):
@@ -57,6 +76,8 @@ class GenerateOutput(BaseModel):
     videos: list
     warnings: list
     created_at: str
+    forced_format: Optional[str] = None
+    used_weights: bool = False
 
 
 # ============================================================================
@@ -76,6 +97,21 @@ async def generate_videos(req: GenerateInput, admin=Depends(get_current_admin)):
     if req.plateforme not in ALLOWED_PLATFORMS:
         raise HTTPException(400, f"plateforme invalide. Valeurs : {ALLOWED_PLATFORMS}")
 
+    # --- 1b. Validate optional forced_format ---
+    if req.forced_format is not None and req.forced_format not in FORMAT_LABELS:
+        raise HTTPException(400, f"forced_format invalide. Valeurs : {list(FORMAT_LABELS.keys())}")
+
+    # --- 1c. Performance loop : si pas de forced_format mais use_weights → choisir backend ---
+    chosen_forced = req.forced_format
+    perf_weights = None
+    used_weights = False
+    if chosen_forced is None and req.use_performance_weights:
+        weights = await get_latest_weights()
+        if weights:
+            perf_weights = weights
+            chosen_forced = pick_format_weighted(weights)
+            used_weights = True
+
     # --- 2. Build prompt ---
     user_prompt = build_user_prompt(
         topic_brief=req.topic_brief,
@@ -84,6 +120,8 @@ async def generate_videos(req: GenerateInput, admin=Depends(get_current_admin)):
         urgence=req.urgence,
         plateforme=req.plateforme,
         batch_size=req.batch_size,
+        forced_format=chosen_forced,
+        performance_weights=perf_weights,
     )
 
     # --- 3. LLM call (with 1 retry on JSON malformé) ---
@@ -138,6 +176,8 @@ async def generate_videos(req: GenerateInput, admin=Depends(get_current_admin)):
         "warnings": warnings,
         "estimated_cost_eur": estimate_cost_eur(req.batch_size, DEFAULT_MODEL),
         "status": "draft",
+        "forced_format_resolved": chosen_forced,
+        "used_weights": used_weights,
     }
     try:
         await db.video_factory_runs.insert_one(record)
@@ -152,6 +192,8 @@ async def generate_videos(req: GenerateInput, admin=Depends(get_current_admin)):
         videos=normalized.get("videos", []),
         warnings=warnings,
         created_at=created_at,
+        forced_format=chosen_forced,
+        used_weights=used_weights,
     )
 
 
@@ -205,3 +247,81 @@ async def update_status(run_id: str, body: StatusUpdate, admin=Depends(get_curre
     if res.matched_count == 0:
         raise HTTPException(404, "Run introuvable.")
     return {"updated": True, "run_id": run_id, "status": body.status}
+
+
+# ============================================================================
+# V2 — PERFORMANCE LOOP
+# ============================================================================
+
+class MetricsInput(BaseModel):
+    run_id: str
+    video_idx: int = Field(0, ge=0, le=4)
+    views: float = Field(..., ge=0)
+    ctr: float = Field(..., ge=0, le=100, description="CTR en pourcentage (0-100)")
+    conversion: float = Field(..., ge=0, le=100, description="Conversion en pourcentage")
+    plateforme: Optional[str] = None
+    note: Optional[str] = None
+
+
+@router.post("/metrics")
+async def save_metrics(body: MetricsInput, admin=Depends(get_current_admin)):
+    """Saisie des métriques d'une vidéo publiée. Recalcule auto les poids."""
+    run = await db.video_factory_runs.find_one({"id": body.run_id}, {"_id": 0})
+    if not run:
+        raise HTTPException(404, "Run introuvable.")
+    videos = run.get("videos") or []
+    if body.video_idx >= len(videos):
+        raise HTTPException(400, "video_idx hors borne.")
+    fmt = videos[body.video_idx].get("format_used")
+    if fmt not in ALL_FORMATS:
+        raise HTTPException(400, f"Format invalide dans le run : {fmt}")
+
+    metric_doc = {
+        "run_id": body.run_id,
+        "video_idx": body.video_idx,
+        "format_used": fmt,
+        "views": float(body.views),
+        "ctr": float(body.ctr),
+        "conversion": float(body.conversion),
+        "plateforme": body.plateforme or (run.get("input", {}).get("plateforme")),
+        "note": body.note,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "admin_email": admin.get("email"),
+    }
+    # Upsert on (run_id, video_idx) to allow correction
+    await db.video_metrics.update_one(
+        {"run_id": body.run_id, "video_idx": body.video_idx},
+        {"$set": metric_doc},
+        upsert=True,
+    )
+    weights = await recompute_and_save_weights()
+    return {"saved": True, "format_used": fmt, "weights_updated": True, "weights": weights}
+
+
+@router.get("/metrics")
+async def list_metrics(
+    limit: int = Query(50, ge=1, le=500),
+    admin=Depends(get_current_admin),
+):
+    """Liste les métriques saisies, plus récentes d'abord. _id exclu."""
+    cursor = (
+        db.video_metrics
+        .find({}, {"_id": 0})
+        .sort("created_at", -1)
+        .limit(limit)
+    )
+    items = await cursor.to_list(length=limit)
+    return {"items": items, "count": len(items)}
+
+
+@router.get("/performance/weights")
+async def get_performance_weights(admin=Depends(get_current_admin)):
+    """Snapshot complet : poids actuels + agrégats par format + total samples."""
+    return await get_weights_summary()
+
+
+@router.post("/performance/recompute")
+async def force_recompute(admin=Depends(get_current_admin)):
+    """Force le recalcul du snapshot de poids (utile après suppression métrique)."""
+    weights = await recompute_and_save_weights()
+    return {"recomputed": True, "weights": weights}

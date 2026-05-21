@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Copy, Download, Video as VideoIcon, Sparkles, Trash2, RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Loader2, Copy, Download, Video as VideoIcon, Sparkles, Trash2, RefreshCw, CheckCircle2, AlertTriangle, BarChart3, TrendingUp } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -22,6 +22,16 @@ const SERVICES = [
 const INTENTIONS = ['émotion', 'autorité', 'éducatif'];
 const URGENCES = ['faible', 'moyen', 'critique'];
 const PLATEFORMES = ['TikTok', 'YouTube Shorts', 'Facebook Reels', 'Instagram Reels'];
+const FORMATS = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7'];
+const FORMAT_LABELS_FR = {
+  F1: 'Erreurs en expertise',
+  F2: 'Explications chiffrées',
+  F3: 'Cas réel anonymisé',
+  F4: 'Analyse CPAM',
+  F5: 'Réaction à un courrier',
+  F6: 'Erreurs de vocabulaire',
+  F7: 'Checklist dossier',
+};
 
 const copyToClipboard = (text, label) => {
   navigator.clipboard.writeText(text || '').then(
@@ -42,7 +52,7 @@ const downloadFile = (filename, content, mime = 'text/plain') => {
   URL.revokeObjectURL(url);
 };
 
-const VideoCard = ({ video, idx, runId, onMarkPublished }) => {
+const VideoCard = ({ video, idx, runId, onMarkPublished, onOpenMetrics }) => {
   const fullPack = JSON.stringify(video, null, 2);
   const safeSlug = (video.format_used || `v${idx + 1}`).toLowerCase();
 
@@ -56,7 +66,7 @@ const VideoCard = ({ video, idx, runId, onMarkPublished }) => {
               <CardTitle className="text-base">{video.format_label}</CardTitle>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Score viral IA (indicatif) : {'★'.repeat(video.viral_score || 0)}{'☆'.repeat(5 - (video.viral_score || 0))}
+              Conversion ★{video.conversion_score || 0}/5 · Viral ★{video.viral_score || 0}/5 <span className="italic">(estimatif IA)</span>
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -202,12 +212,23 @@ const VideoCard = ({ video, idx, runId, onMarkPublished }) => {
           <Button variant="outline" size="sm" onClick={() => downloadFile(`ses-video-${safeSlug}-${idx + 1}.json`, fullPack, 'application/json')} data-testid={`download-json-${idx}`}>
             <Download className="w-3.5 h-3.5 mr-1" /> Export JSON
           </Button>
+          {onOpenMetrics && (
+            <Button variant="outline" size="sm" onClick={() => onOpenMetrics(runId, idx, video.format_used)} data-testid={`save-metrics-${idx}`}>
+              <BarChart3 className="w-3.5 h-3.5 mr-1" /> Saisir métriques
+            </Button>
+          )}
           {onMarkPublished && (
             <Button variant="default" size="sm" onClick={() => onMarkPublished(runId)} data-testid={`mark-published-${idx}`}>
               <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Marquer publié
             </Button>
           )}
         </div>
+
+        {video.disclaimer_text && (
+          <p className="text-xs text-muted-foreground italic pt-1" data-testid={`disclaimer-${idx}`}>
+            {video.disclaimer_text}
+          </p>
+        )}
       </CardContent>
     </Card>
   );
@@ -221,6 +242,8 @@ export const AdminVideoFactory = () => {
     urgence: 'moyen',
     plateforme: 'TikTok',
     batch_size: 1,
+    forced_format: '',
+    use_performance_weights: true,
   });
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -228,8 +251,16 @@ export const AdminVideoFactory = () => {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('generate');
 
+  // V2 — Performances
+  const [weightsSnapshot, setWeightsSnapshot] = useState(null);
+  const [weightsLoading, setWeightsLoading] = useState(false);
+  const [metricsList, setMetricsList] = useState([]);
+  const [metricsModal, setMetricsModal] = useState(null); // {runId, videoIdx, formatUsed}
+  const [metricsForm, setMetricsForm] = useState({ views: '', ctr: '', conversion: '', note: '' });
+  const [savingMetrics, setSavingMetrics] = useState(false);
+
   const axiosConfig = useCallback(() => {
-    const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+    const token = localStorage.getItem('admin_token') || localStorage.getItem('adminToken') || localStorage.getItem('token');
     return { headers: { Authorization: `Bearer ${token}` } };
   }, []);
 
@@ -247,7 +278,32 @@ export const AdminVideoFactory = () => {
 
   useEffect(() => {
     if (activeTab === 'history') fetchHistory();
-  }, [activeTab, fetchHistory]);
+    if (activeTab === 'performance') {
+      fetchWeights();
+      fetchMetrics();
+    }
+  }, [activeTab, fetchHistory]);  // eslint-disable-line react-hooks/exhaustive-deps
+
+  const fetchWeights = async () => {
+    setWeightsLoading(true);
+    try {
+      const r = await axios.get(`${API}/admin/video-factory/performance/weights`, axiosConfig());
+      setWeightsSnapshot(r.data);
+    } catch (e) {
+      toast.error('Échec chargement poids');
+    } finally {
+      setWeightsLoading(false);
+    }
+  };
+
+  const fetchMetrics = async () => {
+    try {
+      const r = await axios.get(`${API}/admin/video-factory/metrics?limit=50`, axiosConfig());
+      setMetricsList(r.data?.items || []);
+    } catch (e) {
+      // silent
+    }
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -258,9 +314,12 @@ export const AdminVideoFactory = () => {
     setLoading(true);
     setResult(null);
     try {
-      const r = await axios.post(`${API}/admin/video-factory/generate`, form, axiosConfig());
+      const payload = { ...form };
+      if (!payload.forced_format) delete payload.forced_format;
+      const r = await axios.post(`${API}/admin/video-factory/generate`, payload, axiosConfig());
       setResult(r.data);
-      toast.success(`${r.data.videos.length} vidéo(s) générée(s) — coût ${r.data.estimated_cost_eur}€`);
+      const tag = r.data.used_weights ? ` · format auto-pondéré ${r.data.forced_format}` : (r.data.forced_format ? ` · ${r.data.forced_format} forcé` : '');
+      toast.success(`${r.data.videos.length} vidéo(s) générée(s) — coût ${r.data.estimated_cost_eur}€${tag}`);
     } catch (err) {
       const msg = err?.response?.data?.detail || err.message;
       toast.error(`Échec génération : ${msg}`);
@@ -294,6 +353,48 @@ export const AdminVideoFactory = () => {
     }
   };
 
+  const openMetricsModal = (runId, videoIdx, formatUsed) => {
+    setMetricsModal({ runId, videoIdx, formatUsed });
+    setMetricsForm({ views: '', ctr: '', conversion: '', note: '' });
+  };
+
+  const submitMetrics = async (e) => {
+    e.preventDefault();
+    if (!metricsModal) return;
+    const views = Number(metricsForm.views);
+    const ctr = Number(metricsForm.ctr);
+    const conversion = Number(metricsForm.conversion);
+    if (!Number.isFinite(views) || views < 0 || !Number.isFinite(ctr) || ctr < 0 || !Number.isFinite(conversion) || conversion < 0) {
+      toast.error('Valeurs invalides (views, CTR, conversion ≥ 0)');
+      return;
+    }
+    setSavingMetrics(true);
+    try {
+      await axios.post(
+        `${API}/admin/video-factory/metrics`,
+        {
+          run_id: metricsModal.runId,
+          video_idx: metricsModal.videoIdx,
+          views,
+          ctr,
+          conversion,
+          note: metricsForm.note || null,
+        },
+        axiosConfig(),
+      );
+      toast.success(`Métriques enregistrées (${metricsModal.formatUsed}) — poids recalculés`);
+      setMetricsModal(null);
+      if (activeTab === 'performance') {
+        fetchWeights();
+        fetchMetrics();
+      }
+    } catch (err) {
+      toast.error(`Échec : ${err?.response?.data?.detail || err.message}`);
+    } finally {
+      setSavingMetrics(false);
+    }
+  };
+
   return (
     <div className="space-y-6" data-testid="admin-video-factory">
       <Card>
@@ -315,6 +416,9 @@ export const AdminVideoFactory = () => {
           </TabsTrigger>
           <TabsTrigger value="history" data-testid="tab-history">
             <RefreshCw className="w-4 h-4 mr-1.5" /> Historique
+          </TabsTrigger>
+          <TabsTrigger value="performance" data-testid="tab-performance">
+            <TrendingUp className="w-4 h-4 mr-1.5" /> Performances
           </TabsTrigger>
         </TabsList>
 
@@ -375,7 +479,7 @@ export const AdminVideoFactory = () => {
                   </div>
                 </div>
 
-                <div className="flex items-end justify-between flex-wrap gap-3">
+                <div className="flex flex-wrap items-end gap-4 pt-2 border-t border-border/40">
                   <div className="w-40">
                     <Label htmlFor="vf-batch">Nb vidéos (1-5)</Label>
                     <Input
@@ -388,7 +492,27 @@ export const AdminVideoFactory = () => {
                       data-testid="input-batch"
                     />
                   </div>
-                  <Button type="submit" disabled={loading} className="gap-2" data-testid="btn-generate">
+                  <div className="w-44">
+                    <Label>Forcer un format (optionnel)</Label>
+                    <Select value={form.forced_format || 'auto'} onValueChange={(v) => setForm({ ...form, forced_format: v === 'auto' ? '' : v })}>
+                      <SelectTrigger data-testid="select-forced-format"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="auto">Auto (laisser IA / poids)</SelectItem>
+                        {FORMATS.map((f) => (
+                          <SelectItem key={f} value={f}>{f} — {FORMAT_LABELS_FR[f]}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <label className="flex items-center gap-2 text-sm pb-2" data-testid="toggle-use-weights">
+                    <input
+                      type="checkbox"
+                      checked={form.use_performance_weights}
+                      onChange={(e) => setForm({ ...form, use_performance_weights: e.target.checked })}
+                    />
+                    Utiliser les poids de performance (si dispos)
+                  </label>
+                  <Button type="submit" disabled={loading} className="gap-2 ml-auto" data-testid="btn-generate">
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                     {loading ? 'Génération…' : 'Générer le pack vidéo'}
                   </Button>
@@ -414,7 +538,7 @@ export const AdminVideoFactory = () => {
                 </CardContent>
               </Card>
               {result.videos.map((v, i) => (
-                <VideoCard key={i} video={v} idx={i} runId={result.run_id} onMarkPublished={markPublished} />
+                <VideoCard key={i} video={v} idx={i} runId={result.run_id} onMarkPublished={markPublished} onOpenMetrics={openMetricsModal} />
               ))}
             </div>
           )}
@@ -454,13 +578,199 @@ export const AdminVideoFactory = () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 {(run.videos || []).map((v, i) => (
-                  <VideoCard key={i} video={v} idx={i} runId={run.id} onMarkPublished={markPublished} />
+                  <VideoCard key={i} video={v} idx={i} runId={run.id} onMarkPublished={markPublished} onOpenMetrics={openMetricsModal} />
                 ))}
               </CardContent>
             </Card>
           ))}
         </TabsContent>
+        <TabsContent value="performance" className="space-y-4" data-testid="performance-tab-content">
+          <Card>
+            <CardHeader className="pb-2 flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-accent" />
+                  Poids par format (boucle d'apprentissage V2)
+                </CardTitle>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Calculés à partir de vos métriques saisies. Floor exploration 10% par format. Formule : 0.5×conversion + 0.3×CTR + 0.2×views (normalisé).
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={fetchWeights} disabled={weightsLoading} data-testid="btn-refresh-weights">
+                <RefreshCw className={`w-3.5 h-3.5 mr-1 ${weightsLoading ? 'animate-spin' : ''}`} /> Rafraîchir
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {weightsSnapshot && weightsSnapshot.total_samples === 0 && (
+                <p className="text-sm text-muted-foreground" data-testid="weights-empty">
+                  Aucune métrique saisie. Génère une vidéo, publie-la, puis clique sur <strong>Saisir métriques</strong> dans l'historique. Dès la 1ère métrique, les poids s'activeront pour les prochaines générations.
+                </p>
+              )}
+              {weightsSnapshot && (
+                <div className="space-y-2" data-testid="weights-list">
+                  {FORMATS.map((f) => {
+                    const w = weightsSnapshot.weights?.[f] || 0;
+                    const m = weightsSnapshot.metrics_by_format?.[f];
+                    const pct = Math.round(w * 100);
+                    return (
+                      <div key={f} data-testid={`weight-row-${f}`}>
+                        <div className="flex items-center justify-between text-sm mb-0.5">
+                          <span className="font-mono">{f} — {FORMAT_LABELS_FR[f]}</span>
+                          <span className="font-mono text-xs">
+                            {m ? `views ${Math.round(m.views)} · CTR ${m.ctr.toFixed(1)}% · conv ${m.conversion.toFixed(1)}% · n=${m.samples}` : '— pas encore de métrique'}
+                          </span>
+                        </div>
+                        <div className="w-full bg-muted/40 rounded-full h-2 overflow-hidden">
+                          <div
+                            className="h-2 bg-accent transition-all"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">Poids : {(w * 100).toFixed(1)}%</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {weightsSnapshot?.updated_at && (
+                <p className="text-xs text-muted-foreground">
+                  Dernier recalcul : {new Date(weightsSnapshot.updated_at).toLocaleString('fr-FR')} · Total samples : {weightsSnapshot.total_samples}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Métriques saisies (50 plus récentes)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {metricsList.length === 0 ? (
+                <p className="text-sm text-muted-foreground" data-testid="metrics-empty">Aucune métrique pour le moment.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs" data-testid="metrics-table">
+                    <thead className="text-left text-muted-foreground border-b border-border/40">
+                      <tr>
+                        <th className="py-1.5 pr-2">Date</th>
+                        <th className="py-1.5 pr-2">Format</th>
+                        <th className="py-1.5 pr-2">Plateforme</th>
+                        <th className="py-1.5 pr-2 text-right">Views</th>
+                        <th className="py-1.5 pr-2 text-right">CTR</th>
+                        <th className="py-1.5 pr-2 text-right">Conv.</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {metricsList.map((m, i) => (
+                        <tr key={i} className="border-b border-border/20">
+                          <td className="py-1 pr-2">{new Date(m.created_at).toLocaleDateString('fr-FR')}</td>
+                          <td className="py-1 pr-2 font-mono">{m.format_used}</td>
+                          <td className="py-1 pr-2">{m.plateforme || '—'}</td>
+                          <td className="py-1 pr-2 text-right">{Math.round(m.views)}</td>
+                          <td className="py-1 pr-2 text-right">{Number(m.ctr).toFixed(1)}%</td>
+                          <td className="py-1 pr-2 text-right">{Number(m.conversion).toFixed(1)}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+
+      {/* Modal saisie métriques */}
+      {metricsModal && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setMetricsModal(null)}
+          data-testid="metrics-modal-backdrop"
+        >
+          <Card
+            className="w-full max-w-md"
+            onClick={(e) => e.stopPropagation()}
+            data-testid="metrics-modal"
+          >
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <BarChart3 className="w-4 h-4" /> Saisir les métriques
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Format <strong>{metricsModal.formatUsed}</strong> · vidéo #{metricsModal.videoIdx + 1}
+              </p>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={submitMetrics} className="space-y-3" data-testid="metrics-form">
+                <div>
+                  <Label htmlFor="mf-views">Vues</Label>
+                  <Input
+                    id="mf-views"
+                    type="number"
+                    min={0}
+                    step={1}
+                    placeholder="ex : 12000"
+                    value={metricsForm.views}
+                    onChange={(e) => setMetricsForm({ ...metricsForm, views: e.target.value })}
+                    data-testid="metrics-input-views"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="mf-ctr">CTR (%)</Label>
+                  <Input
+                    id="mf-ctr"
+                    type="number"
+                    min={0}
+                    max={100}
+                    step={0.1}
+                    placeholder="ex : 3.2"
+                    value={metricsForm.ctr}
+                    onChange={(e) => setMetricsForm({ ...metricsForm, ctr: e.target.value })}
+                    data-testid="metrics-input-ctr"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="mf-conv">Taux de conversion (%)</Label>
+                  <Input
+                    id="mf-conv"
+                    type="number"
+                    min={0}
+                    max={100}
+                    step={0.1}
+                    placeholder="ex : 1.1"
+                    value={metricsForm.conversion}
+                    onChange={(e) => setMetricsForm({ ...metricsForm, conversion: e.target.value })}
+                    data-testid="metrics-input-conversion"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="mf-note">Note (optionnel)</Label>
+                  <Input
+                    id="mf-note"
+                    type="text"
+                    placeholder="ex : virale TikTok jeudi"
+                    value={metricsForm.note}
+                    onChange={(e) => setMetricsForm({ ...metricsForm, note: e.target.value })}
+                    data-testid="metrics-input-note"
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button type="button" variant="outline" onClick={() => setMetricsModal(null)} data-testid="metrics-cancel">
+                    Annuler
+                  </Button>
+                  <Button type="submit" disabled={savingMetrics} data-testid="metrics-submit">
+                    {savingMetrics ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <CheckCircle2 className="w-4 h-4 mr-1" />}
+                    Enregistrer
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

@@ -28,35 +28,42 @@ SITE_URL = "https://strategie-expertise-sante.fr"
 # ============================================================================
 
 SYSTEM_PROMPT = """# IDENTITÉ
-Tu es S.E.S Video Conversion Engine, le générateur autonome de scripts vidéo
-de Stratégie & Expertise Santé — cabinet français de conseil pour victimes
-d'accidents du travail (AT), maladies professionnelles (MP), MDPH, invalidité
-et litiges assurantiels.
+Tu es S.E.S Video Factory Engine.
+Tu génères des vidéos courtes (30-60s) pour un cabinet français spécialisé en
+accidents du travail (AT), maladies professionnelles (MP), invalidité / IPP,
+MDPH et litiges assurantiels.
 
-# CIBLE PUBLIC
-Personnes 35-65 ans, douleur physique/administrative réelle, méfiance envers
-les solutions miracles. Ton attendu : fondateur authentique, proche, factuel.
-Jamais corporate. Jamais commercial agressif.
+Tu n'es PAS :
+- avocat
+- médecin
+- conseiller financier
 
-# 6 RÔLES INTERNES (chaîne de pensée invisible, NE JAMAIS exposer en sortie)
-1. STRATEGIC PRODUCER — choisit 1 format parmi F1-F7
-2. SCRIPT DIRECTOR — écrit 30-60s parlé naturel
-3. VISUAL DIRECTOR — découpe 6 plans max
-4. SEO ENGINE — titre/description/hashtags adaptés à la plateforme
-5. COMPLIANCE GUARD — vérifie mots interdits + nuance santé/droit
-6. COST OPTIMIZER — JSON compact, pas de prose superflue
+Tu produis uniquement du contenu informatif grand public.
 
-# BIBLIOTHÈQUE DE FORMATS (CHOISIR 1, NE PAS INVENTER)
-F1 — "Ne dites jamais ça à votre médecin-conseil"     [autorité, choc]
-F2 — "Voici ce que vaut un point d'IPP en €"          [éducatif, chiffré]
-F3 — "Cas réel anonymisé : IPP X% → Y%"               [preuve sociale]
-F4 — "Ce que la CPAM cherche vraiment"                [insider]
-F5 — "Réaction en direct à un courrier CPAM"          [identification]
-F6 — "Mots qui font perdre de l'argent"               [vocabulaire piège]
-F7 — "Préparation expertise médicale"                 [checklist autorité]
+# OBJECTIF PRINCIPAL
+CONVERSION > CLARTÉ > VIRALITÉ
 
-# MAPPING SERVICE → CTA → URL (RÈGLE DURE, 1 SEUL CTA PAR VIDÉO)
-- service "0€" (StratégiIA — diagnostic gratuit) :
+Maximiser les actions (clic, prise de contact, simulateur), sans promesse garantie.
+
+# PUBLIC
+Personnes 35-65 ans :
+- douleur administrative ou médicale réelle
+- forte méfiance institutionnelle
+- besoin de clarté simple et directe
+
+# FORMATS AUTORISÉS (STRICT — CHOISIR UN SEUL)
+F1 — Erreurs en expertise médicale (ne jamais dire ça au médecin-conseil)
+F2 — Explications chiffrées (IPP, indemnisation, droits)
+F3 — Cas réel anonymisé
+F4 — Analyse CPAM / médecin-conseil (ce qu'ils regardent vraiment)
+F5 — Réaction à un courrier administratif
+F6 — Erreurs de vocabulaire qui font perdre des droits
+F7 — Checklist préparation dossier / expertise
+
+INTERDICTION : inventer un format, fusionner plusieurs formats.
+
+# MAPPING SERVICE → CTA → URL (1 SEUL CTA PAR VIDÉO)
+- service "0€" (StratégiIA gratuit) :
     CTA  = "Diagnostic gratuit 2 min, lien en bio"
     URL  = "https://strategie-expertise-sante.fr/simulateur"
 - service "29€" (Analyse PDF) :
@@ -72,28 +79,42 @@ Si "service_target = auto", choisir selon urgence :
 UTM à ajouter automatiquement à l'URL :
     ?utm_source={plateforme_lower}&utm_medium=short&utm_campaign={format_id}
 
+# PERFORMANCE INPUT (BACKEND-ONLY, OPTIONNEL)
+Tu peux recevoir dans le user prompt :
+- forced_format : F1-F7 → l'utiliser obligatoirement, ne pas réinterpréter
+- performance_weights : informationnel uniquement (la pondération est appliquée
+  côté backend). Si forced_format absent, choisis librement parmi F1-F7
+  selon le topic_brief.
+
+Le LLM ne fait AUCUN calcul de probabilité.
+
 # RÈGLES DURES (NON NÉGOCIABLES)
 - Langue : français uniquement, registre parlé naturel
-- Hook : ≤ 12 mots, idéal 5-8 mots, percutant
+- Hook : ≤ 12 mots, idéal 5-8 mots
 - Script total : 70 à 150 mots (≈ 30-60 secondes parlé)
 - Phrases courtes (≤ 15 mots). Vouvoiement si urgence=critique, sinon tutoiement OK.
 - 1 SEUL CTA en fin de script
 - Storyboard : 6 plans maximum
-- Sous-titres .srt : ≤ 7 mots par segment, ≤ 2 lignes, durée 1-3s par segment
+- Sous-titres .srt : ≤ 7-10 mots par segment, ≤ 2 lignes, durée 1-3s par segment
 - Sortie : JSON STRICT uniquement. Aucun texte hors JSON. Aucun markdown.
 
-# COMPLIANCE — MOTS / FORMULES INTERDITS
-Refuse et reformule automatiquement si tu utilises :
-- "garantit", "garanti", "garantie", "100%", "sûr à 100%", "sûr et certain"
-- "remboursement automatique", "vous allez gagner X €" (toujours conditionnel)
-- "la CPAM ment", "les médecins mentent", "ils vous arnaquent"
-- diagnostics médicaux personnalisés ("vous avez une lombalgie")
+# COMPLIANCE (STRICT)
+INTERDIT :
+- "garanti", "garantie", "100%", "sûr à 100%", "assuré"
+- "vous allez gagner X €" (toujours conditionnel)
+- "remboursement automatique", "gain assuré"
+- "la CPAM ment", "les médecins mentent", dénigrement institutionnel direct
+- diagnostic médical personnalisé ("vous avez une lombalgie")
 - promesses chiffrées non sourcées
-Formulations acceptables : "vous pourriez", "il est possible que", "selon les cas",
-"en moyenne", "dans certains dossiers".
+- manipulation émotionnelle extrême, catastrophisme irréaliste
 
-# AUTO-CHECK FINAL (discipline interne avant de répondre)
-Avant de finaliser le JSON, vérifie silencieusement :
+AUTORISÉ :
+- pédagogie, cas anonymisés, explications générales
+- "vous pourriez", "dans certains cas", "selon votre situation"
+- chiffres contextualisés ("en moyenne", "selon les cas")
+
+# AUTO-CHECK INTERNE (avant de finaliser le JSON)
+Vérifie silencieusement :
 ✔ Exactement 1 CTA par vidéo (jamais 2)
 ✔ Aucun mot interdit dans hook/script/sous-titres
 ✔ Format choisi parmi F1-F7 uniquement
@@ -102,14 +123,16 @@ Avant de finaliser le JSON, vérifie silencieusement :
 ✔ Hook ≤ 12 mots
 ✔ URL avec UTM correct
 ✔ JSON parsable strictement
+✔ compliance_passed = true uniquement si TOUT respecté
 
 # SCHEMA JSON DE SORTIE (RESPECT ABSOLU)
 {
   "videos": [
     {
       "format_used": "F1",
-      "format_label": "Ne dites jamais ça à votre médecin-conseil",
+      "format_label": "Erreurs en expertise médicale",
       "viral_score": 4,
+      "conversion_score": 4,
       "hook_variants": [
         "Hook variante A (≤12 mots).",
         "Hook variante B (≤12 mots).",
@@ -137,10 +160,14 @@ Avant de finaliser le JSON, vérifie silencieusement :
         "target_service": "0€",
         "url_with_utm": "https://strategie-expertise-sante.fr/simulateur?utm_source=tiktok&utm_medium=short&utm_campaign=F1"
       },
+      "disclaimer_text": "Contenu informatif, ne constitue pas un conseil médical ou juridique personnalisé.",
       "compliance_passed": true
     }
   ]
 }
+
+# Types de plans autorisés dans storyboard : face-cam | broll | texte
+# Chaque plan doit être simple, concret, filmable avec un téléphone.
 
 # INSTRUCTION FINALE
 - Génère exactement le nombre de vidéos demandé (1 à 5).
@@ -153,13 +180,13 @@ Avant de finaliser le JSON, vérifie silencieusement :
 # ============================================================================
 
 FORMAT_LABELS = {
-    "F1": "Ne dites jamais ça à votre médecin-conseil",
-    "F2": "Voici ce que vaut un point d'IPP en €",
-    "F3": "Cas réel anonymisé : IPP X% → Y%",
-    "F4": "Ce que la CPAM cherche vraiment",
-    "F5": "Réaction en direct à un courrier CPAM",
-    "F6": "Mots qui font perdre de l'argent",
-    "F7": "Préparation expertise médicale",
+    "F1": "Erreurs en expertise médicale",
+    "F2": "Explications chiffrées (IPP, indemnisation)",
+    "F3": "Cas réel anonymisé",
+    "F4": "Analyse CPAM / médecin-conseil",
+    "F5": "Réaction à un courrier administratif",
+    "F6": "Erreurs de vocabulaire",
+    "F7": "Checklist préparation dossier",
 }
 
 # Mapping service → texte CTA + URL de base (pour validation)
@@ -197,6 +224,11 @@ FORBIDDEN_PATTERNS = [
 ]
 
 
+DEFAULT_DISCLAIMER = (
+    "Contenu informatif, ne constitue pas un conseil médical ou juridique personnalisé."
+)
+
+
 # ============================================================================
 # BUILDER — Assemblage du user prompt
 # ============================================================================
@@ -208,17 +240,33 @@ def build_user_prompt(
     urgence: str,
     plateforme: str,
     batch_size: int,
+    forced_format: Optional[str] = None,
+    performance_weights: Optional[Dict[str, float]] = None,
 ) -> str:
-    """Construit la portion 'user' du prompt (dynamique, non cachée)."""
-    return (
-        f"Génère {batch_size} vidéo(s) avec ces paramètres :\n"
-        f"- topic_brief : \"{topic_brief}\"\n"
-        f"- service_target : {service_target}\n"
-        f"- intention : {intention}\n"
-        f"- urgence : {urgence}\n"
-        f"- plateforme : {plateforme}\n\n"
-        f"Réponds uniquement avec le JSON strict, aucun texte autour."
-    )
+    """Construit la portion 'user' du prompt (dynamique, non cachée).
+    V2 : injecte forced_format et performance_weights si fournis.
+    """
+    parts = [
+        f"Génère {batch_size} vidéo(s) avec ces paramètres :",
+        f"- topic_brief : \"{topic_brief}\"",
+        f"- service_target : {service_target}",
+        f"- intention : {intention}",
+        f"- urgence : {urgence}",
+        f"- plateforme : {plateforme}",
+    ]
+    if forced_format and forced_format in FORMAT_LABELS:
+        parts.append(
+            f"- forced_format : {forced_format} "
+            f"(OBLIGATOIRE — utiliser ce format, ne pas réinterpréter)"
+        )
+    if performance_weights:
+        weights_str = ", ".join(
+            f"{k}={v:.2f}" for k, v in sorted(performance_weights.items())
+        )
+        parts.append(f"- performance_weights (informationnel) : {weights_str}")
+    parts.append("")
+    parts.append("Réponds uniquement avec le JSON strict, aucun texte autour.")
+    return "\n".join(parts)
 
 
 # ============================================================================
@@ -358,6 +406,17 @@ def validate_and_normalize(
             v["viral_score"] = max(1, min(5, vs))
         except (TypeError, ValueError):
             v["viral_score"] = 3
+
+        # Conversion score (V2)
+        try:
+            cs = int(v.get("conversion_score", 3))
+            v["conversion_score"] = max(1, min(5, cs))
+        except (TypeError, ValueError):
+            v["conversion_score"] = 3
+
+        # Disclaimer (V2) — toujours renseigné côté backend
+        dt = (v.get("disclaimer_text") or "").strip()
+        v["disclaimer_text"] = dt or DEFAULT_DISCLAIMER
 
         # Hook variants
         hooks = v.get("hook_variants") or []
