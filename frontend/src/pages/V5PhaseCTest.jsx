@@ -34,22 +34,29 @@ const SUBTITLES_GLOBAL = [
 ];
 
 // 4 viewports SUR LE MÊME document (1080x2280 source).
-// Chacun = bande verticale 9:16 ratio (1080x1920) déplacée pour zoomer sur 4 zones.
-// Inspiration "CapCut AI" : on isole la zone narrative pertinente à chaque chunk.
-// (Y ranges calibrés visuellement sur le doc Contestation RATP)
+// Phase D : tous les viewports respectent un ratio 9:16 STRICT (sw=1020, sh=1813) pour
+// éviter les bandes noires haut/bas vues en Phase C. Variation via sy (translation
+// verticale) + Ken Burns. La hauteur totale du doc (2280) permet 4 viewports superposés
+// qui glissent progressivement du haut vers le bas du doc.
 const PLAN_VIEWPORTS = [
-  // Plan 1 (0-9s) — Header CONTESTATION + Articles R142-1
-  { sx: 30, sy: 280, sw: 1020, sh: 950, durationSec: 9,
-    kenBurns: { zoomFrom: 1.0, zoomTo: 1.08, panX: 0.03, panY: 0 } },
-  // Plan 2 (9-18s) — Section ordre médical + adresse CRAM
-  { sx: 30, sy: 950, sw: 1020, sh: 900, durationSec: 9,
-    kenBurns: { zoomFrom: 1.05, zoomTo: 1.0, panX: -0.03, panY: 0.02 } },
-  // Plan 3 (18-24s) — Recours contre tiers L.454-1
-  { sx: 30, sy: 1400, sw: 1020, sh: 720, durationSec: 6,
-    kenBurns: { zoomFrom: 1.0, zoomTo: 1.06, panX: 0, panY: -0.03 } },
-  // Plan 4 (24-27s) — Logo RATP + warning final
-  { sx: 30, sy: 1850, sw: 1020, sh: 380, durationSec: 3,
-    kenBurns: { zoomFrom: 1.0, zoomTo: 1.10, panX: 0, panY: 0 } },
+  // Plan 1 (0-9s) — Haut : Header CONTESTATION + délai 2 MOIS
+  { sx: 30, sy: 0,   sw: 1020, sh: 1813, durationSec: 9,
+    kenBurns: { zoomFrom: 1.0, zoomTo: 1.06, panX: 0.02, panY: 0.01 },
+    // Highlight sur "DEUX MOIS" (visible vers y=470 dans le doc 1080x2280)
+    highlight: { sx: 230, sy: 440, sw: 320, sh: 60, appearAt: 3.0, holdFor: 2.5 } },
+  // Plan 2 (9-18s) — Glisse vers le milieu : Articles + section ordre médical
+  { sx: 30, sy: 200, sw: 1020, sh: 1813, durationSec: 9,
+    kenBurns: { zoomFrom: 1.0, zoomTo: 1.08, panX: -0.02, panY: 0 },
+    // Highlight sur "Articles R142-1 et R.711-20" (y≈350 dans doc)
+    highlight: { sx: 90, sy: 320, sw: 920, sh: 60, appearAt: 6.0, holdFor: 2.5 } },
+  // Plan 3 (18-24s) — Bas-milieu : Section RECOURS contre TIERS L.454-1
+  { sx: 30, sy: 380, sw: 1020, sh: 1813, durationSec: 6,
+    kenBurns: { zoomFrom: 1.0, zoomTo: 1.06, panX: 0, panY: -0.01 },
+    // Highlight sur "TIERS AUTEUR DE L'ACCIDENT" (y≈1430 doc)
+    highlight: { sx: 60, sy: 1410, sw: 700, sh: 70, appearAt: 3.0, holdFor: 2.0 } },
+  // Plan 4 (24-30s+) — Footer + CTA expert. Crop calé sur 9:16 OK désormais.
+  { sx: 30, sy: 467, sw: 1020, sh: 1813, durationSec: 6,
+    kenBurns: { zoomFrom: 1.05, zoomTo: 1.10, panX: 0, panY: 0.02 } },
 ];
 
 function splitSubtitlesByPlan(subs, viewports) {
@@ -94,6 +101,7 @@ export default function V5PhaseCTest() {
             subtitles: subsByPlan[i],
             cropRegion: { sx: vp.sx, sy: vp.sy, sw: vp.sw, sh: vp.sh },
             kenBurns: vp.kenBurns,
+            highlight: vp.highlight || null,
           })
         );
         rendererRef.current = new V5Renderer(plans, { transition: 'crossfade' });
