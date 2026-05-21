@@ -420,3 +420,115 @@ async def force_recompute(admin=Depends(get_current_admin)):
     """Force le recalcul du snapshot de poids (utile après suppression métrique)."""
     weights = await recompute_and_save_weights()
     return {"recomputed": True, "weights": weights}
+
+
+
+# ============================================================================
+# V4.1 — VOICE-OVER (OpenAI TTS via Emergent LLM Key) — ADDITIF, NE TOUCHE PAS V1/V2/V3
+# ============================================================================
+
+ALLOWED_VOICES = {"alloy", "onyx", "sage", "nova", "coral", "ash", "echo", "fable", "shimmer"}
+DEFAULT_VOICE = "onyx"  # Grave, autoritaire — ton médical/juridique
+TTS_MODEL = "tts-1-hd"
+TTS_MAX_CHARS = 4000  # Marge sous limite OpenAI (4096)
+
+
+class VoiceOverInput(BaseModel):
+    video_idx: int = Field(0, ge=0, le=4)
+    voice: str = Field(default=DEFAULT_VOICE)
+    speed: float = Field(default=1.0, ge=0.5, le=2.0)
+
+
+@router.post("/{run_id}/voice-over")
+async def generate_voice_over(run_id: str, body: VoiceOverInput, admin=Depends(get_current_admin)):
+    """V4.1 — Génère une voix-off MP3 (base64) pour la vidéo `videos[video_idx]`.
+
+    Source du texte : `videos[video_idx].script` (déjà validé V3).
+    Stocke base64 + métadata dans le sous-document de la vidéo.
+    """
+    import os
+    voice = (body.voice or DEFAULT_VOICE).lower()
+    if voice not in ALLOWED_VOICES:
+        raise HTTPException(400, f"Voice invalide. Valeurs autorisées : {sorted(ALLOWED_VOICES)}")
+
+    run = await db.video_factory_runs.find_one({"id": run_id}, {"_id": 0})
+    if not run:
+        raise HTTPException(404, "Run introuvable.")
+    videos = run.get("videos") or []
+    if body.video_idx >= len(videos):
+        raise HTTPException(400, "video_idx hors borne.")
+
+    script = (videos[body.video_idx].get("script") or "").strip()
+    if not script:
+        raise HTTPException(400, "Script vide pour cette vidéo.")
+    if len(script) > TTS_MAX_CHARS:
+        raise HTTPException(400, f"Script trop long ({len(script)} chars > {TTS_MAX_CHARS}).")
+
+    emergent_key = os.environ.get("EMERGENT_LLM_KEY", "")
+    if not emergent_key:
+        raise HTTPException(500, "EMERGENT_LLM_KEY absent du backend.")
+
+    try:
+        from emergentintegrations.llm.openai import OpenAITextToSpeech
+    except Exception as e:
+        raise HTTPException(500, f"emergentintegrations.openai indisponible : {e}")
+
+    try:
+        tts = OpenAITextToSpeech(api_key=emergent_key)
+        audio_b64 = await tts.generate_speech_base64(
+            text=script,
+            model=TTS_MODEL,
+            voice=voice,
+            speed=body.speed,
+            response_format="mp3",
+        )
+    except Exception as e:
+        logger.error(f"[V4.1] TTS generation failed run={run_id} idx={body.video_idx}: {e}")
+        raise HTTPException(502, f"Génération TTS échouée : {e}")
+
+    voice_over = {
+        "audio_base64": audio_b64,
+        "voice": voice,
+        "model": TTS_MODEL,
+        "speed": body.speed,
+        "char_count": len(script),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "admin_email": admin.get("email"),
+    }
+    await db.video_factory_runs.update_one(
+        {"id": run_id},
+        {"$set": {f"videos.{body.video_idx}.voice_over": voice_over}},
+    )
+
+    try:
+        logger.info(_json_log.dumps({
+            "event": "voice_over_generated",
+            "run_id": run_id,
+            "video_idx": body.video_idx,
+            "voice": voice,
+            "char_count": len(script),
+            "model": TTS_MODEL,
+        }, ensure_ascii=False))
+    except Exception:
+        pass
+
+    return {
+        "generated": True,
+        "run_id": run_id,
+        "video_idx": body.video_idx,
+        "voice_over": voice_over,
+    }
+
+
+@router.delete("/{run_id}/voice-over/{video_idx}")
+async def delete_voice_over(run_id: str, video_idx: int, admin=Depends(get_current_admin)):
+    """V4.1 — Supprime la voix-off d'une vidéo (utile pour régénérer avec une autre voix)."""
+    if video_idx < 0 or video_idx > 4:
+        raise HTTPException(400, "video_idx hors borne.")
+    res = await db.video_factory_runs.update_one(
+        {"id": run_id},
+        {"$unset": {f"videos.{video_idx}.voice_over": ""}},
+    )
+    if res.matched_count == 0:
+        raise HTTPException(404, "Run introuvable.")
+    return {"deleted": True, "run_id": run_id, "video_idx": video_idx}

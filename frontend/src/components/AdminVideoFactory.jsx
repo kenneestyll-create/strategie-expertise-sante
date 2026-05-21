@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Copy, Download, Video as VideoIcon, Sparkles, Trash2, RefreshCw, CheckCircle2, AlertTriangle, BarChart3, TrendingUp, FileText } from 'lucide-react';
+import { VideoPreviewPlayer } from '@/components/VideoPreviewPlayer';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -185,7 +186,7 @@ const SeoPdfCard = ({ seoPdf, runId }) => {
   );
 };
 
-const VideoCard = ({ video, idx, runId, onMarkPublished, onOpenMetrics }) => {
+const VideoCard = ({ video, idx, runId, onMarkPublished, onOpenMetrics, generateVoiceOver, onVoiceOverGenerated }) => {
   const fullPack = JSON.stringify(video, null, 2);
   const safeSlug = (video.format_used || `v${idx + 1}`).toLowerCase();
 
@@ -220,6 +221,21 @@ const VideoCard = ({ video, idx, runId, onMarkPublished, onOpenMetrics }) => {
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {/* V4.1 — PREVIEW VIDÉO 9:16 + VOIX OFF — additif, ne modifie pas le pipeline V1/V2/V3 */}
+        {generateVoiceOver && (
+          <section data-testid={`section-preview-${idx}`} className="rounded-lg border border-[#C9A84C]/30 bg-gradient-to-br from-[#FAF8F3] to-white p-4">
+            <h4 className="text-sm font-semibold uppercase tracking-wide mb-3 flex items-center gap-2">
+              <VideoIcon className="w-4 h-4 text-[#C9A84C]" /> Preview vidéo 9:16 <Badge variant="outline" className="text-[10px] font-normal">V4.1</Badge>
+            </h4>
+            <VideoPreviewPlayer
+              video={video}
+              runId={runId}
+              videoIdx={idx}
+              generateVoiceOver={generateVoiceOver}
+              onVoiceOverGenerated={onVoiceOverGenerated}
+            />
+          </section>
+        )}
         {/* HOOKS */}
         <section data-testid={`section-hooks-${idx}`}>
           <div className="flex items-center justify-between mb-2">
@@ -409,6 +425,31 @@ export const AdminVideoFactory = () => {
       setHistoryLoading(false);
     }
   }, [axiosConfig]);
+
+  // V4.1 — Voice-over generation (additif, ne touche pas V1/V2/V3)
+  const generateVoiceOver = useCallback(async ({ runId, videoIdx, voice }) => {
+    const r = await axios.post(
+      `${API}/admin/video-factory/${runId}/voice-over`,
+      { video_idx: videoIdx, voice },
+      axiosConfig(),
+    );
+    return r.data;
+  }, [axiosConfig]);
+
+  // Update local state when voice_over is generated (current result + history)
+  const handleVoiceOverGenerated = useCallback((runId) => (videoIdx, voiceOver) => {
+    if (!voiceOver) return;
+    setResult(prev => {
+      if (!prev || prev.run_id !== runId) return prev;
+      const videos = (prev.videos || []).map((v, i) => i === videoIdx ? { ...v, voice_over: voiceOver } : v);
+      return { ...prev, videos };
+    });
+    setHistory(prev => prev.map(run => {
+      if (run.id !== runId) return run;
+      const videos = (run.videos || []).map((v, i) => i === videoIdx ? { ...v, voice_over: voiceOver } : v);
+      return { ...run, videos };
+    }));
+  }, []);
 
   useEffect(() => {
     if (activeTab === 'history') fetchHistory();
@@ -685,7 +726,16 @@ export const AdminVideoFactory = () => {
                 </CardContent>
               </Card>
               {result.videos.map((v, i) => (
-                <VideoCard key={i} video={v} idx={i} runId={result.run_id} onMarkPublished={markPublished} onOpenMetrics={openMetricsModal} />
+                <VideoCard
+                  key={i}
+                  video={v}
+                  idx={i}
+                  runId={result.run_id}
+                  onMarkPublished={markPublished}
+                  onOpenMetrics={openMetricsModal}
+                  generateVoiceOver={generateVoiceOver}
+                  onVoiceOverGenerated={handleVoiceOverGenerated(result.run_id)}
+                />
               ))}
               {result.seo_pdf && <SeoPdfCard seoPdf={result.seo_pdf} runId={result.run_id} />}
             </div>
@@ -726,7 +776,16 @@ export const AdminVideoFactory = () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 {(run.videos || []).map((v, i) => (
-                  <VideoCard key={i} video={v} idx={i} runId={run.id} onMarkPublished={markPublished} onOpenMetrics={openMetricsModal} />
+                  <VideoCard
+                    key={i}
+                    video={v}
+                    idx={i}
+                    runId={run.id}
+                    onMarkPublished={markPublished}
+                    onOpenMetrics={openMetricsModal}
+                    generateVoiceOver={generateVoiceOver}
+                    onVoiceOverGenerated={handleVoiceOverGenerated(run.id)}
+                  />
                 ))}
                 {run.seo_pdf && <SeoPdfCard seoPdf={run.seo_pdf} runId={run.id} />}
               </CardContent>
