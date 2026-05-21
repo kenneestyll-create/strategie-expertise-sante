@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="#C9A84C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- page body with folded corner -->
+  <path d="M 14 8 L 44 8 L 52 16 L 52 56 L 14 56 Z" />
+  <!-- fold line -->
+  <path d="M 44 8 L 44 16 L 52 16" />
+  <!-- text lines (abstract document content) -->
+  <line x1="20" y1="24" x2="46" y2="24" />
+  <line x1="20" y1="32" x2="46" y2="32" />
+  <line x1="20" y1="40" x2="46" y2="40" />
+  <line x1="20" y1="48" x2="36" y2="48" />
+</svg>

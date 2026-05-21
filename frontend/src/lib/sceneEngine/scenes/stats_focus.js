@@ -13,6 +13,7 @@
 import { Scene, LAYER } from '../Scene.js';
 import { easings, easingPresets, lerp } from '../easing.js';
 import { CueTracker, chunksToCues } from '../timeline.js';
+import { wrapTwoLines } from './legal_balance.js';
 
 /** Extrait le 1er chiffre significatif du script (avec unité éventuelle) */
 function extractHeadlineFigure(script) {
@@ -107,11 +108,18 @@ export class StatsFocusScene extends Scene {
 
   _drawLabel(ctx) {
     const accent = this.motionRule?.accent || '#3b82f6';
-    ctx.font = '600 28px Inter, system-ui, sans-serif';
+    ctx.font = '600 22px Inter, system-ui, sans-serif';
     ctx.fillStyle = accent;
-    const label = (this.video?.hook_variants?.[0] || 'STATISTIQUE').slice(0, 36).toUpperCase();
-    const w = ctx.measureText(label).width;
-    ctx.fillText(label, (this.width - w) / 2, this.height * 0.50);
+    // Wrap propre 2 lignes (vs slice brutal Sprint 2) — placé sous le headline figure
+    const raw = (this.video?.hook_variants?.[0] || 'STATISTIQUE').toUpperCase();
+    const maxW = this.width - 120;
+    const lines = wrapTwoLines(ctx, raw, maxW);
+    const lineH = 30;
+    const yStart = this.height * 0.54;
+    for (let i = 0; i < lines.length; i++) {
+      const lw = ctx.measureText(lines[i]).width;
+      ctx.fillText(lines[i], (this.width - lw) / 2, yStart + i * lineH);
+    }
   }
 
   _drawCaption(ctx) {
