@@ -358,6 +358,34 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
   - `backend/routes/agents_registry.py` (card video_factory mise à jour)
   - `backend/tests/test_video_factory_v42_regression.py` (NEW, 9 tests)
 
+## Changelog 2026-05-21 — Video Factory V4.3 Light Tracking (Iteration 202)
+- [x] **Enrichissement rétro-compatible** de `PATCH /api/admin/video-factory/{run_id}/status` (zéro nouveau endpoint conformément aux specs strictes)
+  - Body Pydantic étendu (tous nouveaux champs optionnels) : `video_idx (0-4)`, `platform (regex: tiktok|youtube|instagram|other)`, `public_url (max 500 chars)`
+  - Si `video_idx` fourni ET `status=='published'` → enrichit `videos[idx]` avec `published=true, published_at, publish_platform, publish_public_url`
+  - Sinon comportement V1 inchangé (status global du run uniquement) — **0 breaking change**, validé par tests rétro-compat
+  - Log JSON structuré `video_marked_published` (traçabilité audit-able)
+- [x] **Mini-dialog `MarkPublishedDialog.jsx`** (NEW, 148 lignes)
+  - Select 4 plateformes (TikTok, YouTube Shorts, Instagram Reels, Autre)
+  - Input URL publique optionnelle avec validation `^https?://` côté UI
+  - Bouton Annuler + Confirmer (loading state)
+  - data-testids : `mark-published-dialog`, `publish-platform-select`, `publish-url-input`, `publish-confirm`, `publish-cancel`
+- [x] **Badge UI minimal sur VideoCard** (témoin de bonne saisie, PAS un dashboard analytique) :
+  - `data-testid="published-badge-{idx}"` vert : « ✓ Publié sur {plateforme} »
+  - Icône ExternalLink cliquable (data-testid="published-link-{idx}") si URL renseignée → ouvre la pub dans un nouvel onglet
+  - Bouton « Marquer publié » devient « Re-publier » si déjà publié (permet de mettre à jour)
+- [x] **State management optimiste** : pas de refetch full du history après publication, juste mise à jour locale du `result` et `history` (UX fluide)
+- [x] **Organigramme** : card video_factory mise à jour (role V4.3, mission inclut V4.3, **16 garde-fous** total : 8 V1-V3 + 2 V4.1 + 3 V4.2 + 3 V4.3 nouveaux)
+- [x] **Tuto Admin** : étape V4.3 + mots-clés (marquer publié, publication, plateforme, publish_platform, tracking, traçabilité, badge, v4.3)
+- **Architecture** : strict additif. ZÉRO nouveau endpoint backend. ZÉRO dashboard analytics. ZÉRO structure `publications[]`. UTM existant préservé. Rétro-compat totale validée par pytest.
+- **Testing E2E** : Iteration 202 — **100% backend (pytest 11/11)** + **100% frontend self-test** (tour-skip click, dialog open, validation URL invalide, publish YouTube, badge + toast + UTM CTA mis à jour).
+- **Fichiers créés/modifiés** :
+  - `frontend/src/components/MarkPublishedDialog.jsx` (NEW, 148 lignes)
+  - `frontend/src/components/AdminVideoFactory.jsx` (import + state publishDialog + markPublished refactoré + handlePublishedDone + render dialog + badge sur VideoCard)
+  - `backend/routes/video_factory.py` (PATCH /status enrichi avec body Pydantic V4.3, lignes 332-394)
+  - `backend/routes/agents_registry.py` (card video_factory : role V4.3, mission, 3 nouveaux garde-fous)
+  - `frontend/src/components/AdminHelpPanel.jsx` (étape V4.3 + keywords)
+  - `backend/tests/test_video_factory_v43_tracking.py` (NEW, 11 tests, 11 PASS)
+
 ## Credentials Admin
 - Admin: admin@accompagn-sante.fr / Admin2024!
 - Backup Admin: backup@strategie-expertise-sante.fr / AdminSecours2026!
