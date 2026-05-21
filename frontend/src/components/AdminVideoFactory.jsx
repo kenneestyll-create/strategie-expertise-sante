@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Copy, Download, Video as VideoIcon, Sparkles, Trash2, RefreshCw, CheckCircle2, AlertTriangle, BarChart3, TrendingUp, FileText, ExternalLink } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
 import { VideoPreviewPlayer } from '@/components/VideoPreviewPlayer';
 import { MarkPublishedDialog } from '@/components/MarkPublishedDialog';
 
@@ -695,17 +696,26 @@ export const AdminVideoFactory = () => {
                 </div>
 
                 <div className="flex flex-wrap items-end gap-4 pt-2 border-t border-border/40">
-                  <div className="w-40">
-                    <Label htmlFor="vf-batch">Nb vidéos (1-5)</Label>
-                    <Input
+                  <div className="w-72">
+                    <div className="flex items-center justify-between mb-2">
+                      <Label htmlFor="vf-batch">Nb vidéos</Label>
+                      <span className="text-sm font-semibold text-[#C9A84C]" data-testid="batch-value">
+                        {form.batch_size}
+                      </span>
+                    </div>
+                    <Slider
                       id="vf-batch"
-                      type="number"
                       min={1}
                       max={5}
-                      value={form.batch_size}
-                      onChange={(e) => setForm({ ...form, batch_size: Math.max(1, Math.min(5, Number(e.target.value) || 1)) })}
+                      step={1}
+                      value={[form.batch_size]}
+                      onValueChange={(vals) => setForm({ ...form, batch_size: vals[0] })}
+                      className="w-full"
                       data-testid="input-batch"
                     />
+                    <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                      <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+                    </div>
                   </div>
                   <div className="w-44">
                     <Label>Forcer un format (optionnel)</Label>
