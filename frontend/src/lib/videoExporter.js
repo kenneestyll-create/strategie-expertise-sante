@@ -1,19 +1,15 @@
 /**
- * videoExporter.js — V4.2
+ * videoExporter.js — V4.2 + Scene Engine V1 (Sprint 2)
  * Exporte la preview V4.1 en .webm 9:16 720×1280 VP9 client-side.
  *
- * Réutilise :
- *  - les scenes (hook → storyboard → cta) calculées par VideoPreviewPlayer
- *  - le voice_over MP3 base64 généré par V4.1
+ * V4.2 : drawFrame() = renderer texte+gradient existant (fallback intact)
+ * V4.4 : si video.scene_type est défini et supporté → SceneEngine.render()
+ *        sinon → fallback drawFrame V4.2 (zéro régression sur les 9 anciennes vidéos)
  *
- * Pipeline :
- *  Canvas 720×1280 + captureStream(30) + AudioContext(voice_over) → MediaRecorder VP9 → Blob webm
- *
- * Sous-titres burned-in (style TikTok) : phrase complète par scène (mode D1),
- * highlight or #C9A84C sur MAJUSCULES et chiffres.
- *
- * ZÉRO endpoint backend. ZÉRO touche à V1/V2/V3 ni à V4.1.
+ * ZÉRO endpoint backend. ZÉRO touche à V1/V2/V3.
  */
+
+import { SceneFactory } from './sceneEngine/register.js';
 
 export const EXPORT_WIDTH = 720;
 export const EXPORT_HEIGHT = 1280;
@@ -275,13 +271,22 @@ function drawFrame(ctx, scenes, elapsed, totalDuration) {
 
 /**
  * Export d'une vidéo .webm 9:16.
+ *
+ * V4.2 mode : passe `scenes` + `voiceOverBase64` → drawFrame V4.2.
+ * V4.4 mode : passe en plus `video` (qui contient scene_type, format_used, script)
+ *             + `audioDurationSec` (durée réelle du MP3) →
+ *             si scene_type supporté par SceneFactory, on bascule sur Scene Engine.
+ *             Sinon fallback automatique drawFrame V4.2.
+ *
  * @param {Object} params
- * @param {Array}  params.scenes - liste {kind, text, duration, type, plan, url}
+ * @param {Array}  params.scenes - liste V4.2 {kind, text, duration, ...}
  * @param {string} params.voiceOverBase64 - MP3 base64 (sans préfixe data:)
- * @param {Function} params.onProgress - (pct: number 0-100) => void
- * @returns {Promise<Blob>} blob .webm
+ * @param {Function} params.onProgress - (pct 0-100) => void
+ * @param {Object} [params.video] - V4.4 : pack vidéo complet (scene_type, format_used, script, hook_variants, cta, voice_over)
+ * @param {number} [params.audioDurationSec] - V4.4 : durée TTS réelle (sinon = somme scenes.duration)
+ * @returns {Promise<Blob>}
  */
-export async function exportVideoAsWebm({ scenes, voiceOverBase64, onProgress }) {
+export async function exportVideoAsWebm({ scenes, voiceOverBase64, onProgress, video, audioDurationSec }) {
   if (!Array.isArray(scenes) || scenes.length === 0) {
     throw new Error('Scenes vides — preview V4.1 absente.');
   }
@@ -297,13 +302,33 @@ export async function exportVideoAsWebm({ scenes, voiceOverBase64, onProgress })
     scenes.reduce((s, sc) => s + (sc.duration || 0), 0),
   );
 
+  // V4.4 — Tentative de bascule Scene Engine (si video.scene_type fourni et supporté)
+  const sceneType = video?.scene_type;
+  const format = video?.format_used;
+  const sceneEngine = sceneType
+    ? SceneFactory.create(sceneType, {
+        video,
+        format,
+        width: EXPORT_WIDTH,
+        height: EXPORT_HEIGHT,
+        audioDurationSec: audioDurationSec || totalDuration,
+      })
+    : null;
+  if (sceneEngine) sceneEngine.init();
+  const useSceneEngine = Boolean(sceneEngine);
+
   // Canvas offscreen
   const canvas = document.createElement('canvas');
   canvas.width = EXPORT_WIDTH;
   canvas.height = EXPORT_HEIGHT;
   const ctx = canvas.getContext('2d');
   // First frame pre-render
-  drawFrame(ctx, scenes, 0, totalDuration);
+  if (useSceneEngine) {
+    sceneEngine.update(0, 0);
+    sceneEngine.draw(ctx);
+  } else {
+    drawFrame(ctx, scenes, 0, totalDuration);
+  }
 
   const videoStream = canvas.captureStream(EXPORT_FPS);
 
@@ -375,12 +400,22 @@ export async function exportVideoAsWebm({ scenes, voiceOverBase64, onProgress })
       const elapsed = (performance.now() - startTs) / 1000;
       if (elapsed >= totalDuration) {
         // Render last frame at exact end
-        drawFrame(ctx, scenes, totalDuration, totalDuration);
+        if (useSceneEngine) {
+          sceneEngine.update(0, totalDuration);
+          sceneEngine.draw(ctx);
+        } else {
+          drawFrame(ctx, scenes, totalDuration, totalDuration);
+        }
         if (onProgress) { try { onProgress(100); } catch (_) {} }
         try { recorder.stop(); } catch (_) { /* already stopping */ }
         return;
       }
-      drawFrame(ctx, scenes, elapsed, totalDuration);
+      if (useSceneEngine) {
+        sceneEngine.update(0, elapsed);
+        sceneEngine.draw(ctx);
+      } else {
+        drawFrame(ctx, scenes, elapsed, totalDuration);
+      }
       if (onProgress) {
         try { onProgress(Math.min(99, (elapsed / totalDuration) * 100)); } catch (_) {}
       }
@@ -400,4 +435,45 @@ export function downloadBlob(blob, filename) {
   a.click();
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+
+/* ────────────────────────────────────────────────────────────────────────
+ * V4.4 — Shared renderer (preview ↔ export même code)
+ *
+ * Crée et conserve une instance de SceneEngine pour une vidéo donnée.
+ * Utilisé par VideoPreviewPlayer pour AFFICHER en temps réel le même
+ * rendu que celui qui sera exporté.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/**
+ * @param {Object} video - pack vidéo (avec scene_type, format_used, script, voice_over)
+ * @param {number} audioDurationSec
+ * @returns {Object|null} scene engine instance (avec .update(0, audioTime), .draw(ctx)) ou null si fallback
+ */
+export function buildSceneEngineFor(video, audioDurationSec) {
+  const sceneType = video?.scene_type;
+  if (!sceneType) return null;
+  const engine = SceneFactory.create(sceneType, {
+    video,
+    format: video?.format_used,
+    width: EXPORT_WIDTH,
+    height: EXPORT_HEIGHT,
+    audioDurationSec: audioDurationSec || 1,
+  });
+  if (engine) engine.init();
+  return engine;
+}
+
+/**
+ * Dessine une frame sur un canvas (preview ou export).
+ * Si engine != null → Scene Engine, sinon → drawFrame V4.2.
+ */
+export function renderSceneFrame(ctx, engine, scenes, audioTime, totalDuration) {
+  if (engine) {
+    engine.update(0, audioTime);
+    engine.draw(ctx);
+  } else {
+    drawFrame(ctx, scenes, audioTime, totalDuration);
+  }
 }

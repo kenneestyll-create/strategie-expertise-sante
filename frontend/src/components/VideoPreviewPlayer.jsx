@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Play, Pause, RotateCcw, Mic, Loader2, VolumeX, Volume2, Download, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
-import { exportVideoAsWebm, downloadBlob, EXPORT_MAX_DURATION_SEC } from '@/lib/videoExporter';
+import { exportVideoAsWebm, downloadBlob, EXPORT_MAX_DURATION_SEC, buildSceneEngineFor, renderSceneFrame, EXPORT_WIDTH, EXPORT_HEIGHT } from '@/lib/videoExporter';
 
 // 7 gradients minimalistes (cycliques selon format / index scène)
 const GRADIENTS = [
@@ -63,6 +63,10 @@ export const VideoPreviewPlayer = ({ video, runId, videoIdx, onVoiceOverGenerate
   const rafRef = useRef(null);
   const startTsRef = useRef(0);
   const offsetRef = useRef(0); // seconds when paused, to resume
+
+  // V4.4 — Scene Engine : si video.scene_type → canvas miroir affichant le rendu exact d'export
+  const previewCanvasRef = useRef(null);
+  const sceneEngineRef = useRef(null);
 
   // ── Build scene list ──
   const hookText = (video.hook_variants && video.hook_variants[0]) || '';
@@ -171,6 +175,36 @@ export const VideoPreviewPlayer = ({ video, runId, videoIdx, onVoiceOverGenerate
     if (audioRef.current) audioRef.current.currentTime = 0;
   };
 
+  // ── V4.4 — Scene Engine renderer unique (preview ↔ export même code) ──
+  const hasSceneType = Boolean(video?.scene_type);
+  const audioDurationSec = totalDuration;
+  useEffect(() => {
+    if (!hasSceneType) {
+      sceneEngineRef.current = null;
+      return;
+    }
+    sceneEngineRef.current = buildSceneEngineFor(video, audioDurationSec);
+    const c = previewCanvasRef.current;
+    if (c && sceneEngineRef.current) {
+      c.width = EXPORT_WIDTH;
+      c.height = EXPORT_HEIGHT;
+      const ctx2 = c.getContext('2d');
+      renderSceneFrame(ctx2, sceneEngineRef.current, scenes, 0, audioDurationSec);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [video?.scene_type, video?.format_used, audioDurationSec]);
+
+  useEffect(() => {
+    if (!hasSceneType) return;
+    const c = previewCanvasRef.current;
+    const engine = sceneEngineRef.current;
+    if (!c || !engine) return;
+    const ctx2 = c.getContext('2d');
+    try { renderSceneFrame(ctx2, engine, scenes, currentTime, audioDurationSec); } catch (_) {}
+  }, [currentTime, hasSceneType, scenes, audioDurationSec]);
+
+
+
   const handleGenerateVoice = async () => {
     setGenerating(true);
     try {
@@ -202,6 +236,8 @@ export const VideoPreviewPlayer = ({ video, runId, videoIdx, onVoiceOverGenerate
         scenes,
         voiceOverBase64: audioBase64,
         onProgress: (pct) => setExportPct(pct),
+        video, // V4.4 — passe le pack complet (scene_type, format_used, script, etc.)
+        audioDurationSec, // V4.4 — durée TTS réelle pour P1.B chunking
       });
       const fmt = (video.format_used || `v${videoIdx + 1}`).toLowerCase();
       const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
@@ -230,6 +266,17 @@ export const VideoPreviewPlayer = ({ video, runId, videoIdx, onVoiceOverGenerate
       >
         {/* Notch */}
         <div className="absolute top-2 left-1/2 -translate-x-1/2 w-20 h-5 bg-black rounded-full z-30" aria-hidden="true" />
+
+        {/* V4.4 — Canvas miroir (renderer unique preview/export) si scene_type défini */}
+        {hasSceneType && (
+          <canvas
+            ref={previewCanvasRef}
+            className="absolute inset-0 w-full h-full z-10"
+            data-testid="preview-scene-canvas"
+            aria-hidden="true"
+          />
+        )}
+
 
         {/* Top HUD : platform + duration */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-20 text-white/80 text-[10px] tracking-wider font-medium">

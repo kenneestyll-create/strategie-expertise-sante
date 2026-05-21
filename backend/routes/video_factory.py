@@ -233,6 +233,22 @@ async def generate_videos(req: GenerateInput, admin=Depends(get_current_admin)):
     seo_passes = (seo_pdf is None) or bool(seo_pdf.get("compliance_passed", True))
     root_compliance = bool(all_videos_pass and seo_passes)
 
+    # --- 4b. V4.4 Scene Engine — Mapping déterministe F1-F7 → scene_type ---
+    # 100% backend (anti-hallucination LLM), additif (champ optionnel),
+    # consommé côté frontend pour brancher SceneFactory ; fallback V4.2 si absent.
+    SCENE_TYPE_BY_FORMAT = {
+        "F1": "office_admin",
+        "F2": "stats_focus",
+        "F3": "testimony_quote",
+        "F4": "legal_balance",
+        "F5": "office_admin",
+        "F6": "alert_urgency",
+        "F7": "alert_urgency",
+    }
+    for v in normalized.get("videos", []):
+        fmt = v.get("format_used") or "F1"
+        v["scene_type"] = SCENE_TYPE_BY_FORMAT.get(fmt, "office_admin")
+
     # --- 5. Sauvegarde Mongo ---
     run_id = str(uuid.uuid4())
     created_at = datetime.now(timezone.utc).isoformat()
