@@ -188,8 +188,8 @@ async def get_agents_registry(admin: dict = Depends(get_current_admin)):
         _agent_card(
             id="video_factory",
             name="Video Factory Engine",
-            role="Production vidéo + SEO + Preview/Voix-off/Export (V4.2)",
-            mission="Produit en 1 appel LLM un pack vidéo court (TikTok/Shorts/Reels) : hook×3, script 70-150 mots, storyboard 6 plans, sous-titres .srt, pack SEO, CTA unique + UTM, conversion_score, disclaimer. Modes : forced/weighted/fallback/free. Boucle V2 : poids par format normalisés (views/CTR/conv), floor 10%, garde monoculture 65%/7j. V3 : page SEO d'atterrissage STRICTEMENT dérivée du pack vidéo (CTA verbatim, UTM différencié). V4.1 : couche rendering — lecteur 9:16 TikTok-style + voix-off OpenAI TTS HD via Emergent LLM Key (5 voix : Onyx/Sage/Alloy/Nova/Coral), MP3 base64 stocké par vidéo. V4.2 : export client-side .webm 9:16 720×1280 VP9 via MediaRecorder + AudioContext, sous-titres incrustés style TikTok (mode D1 phrase par scène, highlights or sur MAJUSCULES et chiffres), durée max 60s, ZÉRO endpoint backend. Aucun impact sur V1/V2/V3.",
+            role="Production vidéo + SEO + Preview/Voix-off/Export/Tracking (V4.3)",
+            mission="Produit en 1 appel LLM un pack vidéo court (TikTok/Shorts/Reels) : hook×3, script 70-150 mots, storyboard 6 plans, sous-titres .srt, pack SEO, CTA unique + UTM, conversion_score, disclaimer. Modes : forced/weighted/fallback/free. Boucle V2 : poids par format normalisés (views/CTR/conv), floor 10%, garde monoculture 65%/7j. V3 : page SEO d'atterrissage STRICTEMENT dérivée du pack vidéo (CTA verbatim, UTM différencié). V4.1 : couche rendering — lecteur 9:16 TikTok-style + voix-off OpenAI TTS HD via Emergent LLM Key (5 voix : Onyx/Sage/Alloy/Nova/Coral), MP3 base64 stocké par vidéo. V4.2 : export client-side .webm 9:16 720×1280 VP9 via MediaRecorder + AudioContext, sous-titres incrustés style TikTok (mode D1 phrase par scène, highlights or sur MAJUSCULES et chiffres), durée max 60s, ZÉRO endpoint backend. V4.3 : light tracking — mini-dialog 'Marquer publié' capture plateforme (tiktok/youtube/instagram/other) + URL publique optionnelle, stocke published/published_at/publish_platform/publish_public_url dans videos[idx], badge UI vert avec lien externe. Architecture : enrichissement rétro-compatible du PATCH /status existant, ZÉRO nouveau endpoint, ZÉRO dashboard analytics. Aucun impact V1/V2/V3/V4.1/V4.2.",
             model="Claude Haiku 4.5 (script) + OpenAI tts-1-hd (voix off) + MediaRecorder VP9 (export)",
             file_path="/app/backend/utils/video_agent.py",
             prompt_var="SYSTEM_PROMPT | SEO_LANDING_SYSTEM_PROMPT",
@@ -208,6 +208,9 @@ async def get_agents_registry(admin: dict = Depends(get_current_admin)):
                 "V4.2 — Export client-side uniquement (MediaRecorder + AudioContext) : aucun endpoint backend, aucune dépendance serveur, aucune fuite de données",
                 "V4.2 — Bouton Export DÉSACTIVÉ si voice_over absent (garde-fou UX : pas de vidéo muette accidentelle)",
                 "V4.2 — Durée d'export bornée à 60s max avec warning UI explicite (anti-OOM navigateur sur scripts trop longs)",
+                "V4.3 — Platform regex stricte ^(tiktok|youtube|instagram|other)$ (anti-injection, anti-typo)",
+                "V4.3 — public_url borné à 500 caractères + validation http(s):// côté UI (anti-XSS, anti-spam)",
+                "V4.3 — Rétro-compat totale du PATCH /status : si video_idx absent, comportement V1 inchangé (zero breaking change)",
             ],
         ),
     ]

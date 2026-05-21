@@ -331,17 +331,56 @@ async def delete_run(run_id: str, admin=Depends(get_current_admin)):
 
 class StatusUpdate(BaseModel):
     status: str = Field(..., pattern="^(draft|published|archived)$")
+    # V4.3 — Light tracking (additif, optionnel, rétro-compatible)
+    video_idx: Optional[int] = Field(default=None, ge=0, le=4)
+    platform: Optional[str] = Field(default=None, pattern="^(tiktok|youtube|instagram|other)$")
+    public_url: Optional[str] = Field(default=None, max_length=500)
 
 
 @router.patch("/{run_id}/status")
 async def update_status(run_id: str, body: StatusUpdate, admin=Depends(get_current_admin)):
+    now_iso = datetime.now(timezone.utc).isoformat()
+    update_fields: dict = {"status": body.status, "updated_at": now_iso}
+
+    # V4.3 — Si on précise video_idx + platform et status=published, on enrichit la vidéo
+    if body.video_idx is not None and body.status == "published":
+        prefix = f"videos.{body.video_idx}"
+        update_fields[f"{prefix}.published"] = True
+        update_fields[f"{prefix}.published_at"] = now_iso
+        if body.platform:
+            update_fields[f"{prefix}.publish_platform"] = body.platform
+        if body.public_url:
+            update_fields[f"{prefix}.publish_public_url"] = body.public_url
+
     res = await db.video_factory_runs.update_one(
         {"id": run_id},
-        {"$set": {"status": body.status, "updated_at": datetime.now(timezone.utc).isoformat()}},
+        {"$set": update_fields},
     )
     if res.matched_count == 0:
         raise HTTPException(404, "Run introuvable.")
-    return {"updated": True, "run_id": run_id, "status": body.status}
+
+    # Log léger pour traçabilité future (sans dashboard)
+    try:
+        if body.video_idx is not None and body.status == "published":
+            logger.info(_json_log.dumps({
+                "event": "video_marked_published",
+                "run_id": run_id,
+                "video_idx": body.video_idx,
+                "platform": body.platform,
+                "has_public_url": bool(body.public_url),
+                "ts": now_iso,
+            }, ensure_ascii=False))
+    except Exception:
+        pass
+
+    return {
+        "updated": True,
+        "run_id": run_id,
+        "status": body.status,
+        "video_idx": body.video_idx,
+        "platform": body.platform,
+        "public_url": body.public_url,
+    }
 
 
 # ============================================================================

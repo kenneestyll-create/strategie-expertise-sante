@@ -9,8 +9,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Copy, Download, Video as VideoIcon, Sparkles, Trash2, RefreshCw, CheckCircle2, AlertTriangle, BarChart3, TrendingUp, FileText } from 'lucide-react';
+import { Loader2, Copy, Download, Video as VideoIcon, Sparkles, Trash2, RefreshCw, CheckCircle2, AlertTriangle, BarChart3, TrendingUp, FileText, ExternalLink } from 'lucide-react';
 import { VideoPreviewPlayer } from '@/components/VideoPreviewPlayer';
+import { MarkPublishedDialog } from '@/components/MarkPublishedDialog';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -367,9 +368,36 @@ const VideoCard = ({ video, idx, runId, onMarkPublished, onOpenMetrics, generate
             </Button>
           )}
           {onMarkPublished && (
-            <Button variant="default" size="sm" onClick={() => onMarkPublished(runId)} data-testid={`mark-published-${idx}`}>
-              <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Marquer publié
+            <Button
+              variant={video.published ? "outline" : "default"}
+              size="sm"
+              onClick={() => onMarkPublished(runId, idx)}
+              data-testid={`mark-published-${idx}`}
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+              {video.published ? 'Re-publier' : 'Marquer publié'}
             </Button>
+          )}
+          {video.published && video.publish_platform && (
+            <span
+              className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200"
+              data-testid={`published-badge-${idx}`}
+            >
+              <CheckCircle2 className="w-3 h-3" />
+              Publié sur {video.publish_platform === 'tiktok' ? 'TikTok' : video.publish_platform === 'youtube' ? 'YouTube' : video.publish_platform === 'instagram' ? 'Instagram' : 'autre'}
+              {video.publish_public_url && (
+                <a
+                  href={video.publish_public_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-emerald-900 inline-flex items-center"
+                  title="Ouvrir la publication"
+                  data-testid={`published-link-${idx}`}
+                >
+                  <ExternalLink className="w-3 h-3 ml-0.5" />
+                </a>
+              )}
+            </span>
           )}
         </div>
 
@@ -503,18 +531,30 @@ export const AdminVideoFactory = () => {
     }
   };
 
-  const markPublished = async (runId) => {
-    try {
-      await axios.patch(
-        `${API}/admin/video-factory/${runId}/status`,
-        { status: 'published' },
-        axiosConfig(),
-      );
-      toast.success('Marqué publié');
-      if (activeTab === 'history') fetchHistory();
-    } catch (e) {
-      toast.error('Échec mise à jour');
-    }
+  const [publishDialog, setPublishDialog] = useState({ open: false, runId: null, videoIdx: null });
+
+  const markPublished = (runId, videoIdx) => {
+    setPublishDialog({ open: true, runId, videoIdx });
+  };
+
+  const handlePublishedDone = ({ videoIdx, platform, publicUrl }) => {
+    // Mise à jour locale optimiste pour éviter un refetch lourd
+    const runId = publishDialog.runId;
+    const nowIso = new Date().toISOString();
+    setResult(prev => {
+      if (!prev || prev.run_id !== runId) return prev;
+      const videos = (prev.videos || []).map((v, i) => i === videoIdx
+        ? { ...v, published: true, published_at: nowIso, publish_platform: platform, publish_public_url: publicUrl }
+        : v);
+      return { ...prev, videos };
+    });
+    setHistory(prev => prev.map(run => {
+      if (run.id !== runId) return run;
+      const videos = (run.videos || []).map((v, i) => i === videoIdx
+        ? { ...v, published: true, published_at: nowIso, publish_platform: platform, publish_public_url: publicUrl }
+        : v);
+      return { ...run, videos, status: 'published' };
+    }));
   };
 
   const deleteRun = async (runId) => {
@@ -901,6 +941,16 @@ export const AdminVideoFactory = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* V4.3 — Mini-dialog Marquer publié (plateforme + URL optionnelle) */}
+      <MarkPublishedDialog
+        open={publishDialog.open}
+        onOpenChange={(open) => setPublishDialog(prev => ({ ...prev, open }))}
+        runId={publishDialog.runId}
+        videoIdx={publishDialog.videoIdx}
+        axiosConfig={axiosConfig}
+        onPublished={handlePublishedDone}
+      />
 
       {/* Modal saisie métriques */}
       {metricsModal && (
