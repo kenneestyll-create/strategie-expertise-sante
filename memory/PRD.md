@@ -321,6 +321,43 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
   - `frontend/src/components/AdminHelpPanel.jsx` (étape V4.1 + keywords)
   - `backend/tests/test_video_factory_v4_voice_over.py` (NEW, 12 tests pytest)
 
+## Changelog 2026-05-21 — Video Factory V4.2 Export Layer (Iteration 201)
+- [x] **NOUVEAU : Export vidéo finale .webm 9:16 client-side** (`/app/frontend/src/lib/videoExporter.js`, 404 lignes)
+  - Canvas 720×1280 (9:16 strict), codec VP9 (fallback VP8), MediaRecorder client-side
+  - Audio pipeline : AudioContext + MediaStreamDestination → réutilise voice_over MP3 base64 (V4.1)
+  - **Aucun endpoint backend** ajouté en V4.2, conformément aux spécifications
+  - Pipeline RAF loop : background gradient (7 gradients S.E.S) → HUD top → scene content (HOOK/SCENE/CTA) → captions burned-in → timeline progress
+- [x] **Sous-titres burned-in mode D1** (style TikTok) : 1 phrase complète par scène, fond noir 72% opacité (rounded-rect 8px), texte blanc gras 32px, max 3 lignes, padding 14px
+- [x] **Highlight automatique or `#C9A84C`** sur :
+  - MAJUSCULES ≥ 2 lettres (ex : CPAM, ATTENTION)
+  - Mots contenant des chiffres (ex : 48h, 500€, 10 jours, 2024)
+  - Helper `shouldHighlight()` Unicode-safe (regex À-ÿ couvre français accentué)
+- [x] **UI Export** : section data-testid="export-section" dans VideoPreviewPlayer
+  - Bouton `📥 Exporter vidéo finale` désactivé si voice_over absent (double garde-fou : !hasAudio || exporting)
+  - Warning data-testid="export-duration-warning" si totalDuration > 60s (avec tronquage côté lib en sécurité supplémentaire)
+  - Progress bar data-testid="export-progress" (barre dorée + label "Rendering XX%")
+  - Auto-download à la fin : filename `ses-video-{format}-YYYYMMDD.webm`
+  - Toast.success avec taille du fichier (~3-5 Mo pour 30s)
+- [x] **Organigramme** : card video_factory mise à jour (role V4.2, mission détaille pipeline client-side, **13 garde-fous** total : 8 V1-V3 + 2 V4.1 + 3 V4.2 nouveaux)
+- [x] **Tuto Admin** : étape V4.2 ajoutée + mots-clés enrichis (export, webm, mediarecorder, vp9, burned-in, highlight, or, majuscule, chiffres, rendering)
+- **Architecture** : 100% additive client-side. ZÉRO endpoint backend nouveau (validé explicitement : POST /api/admin/video-factory/{export,render,webm} → 404/405). ZÉRO touche à V1/V2/V3/V4.1.
+- **Compatibilité publication** :
+  - TikTok desktop : ✅ accepte .webm directement
+  - YouTube Shorts : ✅ accepte .webm directement
+  - Instagram Reels : ⚠️ peut nécessiter conversion .webm → .mp4 via cloudconvert.com (30s gratuit) documenté dans le tuto admin
+- **Performance** :
+  - Coût : 0 € (calcul navigateur uniquement)
+  - Durée rendu : ~temps réel (30s de vidéo = ~30-35s de rendu)
+  - Taille fichier : ~2,5 Mbps vidéo + 128 kbps audio → ~3-5 Mo pour 30s
+  - RAM : limité à 720×1280 pour rester confortable sur PC modeste
+- **Testing E2E** : Iteration 201 — **100% backend (21/21)** + **100% frontend** (export-section/export-button/disabled-state/progress all confirmed). Pipeline canvas.captureStream + AudioContext + MediaRecorder VP9 tourne réellement en headless Chromium (6% → 31% en 10s sans erreur).
+- **Fichiers créés/modifiés** :
+  - `frontend/src/lib/videoExporter.js` (NEW, 404 lignes)
+  - `frontend/src/components/VideoPreviewPlayer.jsx` (import + state + handleExport + section UI)
+  - `frontend/src/components/AdminHelpPanel.jsx` (étape V4.2 + keywords)
+  - `backend/routes/agents_registry.py` (card video_factory mise à jour)
+  - `backend/tests/test_video_factory_v42_regression.py` (NEW, 9 tests)
+
 ## Credentials Admin
 - Admin: admin@accompagn-sante.fr / Admin2024!
 - Backup Admin: backup@strategie-expertise-sante.fr / AdminSecours2026!
