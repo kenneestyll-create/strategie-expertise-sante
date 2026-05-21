@@ -33,6 +33,13 @@ const FORMAT_LABELS_FR = {
   F7: 'Checklist dossier',
 };
 
+const MODE_BADGES = {
+  forced: { label: 'Forcé manuellement', className: 'bg-violet-500/10 text-violet-700 border-violet-500/30' },
+  weighted: { label: 'Pondéré performance', className: 'bg-amber-500/10 text-amber-700 border-amber-500/30' },
+  fallback: { label: 'Fallback aléatoire', className: 'bg-slate-500/10 text-slate-700 border-slate-500/30' },
+  free: { label: 'Libre IA', className: 'bg-sky-500/10 text-sky-700 border-sky-500/30' },
+};
+
 const copyToClipboard = (text, label) => {
   navigator.clipboard.writeText(text || '').then(
     () => toast.success(`${label} copié`),
@@ -525,10 +532,15 @@ export const AdminVideoFactory = () => {
             <div className="space-y-4" data-testid="generation-result">
               <Card>
                 <CardContent className="py-4 flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Badge variant="secondary">{result.model_used}</Badge>
                     <Badge variant="outline">Coût ~{result.estimated_cost_eur}€</Badge>
                     <Badge variant="outline">{result.videos.length} vidéo(s)</Badge>
+                    {result.mode && MODE_BADGES[result.mode] && (
+                      <Badge className={MODE_BADGES[result.mode].className} data-testid={`mode-badge-${result.mode}`}>
+                        {MODE_BADGES[result.mode].label}{result.forced_format ? ` · ${result.forced_format}` : ''}
+                      </Badge>
+                    )}
                   </div>
                   {result.warnings?.length > 0 && (
                     <p className="text-xs text-amber-700" data-testid="warnings-list">
@@ -608,28 +620,42 @@ export const AdminVideoFactory = () => {
               )}
               {weightsSnapshot && (
                 <div className="space-y-2" data-testid="weights-list">
-                  {FORMATS.map((f) => {
-                    const w = weightsSnapshot.weights?.[f] || 0;
-                    const m = weightsSnapshot.metrics_by_format?.[f];
-                    const pct = Math.round(w * 100);
-                    return (
-                      <div key={f} data-testid={`weight-row-${f}`}>
-                        <div className="flex items-center justify-between text-sm mb-0.5">
-                          <span className="font-mono">{f} — {FORMAT_LABELS_FR[f]}</span>
-                          <span className="font-mono text-xs">
-                            {m ? `views ${Math.round(m.views)} · CTR ${m.ctr.toFixed(1)}% · conv ${m.conversion.toFixed(1)}% · n=${m.samples}` : '— pas encore de métrique'}
-                          </span>
+                  {(() => {
+                    const ws = weightsSnapshot.weights || {};
+                    const values = FORMATS.map(f => Number(ws[f] || 0));
+                    const avg = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+                    const dominantThreshold = avg * 1.5;
+                    return FORMATS.map((f) => {
+                      const w = Number(ws[f] || 0);
+                      const m = weightsSnapshot.metrics_by_format?.[f];
+                      const pct = Math.round(w * 100);
+                      const isDominant = avg > 0 && w > dominantThreshold;
+                      return (
+                        <div key={f} data-testid={`weight-row-${f}`}>
+                          <div className="flex items-center justify-between text-sm mb-0.5 flex-wrap gap-1">
+                            <span className="font-mono flex items-center gap-1.5">
+                              {f} — {FORMAT_LABELS_FR[f]}
+                              {isDominant && (
+                                <Badge className="bg-orange-500/10 text-orange-700 border-orange-500/30 text-[10px] px-1.5 py-0" data-testid={`dominant-badge-${f}`}>
+                                  🔥 Format dominant
+                                </Badge>
+                              )}
+                            </span>
+                            <span className="font-mono text-xs">
+                              {m ? `views ${Math.round(m.views)} · CTR ${m.ctr.toFixed(1)}% · conv ${m.conversion.toFixed(1)}% · n=${m.samples}` : '— pas encore de métrique'}
+                            </span>
+                          </div>
+                          <div className="w-full bg-muted/40 rounded-full h-2 overflow-hidden">
+                            <div
+                              className={`h-2 transition-all ${isDominant ? 'bg-orange-500' : 'bg-accent'}`}
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5">Poids : {(w * 100).toFixed(1)}%</p>
                         </div>
-                        <div className="w-full bg-muted/40 rounded-full h-2 overflow-hidden">
-                          <div
-                            className="h-2 bg-accent transition-all"
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-0.5">Poids : {(w * 100).toFixed(1)}%</p>
-                      </div>
-                    );
-                  })}
+                      );
+                    });
+                  })()}
                 </div>
               )}
               {weightsSnapshot?.updated_at && (

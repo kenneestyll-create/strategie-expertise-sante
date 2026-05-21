@@ -4,22 +4,36 @@ Calcule les poids normalisés par format à partir des métriques saisies par
 l'admin (views / CTR / conversion). Applique un floor d'exploration ε-greedy
 de 10% par format pour éviter la monoculture.
 
+V2 Final Stabilisation :
+- Clamp weights ∈ [0, 1] systématique (anti-dérive numérique)
+- Helper get_recent_format_usage_7d() pour garde monoculture (fenêtre glissante)
+
 Persistence :
 - collection `video_metrics` : 1 doc par vidéo publiée (views, ctr, conversion)
 - collection `video_format_weights` : 1 doc unique (`_id="latest"`) avec les
-  poids agrégés par format. Recalculé après chaque saisie de métrique.
-
-Le LLM ne fait AUCUN calcul probabiliste — le backend choisit le format
-(random.choices pondéré) puis injecte `forced_format` dans le prompt.
+  poids agrégés par format.
+- collection `video_factory_runs` : 1 doc par génération (sert à la garde
+  monoculture via agrégation du `videos[].format_used` sur 7j glissants).
 """
 import random
 from typing import Dict, List, Optional
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from config import db, logger
 
 ALL_FORMATS = ["F1", "F2", "F3", "F4", "F5", "F6", "F7"]
 EXPLORATION_FLOOR = 0.10  # 10% — chaque format garanti au moins ce poids
+MONOCULTURE_THRESHOLD = 0.65  # >65% sur 7j → reroll
+MONOCULTURE_MIN_RUNS = 5  # <5 runs sur 7j → garde désactivée (signal insuffisant)
+
+
+def _clamp01(value: float) -> float:
+    """Clamp strict d'une valeur dans [0.0, 1.0]."""
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        return 0.0
+    return max(0.0, min(1.0, v))
 
 
 # ============================================================================
@@ -67,7 +81,8 @@ def compute_format_weights(metrics_by_format: Dict[str, Dict[str, float]]) -> Di
         raw = 0.5 * norm_conv + 0.3 * norm_ctr + 0.2 * norm_views
         weights[fmt] = max(raw, EXPLORATION_FLOOR)
 
-    return weights
+    # Final clamp ∈ [0, 1] — anti-dérive numérique (V2 final stabilisation)
+    return {f: _clamp01(w) for f, w in weights.items()}
 
 
 def pick_format_weighted(weights: Dict[str, float]) -> str:
@@ -160,6 +175,9 @@ async def get_weights_summary() -> Dict:
                 "total_samples": 0,
                 "updated_at": None,
             }
+        # Re-clamp défensif au cas où un snapshot ancien serait corrompu
+        if isinstance(doc.get("weights"), dict):
+            doc["weights"] = {f: _clamp01(w) for f, w in doc["weights"].items()}
         return doc
     except Exception as e:
         logger.error(f"[video-perf] summary failed: {e}")
@@ -169,3 +187,60 @@ async def get_weights_summary() -> Dict:
             "total_samples": 0,
             "updated_at": None,
         }
+
+
+# ============================================================================
+# GARDE MONOCULTURE (V2 Final Stabilisation)
+# ============================================================================
+
+async def get_recent_format_usage_7d() -> Optional[Dict[str, int]]:
+    """Compte le nombre de runs par format sur les 7 derniers jours glissants.
+
+    Retourne {format: count} ou None si <MONOCULTURE_MIN_RUNS sur la fenêtre
+    (signal statistique insuffisant pour appliquer la garde).
+    """
+    since = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+    pipeline = [
+        {"$match": {"created_at": {"$gte": since}}},
+        {"$unwind": "$videos"},
+        {"$group": {"_id": "$videos.format_used", "count": {"$sum": 1}}},
+    ]
+    counts: Dict[str, int] = {}
+    total = 0
+    try:
+        async for doc in db.video_factory_runs.aggregate(pipeline):
+            fmt = doc.get("_id")
+            c = int(doc.get("count") or 0)
+            if fmt in ALL_FORMATS:
+                counts[fmt] = c
+                total += c
+    except Exception as e:
+        logger.error(f"[video-perf] usage_7d failed: {e}")
+        return None
+
+    if total < MONOCULTURE_MIN_RUNS:
+        return None  # Signal insuffisant — garde désactivée
+    return counts
+
+
+def is_format_overused(format_id: str, usage: Dict[str, int]) -> bool:
+    """True si ce format a été utilisé >MONOCULTURE_THRESHOLD (65%) sur la fenêtre."""
+    total = sum(usage.values()) or 0
+    if total <= 0:
+        return False
+    return (usage.get(format_id, 0) / total) > MONOCULTURE_THRESHOLD
+
+
+def pick_format_excluding(weights: Dict[str, float], excluded: str) -> str:
+    """Tire un format pondéré en excluant strictement `excluded`.
+    Si le seul format restant après exclusion a poids 0, retombe en uniforme."""
+    candidates = [f for f in ALL_FORMATS if f != excluded]
+    w = [weights.get(f, EXPLORATION_FLOOR) for f in candidates]
+    if sum(w) <= 0:
+        return random.choice(candidates)
+    return random.choices(candidates, weights=w, k=1)[0]
+
+
+def pick_format_uniform() -> str:
+    """Tirage uniforme parmi F1-F7 (mode fallback)."""
+    return random.choice(ALL_FORMATS)

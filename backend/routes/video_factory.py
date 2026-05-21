@@ -11,7 +11,7 @@ import uuid
 import json as json_mod
 import logging
 from datetime import datetime, timezone
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from fastapi import APIRouter, HTTPException, Depends, Query
 from pydantic import BaseModel, Field
@@ -31,10 +31,15 @@ from utils.video_agent import (
 from utils.video_performance import (
     ALL_FORMATS,
     pick_format_weighted,
+    pick_format_excluding,
+    pick_format_uniform,
     recompute_and_save_weights,
     get_latest_weights,
     get_weights_summary,
+    get_recent_format_usage_7d,
+    is_format_overused,
 )
+import json as _json_log
 
 router = APIRouter(prefix="/admin/video-factory", tags=["video-factory"])
 
@@ -78,6 +83,7 @@ class GenerateOutput(BaseModel):
     created_at: str
     forced_format: Optional[str] = None
     used_weights: bool = False
+    mode: str = "free"  # forced | weighted | fallback | free
 
 
 # ============================================================================
@@ -101,16 +107,36 @@ async def generate_videos(req: GenerateInput, admin=Depends(get_current_admin)):
     if req.forced_format is not None and req.forced_format not in FORMAT_LABELS:
         raise HTTPException(400, f"forced_format invalide. Valeurs : {list(FORMAT_LABELS.keys())}")
 
-    # --- 1c. Performance loop : si pas de forced_format mais use_weights → choisir backend ---
-    chosen_forced = req.forced_format
-    perf_weights = None
+    # --- 1c. Performance loop V2 Final : déterminer le mode + format ---
+    # Modes possibles : forced | weighted | fallback | free
+    chosen_forced: Optional[str] = req.forced_format
+    perf_weights: Optional[Dict[str, float]] = None
     used_weights = False
-    if chosen_forced is None and req.use_performance_weights:
+    mode = "free"
+
+    if chosen_forced is not None:
+        mode = "forced"
+    elif req.use_performance_weights:
         weights = await get_latest_weights()
         if weights:
             perf_weights = weights
             chosen_forced = pick_format_weighted(weights)
             used_weights = True
+            mode = "weighted"
+
+            # Garde anti-monoculture (fenêtre 7j glissante, min 5 runs)
+            usage_7d = await get_recent_format_usage_7d()
+            if usage_7d and is_format_overused(chosen_forced, usage_7d):
+                logger.info(
+                    f"[video-factory] monoculture guard triggered: "
+                    f"format={chosen_forced} usage={usage_7d}"
+                )
+                chosen_forced = pick_format_excluding(weights, chosen_forced)
+        else:
+            # Snapshot absent → fallback uniforme contrôlé
+            chosen_forced = pick_format_uniform()
+            mode = "fallback"
+    # else: free (LLM choisira librement, chosen_forced reste None)
 
     # --- 2. Build prompt ---
     user_prompt = build_user_prompt(
@@ -178,12 +204,30 @@ async def generate_videos(req: GenerateInput, admin=Depends(get_current_admin)):
         "status": "draft",
         "forced_format_resolved": chosen_forced,
         "used_weights": used_weights,
+        "mode": mode,
     }
     try:
         await db.video_factory_runs.insert_one(record)
     except Exception as e:
         logger.error(f"[video-factory] Mongo insert failed: {e}")
         # Ne bloque pas le retour à l'admin (output déjà valide en mémoire)
+
+    # --- 5b. Log JSON structuré (1 ligne par vidéo générée, info-level) ---
+    weights_snapshot = perf_weights or {}
+    for vid_idx, vid in enumerate(normalized.get("videos", [])):
+        try:
+            logger.info(_json_log.dumps({
+                "evt": "video_factory_generation",
+                "video_id": f"{run_id}#{vid_idx}",
+                "run_id": run_id,
+                "format": vid.get("format_used"),
+                "mode": mode,
+                "weights_snapshot": weights_snapshot,
+                "conversion_score": vid.get("conversion_score", 0),
+                "timestamp": created_at,
+            }, ensure_ascii=False))
+        except Exception:
+            pass  # log best-effort
 
     return GenerateOutput(
         run_id=run_id,
@@ -194,6 +238,7 @@ async def generate_videos(req: GenerateInput, admin=Depends(get_current_admin)):
         created_at=created_at,
         forced_format=chosen_forced,
         used_weights=used_weights,
+        mode=mode,
     )
 
 
