@@ -299,11 +299,12 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
     const currentTotalSize = files.reduce((sum, f) => sum + (f.size || 0), 0);
     let compressedCount = 0;
     let savedBytes = 0;
+    let truncatedCount = 0;
 
     for (const file of fileList) {
       if (files.length + validFiles.length >= maxFiles) {
-        newErrors.push(`Maximum ${maxFiles} fichiers atteint.`);
-        break;
+        truncatedCount++;
+        continue;
       }
 
       // Attempt compression for images > 2 MB
@@ -337,6 +338,13 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
 
     if (compressedCount > 0) {
       setCompressInfo({ count: compressedCount, savedBytes });
+    }
+
+    if (truncatedCount > 0) {
+      newErrors.push(
+        `Limite de ${maxFiles} fichiers atteinte : ${truncatedCount} fichier${truncatedCount > 1 ? 's' : ''} non ajouté${truncatedCount > 1 ? 's' : ''}. ` +
+        `Astuce : fusionnez plusieurs PDF en un seul (outils gratuits : ilovepdf.com, smallpdf.com) pour transmettre l'intégralité de votre dossier.`
+      );
     }
 
     setErrors(newErrors);
@@ -519,6 +527,7 @@ export const DocumentUploader = ({ files, onFilesChange, maxFiles = MAX_FILES, s
           <p className="text-sm text-muted-foreground">Glissez vos fichiers ou cliquez pour selectionner</p>
           <p className="text-xs text-muted-foreground mt-1">PDF, JPG, PNG, DOCX, XLSX — Max 50 Mo/fichier — Max {maxFiles} fichiers</p>
           <p className="text-[10px] text-muted-foreground mt-0.5">Les fichiers &gt; 5 Mo sont uploadés automatiquement en mode fractionné sécurisé</p>
+          <p className="text-[10px] text-amber-600/80 mt-0.5" data-testid="merge-pdf-hint">Plus de {maxFiles} documents ? Fusionnez vos PDF (ilovepdf.com, smallpdf.com) pour tout transmettre.</p>
           {hasFiles && (
             <p className="text-[10px] text-amber-600 mt-2 flex items-center justify-center gap-1">
               <AlertTriangle className="w-3 h-3" />

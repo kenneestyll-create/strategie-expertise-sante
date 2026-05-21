@@ -125,10 +125,11 @@ const HELP_SECTIONS = [
     steps: [
       { label: 'Réception', text: 'Les dossiers payés arrivent avec le statut "En attente". Vous avez 2h pour les traiter.' },
       { label: 'Analyse', text: 'Consultez les documents soumis et l\'analyse IA pré-générée.' },
+      { label: 'Documents uploadés — Télécharger les PDF originaux', text: 'Dans la modale du dossier, l\'onglet "Documents uploadés" liste tous les fichiers transmis par le client (PDF, JPG, scans, DOCX). Cliquez sur le bouton "Télécharger" à droite de chaque fichier pour récupérer l\'original via une URL sécurisée temporaire (pre-signed S3, valide 1h). Le bouton "Voir" ouvre une prévisualisation dans un nouvel onglet sans téléchargement.' },
       { label: 'Revue expert', text: 'Ajoutez votre analyse experte, recommandations et stratégie personnalisée.' },
       { label: 'Livraison', text: 'Générez le PDF final et envoyez-le au client. Le statut passe à "Livré".' },
     ],
-    keywords: ['dossier express', 'payant', '97', 'analyse', 'pdf', 'livraison', 'expert', 'revue', 'document']
+    keywords: ['dossier express', 'payant', '97', 'analyse', 'pdf', 'livraison', 'expert', 'revue', 'document', 'télécharger', 'telecharger', 'download', 'documents uploadés', 'documents uploades', 'fichiers clients', 'original', 'pré-signed', 's3']
   },
   {
     id: 'kit-pro',

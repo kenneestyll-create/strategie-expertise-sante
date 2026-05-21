@@ -10,10 +10,13 @@
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
         <link rel="icon" type="image/svg+xml" href="/favicon-shield.svg" />
         <link rel="apple-touch-icon" href="/favicon-64.png" />
+        <!-- LCP optimization: preload the hero WebP image with responsive sources -->
+        <link rel="preload" as="image" href="/hero_paris_edited_mobile.webp" media="(max-width: 640px)" fetchpriority="high" />
+        <link rel="preload" as="image" href="/hero_paris_edited.webp" media="(min-width: 641px)" fetchpriority="high" />
         <meta name="theme-color" content="#1a1a2e" />
         <meta name="keywords" content="maladie professionnelle, accident du travail, MDPH, expertise médicale, protection juridique, IPP, AAH, dossier CPAM, contestation, indemnisation" />
         <meta name="author" content="Stratégie & Expertise Santé" />
-        <meta name="description" content="Cabinet de conseil spécialisé en droits des victimes : accompagnement maladie professionnelle, préparation expertise médicale, contestation MDPH, accident du travail. Analyse par IA et prise en charge humaine personnalisée." />
+        <!-- meta description managed dynamically by react-helmet-async (SEO.jsx) per page to avoid duplication -->
         <meta name="robots" content="index, follow" />
 
         <!-- Open Graph -->

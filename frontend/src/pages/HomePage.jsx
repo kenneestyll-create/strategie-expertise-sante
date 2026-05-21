@@ -345,10 +345,16 @@ export const HomePage = () => {
                 <div className="relative">
                   <div className="overflow-hidden shadow-[0_35px_80px_-15px_rgba(0,0,0,0.75)] h-full lg:h-auto">
                     <img
-                      src="/hero_paris_edited.png"
+                      src="/hero_paris_edited.webp"
+                      srcSet="/hero_paris_edited_mobile.webp 640w, /hero_paris_edited.webp 1024w"
+                      sizes="(max-width: 640px) 640px, 1024px"
                       alt="Expert en stratégie santé"
                       className="hero-main-image w-full h-full lg:aspect-[4/5] object-cover object-top"
+                      width="1024"
+                      height="1536"
                       loading="eager"
+                      fetchpriority="high"
+                      decoding="async"
                     />
                     {/* Fondu haut — intégration douce */}
                     <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-[#0a0a08]/40 to-transparent" />
@@ -449,9 +455,15 @@ export const HomePage = () => {
               <div className="relative">
                 <div className="w-64 h-72 sm:w-72 sm:h-80 rounded-3xl overflow-hidden shadow-xl">
                   <img
-                    src="/hero_paris_edited.png"
+                    src="/hero_paris_edited.webp"
+                    srcSet="/hero_paris_edited_mobile.webp 640w, /hero_paris_edited.webp 1024w"
+                    sizes="(max-width: 640px) 288px, 288px"
                     alt="Fondateur S.E.S"
                     className="w-full h-full object-cover object-top"
+                    width="1024"
+                    height="1536"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
                 {/* 3 Blocs CTA — mobile + desktop */}
