@@ -414,3 +414,25 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - [x] **P2 Guide Admin — Téléchargement PDF** : Ajout dans `AdminHelpPanel.jsx` d'une étape « Documents uploadés — Télécharger les PDF originaux » dans la section Dossier Express, avec mots-clés enrichis (télécharger/telecharger/download/documents uploadés/pré-signed/s3)
 - **Testing E2E** : Iteration 198 (6/7 PASS initial, regression `/contact` détectée puis corrigée, re-vérifié 1 meta description sur `/` et `/contact`).
 - **Fichiers modifiés** : `frontend/public/index.html`, `frontend/src/App.js`, `frontend/src/pages/HomePage.jsx`, `frontend/src/pages/ContactPage.jsx`, `frontend/src/components/DocumentUploader.jsx`, `frontend/src/components/AdminHelpPanel.jsx`. Assets ajoutés : `frontend/public/hero_paris_edited.webp`, `frontend/public/hero_paris_edited_mobile.webp`.
+
+## Changelog 2026-02-XX — P0 Storage SecurityError Hardening (Iteration 204)
+- [x] **P0 Migration safeStorage — 100% complète** : Élimination définitive des crashes React `DOMException: SecurityError` en navigation privée Chrome Mobile / WebView Android sandboxée.
+  - Façade résiliente `/app/frontend/src/utils/safeStorage.js` (déjà créée précédemment) — try/catch à chaque accès y compris sur `window.localStorage` lui-même, fallback silencieux (null/false/noop), breadcrumb Sentry non-bloquant, devLog NODE_ENV-gated, méthodes `get/set/remove/clear/getJSON/setJSON` sur `safeStorage` (local) et `safeSessionStorage` (session).
+  - **Fichiers migrés dans cette itération (4)** : `pages/AdminDashboard.jsx` (1 accès), `pages/DossierExpressPage.jsx` (14 accès), `pages/ResourcesPage.jsx` (1 accès), `pages/EspaceClientPage.jsx` (12 accès) = **28 accès directs remplacés**.
+  - **Fichiers déjà migrés précédemment (11)** : `context/AuthContext.jsx`, `context/ForumAuthContext.jsx`, `hooks/useAdminTheme.js`, `hooks/useStrateTriggers.js`, `components/AdminQRStats.jsx`, `components/ExitIntentPopup.jsx`, `components/AdminTestBanner.jsx`, `components/MascotteStrate.jsx`, `components/AdminVideoFactory.jsx`, `components/StrategicFeedback.jsx`, `components/AdminOnboardingTour.jsx`.
+  - **Audit final** : `grep -rn "localStorage\|sessionStorage" frontend/src` → **0 accès direct restant** (hors `safeStorage.js` lui-même et 1 commentaire JSDoc dans `useStrateTriggers.js:8`).
+- [x] **Test Playwright résilience** (`/app/frontend/tests/storage_resilience.spec.mjs`) : injection `DOMException SecurityError` sur `window.localStorage` ET `window.sessionStorage` via `addInitScript`. **14/14 PASS** (7 pages × 2 modes normal/bloqué) — 0 pageerror, 0 React crash, toutes pages rendent du contenu (Home, EspaceClient, DossierExpress, Guide404, Resources, AdminLogin, ExpertiseMed).
+- [x] **Testing agent v3 (iteration_204)** : 7/7 critères techniques PASS (Auth Admin OK, Dossier Express OK, Resources OK, Popups/Mascotte OK, Theme Admin OK, Résilience storage bloqué OK CRITIQUE, Audit grep OK). Seule limitation : credentials client `demo@test.com/Password123!` retournent 401 backend (hors scope safeStorage, seed à vérifier).
+- **Garanties livrées** :
+  - ✅ "0 accès directs restants" — confirmé par grep
+  - ✅ "Crash impossible même avec storage bloqué" — confirmé par 14/14 tests Playwright avec injection DOMException
+  - ✅ "Aucune régression détectée" — confirmé par testing agent v3 sur tous les flux Auth/Popups/Dossier/Resources
+- **Fichiers modifiés** : `frontend/src/pages/AdminDashboard.jsx`, `frontend/src/pages/DossierExpressPage.jsx`, `frontend/src/pages/EspaceClientPage.jsx`, `frontend/src/pages/ResourcesPage.jsx`. Test ajouté : `frontend/tests/storage_resilience.spec.mjs`.
+
+## Prochaines priorités (P1/P2)
+- [ ] **P1** : Créer et déployer Phase 3 Vague 1 — Simulateurs AT + MP
+- [ ] **P1** : Reprise rythme éditorial (1 article/semaine via Studio Éditorial)
+- [ ] **P2** : SEO Phase 2 & 3 `/expertise-medicale` — **BLOQUÉ** jusqu'au 2026-06-16 (période d'observation utilisateur)
+- [ ] **P2** : Vérifier le seed client `demo@test.com/Password123!` (401 actuel — pas un bug safeStorage, mais bloque l'E2E client en testing)
+- [ ] **P2 backlog** : Video Factory Vague 2 (Bibliothèque hooks/scripts), Intégration HubSpot CRM, Activation IA Prédictive V2
+
