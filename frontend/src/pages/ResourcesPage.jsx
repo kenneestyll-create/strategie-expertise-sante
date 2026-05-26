@@ -16,6 +16,7 @@ import axios from 'axios';
 import { MALADIES_PRO_TABLEAUX, TMS_LOCALISATION, IPP_EXEMPLES } from '@/data/maladiesProfessionnelles';
 import { MDPH_DIRECTORY } from '@/data/mdphDirectory';
 import { SEO } from '@/components/SEO';
+import { safeStorage } from '../utils/safeStorage';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -24,7 +25,7 @@ const GuideCard = ({ guide }) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
-  const isAdmin = !!localStorage.getItem('admin_token');
+  const isAdmin = !!safeStorage.get('admin_token');
 
   const handleAdminDownload = () => {
     window.open(`${API}/resources/pdf/${guide.id}`, '_blank');

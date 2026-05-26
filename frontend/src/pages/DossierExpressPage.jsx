@@ -22,6 +22,7 @@ import { PdfCoverPreview } from '@/components/PdfCoverPreview';
 import { DocumentUploader } from '@/components/DocumentUploader';
 import { useAdminTest } from '@/components/AdminTestBanner';
 import { useVip } from '@/context/VipContext';
+import { safeSessionStorage } from '../utils/safeStorage';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -324,7 +325,7 @@ export const DossierExpressPage = () => {
       setStep('form');
       window.history.replaceState({}, '', '/dossier-express');
     } else if (payment === 'success' && sessionId) {
-      const savedForm = sessionStorage.getItem('dossier_express_form');
+      const savedForm = safeSessionStorage.get('dossier_express_form');
       if (savedForm) {
         const parsed = JSON.parse(savedForm);
         setForm(parsed);
@@ -384,25 +385,25 @@ export const DossierExpressPage = () => {
     }
     // Admin bypass: skip Stripe, go directly to form
     if (isAdminMode && adminToken) {
-      sessionStorage.setItem('dossier_express_form', JSON.stringify(form));
-      sessionStorage.setItem('dossier_express_premium_pdf', premiumPdf ? '1' : '0');
-      sessionStorage.setItem('dossier_express_admin_bypass', '1');
+      safeSessionStorage.set('dossier_express_form', JSON.stringify(form));
+      safeSessionStorage.set('dossier_express_premium_pdf', premiumPdf ? '1' : '0');
+      safeSessionStorage.set('dossier_express_admin_bypass', '1');
       setAdminPaid(true);
       toast.success("Mode Admin : paiement bypass — complétez le dossier puis lancez l'analyse.");
       return;
     }
     // VIP bypass: skip payment like admin
     if (isVip) {
-      sessionStorage.setItem('dossier_express_form', JSON.stringify(form));
-      sessionStorage.setItem('dossier_express_premium_pdf', premiumPdf ? '1' : '0');
-      sessionStorage.setItem('dossier_express_admin_bypass', '1');
+      safeSessionStorage.set('dossier_express_form', JSON.stringify(form));
+      safeSessionStorage.set('dossier_express_premium_pdf', premiumPdf ? '1' : '0');
+      safeSessionStorage.set('dossier_express_admin_bypass', '1');
       setAdminPaid(true);
       toast.success(`Accès Partenaire VIP (${vipName}) : paiement offert.`);
       return;
     }
-    sessionStorage.setItem('dossier_express_form', JSON.stringify(form));
-    sessionStorage.setItem('dossier_express_premium_pdf', premiumPdf ? '1' : '0');
-    sessionStorage.setItem('dossier_express_analyse_premium', analysePremium ? '1' : '0');
+    safeSessionStorage.set('dossier_express_form', JSON.stringify(form));
+    safeSessionStorage.set('dossier_express_premium_pdf', premiumPdf ? '1' : '0');
+    safeSessionStorage.set('dossier_express_analyse_premium', analysePremium ? '1' : '0');
     setLoading(true);
     try {
       // === LAUNCH MODE CHECK ===
@@ -528,7 +529,7 @@ export const DossierExpressPage = () => {
     toast.info("Envoi de votre dossier pour analyse...");
     const isAdminBypass = isAdminMode && adminToken;
     try {
-      const isPremium = sessionStorage.getItem('dossier_express_premium_pdf') === '1';
+      const isPremium = safeSessionStorage.get('dossier_express_premium_pdf') === '1';
       const endpoint = isAdminBypass ? `${API}/dossier-express/admin-bypass` : `${API}/dossier-express/submit`;
       const payload = isAdminBypass ? {
         name: form.name, email: form.email, situation: form.situation,
@@ -549,9 +550,9 @@ export const DossierExpressPage = () => {
       setDossierId(res.data.dossier_id);
       // Already in 'processing' mode (set early at submit start). Just refresh poll status to enter the analysis steps.
       setPollStatus({ progress_step: 'uploading', files_count: files.length, documents_extracted: documentsText.length > 50 });
-      sessionStorage.removeItem('dossier_express_form');
-      sessionStorage.removeItem('dossier_express_premium_pdf');
-      sessionStorage.removeItem('dossier_express_admin_bypass');
+      safeSessionStorage.remove('dossier_express_form');
+      safeSessionStorage.remove('dossier_express_premium_pdf');
+      safeSessionStorage.remove('dossier_express_admin_bypass');
       if (isAdminBypass) toast.success("Dossier soumis — analyse IA en cours (mode admin).");
     } catch (err) {
       // Submission failed — revert from 'processing' back to 'form' so the user can retry.

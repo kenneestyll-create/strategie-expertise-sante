@@ -21,6 +21,7 @@ import { AdminVideoFactory } from '@/components/AdminVideoFactory';
 import { AdminAgentsOrg } from '@/components/AdminAgentsOrg';
 import { TestDataPurgeButton } from '@/components/TestDataPurgeButton';
 import { PurgeAllButton, DeleteRowButton } from '@/components/PurgeAllButton';
+import { safeStorage } from '../utils/safeStorage';
 import { 
   Heart, 
   LogOut, 
@@ -819,7 +820,7 @@ export const AdminDashboard = () => {
 
   // Auto-start onboarding tour on first admin login
   useEffect(() => {
-    if (!loading && !localStorage.getItem(TOUR_KEY)) {
+    if (!loading && !safeStorage.get(TOUR_KEY)) {
       const timer = setTimeout(() => setShowTour(true), 1800);
       return () => clearTimeout(timer);
     }

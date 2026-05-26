@@ -39,27 +39,28 @@ import { ProgressDashboard } from '@/components/ProgressDashboard';
 import { DossierAnalysis } from '@/components/DossierAnalysis';
 import { StrategicFeedback } from '@/components/StrategicFeedback';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { safeStorage, safeSessionStorage } from '../utils/safeStorage';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const useClientAuth = () => {
-  const [token, setToken] = useState(localStorage.getItem('client_token'));
-  const [clientName, setClientName] = useState(localStorage.getItem('client_name'));
-  const [clientId, setClientId] = useState(localStorage.getItem('client_id'));
+  const [token, setToken] = useState(safeStorage.get('client_token'));
+  const [clientName, setClientName] = useState(safeStorage.get('client_name'));
+  const [clientId, setClientId] = useState(safeStorage.get('client_id'));
 
   const login = (data) => {
-    localStorage.setItem('client_token', data.access_token);
-    localStorage.setItem('client_name', data.client_name);
-    localStorage.setItem('client_id', data.client_id);
+    safeStorage.set('client_token', data.access_token);
+    safeStorage.set('client_name', data.client_name);
+    safeStorage.set('client_id', data.client_id);
     setToken(data.access_token);
     setClientName(data.client_name);
     setClientId(data.client_id);
   };
 
   const logout = () => {
-    localStorage.removeItem('client_token');
-    localStorage.removeItem('client_name');
-    localStorage.removeItem('client_id');
+    safeStorage.remove('client_token');
+    safeStorage.remove('client_name');
+    safeStorage.remove('client_id');
     setToken(null);
     setClientName(null);
     setClientId(null);
@@ -184,12 +185,12 @@ const ClientDashboard = ({ token, clientName, logout }) => {
     try {
       const res = await axios.get(`${API}/client/dossier-analysis`, { headers });
       const newScore = res.data.score;
-      const prev = sessionStorage.getItem('dossier_prev_score');
+      const prev = safeSessionStorage.get('dossier_prev_score');
       if (prev !== null && newScore > parseInt(prev, 10)) {
         setScoreDelta(newScore - parseInt(prev, 10));
         setTimeout(() => setScoreDelta(null), 5000);
       }
-      sessionStorage.setItem('dossier_prev_score', String(newScore));
+      safeSessionStorage.set('dossier_prev_score', String(newScore));
       setNavScore(res.data);
     } catch (e) { console.warn('Nav score fetch failed'); }
   };
