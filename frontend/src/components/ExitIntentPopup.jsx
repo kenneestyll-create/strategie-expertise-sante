@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { X, ScanSearch, FileText } from 'lucide-react';
+import { safeStorage, safeSessionStorage } from '../utils/safeStorage';
 
 const STORAGE_KEY = 'exitPopupShown';
 
@@ -9,13 +10,13 @@ export const ExitIntentPopup = () => {
   const [visible, setVisible] = useState(false);
 
   // Ne pas afficher en mode admin
-  const isAdmin = !!localStorage.getItem('admin_token');
+  const isAdmin = !!safeStorage.get('admin_token');
   const isAdminRoute = typeof window !== 'undefined' && (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/login'));
 
   const show = useCallback(() => {
     if (isAdmin || isAdminRoute) return;
-    if (sessionStorage.getItem(STORAGE_KEY)) return;
-    sessionStorage.setItem(STORAGE_KEY, 'true');
+    if (safeSessionStorage.get(STORAGE_KEY)) return;
+    safeSessionStorage.set(STORAGE_KEY, 'true');
     setVisible(true);
   }, [isAdmin, isAdminRoute]);
 

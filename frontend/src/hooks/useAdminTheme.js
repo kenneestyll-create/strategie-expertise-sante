@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { safeStorage } from '../utils/safeStorage';
 
 const STORAGE_KEY = 'ses-admin-theme';
 
@@ -6,13 +7,7 @@ export function useAdminTheme() {
   const getSystemPreference = () =>
     window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 
-  const [preference, setPreference] = useState(() => {
-    try {
-      return localStorage.getItem(STORAGE_KEY) || 'system';
-    } catch {
-      return 'system';
-    }
-  });
+  const [preference, setPreference] = useState(() => safeStorage.get(STORAGE_KEY) || 'system');
 
   const resolved = preference === 'system' ? getSystemPreference() : preference;
   const isDark = resolved === 'dark';
@@ -38,13 +33,13 @@ export function useAdminTheme() {
   const toggle = useCallback(() => {
     setPreference(prev => {
       const next = (prev === 'system' ? getSystemPreference() : prev) === 'dark' ? 'light' : 'dark';
-      try { localStorage.setItem(STORAGE_KEY, next); } catch {}
+      safeStorage.set(STORAGE_KEY, next);
       return next;
     });
   }, []);
 
   const reset = useCallback(() => {
-    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    safeStorage.remove(STORAGE_KEY);
     setPreference('system');
   }, []);
 

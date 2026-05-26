@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import { safeStorage } from '../utils/safeStorage';
 
 /**
  * useStrateTriggers — auto-open the reception chat based on:
@@ -71,8 +72,7 @@ export const useStrateTriggers = ({ enabled = true, isOpen = false, onTrigger })
     if (!canAutoOpenOnPath(path)) return;
 
     // 24h cooldown
-    let last;
-    try { last = parseInt(localStorage.getItem(LS_LAST_AUTO_OPEN) || '0', 10); } catch { last = 0; }
+    const last = parseInt(safeStorage.get(LS_LAST_AUTO_OPEN) || '0', 10);
     if (last && Date.now() - last < COOLDOWN_MS) return;
 
     const maybeFire = (cause) => {
@@ -81,7 +81,7 @@ export const useStrateTriggers = ({ enabled = true, isOpen = false, onTrigger })
       const active = document.activeElement;
       if (active && ['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName)) return;
       firedRef.current = true;
-      try { localStorage.setItem(LS_LAST_AUTO_OPEN, String(Date.now())); } catch { /* ignore */ }
+      safeStorage.set(LS_LAST_AUTO_OPEN, String(Date.now()));
       onTrigger?.(cause);
     };
 

@@ -1,23 +1,21 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { safeStorage } from '../utils/safeStorage';
 
 const ForumAuthContext = createContext(null);
 
 export const ForumAuthProvider = ({ children }) => {
-  const [token, setToken] = useState(localStorage.getItem('forum_token'));
-  const [user, setUser] = useState(() => {
-    const stored = localStorage.getItem('forum_user');
-    return stored ? JSON.parse(stored) : null;
-  });
+  const [token, setToken] = useState(safeStorage.get('forum_token'));
+  const [user, setUser] = useState(() => safeStorage.getJSON('forum_user', null));
   const [isAuthenticated, setIsAuthenticated] = useState(!!token);
 
   useEffect(() => {
     if (token && user) {
-      localStorage.setItem('forum_token', token);
-      localStorage.setItem('forum_user', JSON.stringify(user));
+      safeStorage.set('forum_token', token);
+      safeStorage.setJSON('forum_user', user);
       setIsAuthenticated(true);
     } else {
-      localStorage.removeItem('forum_token');
-      localStorage.removeItem('forum_user');
+      safeStorage.remove('forum_token');
+      safeStorage.remove('forum_user');
       setIsAuthenticated(false);
     }
   }, [token, user]);

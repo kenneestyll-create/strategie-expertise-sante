@@ -1,19 +1,20 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { safeStorage } from '../utils/safeStorage';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(localStorage.getItem('admin_token'));
-  const [adminName, setAdminName] = useState(localStorage.getItem('admin_name'));
+  const [token, setToken] = useState(safeStorage.get('admin_token'));
+  const [adminName, setAdminName] = useState(safeStorage.get('admin_name'));
   const [isAuthenticated, setIsAuthenticated] = useState(!!token);
 
   useEffect(() => {
     if (token) {
-      localStorage.setItem('admin_token', token);
+      safeStorage.set('admin_token', token);
       setIsAuthenticated(true);
     } else {
-      localStorage.removeItem('admin_token');
-      localStorage.removeItem('admin_name');
+      safeStorage.remove('admin_token');
+      safeStorage.remove('admin_name');
       setIsAuthenticated(false);
     }
   }, [token]);
@@ -21,7 +22,7 @@ export const AuthProvider = ({ children }) => {
   const login = (accessToken, name) => {
     setToken(accessToken);
     setAdminName(name);
-    localStorage.setItem('admin_name', name);
+    safeStorage.set('admin_name', name);
   };
 
   const logout = () => {

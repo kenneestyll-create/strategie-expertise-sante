@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Volume2, ArrowRight, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { safeStorage, safeSessionStorage } from '../utils/safeStorage';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -108,16 +109,16 @@ async function speakFrench(text, onStart, onEnd, onError) {
 function trackView(id) {
   if (!id) return;
   const key = `strate_view_${id}_${new Date().toDateString()}`;
-  if (localStorage.getItem(key)) return;
+  if (safeStorage.get(key)) return;
   fetch(`${API}/conseils/view`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conseil_id: id }) }).catch(() => {});
-  localStorage.setItem(key, 'true');
+  safeStorage.set(key, 'true');
 }
 function trackClick(id) {
   if (!id) return;
   fetch(`${API}/conseils/click`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conseil_id: id }) }).catch(() => {});
 }
 export function trackStrateConversion(action) {
-  const id = sessionStorage.getItem('strate_conseil_id');
+  const id = safeSessionStorage.get('strate_conseil_id');
   if (!id) return;
   fetch(`${API}/conseils/conversion`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ conseil_id: id, action }) }).catch(() => {});
 }
@@ -261,7 +262,7 @@ export const MascotteStrate = () => {
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(data => {
         setConseil({ id: data.id, text: data.text, cat: data.category, link: data.link || '/ressources', label: data.link_label || 'En savoir plus' });
-        sessionStorage.setItem('strate_conseil_id', data.id);
+        safeSessionStorage.set('strate_conseil_id', data.id);
         trackView(data.id);
       })
       .catch(() => setConseil({ id: FALLBACK.id, text: FALLBACK.text, cat: FALLBACK.category, link: FALLBACK.link, label: FALLBACK.link_label }));

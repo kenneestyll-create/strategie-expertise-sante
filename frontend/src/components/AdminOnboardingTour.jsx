@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { safeStorage } from '../utils/safeStorage';
 
 const TOUR_KEY = 'ses_admin_onboarding_done';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -131,7 +132,7 @@ export const AdminOnboardingTour = ({ isActive, onClose, token }) => {
 
   const complete = () => {
     trackEvent('complete', step, token);
-    localStorage.setItem(TOUR_KEY, 'true');
+    safeStorage.set(TOUR_KEY, 'true');
     setStep(0);
     onClose();
   };

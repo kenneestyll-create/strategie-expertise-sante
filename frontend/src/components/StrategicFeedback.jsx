@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { MessageCircle, Send, Check, X, ChevronDown } from 'lucide-react';
 import axios from 'axios';
+import { safeSessionStorage } from '../utils/safeStorage';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -24,7 +25,7 @@ export const StrategicFeedback = ({ source = '', typeDossier = '' }) => {
 
   // Verifie si deja affiche cette session
   const storageKey = `ses_feedback_${source}`;
-  if (typeof window !== 'undefined' && sessionStorage.getItem(storageKey)) {
+  if (safeSessionStorage.get(storageKey)) {
     return null;
   }
 
@@ -50,7 +51,7 @@ export const StrategicFeedback = ({ source = '', typeDossier = '' }) => {
         source, type_dossier: typeDossier,
       });
       setSubmitted(true);
-      sessionStorage.setItem(storageKey, '1');
+      safeSessionStorage.set(storageKey, '1');
     } catch {
       // Silencieux — le feedback n'est pas critique
     } finally {
@@ -60,7 +61,7 @@ export const StrategicFeedback = ({ source = '', typeDossier = '' }) => {
 
   const handleDismiss = () => {
     setDismissed(true);
-    sessionStorage.setItem(storageKey, '1');
+    safeSessionStorage.set(storageKey, '1');
   };
 
   if (!open) {

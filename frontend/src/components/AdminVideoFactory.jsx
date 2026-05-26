@@ -13,6 +13,7 @@ import { Loader2, Copy, Download, Video as VideoIcon, Sparkles, Trash2, RefreshC
 import { Slider } from '@/components/ui/slider';
 import { VideoPreviewPlayer } from '@/components/VideoPreviewPlayer';
 import { MarkPublishedDialog } from '@/components/MarkPublishedDialog';
+import { safeStorage } from '../utils/safeStorage';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -439,7 +440,7 @@ export const AdminVideoFactory = () => {
   const [savingMetrics, setSavingMetrics] = useState(false);
 
   const axiosConfig = useCallback(() => {
-    const token = localStorage.getItem('admin_token') || localStorage.getItem('adminToken') || localStorage.getItem('token');
+    const token = safeStorage.get('admin_token') || safeStorage.get('adminToken') || safeStorage.get('token');
     return { headers: { Authorization: `Bearer ${token}` } };
   }, []);
 

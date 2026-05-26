@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Card, CardContent } from '@/components/ui/card';
 import { QrCode } from 'lucide-react';
+import { safeStorage } from '../utils/safeStorage';
 
 const API = process.env.REACT_APP_BACKEND_URL + '/api';
 
@@ -15,7 +16,7 @@ export const AdminQRStats = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('admin_token');
+    const token = safeStorage.get('admin_token');
     axios
       .get(`${API}/admin/contacts/qr-stats`, { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => setData(r.data))
