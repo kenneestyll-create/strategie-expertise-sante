@@ -4,6 +4,16 @@ import * as Sentry from "@sentry/react";
 import "@/index.css";
 import App from "@/App";
 
+// ===== Polyfill Object.hasOwn (ES2022) =====
+// Required for react-markdown@10 which uses Object.hasOwn internally.
+// Some runtimes (corporate antivirus injections, embedded webviews) strip or
+// fail to expose this method. Polyfill is MDN-equivalent, zero-risk.
+if (!Object.hasOwn) {
+  Object.hasOwn = function (obj, prop) {
+    return Object.prototype.hasOwnProperty.call(obj, prop);
+  };
+}
+
 // ===== Sentry — Error monitoring only (no Replay, no Performance, no Analytics) =====
 // Activated ONLY when REACT_APP_SENTRY_DSN is set AND environment is production.
 // Tant que la variable est vide, Sentry reste totalement inactif (aucun appel réseau, aucun overhead).
