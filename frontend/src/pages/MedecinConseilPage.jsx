@@ -58,8 +58,8 @@ export default function MedecinConseilPage() {
   return (
     <main className="page-transition pt-20">
       <SEO
-        title="Médecin conseil : CPAM, assureur, victime — comprendre les rôles"
-        description="Médecin conseil CPAM, médecin de l'assureur, médecin de recours : 3 rôles différents, 3 stratégies différentes. Comprendre, préparer, contester."
+        title="Médecin conseil CPAM : erreurs à éviter et comment se préparer"
+        description="Examen médecin conseil CPAM : préparez-vous efficacement, évitez les erreurs fréquentes et comprenez comment contester une décision défavorable."
         path="/medecin-conseil"
       />
 

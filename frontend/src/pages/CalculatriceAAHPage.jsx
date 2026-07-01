@@ -171,7 +171,7 @@ export const CalculatriceAAHPage = () => {
 
   return (
     <main className="page-transition pt-20">
-      <SEO title="Calcul AAH : simulateur montant et éligibilité" description="Estimez votre AAH selon votre situation et vos revenus. Simulateur gratuit basé sur les barèmes 2026. Montant maximum : 1 041,59 €/mois." path="/calculatrice-aah" />
+      <SEO title="AAH 2026 : montant, conditions et simulateur gratuit" description="Découvrez le montant de l’AAH en 2026, les conditions d’éligibilité et simulez vos droits gratuitement selon vos revenus et votre situation de handicap." path="/calculatrice-aah" />
       {/* Hero */}
       <section className="section-padding bg-secondary">
         <div className="max-w-7xl mx-auto">
