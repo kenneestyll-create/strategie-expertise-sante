@@ -29,7 +29,8 @@ import {
   Briefcase,
   TrendingDown,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  FileText
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -288,6 +289,54 @@ export const CalculatriceIPPPage = () => {
                       <p>Rente = {salaire.toLocaleString('fr-FR')} × {result.tauxUtile}% = {result.montantAnnuel.toLocaleString('fr-FR')} €/an</p>
                     </div>
                   )}
+
+                  {/* ===== P0-1 : Bloc CTA conversion post-résultat ===== */}
+                  <div
+                    className="mt-4 p-5 rounded-xl border-2 border-accent/30 bg-gradient-to-br from-accent/5 to-accent/10"
+                    data-testid="ipp-conversion-cta-block"
+                  >
+                    <p className="text-sm font-semibold text-foreground mb-1">
+                      Votre estimation vous semble insuffisante ?
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Un taux d'IPP contesté ou mal évalué peut faire varier votre indemnisation de plusieurs milliers d'euros. Nos experts peuvent auditer votre dossier et sécuriser vos droits.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Button
+                        asChild
+                        size="lg"
+                        className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
+                        data-testid="ipp-cta-dossier-express"
+                        onClick={() => {
+                          try { window.clarity && window.clarity('event', 'ipp_cta_dossier_click'); } catch (e) { /* silent */ }
+                        }}
+                      >
+                        <Link to="/dossier-express">
+                          <FileText className="w-5 h-5 mr-2" />
+                          Faire auditer mon dossier
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </Link>
+                      </Button>
+                      <Button
+                        asChild
+                        size="lg"
+                        variant="outline"
+                        className="flex-1 border-accent/40 hover:bg-accent/10 font-semibold"
+                        data-testid="ipp-cta-rdv-expertise"
+                        onClick={() => {
+                          try { window.clarity && window.clarity('event', 'ipp_cta_rdv_click'); } catch (e) { /* silent */ }
+                        }}
+                      >
+                        <Link to="/agenda">
+                          <CalendarPlus className="w-5 h-5 mr-2" />
+                          Prendre RDV avec un expert
+                        </Link>
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-3 text-center">
+                      Réponse sous 48 h — Sans engagement — 100 % confidentiel
+                    </p>
+                  </div>
 
                   {/* Share buttons */}
                   <div className="pt-4 border-t border-border/50">
