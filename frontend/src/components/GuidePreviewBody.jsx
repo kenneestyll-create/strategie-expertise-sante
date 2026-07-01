@@ -149,6 +149,53 @@ export const GuidePreviewBody = ({ page, slug, currentYear, onCtaClick, isPrevie
         </section>
       )}
 
+      {/* ===== P0-2 : CTA intermédiaire de conversion ===== */}
+      {(erreurs.length > 0 || solutions.length > 0 || blocages.length > 0) && (
+        <section className="mb-10" data-testid="guide-cta-mid">
+          <div className="p-5 sm:p-6 rounded-xl border-2 border-[#C9A84C]/30 bg-gradient-to-br from-[#C9A84C]/5 to-[#C9A84C]/10">
+            <p className="text-sm font-semibold text-foreground mb-1">
+              Votre situation ressemble à ce guide ?
+            </p>
+            <p className="text-sm text-foreground/70 mb-4">
+              Chaque dossier est unique. Un audit personnalisé permet d'identifier les leviers spécifiques à votre situation et de sécuriser votre stratégie de recours.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                asChild
+                size="lg"
+                className="flex-1 bg-[#C9A84C] hover:bg-[#b8960f] text-[#1a1a2e] font-semibold"
+                data-testid="guide-cta-mid-dossier"
+                onClick={() => {
+                  try { window.clarity && window.clarity('event', 'guide_cta_mid_dossier_click'); } catch (e) { /* silent */ }
+                }}
+              >
+                <Link to={ctaHref}>
+                  Auditer mon dossier
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="flex-1 border-[#C9A84C]/40 hover:bg-[#C9A84C]/10 font-semibold"
+                data-testid="guide-cta-mid-rdv"
+                onClick={() => {
+                  try { window.clarity && window.clarity('event', 'guide_cta_mid_rdv_click'); } catch (e) { /* silent */ }
+                }}
+              >
+                <Link to={`/agenda?type=conseil&source=guide&page=${slug || ''}`}>
+                  Prendre RDV
+                </Link>
+              </Button>
+            </div>
+            <p className="text-xs text-foreground/60 mt-3 text-center">
+              Réponse sous 48 h — Sans engagement — 100 % confidentiel
+            </p>
+          </div>
+        </section>
+      )}
+
       {/* Stratégie */}
       {c.strategie && (
         <section className="mb-8" data-testid="guide-strategie">
