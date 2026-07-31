@@ -56,6 +56,9 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 
 - [x] **P1-1 — Guide « IPP fonction publique hospitalière »** (31/07/2026, ordre exécutif J+30) : nouveau guide `/guide/ipp-fonction-publique-hospitaliere` (17e page seo_pages, seed insert-only). Cluster GSC ciblé « simulateur calcul taux ipp fonction publique (hospitalière) » ~580 imp/28j. Contenu : CITIS, ATIACL (décret 2005-442), barème pensions civiles vs AT/MP, tribunal administratif vs pôle social, cas contractuels. 7 FAQ Schema.org, lien interne vers /calculatrice-ipp. Fix rendu markdown_body (mapping ReactMarkdown dans GuidePreviewBody, typography plugin absent). Testing agent 100 % (iteration_205). Rapport : /app/memory/RAPPORT_P1-1_2026-07-31.md
 
+- [x] **P1-6 — Audit UX mobile complet** (31/07/2026, feuille de route Phase 2) : audit lecture seule 14 pages (390×844). Résultat : base saine (0 overflow, inputs 16px, hero optimisé, menu 44px). 1 constat P0 (auto-open Straté PLEIN ÉCRAN mobile = interstitiel intrusif Google), 2 P1 (slider IPP thumb 16px sur page n°1, cumul sticky home ~19% viewport), 4 P2 (texte guides 14px, badge Gratuit césure, inputs 36px, bundle 413Ko gzip). AUCUNE modification appliquée — corrections en attente d'ordre exécutif. Rapport : /app/memory/RAPPORT_P1-6_AUDIT_UX_MOBILE_2026-07-31.md
+- [x] **Phase 1 feuille de route (31/07/2026)** : guide P1-1 vérifié EN PRODUCTION (page 200, API 200, sitemap dynamique OK). ⚠️ Sitemap statique /sitemap.xml (fichier committé frontend/public, lu par Google via robots.txt) ne contient PAS la nouvelle URL — à corriger en fenêtre de maintenance avec l'unification robots.txt déjà actée. Demande d'indexation GSC = action user.
+
 ## SEO Phase 2 — 15 Pages Guides Actives (COMPLET)
 ### Bloc A — 5 Pages existantes étoffées (800-1200 mots)
 1. /guide/refus-mdph-aah-que-faire (MDPH)
