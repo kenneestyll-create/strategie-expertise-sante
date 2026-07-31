@@ -768,6 +768,68 @@ PAGES = [
         ]
     },
 },
+# ═══════════════════════════════════════════════════════════════
+# P1-1 — IPP FONCTION PUBLIQUE HOSPITALIÈRE (ordre exécutif 31/07/2026)
+# Cluster GSC ciblé : « simulateur calcul taux ipp fonction publique
+# (hospitalière) » — ~580 impressions, position ~7
+# ═══════════════════════════════════════════════════════════════
+{
+    "slug": "ipp-fonction-publique-hospitaliere",
+    "title": "IPP fonction publique hospitalière : calcul, ATI et recours",
+    "meta_description": "Taux d'IPP dans la fonction publique hospitalière : calcul, allocation temporaire d'invalidité (ATI), délais, et recours en cas de sous-évaluation.",
+    "category": "indemnisation",
+    "intention": "calcul_droits",
+    "priority": "p1",
+    "cta_type": "dossier_express",
+    "cta_label": "Analyser mon taux d'IPP",
+    "content": {
+        "reponse_rapide_titre": "Comment est calculée l'IPP dans la fonction publique hospitalière ?",
+        "reponse_rapide": "Dans la fonction publique hospitalière, le taux d'IPP n'est pas fixé par la CPAM mais par votre employeur public, après avis du conseil médical (ex-commission de réforme). Il est évalué selon le barème indicatif des pensions civiles et militaires — différent du barème AT/MP du régime général. Si votre taux atteint 10 % après un accident de service, vous pouvez percevoir l'Allocation Temporaire d'Invalidité (ATI), cumulable avec votre traitement. La demande doit être déposée dans un délai d'un an. En cas de désaccord sur le taux, le recours relève du tribunal administratif, pas du pôle social.",
+        "markdown_body": "## Titulaire hospitalier : un régime distinct du privé\n\nAgent titulaire ou stagiaire d'un hôpital public, d'un EHPAD public ou d'un établissement médico-social public, vous ne relevez **pas** du régime général de la Sécurité sociale pour vos accidents de service et maladies professionnelles. Votre employeur public est son propre assureur : c'est lui qui reconnaît l'imputabilité au service (via le CITIS — congé pour invalidité temporaire imputable au service), prend en charge vos frais et fixe votre taux d'IPP après avis du conseil médical.\n\nConséquence directe : les règles de calcul, les barèmes, les prestations et les juridictions compétentes sont différents de ceux applicables aux salariés du privé. Un aide-soignant titulaire et un aide-soignant contractuel du même service, victimes du même accident, ne suivront pas le même parcours d'indemnisation.\n\nAvant d'aller plus loin, vous pouvez estimer les ordres de grandeur d'une indemnisation IPP avec notre [calculateur IPP en ligne](/calculatrice-ipp) — puis lire ce guide pour comprendre les spécificités hospitalières qu'aucun simulateur généraliste ne prend en compte.",
+        "contexte": "Aides-soignants, infirmiers, agents de service hospitalier, brancardiers : la fonction publique hospitalière concentre des métiers à forte sinistralité — troubles musculo-squelettiques liés aux manutentions de patients, lombalgies, accidents d'exposition au sang, épuisement professionnel. Lorsqu'un accident de service ou une maladie professionnelle laisse des séquelles permanentes, un taux d'Incapacité Permanente Partielle (IPP) est fixé à la consolidation. Ce taux conditionne l'Allocation Temporaire d'Invalidité (ATI) : une allocation mensuelle versée en plus du traitement, tant que l'agent poursuit son activité. Pour les agents hospitaliers et territoriaux affiliés à la CNRACL, cette allocation est gérée par la Caisse des Dépôts (dispositif ATIACL, décret n°2005-442 du 2 mai 2005). Si les séquelles rendent l'agent définitivement inapte à toutes fonctions, une retraite pour invalidité avec rente viagère d'invalidité peut être mise en place.",
+        "limites": "Les portails officiels décrivent les conditions d'attribution de l'ATI, mais restent muets sur les points qui font réellement basculer un dossier. D'abord, le barème : la fonction publique utilise le barème indicatif annexé au code des pensions civiles et militaires de retraite, et non le barème AT/MP de la Sécurité sociale — pour des séquelles identiques, les cotations peuvent différer sensiblement. Ensuite, l'évaluation : elle repose sur une expertise diligentée par l'employeur et sur l'avis du conseil médical, instances où l'agent est rarement accompagné. Enfin, la frontière des 10 % : après un accident de service, un taux fixé à 8 ou 9 % prive totalement l'agent de l'ATI — il n'existe pas de capital forfaitaire de compensation comme dans le régime général. Chaque point de pourcentage compte, et personne ne vous explique comment il a été arbitré.",
+        "blocages": [
+            "Le taux est fixé sur la base d'une expertise unique, souvent brève, commandée par l'employeur : les séquelles douloureuses chroniques, la fatigabilité et le retentissement psychique sont mécaniquement sous-cotés par rapport aux seules limitations articulaires mesurables.",
+            "Le seuil de 10 % après accident de service fonctionne en tout-ou-rien : à 9 %, aucune ATI, aucune compensation financière des séquelles — alors qu'un salarié du privé percevrait au moins un capital forfaitaire dès 1 %.",
+            "L'agent découvre le barème des pensions civiles et militaires au moment de la notification : il vérifie son taux avec le barème AT/MP du régime général trouvé en ligne, qui ne s'applique pas à sa situation, et passe à côté des vrais arguments de contestation.",
+            "Le délai d'un an pour demander l'ATI (à compter de la consolidation, de la reprise des fonctions ou de la date de constatation de l'incapacité) est méconnu : de nombreux agents laissent passer la forclusion en attendant une hypothétique régularisation spontanée.",
+            "Les séquelles de plusieurs accidents de service successifs sont évaluées isolément, sans lecture d'ensemble, alors que leur cumul peut franchir le seuil des 10 %.",
+            "Les agents contractuels croient relever du même dispositif que les titulaires : ils dépendent en réalité du régime général (CPAM, barème AT/MP, rente ou capital), avec des délais et des juridictions totalement différents."
+        ],
+        "erreurs": [
+            "Contester son taux devant le pôle social du tribunal judiciaire : pour un fonctionnaire hospitalier, le juge compétent est le tribunal administratif, dans un délai de 2 mois après la décision. Une erreur de juridiction fait perdre un temps précieux.",
+            "Comparer son taux avec le barème AT/MP de la Sécurité sociale : le barème applicable aux fonctionnaires est celui des pensions civiles et militaires. Les cotations diffèrent, les arguments de contestation aussi.",
+            "Se présenter seul à l'expertise sans dossier structuré : comptes rendus de spécialistes, imagerie récente, description écrite des limitations dans les gestes professionnels (manutention, station debout, port de charges) doivent être remis à l'expert.",
+            "Laisser passer le délai d'un an pour demander l'ATI après la consolidation : la demande tardive est irrecevable, quelle que soit la gravité des séquelles.",
+            "Oublier de demander la révision : l'ATI est révisable en cas d'aggravation (et réexaminée notamment cinq ans après son attribution). Une aggravation documentée peut faire passer le taux — et l'allocation — à un niveau supérieur.",
+            "Accepter sans vérification un avis défavorable du conseil médical : cet avis est consultatif. La décision finale appartient à l'employeur et elle est contestable."
+        ],
+        "strategie": "Un dossier d'IPP hospitalier se gagne sur trois fronts. Le bon barème d'abord : chaque séquelle doit être positionnée sur le barème des pensions civiles et militaires, ligne par ligne, en intégrant les douleurs, la fatigabilité et le retentissement fonctionnel réel sur les gestes du métier — pas seulement les amplitudes articulaires. La procédure ensuite : vérifier la régularité de l'expertise, la composition et la motivation de l'avis du conseil médical, et la notification des voies de recours — les vices de procédure sont fréquents et exploitables. Le calendrier enfin : sécuriser le délai d'un an pour l'ATI, le délai de 2 mois pour le recours administratif ou contentieux, et anticiper la révision quinquennale. Notre travail consiste à relire votre dossier avec cette triple grille : reconstituer la cotation correcte de vos séquelles, identifier ce qui a été omis ou minoré, et structurer la contestation devant la bonne instance — recours gracieux, conseil médical, puis tribunal administratif si nécessaire.",
+        "orientation": [
+            "Identifiez votre statut exact : titulaire ou stagiaire (régime CNRACL, ATI, tribunal administratif) ou contractuel (régime général, CPAM, CMRA puis pôle social). Toute la suite en dépend.",
+            "Demandez la communication intégrale de votre dossier : rapport d'expertise, avis du conseil médical, décision fixant le taux. C'est votre droit, et c'est la base de toute contestation.",
+            "Faites établir par vos spécialistes des certificats décrivant précisément les limitations fonctionnelles résiduelles, en lien avec les gestes de votre métier hospitalier.",
+            "Si votre taux vous semble sous-évalué, formez un recours dans les 2 mois suivant la notification : recours gracieux auprès de votre établissement et/ou recours devant le tribunal administratif.",
+            "Si vous êtes à 10 % ou plus après un accident de service : déposez la demande d'ATI auprès de votre établissement dans l'année suivant la consolidation ou la reprise — ne laissez pas la forclusion s'installer.",
+            "En cas d'aggravation ultérieure, demandez la révision de votre taux avec un dossier médical actualisé."
+        ],
+        "reassurance": "Les agents hospitaliers sont parmi les plus exposés aux accidents de service et aux maladies professionnelles — et parmi les moins bien informés sur leurs droits statutaires. Un taux d'IPP sous-évalué n'est jamais définitif : les avis du conseil médical sont consultatifs, les décisions de l'employeur sont contestables, et les révisions pour aggravation aboutissent régulièrement lorsque le dossier médical est structuré. Votre carrière au service des patients ne doit pas se conclure par des séquelles non reconnues.",
+        "maillage": [
+            {"slug": "taux-ipp-5-pourcent-contester", "text": "Taux d'IPP sous-évalué : comment contester l'évaluation ?"},
+            {"slug": "rente-accident-travail-calcul-contestation", "text": "Rente accident du travail (régime général) : calcul et contestation"},
+            {"slug": "comment-preparer-expertise-medicale", "text": "Comment préparer une expertise médicale : les clés d'un dossier solide"}
+        ],
+        "faq": [
+            {"question": "Qui fixe le taux d'IPP d'un agent hospitalier titulaire ?", "answer": "C'est l'employeur public (l'établissement hospitalier) qui fixe le taux, après une expertise médicale et l'avis du conseil médical — instance qui a remplacé la commission de réforme et le comité médical depuis 2022. La CPAM n'intervient pas pour les titulaires."},
+            {"question": "Qu'est-ce que l'ATI (allocation temporaire d'invalidité) ?", "answer": "L'ATI est une allocation mensuelle versée en plus du traitement à l'agent qui reste en activité malgré des séquelles permanentes. Pour les agents hospitaliers affiliés à la CNRACL, elle est gérée par la Caisse des Dépôts (ATIACL). Elle suppose, après un accident de service, un taux d'IPP d'au moins 10 % ; pour les maladies professionnelles, les conditions renvoient aux tableaux du régime général."},
+            {"question": "Comment est calculé le montant de l'ATI ?", "answer": "Le montant correspond au taux d'IPP appliqué à un traitement de référence réglementaire (traitement brut afférent à un indice fixé par les textes, revalorisé périodiquement). Exemple de principe : un taux de 15 % ouvre droit à 15 % de ce traitement de référence, versés mensuellement en complément du salaire."},
+            {"question": "Quel est le délai pour demander l'ATI ?", "answer": "La demande doit être déposée dans un délai d'un an à compter de la date de consolidation, de la reprise des fonctions ou de la constatation officielle de l'incapacité. Passé ce délai, la demande est irrecevable — c'est l'un des pièges les plus fréquents."},
+            {"question": "Comment contester un taux d'IPP dans la fonction publique hospitalière ?", "answer": "Vous disposez de 2 mois à compter de la notification de la décision pour former un recours gracieux auprès de votre établissement et/ou saisir le tribunal administratif. Attention : le pôle social du tribunal judiciaire n'est pas compétent pour les fonctionnaires — c'est une erreur d'orientation fréquente qui fait perdre le délai."},
+            {"question": "Je suis contractuel dans un hôpital public : quelles différences ?", "answer": "Les agents contractuels relèvent du régime général : c'est la CPAM qui fixe le taux d'IPP selon le barème AT/MP, avec un capital forfaitaire sous 10 % et une rente à partir de 10 %. La contestation passe par la CMRA puis le pôle social du tribunal judiciaire — un circuit totalement différent de celui des titulaires."},
+            {"question": "L'ATI est-elle cumulable avec le traitement et révisable ?", "answer": "Oui. L'ATI est versée en complément du traitement tant que l'agent est en activité. Elle est réexaminée notamment cinq ans après son attribution, et peut être révisée en cas d'aggravation des séquelles imputables au service, sur demande de l'agent avec un dossier médical actualisé."}
+        ]
+    },
+},
 
 ]
 

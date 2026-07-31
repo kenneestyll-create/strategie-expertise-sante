@@ -64,8 +64,29 @@ export const GuidePreviewBody = ({ page, slug, currentYear, onCtaClick, isPrevie
                 p: ({ node, children, ...props }) => {
                   const text = String(children || '');
                   if (text.includes('TERRAIN_HOOK:')) return null;
-                  return <p {...props}>{children}</p>;
+                  return <p className="text-sm leading-relaxed text-foreground/80 mb-4" {...props}>{children}</p>;
                 },
+                h2: ({ node, children, ...props }) => (
+                  <h2 className="font-semibold text-lg sm:text-xl mt-8 mb-3 text-foreground" {...props}>{children}</h2>
+                ),
+                h3: ({ node, children, ...props }) => (
+                  <h3 className="font-semibold text-base mt-6 mb-2 text-foreground" {...props}>{children}</h3>
+                ),
+                ul: ({ node, children, ...props }) => (
+                  <ul className="list-disc pl-5 mb-4 space-y-1.5" {...props}>{children}</ul>
+                ),
+                ol: ({ node, children, ...props }) => (
+                  <ol className="list-decimal pl-5 mb-4 space-y-1.5" {...props}>{children}</ol>
+                ),
+                li: ({ node, children, ...props }) => (
+                  <li className="text-sm leading-relaxed text-foreground/80" {...props}>{children}</li>
+                ),
+                a: ({ node, children, ...props }) => (
+                  <a className="text-[#C9A84C] font-medium hover:underline" {...props}>{children}</a>
+                ),
+                strong: ({ node, children, ...props }) => (
+                  <strong className="font-semibold text-foreground" {...props}>{children}</strong>
+                ),
               }}
             >
               {markdownBody.replace(/<!--\s*TERRAIN_HOOK:[^>]*-->/g, '')}
