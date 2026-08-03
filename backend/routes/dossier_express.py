@@ -319,8 +319,8 @@ async def extract_document_text(request: Request):
         if ftype == "application/pdf" or name.lower().endswith(".pdf"):
             pdf_count += 1
 
-    HEAVY_PDF_COUNT = 2          # > 2 PDFs → async
-    HEAVY_TOTAL_BYTES = 5 * 1024 * 1024  # > 5 MB → async
+    HEAVY_PDF_COUNT = 0          # >= 1 PDF → async (gateway prod coupe a ~30s, Gemini prend 60-150s)
+    HEAVY_TOTAL_BYTES = 1 * 1024 * 1024  # > 1 MB → async
 
     if pdf_count > HEAVY_PDF_COUNT or total_decoded > HEAVY_TOTAL_BYTES:
         # Async mode: register a background task and return immediately.
