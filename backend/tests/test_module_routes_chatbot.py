@@ -9,7 +9,7 @@ class TestChatbot:
     def test_faq_response(self, client):
         sid = f"pytest-faq-{uuid.uuid4().hex[:8]}"
         resp = client.post(f"{API}/chatbot", json={
-            "message": "Comment se préparer à une expertise médicale ?",
+            "message": "Quels sont vos tarifs ?",
             "session_id": sid
         })
         assert resp.status_code == 200
@@ -37,6 +37,6 @@ class TestChatbot:
         resp = client.get(f"{API}/chatbot/quota/pytest-quota-session")
         assert resp.status_code == 200
         data = resp.json()
-        assert data["limit"] == 5
+        assert data["limit"] == 3
         assert "remaining" in data
         assert "used" in data

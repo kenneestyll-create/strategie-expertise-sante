@@ -164,6 +164,60 @@ async def get_public_chiffres_cles():
     return doc.get("value", []) if doc else []
 
 
+# ==================== SUPERVISION (P2 — 04/08/2026) ====================
+
+@router.get("/admin/system-health")
+async def admin_system_health(request: Request, admin: dict = Depends(get_current_admin)):
+    """Etat des composants critiques : PDF, Email, API, Base de donnees, Stockage."""
+    from utils.email_guard import IS_PREVIEW
+    from utils.storage import S3_ACCESS_KEY, S3_SECRET_KEY
+
+    fonts = getattr(request.app.state, "pdf_fonts_report", {"ok": False, "error": "non verifie"})
+
+    db_ok, db_detail = True, "Connexion MongoDB OK"
+    try:
+        await db.command("ping")
+    except Exception as e:
+        db_ok, db_detail = False, str(e)[:200]
+
+    last = {}
+    try:
+        rows = await db.system_status.find({}, {"_id": 0}).to_list(20)
+        last = {r["id"]: r for r in rows}
+    except Exception:
+        pass
+
+    email_configured = bool(RESEND_AVAILABLE and os.environ.get("RESEND_API_KEY"))
+    email_last = last.get("email")
+    storage_configured = bool(S3_ACCESS_KEY and S3_SECRET_KEY)
+    storage_last = last.get("storage")
+    pdf_last = last.get("pdf")
+
+    return {
+        "environment": "preview" if IS_PREVIEW else "production",
+        "components": {
+            "pdf": {
+                "ok": bool(fonts.get("ok")) and (pdf_last is None or pdf_last.get("ok", True)),
+                "detail": f"Polices: {fonts.get('dir') or 'MANQUANTES'}",
+                "last": pdf_last,
+            },
+            "email": {
+                "ok": email_configured and (email_last is None or email_last.get("ok", True)),
+                "detail": ("Resend configure" if email_configured else "Resend NON configure")
+                          + (" — garde preview actif" if IS_PREVIEW else ""),
+                "last": email_last,
+            },
+            "api": {"ok": True, "detail": "API operationnelle", "last": None},
+            "database": {"ok": db_ok, "detail": db_detail, "last": None},
+            "storage": {
+                "ok": storage_configured and (storage_last is None or storage_last.get("ok", True)),
+                "detail": "S3 configure" if storage_configured else "S3 NON configure",
+                "last": storage_last,
+            },
+        },
+    }
+
+
 # ==================== AUTH ====================
 
 @router.post("/auth/login", response_model=TokenResponse)

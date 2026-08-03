@@ -254,6 +254,13 @@ async def startup_db_client():
         })
         logger.info("Reminder cron config initialized (enabled, 9h00)")
 
+    # Email guard — separation preview/production du quota Resend (P1, 04/08/2026)
+    try:
+        from utils.email_guard import install_email_guard
+        install_email_guard()
+    except Exception as e:
+        logger.warning(f"Email guard non installe (non-blocking): {e}")
+
     # Start the daily reminder scheduler
     asyncio.create_task(_daily_reminder_scheduler())
 

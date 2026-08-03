@@ -17,6 +17,7 @@ from config import db, STRIPE_API_KEY, RESEND_AVAILABLE, SENDER_EMAIL, logger, J
 from utils.auth import get_current_admin, get_optional_admin
 from utils.email import notify_admin_premium_analysis
 from utils.pdf import generate_dossier_pdf
+from utils.system_status import record_status
 from utils.storage import put_object
 from constants.statuses import Service, DossierStatus, DossierDelivery, DossierStep, PremiumStatus, DOSSIER_STEP_CLIENT_MAP, CLIENT_STEPS_DISPLAY
 from constants.workflows import LLM_MAX_RETRIES, LLM_RETRY_DELAY_SECONDS, MAX_FILE_SIZE, MAX_TOTAL_SIZE, MAX_FILES
@@ -705,8 +706,10 @@ CONTENU DES DOCUMENTS FOURNIS :
         if not pdf_bytes or len(pdf_bytes) < 100:
             raise ValueError("PDF vide ou corrompu")
         logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] PDF genere ({len(pdf_bytes)} bytes)")
+        await record_status("pdf", True, f"{len(pdf_bytes)} bytes (dossier {dossier_id})")
     except Exception as e:
         logger.error(f"[DOSSIER_EXPRESS][{dossier_id}] PDF generation failed: {e}")
+        await record_status("pdf", False, str(e))
         await _update_dossier_step(dossier_id, "erreur_pdf", "incident_technique", {"status": "error", "error": "Echec generation PDF"})
         await _notify_admin_incident(dossier_id, email, name, "Dossier Express IA", "Generation PDF", str(e)[:300])
         await _notify_client_delay(email, name, "Dossier Express IA")
@@ -730,8 +733,10 @@ CONTENU DES DOCUMENTS FOURNIS :
             "download_token": download_token,
         }})
         logger.info(f"Dossier Express {dossier_id}: PDF uploaded to storage")
+        await record_status("storage", True, f"upload OK (dossier {dossier_id})")
     except Exception as e:
         logger.error(f"[DOSSIER_EXPRESS][{dossier_id}] PDF storage upload failed (non-blocking): {e}")
+        await record_status("storage", False, str(e))
         # S3 failure is NOT fatal — PDF exists in memory, continue with email + admin registration
         await _notify_admin_incident(dossier_id, email, name, "Dossier Express IA", "Stockage PDF", str(e)[:300])
     timings["storage"] = round(time.monotonic() - t_storage, 2)
@@ -839,12 +844,15 @@ CONTENU DES DOCUMENTS FOURNIS :
             await asyncio.to_thread(resend.Emails.send, email_params)
             email_sent = True
             logger.info(f"Dossier Express IA {dossier_id}: email envoye a {email}")
+            await record_status("email", True, f"livraison OK (dossier {dossier_id})")
         except Exception as e:
             logger.error(f"[DOSSIER_EXPRESS][{dossier_id}] Email delivery FAILED: {e}")
+            await record_status("email", False, str(e))
             # Email failure is NOT fatal — PDF is already stored, admin is notified
             await _notify_admin_incident(dossier_id, email, name, "Dossier Express IA", "Envoi email", str(e)[:300])
     else:
         logger.error(f"[DOSSIER_EXPRESS][{dossier_id}] Email NON envoye — Resend non configure (disponible={RESEND_AVAILABLE}, cle={'presente' if (RESEND_AVAILABLE and getattr(resend, 'api_key', None)) else 'absente'})")
+        await record_status("email", False, "Resend non configure")
 
     # === STEP 8: Final — mark as delivered ===
     timings["email"] = round(time.monotonic() - t_email, 2)

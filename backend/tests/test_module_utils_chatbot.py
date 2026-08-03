@@ -8,7 +8,9 @@ from utils.chatbot import find_faq_response, FAQ_DATABASE
 
 class TestFAQDatabase:
     def test_has_entries(self):
-        assert len(FAQ_DATABASE) >= 6
+        # Depuis la refonte Straté, la FAQ ne couvre que tarifs + contact ;
+        # les questions de fond sont routees vers le LLM.
+        assert len(FAQ_DATABASE) >= 2
 
     def test_each_entry_has_keywords(self):
         for topic, data in FAQ_DATABASE.items():
@@ -19,31 +21,22 @@ class TestFAQDatabase:
 
 
 class TestFindFAQResponse:
-    def test_expertise_match(self):
+    def test_expertise_routed_to_llm(self):
+        # Question de fond : ne doit PAS etre captee par la FAQ statique
         r = find_faq_response("Comment préparer une expertise médicale ?")
-        assert r is not None
-        assert "expertise" in r.lower() or "préparer" in r.lower()
+        assert r is None
 
-    def test_mdph_match(self):
+    def test_mdph_routed_to_llm(self):
         r = find_faq_response("Je veux des infos sur la MDPH et l'AAH")
-        assert r is not None
-        assert "mdph" in r.lower() or "MDPH" in r
-
-    def test_accident_travail_match(self):
-        r = find_faq_response("J'ai eu un accident du travail")
-        assert r is not None
+        assert r is None
 
     def test_tarifs_match(self):
         r = find_faq_response("Quel est le tarif de vos services ?")
         assert r is not None
-        assert "tarif" in r.lower() or "€" in r
+        assert "tarif" in r.lower() or "euros" in r.lower()
 
     def test_contact_match(self):
         r = find_faq_response("Comment vous contacter ?")
-        assert r is not None
-
-    def test_protection_juridique_match(self):
-        r = find_faq_response("J'ai besoin de protection juridique")
         assert r is not None
 
     def test_no_match(self):
@@ -55,5 +48,5 @@ class TestFindFAQResponse:
         assert r is None
 
     def test_case_insensitive(self):
-        r = find_faq_response("EXPERTISE MÉDICALE")
+        r = find_faq_response("QUELS SONT VOS TARIFS ?")
         assert r is not None

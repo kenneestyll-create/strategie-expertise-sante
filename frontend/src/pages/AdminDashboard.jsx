@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { PremiumAnalysisRenderer } from '@/components/PremiumAnalysisRenderer';
 import { AdminVipTab } from '@/components/AdminVipTab';
 import { AdminQRStats } from '@/components/AdminQRStats';
+import { AdminSystemHealth } from '@/components/AdminSystemHealth';
 import { AdminForumSeed } from '@/components/AdminForumSeed';
 import { AdminStrateKpis } from '@/components/AdminStrateKpis';
 import { AdminPillarLeads } from '@/components/AdminPillarLeads';
@@ -1151,6 +1152,9 @@ export const AdminDashboard = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Supervision systeme (P2 — 04/08/2026) */}
+        <AdminSystemHealth />
+
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           {/* Mobile: Select dropdown — visible < md */}

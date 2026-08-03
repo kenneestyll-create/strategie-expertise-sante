@@ -67,7 +67,8 @@ class TestAvis:
 
     def test_create_avis(self, client):
         resp = client.post(f"{API}/avis", json={
-            "nom": "PyTestUser", "note": 4, "commentaire": "Très bon service pytest."
+            "nom": "PyTestUser", "note": 4, "commentaire": "Très bon service pytest.",
+            "consent_publication": True, "consent_data_processing": True
         })
         assert resp.status_code == 200
         assert resp.json()["success"] is True

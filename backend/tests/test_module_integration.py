@@ -146,7 +146,8 @@ class TestAdminFullWorkflow:
 
         # 7. Create and manage an avis
         resp = client.post(f"{API}/avis", json={
-            "nom": "IntegTest", "note": 5, "commentaire": "Excellent service."
+            "nom": "IntegTest", "note": 5, "commentaire": "Excellent service.",
+            "consent_publication": True, "consent_data_processing": True
         })
         assert resp.status_code == 200
         avis_id = resp.json()["id"]
@@ -409,7 +410,12 @@ class TestBookingAndSimulatorWorkflow:
     def test_booking_and_slots(self, client):
         import uuid
         # Use a unique far-future date to avoid collisions with other test runs
-        unique_date = "2029-06-20"
+        import random
+        from datetime import datetime, timedelta
+        d = datetime.now() + timedelta(days=random.randint(400, 900))
+        while d.weekday() >= 5:
+            d += timedelta(days=1)
+        unique_date = d.strftime("%Y-%m-%d")
 
         # 1. Check available slots for a future date
         resp = client.get(f"{API}/bookings/slots/{unique_date}")

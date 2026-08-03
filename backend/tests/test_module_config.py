@@ -12,7 +12,7 @@ def test_db_connection():
 
 def test_payment_packages_complete():
     from config import PAYMENT_PACKAGES
-    assert len(PAYMENT_PACKAGES) == 10
+    assert len(PAYMENT_PACKAGES) == 11
     for key, pkg in PAYMENT_PACKAGES.items():
         assert "name" in pkg
         assert "amount" in pkg
@@ -26,17 +26,18 @@ def test_payment_packages_keys():
     expected = {"dossier_express", "analyse_dossier", "preparation_expertise",
                 "accompagnement_mdph", "protection_juridique", "accompagnement_complet",
                 "urgent_analyse_dossier", "urgent_preparation_expertise",
-                "urgent_accompagnement_mdph", "urgent_accompagnement_complet"}
+                "urgent_accompagnement_mdph", "urgent_accompagnement_complet",
+                "appel_conseil"}
     assert set(PAYMENT_PACKAGES.keys()) == expected
 
 
 def test_available_slots():
     from config import AVAILABLE_SLOTS
-    assert len(AVAILABLE_SLOTS) == 13
+    assert len(AVAILABLE_SLOTS) == 8
     for slot in AVAILABLE_SLOTS:
         h, m = slot.split(":")
         assert 0 <= int(h) <= 23
-        assert int(m) in (0, 30)
+        assert int(m) in (0, 15, 30)
 
 
 def test_document_categories():

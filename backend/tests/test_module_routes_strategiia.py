@@ -56,12 +56,13 @@ class TestDossierExpress:
     def test_submit(self, client):
         resp = client.post(f"{API}/dossier-express/submit", json={
             "email": f"pytest-dossier-{uuid.uuid4().hex[:6]}@test.com",
-            "name": "Test", "situation": "Test situation", "type_dossier": "at"
+            "name": "Test", "situation": "Test situation", "type_dossier": "at",
+            "session_id": f"pytest-session-{uuid.uuid4().hex[:8]}"
         })
         assert resp.status_code == 200
         data = resp.json()
-        assert data["success"] is True
         assert "dossier_id" in data
+        assert data["status"] == "processing"
 
     def test_submit_missing_fields(self, client):
         resp = client.post(f"{API}/dossier-express/submit", json={

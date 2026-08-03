@@ -50,12 +50,14 @@ class TestFAQModels:
 
 class TestAvisModels:
     def test_avis_valid(self):
-        a = AvisCreate(nom="Test", note=5, commentaire="Super")
+        a = AvisCreate(nom="Test", note=5, commentaire="Super",
+                       consent_publication=True, consent_data_processing=True)
         assert a.note == 5
 
     def test_avis_note_out_of_range(self):
         with pytest.raises(Exception):
-            AvisCreate(nom="Test", note=6, commentaire="Oops")
+            AvisCreate(nom="Test", note=6, commentaire="Oops",
+                       consent_publication=True, consent_data_processing=True)
 
     def test_avis_note_zero(self):
         with pytest.raises(Exception):

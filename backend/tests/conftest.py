@@ -10,6 +10,18 @@ from server import app
 
 API = "/api"
 
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limiter():
+    """Les routes sensibles ont un rate-limit slowapi (securite) — on le
+    remet a zero entre chaque test pour ne pas fausser les resultats."""
+    try:
+        from config import limiter
+        limiter.reset()
+    except Exception:
+        pass
+    yield
+
 TEST_ADMIN_EMAIL = os.environ.get("TEST_ADMIN_EMAIL", "admin@accompagn-sante.fr")
 TEST_ADMIN_PASSWORD = os.environ.get("TEST_ADMIN_PASSWORD", "Admin2024!")
 

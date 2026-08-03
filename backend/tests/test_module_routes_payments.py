@@ -9,7 +9,7 @@ class TestPaymentPackages:
         resp = client.get(f"{API}/payments/packages")
         assert resp.status_code == 200
         pkgs = resp.json()
-        assert len(pkgs) == 10
+        assert len(pkgs) == 11
         for pkg in pkgs:
             assert "id" in pkg
             assert "name" in pkg

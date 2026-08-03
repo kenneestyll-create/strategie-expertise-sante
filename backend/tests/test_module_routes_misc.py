@@ -1,6 +1,7 @@
 """Tests for routes/misc.py — booking, simulator, alerts, SEO, document validation, seed."""
 import pytest
 import uuid
+import os
 
 API = "/api"
 
@@ -20,7 +21,7 @@ class TestBooking:
         month = random.randint(8, 12)
         resp = client.post(f"{API}/bookings", json={
             "date": f"2027-{month:02d}-{day:02d}", "time_slot": "09:00",
-            "name": "PyTest Booking", "email": "booking@test.com"
+            "name": "PyTest Booking", "email": f"booking-{uuid.uuid4().hex[:6]}@test.com"
         })
         assert resp.status_code == 200
         assert resp.json()["success"] is True
@@ -65,13 +66,19 @@ class TestCalculator:
 
 
 class TestUrgentAlerts:
+    @pytest.mark.skipif(
+        os.environ.get("STRIPE_API_KEY", "").endswith("emergent"),
+        reason="Cle Stripe factice en preview — teste uniquement avec une vraie cle test/live",
+    )
     def test_create_alert(self, client):
         resp = client.post(f"{API}/alerte-urgente", json={
             "nom": "PyTest Alert", "telephone": "0600000000",
-            "email": "alert@test.com", "message": "Urgent test"
+            "email": "alert@test.com", "message": "Urgent test",
+            "origin_url": "https://strategie-expertise-sante.fr"
         })
         assert resp.status_code == 200
-        assert resp.json()["success"] is True
+        data = resp.json()
+        assert "url" in data and "session_id" in data and "alert_id" in data
 
     def test_create_alert_missing_fields(self, client):
         resp = client.post(f"{API}/alerte-urgente", json={"nom": ""})
