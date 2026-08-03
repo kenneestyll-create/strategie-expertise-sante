@@ -63,6 +63,8 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 
 - [x] **Finalisation pré-déploiement** (04/08/2026, ordre exécutif) : P1 email_guard (wrap resend.Emails.send — blocage adresses test universel + allowlist interne en preview via APP_URL, purge 298 comptes test client_users), P2 supervision (GET /api/admin/system-health + bandeau AdminSystemHealth 5 badges dans AdminDashboard), P3 suite pytest 207 passed/1 skipped/0 failed (9 fichiers tests legacy réalignés + conftest reset rate-limiter), P4 rapport → AUTORISATION DE DÉPLOIEMENT (/app/memory/RAPPORT_PREDEPLOIEMENT_2026-08-04.md). Testing agent 100% back+front (iteration_207). P5/P6 (validation prod + retry dossier 58d69f01-3bc) EN ATTENTE du déploiement user.
 
+- [x] **P5 validation prod + fix extraction** (04/08/2026) : 7/9 contrôles OK en prod (health, retry→completed, analyse, PDF 104Ko, storage, download 111Ko LiberationSans, voyants dashboard). Email ✗ (quota Resend du jour). BUG découvert par test user (« [Extraction serveur indisponible] ») : PAS un échec OCR — (1) nouvelle infra prod coupe HTTP à ~30s (504) vs extraction sync 60-150s, (2) multi-réplicas + chunks sur disque local. FIX : extraction toujours async dès 1 PDF + chunks dans MongoDB (upload_chunks TTL 1h). Testé 100% iteration_208 (6/6 nouveaux tests + 207 pytest). VERDICT: ÉCHEC DE VALIDATION partiel → REDÉPLOIEMENT REQUIS puis revalidation. Rapport : /app/memory/RAPPORT_P5_VALIDATION_PROD_2026-08-04.md
+
 ## SEO Phase 2 — 15 Pages Guides Actives (COMPLET)
 ### Bloc A — 5 Pages existantes étoffées (800-1200 mots)
 1. /guide/refus-mdph-aah-que-faire (MDPH)
