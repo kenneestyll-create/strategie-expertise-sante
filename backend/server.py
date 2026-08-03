@@ -195,6 +195,19 @@ async def startup_db_client():
         await db.admins.insert_one(doc)
         logger.info("Default admin created on startup")
 
+    # PDF fonts health check — correctif definitif 08/2026 (P2)
+    try:
+        from utils.pdf_fonts import check_pdf_fonts
+        fonts_report = check_pdf_fonts()
+        if fonts_report["ok"]:
+            logger.info(f"PDF fonts OK ({fonts_report['dir']})")
+        else:
+            logger.critical(f"ETAT CRITIQUE — Polices PDF manquantes ou illisibles: {fonts_report['files']} — la generation PDF echouera")
+        app.state.pdf_fonts_report = fonts_report
+    except Exception as e:
+        logger.critical(f"ETAT CRITIQUE — verification des polices PDF impossible: {e}")
+        app.state.pdf_fonts_report = {"ok": False, "error": str(e)}
+
     # Auto-seed missing SEO pages (idempotent — only inserts missing slugs, never overwrites)
     try:
         from seed_seo_pages import seed_missing_only

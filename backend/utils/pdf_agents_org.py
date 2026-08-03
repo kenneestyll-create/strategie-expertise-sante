@@ -7,7 +7,8 @@ from datetime import datetime
 
 
 _LOGO_PATH = os.path.join(os.path.dirname(__file__), "shield_logo.png")
-FONT_DIR = "/usr/share/fonts/truetype/liberation"
+
+from utils.pdf_fonts import get_liberation_dir
 
 _BLACK = (26, 26, 26)
 _GOLD = (201, 168, 76)
@@ -52,6 +53,7 @@ def generate_agents_org_pdf(payload: dict) -> bytes:
     class OrgPDF(FPDF):
         def __init__(self, *a, **k):
             super().__init__(*a, **k)
+            FONT_DIR = get_liberation_dir()
             self.add_font("LibSans", "", os.path.join(FONT_DIR, "LiberationSans-Regular.ttf"), uni=True)
             self.add_font("LibSans", "B", os.path.join(FONT_DIR, "LiberationSans-Bold.ttf"), uni=True)
             self.add_font("LibSans", "I", os.path.join(FONT_DIR, "LiberationSans-Italic.ttf"), uni=True)

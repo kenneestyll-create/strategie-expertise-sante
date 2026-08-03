@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from typing import List, Optional
 from datetime import datetime, timezone
 import asyncio
@@ -20,8 +20,13 @@ async def root():
     return {"message": "Bienvenue sur l'API Stratégie & Expertise Santé"}
 
 @router.get("/health")
-async def health_check():
-    return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
+async def health_check(request: Request):
+    fonts = getattr(request.app.state, "pdf_fonts_report", {"ok": False, "error": "non verifie"})
+    return {
+        "status": "healthy" if fonts.get("ok") else "critical",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "pdf_fonts": fonts,
+    }
 
 
 # ==================== CONTACT ====================

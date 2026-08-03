@@ -3,6 +3,8 @@ import os
 import tempfile
 from datetime import datetime
 
+from utils.pdf_fonts import get_liberation_dir
+
 _LOGO_PATH = os.path.join(os.path.dirname(__file__), "shield_logo.png")
 
 
@@ -135,7 +137,7 @@ def generate_secured_pdf(
     RM = 16
     CW = 210 - LM - RM
 
-    FONT_DIR = "/usr/share/fonts/truetype/liberation"
+    FONT_DIR = get_liberation_dir()
 
     class PremiumPDF(FPDF):
         def __init__(self, *args, **kwargs):

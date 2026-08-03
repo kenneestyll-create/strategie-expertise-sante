@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tesseract-ocr-fra \
     poppler-utils \
     libmagic1 \
+    fonts-liberation \
     nginx \
     && rm -rf /var/lib/apt/lists/*
 

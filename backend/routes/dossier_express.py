@@ -840,9 +840,11 @@ CONTENU DES DOCUMENTS FOURNIS :
             email_sent = True
             logger.info(f"Dossier Express IA {dossier_id}: email envoye a {email}")
         except Exception as e:
-            logger.error(f"Dossier Express IA {dossier_id} email error: {e}")
+            logger.error(f"[DOSSIER_EXPRESS][{dossier_id}] Email delivery FAILED: {e}")
             # Email failure is NOT fatal — PDF is already stored, admin is notified
             await _notify_admin_incident(dossier_id, email, name, "Dossier Express IA", "Envoi email", str(e)[:300])
+    else:
+        logger.error(f"[DOSSIER_EXPRESS][{dossier_id}] Email NON envoye — Resend non configure (disponible={RESEND_AVAILABLE}, cle={'presente' if (RESEND_AVAILABLE and getattr(resend, 'api_key', None)) else 'absente'})")
 
     # === STEP 8: Final — mark as delivered ===
     timings["email"] = round(time.monotonic() - t_email, 2)
