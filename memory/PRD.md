@@ -61,6 +61,8 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 
 - [x] **Correctif définitif système PDF** (04/08/2026, ordre exécutif) : polices LiberationSans embarquées dans backend/fonts/ + résolveur utils/pdf_fonts.py (repo prioritaire, repli système) appliqué à pdf.py, pdf_agents_audit.py, pdf_agents_org.py. P2: contrôle démarrage + /api/health enrichi (status critical si polices KO). P3: tests/test_pdf_system.py (6 tests, à lancer avant chaque mise en prod). P4: logs chaîne complets (email silencieux corrigé). Dockerfile: +fonts-liberation. Testing agent 100% (iteration_206) incl. simulation image prod cassée. P5 (quota Resend épuisé par preview → genere_sans_email): RAPPORT SEUL, correctif en attente d'ordre (/app/memory/RAPPORT_P5_EMAIL_2026-08-04.md). P6 (retry dossier 58d69f01-3bc en prod): EN ATTENTE du déploiement. Rapport final: /app/memory/RAPPORT_FINAL_CORRECTIF_PDF_2026-08-04.md
 
+- [x] **Finalisation pré-déploiement** (04/08/2026, ordre exécutif) : P1 email_guard (wrap resend.Emails.send — blocage adresses test universel + allowlist interne en preview via APP_URL, purge 298 comptes test client_users), P2 supervision (GET /api/admin/system-health + bandeau AdminSystemHealth 5 badges dans AdminDashboard), P3 suite pytest 207 passed/1 skipped/0 failed (9 fichiers tests legacy réalignés + conftest reset rate-limiter), P4 rapport → AUTORISATION DE DÉPLOIEMENT (/app/memory/RAPPORT_PREDEPLOIEMENT_2026-08-04.md). Testing agent 100% back+front (iteration_207). P5/P6 (validation prod + retry dossier 58d69f01-3bc) EN ATTENTE du déploiement user.
+
 ## SEO Phase 2 — 15 Pages Guides Actives (COMPLET)
 ### Bloc A — 5 Pages existantes étoffées (800-1200 mots)
 1. /guide/refus-mdph-aah-que-faire (MDPH)
