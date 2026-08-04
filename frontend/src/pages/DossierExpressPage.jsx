@@ -273,6 +273,7 @@ export const DossierExpressPage = () => {
   const [adminPaid, setAdminPaid] = useState(false);
   const [valueIdx, setValueIdx] = useState(0);
   const [elapsedSec, setElapsedSec] = useState(0);
+  const [stepElapsedSec, setStepElapsedSec] = useState(0);
 
   const featuresRef = useRevealChildren();
   const ctaBottomRef = useReveal();
@@ -316,6 +317,15 @@ export const DossierExpressPage = () => {
     const t = setInterval(() => setElapsedSec(p => p + 1), 1000);
     return () => clearInterval(t);
   }, [step]);
+
+  // P-B: per-step elapsed counter — resets whenever the active step changes
+  const progressStepKey = pollStatus?.progress_step || 'uploading';
+  useEffect(() => {
+    setStepElapsedSec(0);
+    if (step !== 'processing') return;
+    const t = setInterval(() => setStepElapsedSec(p => p + 1), 1000);
+    return () => clearInterval(t);
+  }, [step, progressStepKey]);
 
   useEffect(() => {
     const payment = searchParams.get('payment');
@@ -1116,12 +1126,25 @@ export const DossierExpressPage = () => {
       "L'analyse personnalisée de votre situation est en cours de finalisation",
     ];
 
+    // P-B — états explicatifs pendant l'analyse IA (pas de progression artificielle)
+    const ANALYSIS_STATES = [
+      "Lecture croisée de l'ensemble de vos pièces...",
+      "Confrontation aux textes, barèmes et jurisprudences applicables...",
+      "Repérage des points de vigilance propres à votre situation...",
+      "Construction des recommandations et des chiffrages...",
+      "Rédaction de la synthèse personnalisée...",
+    ];
+
     const currentProgress = pollStatus?.progress_step || 'uploading';
     const currentIdx = Math.max(0, STEPS.findIndex(s => s.key === currentProgress));
-    // Map legacy 'analyzing' to 'analyzing_1' for backward compat
-    const mappedIdx = currentProgress === 'analyzing' ? 2 : currentIdx;
+    // Map legacy 'analyzing' to the first analysis step
+    const mappedIdx = currentProgress === 'analyzing' ? 3 : currentIdx;
     const progressPct = Math.max(5, Math.min(95, ((mappedIdx + 1) / STEPS.length) * 100));
     const activeStep = STEPS[mappedIdx] || STEPS[0];
+    const isAnalysisStep = String(currentProgress).startsWith('analyzing');
+    const analysisStateIdx = Math.floor(stepElapsedSec / 12) % ANALYSIS_STATES.length;
+    const stepMin = Math.floor(stepElapsedSec / 60);
+    const stepSecR = stepElapsedSec % 60;
 
     const elapsedMin = Math.floor(elapsedSec / 60);
     const elapsedSecRemainder = elapsedSec % 60;
@@ -1158,7 +1181,14 @@ export const DossierExpressPage = () => {
                   {mappedIdx + 1} / {STEPS.length}
                 </span>
               </div>
-              <p className="text-xs text-amber-600/70">{activeStep.detail}</p>
+              <p className="text-xs text-amber-600/70 transition-opacity duration-500" data-testid="active-step-detail">
+                {isAnalysisStep ? ANALYSIS_STATES[analysisStateIdx] : activeStep.detail}
+              </p>
+              {isAnalysisStep && (
+                <p className="text-[11px] text-amber-600/50 mt-1.5 tabular-nums" data-testid="analysis-step-elapsed">
+                  ⏱ {stepMin > 0 ? `${stepMin} min ${String(stepSecR).padStart(2, '0')} s` : `${stepElapsedSec} s`} dans cette étape — durée habituelle : 2 à 4 minutes
+                </p>
+              )}
             </div>
 
             {/* Segmented progress bar — one segment per step, fills in sequence */}
@@ -1195,7 +1225,7 @@ export const DossierExpressPage = () => {
             {/* Live progress (chunk upload OR Gemini extraction status) */}
             {pollStatus?.chunk_progress && (
               <div className="text-[11px] text-amber-600 text-center mb-3 animate-pulse" data-testid="chunk-progress">
-                {pollStatus.chunk_progress.includes('IA') || pollStatus.chunk_progress.includes('Préparation')
+                {pollStatus.chunk_progress.includes('IA') || pollStatus.chunk_progress.includes('Préparation') || pollStatus.chunk_progress.includes('Extraction') || pollStatus.chunk_progress.includes('Reprise')
                   ? pollStatus.chunk_progress
                   : `Transfert : ${pollStatus.chunk_progress}`}
               </div>

@@ -173,6 +173,9 @@ export async function extractTextFromFiles(files, existingOcrText = '', onProgre
           } else if (pollRes.data.status === 'error') {
             console.warn('Async extraction error:', pollRes.data.error);
             break;
+          } else if (pollRes.data.progress && typeof window !== 'undefined') {
+            // P-A: relay real server-side OCR progress (« lot 2/3 (pages 5-8) », reprise auto…)
+            window.dispatchEvent(new CustomEvent('upload-progress', { detail: { phase: 'extraction', message: pollRes.data.progress } }));
           }
         } catch (e) { /* poll retry */ }
       }
@@ -321,6 +324,10 @@ async function extractBase64(files, existingOcrText = '') {
             } else if (pollRes.data.status === 'error') {
               console.warn('Async base64 extraction error:', pollRes.data.error);
               break;
+            } else if (pollRes.data.progress && typeof window !== 'undefined') {
+              // P-A: real server progress wins over the generic elapsed timer
+              stopExtractionTimer();
+              window.dispatchEvent(new CustomEvent('upload-progress', { detail: { phase: 'extraction', message: pollRes.data.progress } }));
             }
           } catch (e) { /* poll retry */ }
         }
