@@ -197,6 +197,18 @@ const dossierFaqData = [
   {
     question: "Quels types de dossiers peuvent être analysés ?",
     answer: "Le service couvre les accidents du travail, les maladies professionnelles, les litiges avec les assurances ou la protection juridique, et les demandes MDPH/AAH. Chaque analyse est personnalisée à votre situation spécifique."
+  },
+  {
+    question: "Combien coûte une analyse de dossier maladie professionnelle ?",
+    answer: "L'analyse complète coûte 97 € tout compris : lecture de vos documents, croisement avec les jurisprudences et barèmes officiels, et rapport personnalisé livré par email sous 2 heures. Aucun frais supplémentaire, aucun abonnement."
+  },
+  {
+    question: "Puis-je faire analyser un rapport d'expertise médicale ?",
+    answer: "Oui, c'est l'un des cas d'usage les plus fréquents. L'outil compare les conclusions de chaque praticien, repère les contradictions entre expertises (taux d'IPP, dates de consolidation, qualification PTIA) et vous indique les points exploitables pour une contestation ou un arbitrage médical."
+  },
+  {
+    question: "Est-ce utile avant un recours CPAM ou MDPH ?",
+    answer: "C'est même le moment idéal. L'analyse vérifie la solidité de vos arguments, identifie les pièces manquantes et les délais à respecter avant de saisir la commission de recours amiable, le pôle social ou de déposer un recours MDPH — vous engagez vos démarches avec un dossier préparé."
   }
 ];
 
@@ -220,13 +232,31 @@ const DossierExpressFAQ = () => {
       }))
     });
     document.head.appendChild(script);
-    return () => { const el = document.getElementById('dossier-faq-schema'); if (el) el.remove(); };
+    // Schema Service avec offre (rich snippet prix)
+    const svc = document.createElement('script');
+    svc.id = 'dossier-service-schema';
+    svc.type = 'application/ld+json';
+    svc.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "name": "Analyse de dossier maladie professionnelle et accident du travail",
+      "serviceType": "Analyse de dossier médico-administratif",
+      "description": "Analyse personnalisée de votre dossier (maladie professionnelle, accident du travail, MDPH, assurance, expertise médicale) croisant jurisprudences, barèmes officiels et cas similaires. Rapport PDF livré sous 2 heures.",
+      "provider": { "@type": "Organization", "name": "Stratégie & Expertise Santé", "url": "https://strategie-expertise-sante.fr" },
+      "areaServed": "FR",
+      "offers": { "@type": "Offer", "price": "97", "priceCurrency": "EUR", "url": "https://strategie-expertise-sante.fr/dossier-express" }
+    });
+    document.head.appendChild(svc);
+    return () => {
+      const el = document.getElementById('dossier-faq-schema'); if (el) el.remove();
+      const es = document.getElementById('dossier-service-schema'); if (es) es.remove();
+    };
   }, []);
 
   return (
     <section className="section-padding bg-card" data-testid="dossier-faq">
       <div className="max-w-3xl mx-auto">
-        <h2 className="text-lg font-semibold mb-4">Questions fréquentes</h2>
+        <h2 className="text-lg font-semibold mb-4">Questions fréquentes sur l'analyse de dossier</h2>
         <div className="space-y-2">
           {dossierFaqData.map((faq, i) => (
             <div key={i} className="border border-border rounded-xl overflow-hidden">
@@ -587,7 +617,7 @@ export const DossierExpressPage = () => {
   if (step === 'landing') {
     return (
       <main className="page-transition pt-20">
-      <SEO title="Dossier Express IA — Rapport d'analyse sous 2h" description="Uploadez vos documents, notre outil Dossier Express IA les analyse et vous recevez un rapport PDF complet sous 2 heures pour 97€." path="/dossier-express" />
+      <SEO title="Analyse de dossier maladie professionnelle — rapport sous 2 h" description="Faites analyser votre dossier maladie professionnelle ou accident du travail : rapport personnalisé sous 2 h, jurisprudences et barèmes croisés — 97 €." path="/dossier-express" />
 
         {/* Hero */}
         <section className="relative overflow-clip" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f3460 100%)' }}>
@@ -609,11 +639,11 @@ export const DossierExpressPage = () => {
                   Rapport sous 2 heures
                 </Badge>
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-5" data-testid="dossier-express-title">
-                  Votre rapport d'analyse<br />
-                  <span className="text-amber-400">complet et personnalisé</span>
+                  Faites analyser votre dossier<br />
+                  <span className="text-amber-400">accident du travail ou maladie professionnelle</span>
                 </h1>
                 <p className="text-base lg:text-lg text-white/70 mb-6 leading-relaxed max-w-xl">
-                  Uploadez vos documents, notre outil Dossier Express IA croise <strong className="text-white">jurisprudences, barèmes et cas similaires</strong> pour identifier vos droits et construire votre stratégie.
+                  Uploadez vos documents : notre outil Dossier Express IA croise <strong className="text-white">jurisprudences, barèmes et cas similaires</strong> pour identifier vos droits et vous livrer un rapport complet et personnalisé sous 2 h.
                 </p>
 
                 {/* Price + CTA */}
@@ -722,7 +752,7 @@ export const DossierExpressPage = () => {
         <section className="section-padding">
           <div className="max-w-7xl mx-auto" ref={featuresRef}>
             <div className="text-center mb-10 reveal">
-              <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Ce que contient votre rapport</h2>
+              <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Ce que contient votre rapport d'analyse de dossier</h2>
               <p className="text-muted-foreground max-w-lg mx-auto text-sm">Un document professionnel complet, personnalisé à votre situation, exploitable immédiatement.</p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 stagger">
@@ -752,7 +782,7 @@ export const DossierExpressPage = () => {
         <section className="section-padding bg-secondary/50">
           <div className="max-w-5xl mx-auto" ref={testimonialsRef}>
             <div className="text-center mb-10 reveal">
-              <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Typologie des dossiers analysés</h2>
+              <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Quels dossiers analysons-nous ? CPAM, MDPH, assurance, expertise</h2>
               <p className="text-muted-foreground text-sm">Le Dossier Express IA a été conçu sur les situations réellement traitées — voici les grandes familles couvertes.</p>
             </div>
             <div className="grid md:grid-cols-3 gap-5 stagger">
@@ -789,23 +819,63 @@ export const DossierExpressPage = () => {
         {/* SEO Content */}
         <section className="section-padding" data-testid="dossier-seo-content">
           <div className="max-w-3xl mx-auto">
-            <h2 className="text-xl font-semibold mb-4">Qu'est-ce que le Dossier Express IA ?</h2>
+            <h2 className="text-xl font-semibold mb-4">Faire analyser son dossier : maladie professionnelle, accident du travail, MDPH, assurance</h2>
             <div className="text-sm text-muted-foreground space-y-3 leading-relaxed">
               <p>
-                Le Dossier Express IA est un service d'analyse documentaire proposé par Stratégie Expertise Santé. Il permet d'obtenir, en moins de 2 heures, un rapport complet et personnalisé sur votre situation en matière de maladie professionnelle, accident du travail, litige assurance ou demande MDPH.
+                Le Dossier Express IA est un service d'analyse de dossier proposé par Stratégie Expertise Santé. Il permet d'obtenir, en moins de 2 heures, un rapport complet et personnalisé sur votre situation : maladie professionnelle, accident du travail, litige avec une assurance, contestation d'expertise médicale ou demande MDPH. L'analyse croise vos documents avec les jurisprudences récentes, les barèmes officiels et les cas similaires pour évaluer la solidité de votre dossier et vous proposer une stratégie concrète, livrée par email au format PDF.
               </p>
+
+              <h3 className="text-base font-semibold text-foreground pt-3">Analyse de dossier maladie professionnelle et accident du travail</h3>
               <p>
-                L'analyse croise vos documents avec les jurisprudences récentes, les barèmes officiels et les cas similaires pour identifier vos droits, évaluer la solidité de votre dossier et proposer une stratégie concrète. Le rapport est livré par email au format PDF.
+                Reconnaissance refusée par la CPAM, taux d'IPP jugé trop bas, rente mal calculée, rechute non prise en compte : l'analyse vérifie point par point la cohérence de votre dossier AT/MP avec les tableaux de maladies professionnelles, les barèmes indicatifs d'invalidité et les décisions de justice comparables. Vous savez précisément quels arguments tiennent, quelles pièces manquent et quelles démarches engager — avant de saisir la commission de recours amiable ou le pôle social.
               </p>
+
+              <h3 className="text-base font-semibold text-foreground pt-3">Faire analyser un rapport d'expertise médicale</h3>
+              <p>
+                C'est la force distinctive du service : lorsque votre dossier contient plusieurs expertises ou avis médicaux, l'outil identifie chaque praticien, compare leurs conclusions et met en évidence les contradictions exploitables — écarts de taux d'IPP, dates de consolidation divergentes, qualification PTIA contestable. Un deuxième regard structuré sur un rapport d'expertise défavorable, pour une fraction du coût d'une contre-expertise.
+              </p>
+
+              <h3 className="text-base font-semibold text-foreground pt-3">Aide pour un recours MDPH ou un litige assurance</h3>
+              <p>
+                Dossier MDPH refusé, taux d'incapacité sous-évalué, AAH ou RQTH rejetée, assureur ou contrat de prévoyance qui conteste votre invalidité : l'analyse décrypte la décision, la confronte aux textes applicables et vous indique les leviers de recours réalistes, avec les délais à respecter.
+              </p>
+
+              <h3 className="text-base font-semibold text-foreground pt-3">Une analyse avant d'engager vos démarches</h3>
               <p className="font-medium text-foreground">À qui s'adresse ce service :</p>
               <ul className="space-y-1.5 list-none pl-0">
                 <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Victimes d'accident du travail ou de maladie professionnelle souhaitant connaître leurs droits</span></li>
                 <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Personnes en désaccord avec une décision CPAM, MDPH ou assurance</span></li>
+                <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Toute personne souhaitant un deuxième regard sur un rapport d'expertise médicale avant de le contester</span></li>
                 <li className="flex items-start gap-2"><span className="text-accent mt-0.5">–</span><span>Toute personne souhaitant une analyse rapide et fiable avant d'engager des démarches</span></li>
               </ul>
               <p>
-                Le Dossier Express IA ne remplace pas un avis juridique ou médical officiel. Il constitue un outil d'aide à la décision qui vous permet de comprendre votre situation et de préparer vos prochaines étapes avec des éléments concrets.
+                Le moment idéal pour faire analyser son dossier se situe avant l'engagement d'un recours : c'est là que le rapport a le plus de valeur, en vous évitant une procédure mal préparée ou en révélant un levier passé inaperçu. Le Dossier Express IA ne remplace pas un avis juridique ou médical officiel : il constitue un outil d'aide à la décision qui vous permet de comprendre votre situation et de préparer vos prochaines étapes avec des éléments concrets.
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Ressources utiles — maillage sortant contextuel */}
+        <section className="section-padding pt-0" data-testid="dossier-ressources">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-xl font-semibold mb-4">Ressources utiles pour préparer votre dossier</h2>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {[
+                { to: '/calculatrice-ipp', label: "Calculer votre taux d'IPP et votre rente", desc: 'Simulateur gratuit — barèmes officiels' },
+                { to: '/guide/expertise-medicale-defavorable-recours', label: 'Expertise médicale défavorable : les recours', desc: 'Guide pratique de contestation' },
+                { to: '/guide/refus-maladie-professionnelle-cpam-recours', label: 'Refus de maladie professionnelle par la CPAM', desc: 'Les étapes du recours expliquées' },
+                { to: '/guide/refus-mdph-aah-que-faire', label: 'Refus MDPH ou AAH : que faire ?', desc: 'Comprendre et contester la décision' },
+              ].map((r, i) => (
+                <Link key={i} to={r.to} className="group border border-border rounded-xl p-4 hover:border-accent/40 hover:bg-muted/30 transition-colors" data-testid={`dossier-ressource-${i}`}>
+                  <span className="flex items-start justify-between gap-3">
+                    <span>
+                      <span className="block font-medium text-sm text-foreground group-hover:text-accent transition-colors">{r.label}</span>
+                      <span className="block text-xs text-muted-foreground mt-1">{r.desc}</span>
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-accent shrink-0 mt-0.5 transition-colors" />
+                  </span>
+                </Link>
+              ))}
             </div>
           </div>
         </section>
