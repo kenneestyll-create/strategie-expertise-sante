@@ -64,6 +64,7 @@ const HomePage = lazy(() => import("@/pages/HomePage").then(m => ({ default: m.H
 const AboutPage = lazy(() => import("@/pages/AboutPage").then(m => ({ default: m.AboutPage })));
 const ServicesPage = lazy(() => import("@/pages/ServicesPage").then(m => ({ default: m.ServicesPage })));
 const ExpertiseMedicalePage = lazy(() => import("@/pages/ExpertiseMedicalePage").then(m => ({ default: m.ExpertiseMedicalePage })));
+const ExpertiseMedicaleAssureurPage = lazy(() => import("@/pages/ExpertiseMedicaleAssureurPage").then(m => ({ default: m.ExpertiseMedicaleAssureurPage })));
 const AccidentTravailPage = lazy(() => import("@/pages/AccidentTravailPage").then(m => ({ default: m.AccidentTravailPage })));
 const MDPHPage = lazy(() => import("@/pages/MDPHPage").then(m => ({ default: m.MDPHPage })));
 const SeminairesPage = lazy(() => import("@/pages/SeminairesPage").then(m => ({ default: m.SeminairesPage })));
@@ -138,6 +139,7 @@ function App() {
                   <Route path="/a-propos" element={<><Header /><AboutPage /><Footer /></>} />
                   <Route path="/accompagnements" element={<><Header /><ServicesPage /><Footer /></>} />
                   <Route path="/expertise-medicale" element={<><Header /><ExpertiseMedicalePage /><Footer /></>} />
+                  <Route path="/expertise-medicale/assureur" element={<><Header /><ExpertiseMedicaleAssureurPage /><Footer /></>} />
                   <Route path="/accident-travail-maladie-professionnelle" element={<><Header /><AccidentTravailPage /><Footer /></>} />
                   <Route path="/mdph" element={<><Header /><MDPHPage /><Footer /></>} />
                   <Route path="/seminaires" element={<><Header /><SeminairesPage /><Footer /></>} />
