@@ -216,6 +216,46 @@ export const CalculatriceIPPPage = () => {
                   <span>50%</span>
                   <span>100%</span>
                 </div>
+                {/* Saisie numérique précise (P1-A UX mobile — synchronisée avec le curseur) */}
+                <div className="flex items-center justify-center gap-3 pt-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-11 w-11 shrink-0 rounded-full text-lg font-bold p-0"
+                    onClick={() => { setTaux((t) => Math.max(1, t - 1)); setCalculated(false); }}
+                    data-testid="ipp-taux-minus"
+                    aria-label="Diminuer le taux d'IPP de 1%"
+                  >
+                    −
+                  </Button>
+                  <div className="relative w-[120px]">
+                    <Input
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={100}
+                      value={taux}
+                      onChange={(e) => {
+                        const v = parseInt(e.target.value, 10);
+                        if (!isNaN(v)) { setTaux(Math.min(100, Math.max(1, v))); setCalculated(false); }
+                      }}
+                      className="h-11 text-center text-base font-semibold pr-7"
+                      data-testid="ipp-taux-input"
+                      aria-label="Taux d'IPP en pourcentage"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">%</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-11 w-11 shrink-0 rounded-full text-lg font-bold p-0"
+                    onClick={() => { setTaux((t) => Math.min(100, t + 1)); setCalculated(false); }}
+                    data-testid="ipp-taux-plus"
+                    aria-label="Augmenter le taux d'IPP de 1%"
+                  >
+                    +
+                  </Button>
+                </div>
               </div>
 
               {/* Salaire (visible only if taux >= 10) */}

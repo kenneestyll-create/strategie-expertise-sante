@@ -77,6 +77,10 @@ export const useStrateTriggers = ({ enabled = true, isOpen = false, onTrigger })
 
     const maybeFire = (cause) => {
       if (firedRef.current) return;
+      // P0-A (04/08/2026) : jamais d'auto-ouverture plein écran sur mobile (< 640px)
+      // — l'overlay mobile couvre 100% du viewport = interstitiel intrusif (pénalité Google).
+      // L'ouverture reste possible au clic volontaire. Desktop inchangé.
+      if (typeof window !== 'undefined' && window.innerWidth < 640) return;
       // Don't fire if user is typing in a form
       const active = document.activeElement;
       if (active && ['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName)) return;
