@@ -80,15 +80,14 @@ export const ExitIntentPopup = () => {
           </p>
 
           <div className="flex flex-col gap-2.5">
-            <Link to="/simulateur" onClick={close}>
-              <Button
-                className="w-full rounded-full gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
-                data-testid="exit-intent-cta-strategiia"
-              >
-                <ScanSearch className="w-4 h-4" />
-                Vérifier ma situation (StratégiIA)
-              </Button>
-            </Link>
+            <Button
+              onClick={() => { close(); window.dispatchEvent(new Event('strategiia:open')); }}
+              className="w-full rounded-full gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
+              data-testid="exit-intent-cta-strategiia"
+            >
+              <ScanSearch className="w-4 h-4" />
+              Vérifier ma situation (StratégiIA)
+            </Button>
             <Link to="/dossier-express" onClick={close}>
               <Button
                 variant="outline"
