@@ -479,3 +479,8 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - Schema HowTo assureur retiré du pilier (contenu plus visible), dateModified Article -> 2026-08-04
 - Title/meta/H1/MDPH/FAQ/maillage du pilier INTACTS. Vérifié preview desktop+mobile, 0 régression
 - EN ATTENTE: validation utilisateur puis déploiement production
+
+## 2026-08-04 — Pilier déployé en PRODUCTION (Option A terminée)
+- 1er deploy échoué (timeout k8s infra, pas le code), 2e deploy OK
+- Vérifié en prod: H2 "essentiel à retenir", 176 mots, lien vers page fille fonctionnel (navigation testée), title/meta/canonical/H1 inchangés, schemas OK sans HowTo, MDPH+FAQ intacts, mobile OK
+- Cocon assureur COMPLET: page fille indexée + pilier réduit + maillage bidirectionnel
