@@ -27,8 +27,16 @@ except ImportError:
 if RESEND_AVAILABLE:
     resend.api_key = os.environ.get('RESEND_API_KEY', '')
 
-SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'onboarding@resend.dev')
-NOTIFICATION_EMAIL = os.environ.get('NOTIFICATION_EMAIL', '')
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'contact@strategie-expertise-sante.fr')
+NOTIFICATION_EMAIL = os.environ.get('NOTIFICATION_EMAIL', 'contact@strategie-expertise-sante.fr')
+# Garde-fou 04/08/2026 : l'env de deploiement production contient des valeurs
+# perimees (SENDER_EMAIL=onboarding@resend.dev, NOTIFICATION_EMAIL vide) qui
+# ecrasent les fallbacks. Une adresse sandbox Resend ou vide n'est jamais
+# une configuration legitime en production.
+if not SENDER_EMAIL.strip() or SENDER_EMAIL.strip().lower().endswith('resend.dev'):
+    SENDER_EMAIL = 'contact@strategie-expertise-sante.fr'
+if not NOTIFICATION_EMAIL.strip():
+    NOTIFICATION_EMAIL = 'contact@strategie-expertise-sante.fr'
 
 # JWT — SECURITY FIX V1: No fallback, env var required
 JWT_SECRET = os.environ.get('JWT_SECRET')

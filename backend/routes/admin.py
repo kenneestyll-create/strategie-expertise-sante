@@ -1194,8 +1194,10 @@ async def admin_email_status(admin: dict = Depends(get_current_admin)):
         "api_key_configured": bool(api_key),
         "api_key_preview": (api_key[:6] + "..." + api_key[-4:]) if len(api_key) > 10 else ("Oui" if api_key else "Non"),
         "sender_email": os.environ.get("SENDER_EMAIL", "non configuré"),
+        "effective_sender": SENDER_EMAIL,
+        "effective_notification": NOTIFICATION_EMAIL,
         "notification_email": os.environ.get("NOTIFICATION_EMAIL", "non configuré"),
-        "domain_verified": not os.environ.get("SENDER_EMAIL", "").endswith("resend.dev"),
+        "domain_verified": not SENDER_EMAIL.endswith("resend.dev"),
     }
 
 @router.post("/admin/email/test")
@@ -1208,7 +1210,7 @@ async def admin_email_test(request: Request, admin: dict = Depends(get_current_a
         import resend
         resend.api_key = os.environ.get("RESEND_API_KEY", "")
         params = {
-            "from": os.environ.get("SENDER_EMAIL", "onboarding@resend.dev"),
+            "from": SENDER_EMAIL,
             "to": [email],
             "subject": "Test email - Stratégie & Expertise Santé",
             "html": "<h2>Test réussi</h2><p>Ceci est un email de test envoyé depuis le panneau d'administration.</p>"
