@@ -73,3 +73,10 @@ Répartition d'intentions (aucun chevauchement) : définition (A1) / travail-emp
 ## 7. Cadence proposée
 - Semaine du 2026-08-10 : rédaction + preview des 2 articles RSDAE (= 2 pages SEO/semaine) après validation du présent plan.
 - En attente (décision utilisateur) : SSR (observation), Lot B /dossier-express (après J+28), fille MDPH (après données GSC).
+
+## ARBITRAGES UTILISATEUR (2026-08-04) — PLAN VALIDÉ
+- Article 1 Title: V1 « RSDAE : définition, critères MDPH et impact sur l'AAH » (50-79 %, preuves, critères -> H2/H3)
+- Article 2 Title: V1 « RSDAE et travail : peut-on travailler sans perdre l'AAH ? » (ESAT/mi-temps -> sous-sections)
+- Slugs validés tels quels. A1 = référence cluster, A2 = intention/conversion, lien croisé, zéro chevauchement avec /guide/refus-aah-rsdae-non-reconnue
+- BLOQUANT: NE PAS RÉDIGER avant analyse de l'export GSC « rsdae » que l'utilisateur va fournir
+- Étape suivante après export: plan Hn détaillé + maillage exact soumis à validation AVANT rédaction finale

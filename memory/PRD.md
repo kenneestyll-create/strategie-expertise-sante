@@ -484,3 +484,9 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - 1er deploy échoué (timeout k8s infra, pas le code), 2e deploy OK
 - Vérifié en prod: H2 "essentiel à retenir", 176 mots, lien vers page fille fonctionnel (navigation testée), title/meta/canonical/H1 inchangés, schemas OK sans HowTo, MDPH+FAQ intacts, mobile OK
 - Cocon assureur COMPLET: page fille indexée + pilier réduit + maillage bidirectionnel
+
+## 2026-08-04 — Plan cluster RSDAE validé (P2-1)
+- Titles V1/V1 validés, slugs validés (/guide/rsdae-definition-criteres-aah + /guide/rsdae-travail-mi-temps-aah)
+- Workflow: attendre export GSC "rsdae" utilisateur -> analyse -> plan Hn détaillé + maillage exact -> validation -> rédaction
+- Suivi GSC J+28 (2026-09-01) en place: /app/memory/SUIVI_GSC_J28_2026-08-04.md. Pages gelées: /dossier-express, /expertise-medicale, /expertise-medicale/assureur + schemas
+- En attente: SSR (observation), Lot B (après J+28), fille MDPH (après GSC)
