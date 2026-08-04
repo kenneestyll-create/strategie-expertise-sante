@@ -325,24 +325,17 @@ async def extract_document_text(request: Request):
     if pdf_count > HEAVY_PDF_COUNT or total_decoded > HEAVY_TOTAL_BYTES:
         # Async mode: register a background task and return immediately.
         # State is persisted in MongoDB (resilient to server restarts/OOM).
-        from routes.upload import _set_extraction
+        # Réutilise le worker durci de upload.py (04/08/2026) : progression par lot
+        # (« lot X/Y (pages a-b) »), heartbeat 25s (sans quoi le watchdog du endpoint
+        # de statut tuerait à tort les extractions > 180s), timeout global 25 min.
+        from routes.upload import _set_extraction, _run_extraction
         extraction_id = str(uuid.uuid4())
-        await _set_extraction(extraction_id, {"status": "queued", "stored_files": []})
-
-        async def _run():
-            from routes.upload import _set_extraction as _set
-            try:
-                await _set(extraction_id, {"status": "processing", "progress": "Extraction OCR en parallèle...", "stored_files": []})
-                result = await _process_files_payload(files_data)
-                await _set(extraction_id, {"status": "done", "result": result, "stored_files": result.get("stored_files", [])})
-            except Exception as e:
-                logger.error(f"Async base64 extraction {extraction_id} failed: {e}", exc_info=True)
-                try:
-                    await _set(extraction_id, {"status": "error", "error": str(e)[:500]})
-                except Exception:
-                    pass
-
-        asyncio.create_task(_run())
+        await _set_extraction(extraction_id, {
+            "status": "queued",
+            "stored_files": [],
+            "last_heartbeat_at": datetime.now(timezone.utc).isoformat(),
+        })
+        asyncio.create_task(_run_extraction(extraction_id, files_data))
         return {
             "async": True,
             "extraction_id": extraction_id,
