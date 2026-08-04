@@ -58,7 +58,7 @@ def _skip_result(name: str, method: str, pages: int, size_kb: float, status: str
     }
 
 
-async def _extract_one_file(name: str, file_bytes: bytes, file_type: str, size_kb: float) -> dict:
+async def _extract_one_file(name: str, file_bytes: bytes, file_type: str, size_kb: float, progress_cb=None) -> dict:
     """Run extraction for a single already-decoded file."""
     extracted = ""
     method = "non supporté"
@@ -66,7 +66,7 @@ async def _extract_one_file(name: str, file_bytes: bytes, file_type: str, size_k
     status = "unsupported"
 
     if file_type == "application/pdf" or name.lower().endswith(".pdf"):
-        extracted, method, pages, status = await _extract_pdf_full_pipeline(file_bytes, name)
+        extracted, method, pages, status = await _extract_pdf_full_pipeline(file_bytes, name, progress_cb=progress_cb)
     elif file_type and file_type.startswith("image/"):
         extracted, method, status = await asyncio.to_thread(_extract_image_ocr, file_bytes, name)
         pages = 1
@@ -97,7 +97,7 @@ async def _extract_one_file(name: str, file_bytes: bytes, file_type: str, size_k
     }
 
 
-async def _process_files_payload(files_data: list) -> dict:
+async def _process_files_payload(files_data: list, progress_cb=None) -> dict:
     """Decode → validate → extract in PARALLEL (bounded) → assemble combined result.
 
     Bounded concurrency (4) protects Gemini rate limits while still cutting wall-clock time
@@ -145,7 +145,7 @@ async def _process_files_payload(files_data: list) -> dict:
     async def _bounded(idx, name, fbytes, ftype, skb):
         async with sem:
             try:
-                r = await _extract_one_file(name, fbytes, ftype, skb)
+                r = await _extract_one_file(name, fbytes, ftype, skb, progress_cb=progress_cb)
             except Exception as e:
                 logger.error(f"Extraction failed for {name}: {e}")
                 r = _skip_result(name, f"extraction erreur: {str(e)[:60]}", 0, skb, "extraction_error")

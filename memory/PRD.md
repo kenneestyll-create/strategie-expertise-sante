@@ -451,3 +451,9 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - [ ] **P2** : Vérifier le seed client `demo@test.com/Password123!` (401 actuel — pas un bug safeStorage, mais bloque l'E2E client en testing)
 - [ ] **P2 backlog** : Video Factory Vague 2 (Bibliothèque hooks/scripts), Intégration HubSpot CRM, Activation IA Prédictive V2
 
+
+## 04/08/2026 — Correctif définitif : extraction OCR gelée en production (Dossier Express)
+- [x] **RCA prouvée en prod** : pod tué (OOM/liveness probe) pendant la phase Gemini → tâche de fond morte → statut MongoDB `processing` infini. Preuve : endpoint statut non-réponsif (timeouts 30s + 502) pendant ~2 min lors du rejeu prod 08:26 UTC, puis pod revenu avec tâche disparue. Détail : /app/memory/RAPPORT_RCA_OCR_PROD_2026-08-04.md
+- [x] **Correctif backend** : timeout 150s/appel Gemini, CPU-bound déporté hors event loop (pdfplumber/pypdf/Tesseract via to_thread), heartbeat MongoDB 25s, watchdog staleness 180s dans /extract-status, **reprise automatique 1× depuis S3** (claim atomique), plafond global 25 min, progression par lot visible. Fichiers : `utils/document_extraction.py`, `routes/upload.py`, `routes/dossier_express.py`
+- [x] **Validation preview (fichier réel Rapport Dr Etchepare.pdf)** : nominale 83s 3/3 chunks · crash simulé → reprise auto S3 → done 267s · pytest 61 passed/0 failed · E2E complet upload→OCR(21 237c)→IA(23 673c)→PDF(111 419o)→S3→email envoyé→download 200 (dossier c734f060-e45)
+- [ ] **EN ATTENTE : redéploiement utilisateur puis re-validation E2E PRODUCTION avec le fichier exact** (fichier disponible sur S3, procédure /tmp/e2e_full.py transposable)

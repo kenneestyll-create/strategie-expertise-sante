@@ -4,6 +4,7 @@ Fournit les fonctions d'extraction texte (PDF, images, OCR).
 Consommateurs : routes/dossier_express.py
 """
 import os
+import asyncio
 import tempfile
 from config import logger
 
@@ -34,7 +35,10 @@ def preprocess_image(pil_image):
     return img
 
 
-async def extract_pdf_with_gemini(file_bytes: bytes, name: str) -> tuple[str, str, int, str]:
+GEMINI_CALL_TIMEOUT_S = 150  # hard cap per Gemini call — a hung HTTP call must not freeze the pipeline
+
+
+async def extract_pdf_with_gemini(file_bytes: bytes, name: str, progress_cb=None) -> tuple[str, str, int, str]:
     """Cloud-based PDF extraction via Gemini 2.5 Pro (native PDF support).
 
     Robust against missing system binaries (no Tesseract/Poppler dependency).
@@ -74,7 +78,7 @@ async def extract_pdf_with_gemini(file_bytes: bytes, name: str) -> tuple[str, st
 
     # Heavy PDF: split by pages and process in chunks
     logger.info(f"PDF '{name}' is heavy ({len(file_bytes)//1024}KB, {total_pages}p) → chunking")
-    return await _gemini_extract_chunked(file_bytes, name, total_pages, api_key, chunk_size=4)
+    return await _gemini_extract_chunked(file_bytes, name, total_pages, api_key, chunk_size=4, progress_cb=progress_cb)
 
 
 async def _gemini_extract_single(file_bytes: bytes, name: str, total_pages: int, api_key: str) -> tuple[str, str, int, str]:
@@ -105,7 +109,10 @@ async def _gemini_extract_single(file_bytes: bytes, name: str, total_pages: int,
             "[Page 1]\n<texte>\n\n[Page 2]\n<texte>\n\n...\n\n"
             "IMPORTANT : aucun commentaire, aucune analyse, aucun resume. Uniquement le texte brut."
         )
-        response = await chat.send_message(UserMessage(text=prompt, file_contents=[pdf_file]))
+        response = await asyncio.wait_for(
+            chat.send_message(UserMessage(text=prompt, file_contents=[pdf_file])),
+            timeout=GEMINI_CALL_TIMEOUT_S,
+        )
 
         if response and len(response.strip()) > 50:
             method = f"PDF — {total_pages} page{'s' if total_pages > 1 else ''}, extraction Gemini Vision"
@@ -126,31 +133,47 @@ async def _gemini_extract_single(file_bytes: bytes, name: str, total_pages: int,
                 pass
 
 
-async def _gemini_extract_chunked(file_bytes: bytes, name: str, total_pages: int, api_key: str, chunk_size: int = 4) -> tuple[str, str, int, str]:
-    """Split heavy PDF into chunks of N pages and call Gemini for each chunk."""
-    import pypdfium2
+def _pdf_page_count_sync(file_bytes: bytes) -> int:
     import io as _io
-    from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContentWithMimeType
-    from pypdf import PdfReader, PdfWriter
+    from pypdf import PdfReader
+    return len(PdfReader(_io.BytesIO(file_bytes)).pages)
 
+
+def _build_sub_pdf_sync(file_bytes: bytes, start: int, end: int) -> bytes:
+    """CPU-bound sub-PDF build — must run off the event loop (asyncio.to_thread)."""
+    import io as _io
+    from pypdf import PdfReader, PdfWriter
     src = PdfReader(_io.BytesIO(file_bytes))
-    src_pages = len(src.pages)
+    writer = PdfWriter()
+    for p in range(start, end):
+        writer.add_page(src.pages[p])
+    buf = _io.BytesIO()
+    writer.write(buf)
+    return buf.getvalue()
+
+
+async def _gemini_extract_chunked(file_bytes: bytes, name: str, total_pages: int, api_key: str, chunk_size: int = 4, progress_cb=None) -> tuple[str, str, int, str]:
+    """Split heavy PDF into chunks of N pages and call Gemini for each chunk."""
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContentWithMimeType
+
+    src_pages = await asyncio.to_thread(_pdf_page_count_sync, file_bytes)
     if total_pages == 0:
         total_pages = src_pages
 
     chunks_text: list[str] = []
     failures = 0
     last_error: str = ""
+    chunks_total = (src_pages + chunk_size - 1) // chunk_size
 
     for chunk_start in range(0, src_pages, chunk_size):
         chunk_end = min(chunk_start + chunk_size, src_pages)
-        # Build sub-PDF
-        writer = PdfWriter()
-        for p in range(chunk_start, chunk_end):
-            writer.add_page(src.pages[p])
-        sub_buf = _io.BytesIO()
-        writer.write(sub_buf)
-        sub_bytes = sub_buf.getvalue()
+        chunk_num = chunk_start // chunk_size + 1
+        if progress_cb:
+            try:
+                await progress_cb(f"Extraction OCR — {name[:40]} : lot {chunk_num}/{chunks_total} (pages {chunk_start + 1}-{chunk_end})...")
+            except Exception:
+                pass
+        sub_bytes = await asyncio.to_thread(_build_sub_pdf_sync, file_bytes, chunk_start, chunk_end)
 
         tmp_path = None
         try:
@@ -194,10 +217,9 @@ async def _gemini_extract_chunked(file_bytes: bytes, name: str, total_pages: int
                     os.unlink(tmp_path)
                 except Exception:
                     pass
-            # Release sub-PDF buffer + pypdf objects after each chunk.
-            # On 512MB tier, every freed MB matters before next chunk renders.
+            # Release sub-PDF buffer after each chunk (512MB tier: every freed MB matters)
             try:
-                del sub_buf, sub_bytes, writer
+                del sub_bytes
             except Exception:
                 pass
             import gc
@@ -238,40 +260,49 @@ def ocr_page(pil_image, page_num, name, enhanced=False):
         return "", "non lisible"
 
 
-async def extract_pdf_full_pipeline(file_bytes: bytes, name: str):
+def _pdfplumber_pass_sync(file_bytes: bytes, name: str):
+    """Sync Level-1 native text pass — CPU-bound, run via asyncio.to_thread."""
+    import io
+    import pdfplumber
+    pdf = pdfplumber.open(io.BytesIO(file_bytes))
+    total_pages = len(pdf.pages)
+    pages_text = []
+    readable = 0
+    for i, page in enumerate(pdf.pages[:30]):
+        text = page.extract_text()
+        if text and text.strip() and len(text.strip()) > 20:
+            pages_text.append(f"[Page {i+1}] {text.strip()}")
+            readable += 1
+    pdf.close()
+
+    if readable >= total_pages * 0.6:
+        extracted = "\n\n".join(pages_text)
+        method = f"PDF texte — {total_pages} page{'s' if total_pages > 1 else ''}, extraction directe ({readable}/{total_pages} pages lisibles)"
+        return (extracted, method, total_pages, "text_extracted"), total_pages, readable
+    return None, total_pages, readable
+
+
+async def extract_pdf_full_pipeline(file_bytes: bytes, name: str, progress_cb=None):
     """Production-grade PDF extraction with cloud Vision fallback.
 
     Architecture (no system binary dependency required):
       Level 1: pdfplumber (Python pur, gratuit, instantané) — pour PDFs avec texte natif
       Level 2: Gemini Vision (cloud, ~0.05€/PDF, robuste) — pour PDFs scannés
       Level 3: Tesseract OCR (legacy, optionnel) — fallback de dernier recours si Gemini indisponible
-    """
-    import io
 
+    Tout le travail CPU-bound (pdfplumber, pypdf, Tesseract) est déporté hors de
+    l'event loop (asyncio.to_thread) : un pod à CPU limité reste responsive
+    (health probes OK → pas de kill Kubernetes pendant l'extraction).
+    """
     total_pages = 0
 
-    # === LEVEL 1: Native text extraction (pdfplumber) ===
+    # === LEVEL 1: Native text extraction (pdfplumber, off-loop) ===
     try:
-        import pdfplumber
-        pdf = pdfplumber.open(io.BytesIO(file_bytes))
-        total_pages = len(pdf.pages)
-        pages_text = []
-        pages_quality = []
-        for i, page in enumerate(pdf.pages[:30]):
-            text = page.extract_text()
-            if text and text.strip() and len(text.strip()) > 20:
-                pages_text.append(f"[Page {i+1}] {text.strip()}")
-                pages_quality.append("lisible")
-            else:
-                pages_quality.append("non lisible")
-        pdf.close()
-
-        readable = sum(1 for q in pages_quality if q == "lisible")
-        if readable >= total_pages * 0.6:
-            extracted = "\n\n".join(pages_text)
-            method = f"PDF texte — {total_pages} page{'s' if total_pages > 1 else ''}, extraction directe ({readable}/{total_pages} pages lisibles)"
+        result, total_pages, readable = await asyncio.to_thread(_pdfplumber_pass_sync, file_bytes, name)
+        if result:
+            extracted = result[0]
             logger.info(f"PDF '{name}': extraction texte reussie ({len(extracted)} chars, {readable}/{total_pages} pages)")
-            return extracted, method, total_pages, "text_extracted"
+            return result
         elif readable > 0:
             logger.info(f"PDF '{name}': pdfplumber partiel ({readable}/{total_pages}), bascule sur Gemini Vision")
         else:
@@ -280,17 +311,29 @@ async def extract_pdf_full_pipeline(file_bytes: bytes, name: str):
         logger.warning(f"PDF '{name}': pdfplumber failed: {e}")
 
     # === LEVEL 2: Gemini Vision (cloud, robust to missing binaries) ===
-    text, method, pages, status = await extract_pdf_with_gemini(file_bytes, name)
+    text, method, pages, status = await extract_pdf_with_gemini(file_bytes, name, progress_cb=progress_cb)
     if status == "vision_extracted" and text:
         return text, method, pages or total_pages, status
 
     logger.warning(f"PDF '{name}': Gemini Vision a echoue (status={status}), tentative Tesseract local")
 
-    # === LEVEL 3: Tesseract OCR fallback (only if Gemini fails AND Tesseract is installed) ===
+    # === LEVEL 3: Tesseract OCR fallback (off-loop, only if Gemini fails AND Tesseract installed) ===
+    try:
+        result = await asyncio.to_thread(_tesseract_pass_sync, file_bytes, name, total_pages)
+        if result:
+            return result
+    except Exception as e:
+        logger.error(f"PDF '{name}': Tesseract fallback failed: {e}")
+
+    return "", f"PDF — {total_pages} page{'s' if total_pages > 1 else ''}, contenu non extractible", total_pages, "extraction_failed"
+
+
+def _tesseract_pass_sync(file_bytes: bytes, name: str, total_pages: int):
+    """Sync Level-3 Tesseract fallback — returns result tuple or None."""
+    import io
     try:
         import pypdfium2
         import pytesseract
-        # Probe Tesseract availability
         try:
             pytesseract.get_tesseract_version()
         except Exception:
@@ -339,11 +382,9 @@ async def extract_pdf_full_pipeline(file_bytes: bytes, name: str):
             extracted = "\n\n".join(enhanced_pages)
             method = f"PDF — {total_pages} page{'s' if total_pages > 1 else ''}, OCR renforce de secours"
             return extracted, method, total_pages, "ocr_extracted"
-
     except Exception as e:
         logger.error(f"PDF '{name}': Tesseract fallback failed: {e}")
-
-    return "", f"PDF — {total_pages} page{'s' if total_pages > 1 else ''}, contenu non extractible", total_pages, "extraction_failed"
+    return None
 
 
 def extract_image_ocr(file_bytes: bytes, name: str):

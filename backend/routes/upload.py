@@ -152,6 +152,34 @@ async def _delete_extraction(eid: str):
 # All real reads/writes now go through the async helpers above.
 _extraction_results = {}
 
+EXTRACTION_GLOBAL_TIMEOUT_S = 1500  # 25 min hard cap on a full extraction
+STALE_HEARTBEAT_S = 180  # no heartbeat for 3 min → worker considered dead
+
+
+async def _heartbeat_loop(eid: str):
+    """Touch last_heartbeat_at every 25s while the extraction worker is alive."""
+    try:
+        while True:
+            await asyncio.sleep(25)
+            await db.extraction_results.update_one(
+                {"id": eid},
+                {"$set": {"last_heartbeat_at": datetime.now(timezone.utc).isoformat()}},
+            )
+    except asyncio.CancelledError:
+        pass
+    except Exception as e:
+        logger.warning(f"Heartbeat loop {eid} stopped: {e}")
+
+
+def _seconds_since(iso_str: str) -> float:
+    try:
+        dt = datetime.fromisoformat(iso_str)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return (datetime.now(timezone.utc) - dt).total_seconds()
+    except Exception:
+        return 0.0
+
 
 def _get_upload_dir(upload_id: str, filename: str) -> str:
     safe_name = _safe_filename(filename)
@@ -225,6 +253,7 @@ async def _reassemble_files(upload_id, files_meta):
                 continue
 
             file_bytes = b"".join(bytes(d["data"]) for d in docs)
+            del docs
 
             if len(file_bytes) > MAX_FILE_SIZE:
                 assembled.append({"name": filename, "type": file_type, "data": "", "status": "too_large"})
@@ -250,28 +279,82 @@ async def _reassemble_files(upload_id, files_meta):
 
 
 async def _run_extraction(extraction_id, assembled_files):
-    """Background task: run OCR extraction and store result in MongoDB."""
+    """Background task: run OCR extraction and store result in MongoDB.
+
+    Résilience prod (fix 04/08/2026) :
+      - heartbeat MongoDB toutes les 25s → le endpoint de statut peut détecter
+        une tâche morte (pod redémarré/OOM) au lieu de rester en `processing` infini
+      - progression par chunk visible côté frontend
+      - plafond global 25 min sur l'extraction complète
+    """
+    hb_task = asyncio.create_task(_heartbeat_loop(extraction_id))
     try:
         prev = await _get_extraction(extraction_id) or {}
         stored = prev.get("stored_files", [])
+        now_iso = datetime.now(timezone.utc).isoformat()
         await _set_extraction(extraction_id, {
             "status": "processing",
             "progress": "Extraction OCR en cours...",
             "stored_files": stored,
+            "processing_started_at": prev.get("processing_started_at") or now_iso,
+            "last_heartbeat_at": now_iso,
         })
+
+        async def _progress(msg: str):
+            try:
+                await _set_extraction(extraction_id, {
+                    "status": "processing",
+                    "progress": msg,
+                    "last_heartbeat_at": datetime.now(timezone.utc).isoformat(),
+                })
+            except Exception:
+                pass
 
         from routes.dossier_express import _process_files_payload
 
-        result = await _process_files_payload(assembled_files)
+        result = await asyncio.wait_for(
+            _process_files_payload(assembled_files, progress_cb=_progress),
+            timeout=EXTRACTION_GLOBAL_TIMEOUT_S,
+        )
         await _set_extraction(extraction_id, {
             "status": "done",
             "result": result,
             "stored_files": stored,
         })
+    except asyncio.TimeoutError:
+        logger.error(f"Async extraction {extraction_id} global timeout ({EXTRACTION_GLOBAL_TIMEOUT_S}s)")
+        try:
+            await _set_extraction(extraction_id, {"status": "error", "error": "Extraction trop longue (plafond 25 min atteint). Réessayez avec un document plus léger."})
+        except Exception:
+            pass
     except Exception as e:
         logger.error(f"Async extraction {extraction_id} failed: {e}", exc_info=True)
         try:
             await _set_extraction(extraction_id, {"status": "error", "error": str(e)[:500]})
+        except Exception:
+            pass
+    finally:
+        hb_task.cancel()
+
+
+async def _retry_extraction_from_storage(extraction_id, stored_files):
+    """Relaunch a dead extraction using the original files persisted in S3."""
+    try:
+        from utils.storage import download_file
+        assembled = []
+        for sf in stored_files[:10]:
+            data, ctype = await asyncio.to_thread(download_file, sf["storage_path"])
+            assembled.append({
+                "name": sf.get("original_filename", "document.pdf"),
+                "type": sf.get("content_type") or ctype or "application/pdf",
+                "data": base64.b64encode(data).decode(),
+            })
+        logger.info(f"Extraction {extraction_id}: reprise depuis S3 ({len(assembled)} fichier(s))")
+        await _run_extraction(extraction_id, assembled)
+    except Exception as e:
+        logger.error(f"Retry extraction {extraction_id} from storage failed: {e}", exc_info=True)
+        try:
+            await _set_extraction(extraction_id, {"status": "error", "error": f"Reprise impossible après interruption serveur: {str(e)[:200]}"})
         except Exception:
             pass
 
@@ -308,7 +391,11 @@ async def extract_chunked_files(request_body: dict):
     estimated_raw = int(total_data * 0.75)
 
     extraction_id = str(uuid.uuid4())
-    await _set_extraction(extraction_id, {"status": "queued", "stored_files": stored_files})
+    await _set_extraction(extraction_id, {
+        "status": "queued",
+        "stored_files": stored_files,
+        "last_heartbeat_at": datetime.now(timezone.utc).isoformat(),
+    })
     asyncio.create_task(_run_extraction(extraction_id, assembled_files))
     return {"async": True, "extraction_id": extraction_id, "stored_files": stored_files, "message": f"Extraction en cours — {pdf_count} PDF(s), {estimated_raw/1024/1024:.1f} MB"}
 
@@ -330,5 +417,34 @@ async def get_extraction_status(extraction_id: str):
         error = data.get("error", "Erreur inconnue")
         await _delete_extraction(extraction_id)
         return {"status": "error", "error": error}
-    else:
+
+    # processing/queued — watchdog : détecte un worker mort (pod redémarré/OOM)
+    hb = data.get("last_heartbeat_at") or data.get("updated_at") or ""
+    if not hb or _seconds_since(hb) < STALE_HEARTBEAT_S:
         return {"status": status, "progress": data.get("progress", "")}
+
+    # Heartbeat périmé → le worker est mort. Reprise auto depuis S3 (1 seule fois, claim atomique).
+    retryable = [s for s in (data.get("stored_files") or []) if s.get("storage_path")]
+    if retryable:
+        claim = await db.extraction_results.find_one_and_update(
+            {"id": extraction_id, "$or": [{"retry_count": {"$exists": False}}, {"retry_count": 0}]},
+            {"$set": {
+                "retry_count": 1,
+                "status": "processing",
+                "progress": "Reprise après interruption serveur...",
+                "last_heartbeat_at": datetime.now(timezone.utc).isoformat(),
+            }},
+        )
+        if claim:
+            logger.warning(f"Extraction {extraction_id}: worker mort détecté (heartbeat > {STALE_HEARTBEAT_S}s), relance depuis S3")
+            asyncio.create_task(_retry_extraction_from_storage(extraction_id, retryable))
+            return {"status": "processing", "progress": "Reprise après interruption serveur..."}
+        # Claim perdu : soit une requête concurrente vient de relancer, soit la reprise a déjà eu lieu
+        data2 = await _get_extraction(extraction_id) or {}
+        hb2 = data2.get("last_heartbeat_at") or ""
+        if hb2 and _seconds_since(hb2) < STALE_HEARTBEAT_S:
+            return {"status": data2.get("status", "processing"), "progress": data2.get("progress", "")}
+
+    logger.error(f"Extraction {extraction_id}: interrompue définitivement (heartbeat périmé, reprise épuisée)")
+    await _delete_extraction(extraction_id)
+    return {"status": "error", "error": "Extraction interrompue par un redémarrage du serveur. Merci de réessayer l'envoi de vos documents."}

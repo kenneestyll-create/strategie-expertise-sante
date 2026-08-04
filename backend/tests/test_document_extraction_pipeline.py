@@ -188,7 +188,7 @@ class TestDocumentExtractionEndpoint:
         print("PASS: Text file extraction works correctly")
     
     def test_extract_max_files_limit(self):
-        """Test that endpoint respects max 10 files limit"""
+        """Test that endpoint rejects > 10 files with 400 (contrat actuel)"""
         # Create 15 files
         files = [
             {"name": f"file{i}.txt", "type": "text/plain", "data": base64.b64encode(f"Content {i}".encode()).decode()}
@@ -197,13 +197,10 @@ class TestDocumentExtractionEndpoint:
         
         payload = {"files": files}
         response = requests.post(f"{BASE_URL}/api/extract-document-text", json=payload)
-        assert response.status_code == 200
+        assert response.status_code == 400, f"Expected 400 (max files), got {response.status_code}"
+        assert "10" in response.json().get("detail", "")
         
-        data = response.json()
-        # Should only process first 10
-        assert data["files_processed"] == 10, f"Expected 10 files (limit), got {data['files_processed']}"
-        
-        print("PASS: Max 10 files limit is enforced")
+        print("PASS: Max 10 files limit is enforced (400)")
 
 
 class TestDossierExpressWithDocuments:

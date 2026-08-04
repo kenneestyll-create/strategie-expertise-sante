@@ -82,7 +82,7 @@ class TestChunkedUploadEndpoint:
         print("PASS: Multiple chunks upload with correct complete flag")
     
     def test_reject_too_many_chunks(self):
-        """Test that > 100 total_chunks is rejected"""
+        """Test that > 500 total_chunks is rejected (limite relevée le 03/08/2026)"""
         upload_id = str(uuid.uuid4())
         filename = "test_too_many.pdf"
         chunk_data = b"X" * 100
@@ -92,7 +92,7 @@ class TestChunkedUploadEndpoint:
             'upload_id': upload_id,
             'filename': filename,
             'chunk_index': 0,
-            'total_chunks': 101  # > 100 should be rejected
+            'total_chunks': 501  # > 500 should be rejected
         }
         
         response = requests.post(f"{BASE_URL}/api/upload/chunk", files=files, data=data)
@@ -101,7 +101,7 @@ class TestChunkedUploadEndpoint:
         result = response.json()
         assert 'detail' in result
         assert 'chunk' in result['detail'].lower() or 'trop' in result['detail'].lower()
-        print("PASS: Rejects > 100 total_chunks with 400 error")
+        print("PASS: Rejects > 500 total_chunks with 400 error")
     
     def test_chunk_size_limit(self):
         """Test that chunks > 2MB + 1KB are rejected"""
@@ -125,8 +125,21 @@ class TestChunkedUploadEndpoint:
 
 
 class TestExtractChunkedEndpoint:
-    """Tests for POST /api/upload/extract endpoint"""
-    
+    """Tests for POST /api/upload/extract endpoint (mode toujours asynchrone depuis 03/08/2026)"""
+
+    @staticmethod
+    def _poll_extraction(extraction_id, timeout=60):
+        """Poll /extract-status until done/error (extract is always async now)."""
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            r = requests.get(f"{BASE_URL}/api/upload/extract-status/{extraction_id}")
+            assert r.status_code == 200, f"Status poll failed: {r.text}"
+            j = r.json()
+            if j.get("status") in ("done", "error"):
+                return j
+            time.sleep(2)
+        raise AssertionError(f"Extraction {extraction_id} not finished within {timeout}s")
+
     def test_extract_reassembles_chunks(self):
         """Test that extract endpoint reassembles chunks correctly"""
         upload_id = str(uuid.uuid4())
@@ -162,8 +175,10 @@ class TestExtractChunkedEndpoint:
         
         assert response.status_code == 200, f"Extract failed: {response.text}"
         result = response.json()
-        # The extract endpoint should return extracted_text or details
-        assert 'extracted_text' in result or 'details' in result
+        assert result.get('async') is True and 'extraction_id' in result
+        final = self._poll_extraction(result['extraction_id'])
+        assert final['status'] == 'done', f"Extraction failed: {final}"
+        assert 'Hello World Test!' in final.get('extracted_text', '')
         print("PASS: Extract endpoint reassembles chunks")
     
     def test_extract_mixed_files(self):
@@ -209,7 +224,11 @@ class TestExtractChunkedEndpoint:
         
         assert response.status_code == 200, f"Mixed extract failed: {response.text}"
         result = response.json()
-        assert 'extracted_text' in result or 'details' in result
+        assert result.get('async') is True and 'extraction_id' in result
+        final = self._poll_extraction(result['extraction_id'])
+        assert final['status'] == 'done', f"Extraction failed: {final}"
+        text = final.get('extracted_text', '')
+        assert 'Chunked content here' in text and 'Base64 content here' in text
         print("PASS: Extract handles mixed chunked + base64 files")
     
     def test_extract_cleans_up_temp_directory(self):
