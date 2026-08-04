@@ -73,3 +73,8 @@ memory/test_credentials.md
 frontend/node_modules/.cache/default-development/10.pack
 frontend/node_modules/.cache/default-development/36.pack
 frontend/node_modules/.cache/default-development/81.pack
+.env
+.env.*
+credentials.json
+*.key
+.credentials
