@@ -1158,6 +1158,17 @@ async def admin_extraction_debug(admin: dict = Depends(get_current_admin), limit
     return {"items": items, "count": len(items)}
 
 
+@router.delete("/admin/dossier-express/{dossier_id}")
+async def admin_delete_dossier(dossier_id: str, admin: dict = Depends(get_current_admin)):
+    """Admin — purge d'un dossier (résidus de test, entrées bloquées). Suppression du record uniquement."""
+    dossier = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0, "id": 1, "status": 1, "admin_test": 1, "created_at": 1})
+    if not dossier:
+        raise HTTPException(status_code=404, detail="Dossier non trouvé")
+    await db.dossier_express.delete_one({"id": dossier_id})
+    logger.info(f"[ADMIN] Dossier {dossier_id} purgé par {admin.get('email', 'admin')} (status={dossier.get('status')}, admin_test={dossier.get('admin_test')})")
+    return {"success": True, "deleted_id": dossier_id, "was_status": dossier.get("status")}
+
+
 @router.post("/admin/dossier-express/{dossier_id}/retry")
 async def admin_retry_dossier(dossier_id: str, admin: dict = Depends(get_current_admin)):
     """Admin endpoint to retry a failed dossier processing from scratch."""
