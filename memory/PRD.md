@@ -472,3 +472,10 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - Page fille /expertise-medicale/assureur créée, validée en preview, déployée et vérifiée en PRODUCTION (HTTP 200, canonical prod, sitemap OK, schemas FAQPage/BreadcrumbList/Article OK, UX mobile/desktop OK, robots index,follow)
 - .gitignore nettoyé (1462 -> 71 lignes) + test_credentials.md ajouté (blockers deployment_agent corrigés)
 - EN ATTENTE: confirmation indexation GSC par utilisateur -> ensuite réduire section "Volet assureur" du pilier /expertise-medicale (~150-200 mots + lien vers page fille). INTERDIT de toucher le pilier avant.
+
+## 2026-08-04 — Réduction "Volet assureur" du pilier (Option A, étape finale)
+- Page fille confirmée INDEXÉE dans GSC par utilisateur
+- Section assureur du pilier réduite de ~600 à 176 mots, H2 reformulé "Expertise médicale et assureur : l'essentiel à retenir", lien carte vers /expertise-medicale/assureur (data-testid expertise-assureur-guide-link)
+- Schema HowTo assureur retiré du pilier (contenu plus visible), dateModified Article -> 2026-08-04
+- Title/meta/H1/MDPH/FAQ/maillage du pilier INTACTS. Vérifié preview desktop+mobile, 0 régression
+- EN ATTENTE: validation utilisateur puis déploiement production

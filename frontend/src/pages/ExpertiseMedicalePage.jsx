@@ -476,25 +476,6 @@ const ExpertiseFaq = () => {
 // Schemas ajoutés : MedicalScholarlyArticle + HowTo + BreadcrumbList
 // ─────────────────────────────────────────────────────────────────────────────
 
-const phase2HowToSteps = [
-  {
-    name: "Préparer le dossier médical",
-    text: "Réunir l'ensemble des certificats, comptes-rendus opératoires, bilans d'imagerie et ordonnances. Les éléments non communiqués à l'expert ne figureront pas dans son rapport."
-  },
-  {
-    name: "Anticiper la définition contractuelle",
-    text: "Relire les clauses du contrat (invalidité, ITT, IPP, exclusions) pour identifier le seuil de déclenchement de la garantie. Cette donnée conditionne la stratégie."
-  },
-  {
-    name: "Se faire accompagner d'un médecin de recours",
-    text: "La présence d'un médecin de recours le jour de l'expertise est un droit. Ses honoraires (300 à 800 € en moyenne) peuvent être pris en charge par une protection juridique."
-  },
-  {
-    name: "Préparer les dires contradictoires",
-    text: "Le médecin de recours peut produire des dires immédiatement après l'expertise. Ces dires intègrent le rapport final et obligent l'expert à motiver chaque divergence."
-  }
-];
-
 const ExpertisePhase2Sections = () => {
   useEffect(() => {
     // Nettoyage des éventuels schemas Phase 2 résiduels
@@ -502,24 +483,6 @@ const ExpertisePhase2Sections = () => {
       const el = document.getElementById(id);
       if (el) el.remove();
     });
-
-    // 1. HowTo Schema
-    const howToScript = document.createElement('script');
-    howToScript.id = 'expertise-howto-schema';
-    howToScript.type = 'application/ld+json';
-    howToScript.textContent = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "HowTo",
-      "name": "Comment préparer une expertise médicale d'assureur",
-      "description": "Étapes pour préparer une expertise médicale demandée par un assureur dans le cadre d'un contrat de prévoyance, d'une garantie accidents de la vie ou d'une mutuelle invalidité.",
-      "step": phase2HowToSteps.map((s, idx) => ({
-        "@type": "HowToStep",
-        "position": idx + 1,
-        "name": s.name,
-        "text": s.text
-      }))
-    });
-    document.head.appendChild(howToScript);
 
     // 2. BreadcrumbList Schema
     const breadcrumbScript = document.createElement('script');
@@ -555,7 +518,7 @@ const ExpertisePhase2Sections = () => {
         "url": "https://strategie-expertise-sante.fr/"
       },
       "datePublished": "2026-05-17",
-      "dateModified": "2026-06-16",
+      "dateModified": "2026-08-04",
       "about": [
         { "@type": "MedicalProcedure", "name": "Expertise médicale" }
       ],
@@ -577,87 +540,39 @@ const ExpertisePhase2Sections = () => {
 
   return (
     <>
-      {/* SECTION ASSUREUR */}
+      {/* SECTION ASSUREUR — synthèse, contenu détaillé sur /expertise-medicale/assureur */}
       <section className="section-padding bg-secondary/30" data-testid="expertise-phase2-assureur">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-2 mb-3">
             <FileText className="w-5 h-5 text-accent" />
             <span className="text-sm font-medium text-accent uppercase tracking-wider">Volet assureur</span>
           </div>
-          <h2 className="text-3xl font-semibold mb-3" data-testid="expertise-phase2-assureur-h2">
-            Expertise médicale demandée par votre assureur&nbsp;: comprendre la mission, organiser votre stratégie
+          <h2 className="text-3xl font-semibold mb-6" data-testid="expertise-phase2-assureur-h2">
+            Expertise médicale et assureur&nbsp;: l'essentiel à retenir
           </h2>
-          <p className="text-muted-foreground mb-8 text-lg">
-            Comprendre la position du médecin expert d'assurance, anticiper les points de divergence possibles, organiser votre préparation et votre éventuelle contre-stratégie.
-          </p>
-
-          <div className="space-y-6 text-foreground/90 leading-relaxed">
-            <div>
-              <h3 className="text-xl font-semibold mb-2">La mission du médecin expert mandaté par l'assureur</h3>
-              <p>
-                Le médecin expert mandaté par l'assureur intervient dans le cadre d'une mission définie par l'assureur. Ses conclusions peuvent différer de celles du médecin conseil de la victime ou d'un médecin de recours. L'évaluation s'effectue selon les définitions contractuelles du contrat&nbsp;: ces définitions sont généralement plus restrictives que celles applicables au régime général de la sécurité sociale, ce qui peut produire des conclusions plus restrictives qu'un examen contradictoire mené en présence d'un médecin de recours.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-xl font-semibold mb-2">Trois points de vigilance fréquents</h3>
-              <ul className="list-disc pl-6 space-y-3">
-                <li>
-                  <strong>La consolidation.</strong> Une consolidation peut être prononcée alors que l'état médical demeure évolutif. La consolidation a un effet juridique important&nbsp;: un retour en arrière nécessite la démonstration d'une aggravation médicalement documentée.
-                </li>
-                <li>
-                  <strong>Le taux d'IPP retenu.</strong> Le barème AIPP, utilisé en matière d'assurance, est distinct du barème Concours Médical utilisé devant les juridictions. Pour un même préjudice, l'écart entre les deux barèmes peut être significatif et justifier, le cas échéant, une demande d'expertise judiciaire.
-                </li>
-                <li>
-                  <strong>L'imputabilité au sinistre.</strong> L'expertise peut conclure à un caractère préexistant ou indépendant des symptômes par rapport au sinistre déclaré. Cette qualification peut conduire à une exclusion totale ou partielle de la garantie contractuelle. Une argumentation médicale contradictoire structurée est, dans ce cas, déterminante.
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-xl font-semibold mb-2">La préparation en quatre temps</h3>
-              <ol className="list-decimal pl-6 space-y-3">
-                <li>
-                  <strong>Réunir le dossier médical exhaustif.</strong> Certificats, comptes-rendus opératoires, bilans d'imagerie, ordonnances. Les éléments non communiqués à l'expert ne figureront pas dans son rapport.
-                </li>
-                <li>
-                  <strong>Identifier les définitions contractuelles applicables.</strong> Invalidité, ITT, IPP, exclusions, seuils de déclenchement de la garantie (33&nbsp;%, 66&nbsp;%). Ces données conditionnent toute la stratégie.
-                </li>
-                <li>
-                  <strong>Solliciter un médecin de recours.</strong> Le sinistré peut être accompagné, le jour de l'expertise, par un médecin de son choix. Ses honoraires (de l'ordre de 300 à 800&nbsp;€ en moyenne) peuvent être pris en charge par une garantie protection juridique, si elle est mobilisée.
-                </li>
-                <li>
-                  <strong>Anticiper les dires contradictoires.</strong> Le médecin de recours peut produire des dires immédiatement après l'expertise. Ces dires intègrent le rapport final et obligent l'expert à motiver chaque divergence point par point.
-                </li>
-              </ol>
-            </div>
-
-            <div>
-              <h3 className="text-xl font-semibold mb-2">Après l'expertise&nbsp;: les voies de contestation possibles</h3>
-              <p>
-                Le rapport est notifié dans un délai variable, généralement de quinze à soixante jours. Plusieurs leviers procéduraux sont disponibles si les conclusions paraissent défavorables ou particulièrement restrictives&nbsp;:
-              </p>
-              <ul className="list-disc pl-6 space-y-2 mt-2">
-                <li><strong>La demande de contre-expertise amiable</strong>, formulée auprès de l'assureur. Son acceptation reste discrétionnaire.</li>
-                <li><strong>L'expertise judiciaire</strong>, sollicitée par voie de référé devant le juge du tribunal judiciaire (article&nbsp;145 du Code de procédure civile). La désignation porte sur un expert indépendant inscrit sur la liste de la cour d'appel.</li>
-                <li><strong>La réargumentation sur pièces</strong>, par la production d'un rapport médical contradictoire détaillé. Une médiation Assurance peut, le cas échéant, accompagner cette démarche.</li>
-              </ul>
-              <p className="mt-3 text-sm text-muted-foreground">
-                Délais à connaître&nbsp;: la prescription biennale prévue par les articles L.114-1 et L.114-2 du Code des assurances peut s'appliquer selon la nature du contrat. Une analyse de chaque situation est nécessaire.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-xl font-semibold mb-2">Signaux nécessitant un examen attentif</h3>
-              <p>
-                Plusieurs éléments peuvent justifier une vigilance particulière sur le déroulement de l'expertise&nbsp;: pièces médicales non prises en compte, examen clinique de courte durée, absence de questions sur le retentissement quotidien, ou récurrence d'un même expert au sein de dossiers mandatés par le même assureur. Ces éléments, sans préjuger d'une orientation, peuvent justifier, en cas de conclusions défavorables, la sollicitation d'une expertise judiciaire indépendante.
-              </p>
-            </div>
+          <div className="space-y-4 text-foreground/90 leading-relaxed">
+            <p>
+              Le médecin expert mandaté par votre assureur évalue votre état selon les <strong>définitions contractuelles</strong> de votre contrat — invalidité, ITT, taux d'incapacité — généralement plus restrictives que celles du régime général de la sécurité sociale. Trois points concentrent l'essentiel des litiges&nbsp;: une <strong>consolidation</strong> prononcée alors que l'état demeure évolutif, le taux retenu selon le <strong>barème AIPP</strong> (distinct du barème utilisé devant les juridictions) et l'<strong>imputabilité</strong> des troubles au sinistre, dont la remise en cause peut exclure tout ou partie de la garantie.
+            </p>
+            <p>
+              Vous conservez des droits effectifs&nbsp;: être assisté le jour de l'expertise par un <strong>médecin de recours</strong> de votre choix, produire des <strong>dires contradictoires</strong> que l'expert doit discuter point par point, puis contester des conclusions défavorables par une contre-expertise amiable ou une expertise judiciaire — en surveillant la prescription biennale de deux ans (article L.114-1 du Code des assurances).
+            </p>
           </div>
-
-          <p className="mt-8 text-xs text-muted-foreground italic">
-            Cadre légal mobilisé&nbsp;: Code des assurances, articles L.114-1 et L.114-2&nbsp;; Code de procédure civile, article&nbsp;145&nbsp;; Code de déontologie médicale, articles 105 et 106&nbsp;; jurisprudence Cass. 2<sup>e</sup> civ., 22&nbsp;nov.&nbsp;2012, n°&nbsp;11-23.539.
-          </p>
+          <Link
+            to="/expertise-medicale/assureur"
+            className="group mt-6 flex items-start justify-between gap-4 border border-accent/30 bg-accent/5 rounded-xl p-5 hover:border-accent/60 hover:bg-accent/10 transition-colors"
+            data-testid="expertise-assureur-guide-link"
+          >
+            <span>
+              <span className="block font-semibold text-foreground group-hover:text-accent transition-colors">
+                Expertise médicale demandée par votre assureur&nbsp;: le guide stratégique complet
+              </span>
+              <span className="block text-sm text-muted-foreground mt-1">
+                Pièges spécifiques à l'expertise d'assurance, préparation en 5 étapes, voies de contestation détaillées.
+              </span>
+            </span>
+            <ArrowRight className="w-5 h-5 text-accent shrink-0 mt-1 group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
       </section>
 
