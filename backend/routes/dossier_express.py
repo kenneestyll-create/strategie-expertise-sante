@@ -1244,6 +1244,8 @@ async def dossier_express_admin_bypass(request: Request):
     original_documents = body.get("original_documents", []) or []
     premium_pdf = body.get("premium_pdf", False)
     improvement_optout = body.get("improvement_optout", False)
+    quality_choice = body.get("quality_choice", "not_available")
+    quality_summary = body.get("quality_summary")
     email = payload.get("email", "admin@test")
 
     if not situation.strip():
@@ -1268,9 +1270,17 @@ async def dossier_express_admin_bypass(request: Request):
         "premium_pdf": premium_pdf,
         "admin_test": True,
         "improvement_optout": improvement_optout,
+        "quality_choice": quality_choice,
+        "quality_summary": quality_summary,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.dossier_express.insert_one(dossier_entry)
+    if quality_summary:
+        logger.info(
+            f"[QUALITY-CHOICE][{dossier_id}] choice={quality_choice} "
+            f"score={quality_summary.get('confidence_score')} level={quality_summary.get('confidence_level')} "
+            f"pages={quality_summary.get('pages_total')} unusable={quality_summary.get('pages_unusable')}"
+        )
 
     # Retro-link original documents (uploaded before dossier creation) to this dossier
     await _link_documents_to_dossier(dossier_id, email, original_documents)
@@ -1305,6 +1315,8 @@ async def dossier_express_submit(request: Request):
     original_documents = body.get("original_documents", []) or []
     premium_pdf = body.get("premium_pdf", False)
     improvement_optout = body.get("improvement_optout", False)
+    quality_choice = body.get("quality_choice", "not_available")
+    quality_summary = body.get("quality_summary")
 
     if not session_id:
         raise HTTPException(status_code=400, detail="session_id requis")
@@ -1345,9 +1357,17 @@ async def dossier_express_submit(request: Request):
         "premium_pdf": premium_pdf,
         "payment_verified": bool(tx and tx.get("payment_status") == "paid"),
         "improvement_optout": improvement_optout,
+        "quality_choice": quality_choice,
+        "quality_summary": quality_summary,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.dossier_express.insert_one(dossier_entry)
+    if quality_summary:
+        logger.info(
+            f"[QUALITY-CHOICE][{dossier_id}] choice={quality_choice} "
+            f"score={quality_summary.get('confidence_score')} level={quality_summary.get('confidence_level')} "
+            f"pages={quality_summary.get('pages_total')} unusable={quality_summary.get('pages_unusable')}"
+        )
 
     # Retro-link original documents (uploaded before dossier creation) to this dossier
     await _link_documents_to_dossier(dossier_id, email, original_documents)

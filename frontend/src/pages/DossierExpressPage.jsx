@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -304,6 +304,8 @@ export const DossierExpressPage = () => {
   const [valueIdx, setValueIdx] = useState(0);
   const [elapsedSec, setElapsedSec] = useState(0);
   const [stepElapsedSec, setStepElapsedSec] = useState(0);
+  const [qualityGate, setQualityGate] = useState(null);
+  const pendingSubmitRef = useRef(null);
 
   const featuresRef = useRevealChildren();
   const ctaBottomRef = useReveal();
@@ -500,6 +502,7 @@ export const DossierExpressPage = () => {
     let documentsText = "";
     let documentDetails = [];
     let storedFiles = [];
+    let extractionQualityReport = null;
 
     // Phase 1+2 UX — switch IMMEDIATELY to processing screen so the user sees rich progress
     // (steps timeline, segmented bar, rotating reassurance messages) instead of an opaque
@@ -542,6 +545,7 @@ export const DossierExpressPage = () => {
         documentsText = extraction.combinedText;
         documentDetails = extraction.results || [];
         storedFiles = extraction.storedFiles || [];
+        extractionQualityReport = extraction.qualityReport || null;
         const extractedCount = extraction.extractedCount;
         if (extractedCount > 0) {
           toast.success(`${extractedCount}/${files.length} document${extractedCount > 1 ? 's' : ''} lu${extractedCount > 1 ? 's' : ''} avec succes`);
@@ -566,7 +570,63 @@ export const DossierExpressPage = () => {
       }
     }
 
+    // === LOT 1 PHASE B — Contrôle qualité documentaire avant analyse (jamais bloquant) ===
+    const qualityReport = extractionQualityReport;
+    const qualitySummary = qualityReport ? {
+      formula_version: qualityReport.formula_version,
+      files: qualityReport.files,
+      pages_total: qualityReport.pages_total,
+      pages_ok: qualityReport.pages_ok,
+      pages_partial: qualityReport.pages_partial,
+      pages_unusable: qualityReport.pages_unusable,
+      confidence_score: qualityReport.confidence_score,
+      confidence_level: qualityReport.confidence_level,
+      alerts: qualityReport.alerts || [],
+      per_document: qualityReport.per_document || [],
+    } : null;
+    const problemPages = qualitySummary ? (qualitySummary.pages_partial + qualitySummary.pages_unusable) : 0;
+    const wasReplaced = safeSessionStorage.get('dossier_express_quality_replaced') === '1';
+    let qualityChoice = qualitySummary ? (wasReplaced ? 'replaced_after_warning' : 'auto_ok') : 'not_available';
+
+    if (qualitySummary && problemPages > 0) {
+      // Pause : montrer l'écran qualité, conserver les données prêtes à soumettre (paiement intact)
+      pendingSubmitRef.current = { documentsText, documentDetails, storedFiles, qualitySummary };
+      setQualityGate(qualitySummary);
+      setStep('quality_check');
+      setLoading(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    safeSessionStorage.remove('dossier_express_quality_replaced');
+
     toast.info("Envoi de votre dossier pour analyse...");
+    await performSubmit(documentsText, documentDetails, storedFiles, qualityChoice, qualitySummary);
+  };
+
+  // LOT 1 PHASE B — choix du client sur l'écran qualité (tracé côté backend)
+  const handleQualityContinue = async () => {
+    const pending = pendingSubmitRef.current;
+    if (!pending) { setStep('form'); return; }
+    setLoading(true);
+    setPollStatus({ progress_step: 'uploading', files_count: files.length, documents_extracted: true });
+    setStep('processing');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    safeSessionStorage.remove('dossier_express_quality_replaced');
+    await performSubmit(pending.documentsText, pending.documentDetails, pending.storedFiles, 'continue_degraded', pending.qualitySummary);
+  };
+
+  const handleQualityReplace = () => {
+    pendingSubmitRef.current = null;
+    setQualityGate(null);
+    safeSessionStorage.set('dossier_express_quality_replaced', '1');
+    setStep('form');
+    setLoading(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    toast.info("Remplacez les fichiers concernés puis relancez l'analyse — votre paiement reste valable.", { duration: 8000 });
+  };
+
+  // LOT 1 PHASE B — soumission effective (appelée directement ou après l'écran qualité)
+  const performSubmit = async (documentsText, documentDetails, storedFiles, qualityChoice, qualitySummary) => {
     const isAdminBypass = isAdminMode && adminToken;
     try {
       const isPremium = safeSessionStorage.get('dossier_express_premium_pdf') === '1';
@@ -576,14 +636,16 @@ export const DossierExpressPage = () => {
         type_dossier: form.type_dossier, regime: form.regime,
         documents_text: documentsText, document_details: documentDetails,
         original_documents: storedFiles, premium_pdf: isPremium,
-        improvement_optout: improvementOptout
+        improvement_optout: improvementOptout,
+        quality_choice: qualityChoice, quality_summary: qualitySummary
       } : {
         session_id: searchParams.get('session_id') || '',
         email: form.email, name: form.name,
         situation: form.situation, type_dossier: form.type_dossier,
         regime: form.regime, documents_text: documentsText, document_details: documentDetails,
         original_documents: storedFiles, premium_pdf: isPremium,
-        improvement_optout: improvementOptout
+        improvement_optout: improvementOptout,
+        quality_choice: qualityChoice, quality_summary: qualitySummary
       };
       const headers = isAdminBypass ? { 'Authorization': `Bearer ${adminToken}` } : {};
       const res = await axios.post(endpoint, payload, { headers });
@@ -1116,6 +1178,86 @@ export const DossierExpressPage = () => {
   }
 
   // ==================== PROCESSING VIEW ====================
+  // ==================== QUALITY CHECK VIEW (Lot 1 — Phase B) ====================
+  if (step === 'quality_check' && qualityGate) {
+    const problemDocs = (qualityGate.per_document || []).filter(d => ((d.partial_pages?.length || 0) + (d.unusable_pages?.length || 0)) > 0);
+    const problemPages = qualityGate.pages_partial + qualityGate.pages_unusable;
+    const hasEssentialAlert = (qualityGate.alerts || []).length > 0;
+    return (
+      <main className="page-transition pt-20 min-h-screen bg-secondary/30">
+        <section className="section-padding">
+          <div className="max-w-2xl mx-auto">
+            <Card className="border-border shadow-lg" data-testid="quality-gate-screen">
+              <CardContent className="p-6 sm:p-8">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-11 h-11 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-6 h-6 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-semibold" data-testid="quality-gate-title">Vérification qualité effectuée</h1>
+                    <p className="text-sm text-muted-foreground">Nous contrôlons vos documents avant de lancer l'analyse.</p>
+                  </div>
+                </div>
+
+                <div className="rounded-xl bg-secondary/60 border border-border p-4 mb-5" data-testid="quality-gate-summary">
+                  <p className="text-foreground/90">
+                    Votre dossier contient <strong>{qualityGate.pages_total} page{qualityGate.pages_total > 1 ? 's' : ''}</strong>.{' '}
+                    <strong className="text-emerald-700">{qualityGate.pages_ok} page{qualityGate.pages_ok > 1 ? 's sont' : ' est'} parfaitement exploitable{qualityGate.pages_ok > 1 ? 's' : ''}</strong>.{' '}
+                    {problemPages} page{problemPages > 1 ? 's présentent' : ' présente'} une qualité insuffisante :
+                  </p>
+                  <ul className="mt-3 space-y-1.5" data-testid="quality-gate-problem-list">
+                    {problemDocs.map((d, i) => {
+                      const pages = [...(d.unusable_pages || []), ...(d.partial_pages || [])].sort((a, b) => a - b);
+                      return (
+                        <li key={i} className="flex items-start gap-2 text-sm">
+                          <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                          <span><strong>{d.name}</strong> — page{pages.length > 1 ? 's' : ''} {pages.join(', ')}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+
+                {hasEssentialAlert && (
+                  <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-4 mb-5 text-sm text-foreground/90" data-testid="quality-gate-essential-alert">
+                    Une pièce importante de votre dossier (rapport d'expertise, notification ou contrat) est concernée.
+                    La remplacer par une version plus lisible améliorera nettement la précision de l'analyse.
+                  </div>
+                )}
+
+                <p className="text-sm text-muted-foreground mb-5">
+                  Vous pouvez remplacer ces pages par un scan plus net, ou continuer : dans ce cas, certaines
+                  conclusions pourront être limitées par la qualité de ces pages. Votre paiement reste valable dans les deux cas.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    onClick={handleQualityReplace}
+                    className="flex-1 rounded-full gap-2 bg-primary hover:bg-primary/90"
+                    data-testid="quality-gate-replace-btn"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Remplacer ces pages
+                  </Button>
+                  <Button
+                    onClick={handleQualityContinue}
+                    variant="outline"
+                    className="flex-1 rounded-full gap-2"
+                    disabled={loading}
+                    data-testid="quality-gate-continue-btn"
+                  >
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
+                    Continuer l'analyse malgré cette limite
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   if (step === 'processing') {
     const filesCount = pollStatus?.files_count || files.length || 0;
     const docsExtracted = pollStatus?.documents_extracted || false;

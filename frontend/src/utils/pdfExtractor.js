@@ -143,6 +143,7 @@ export async function extractTextFromFiles(files, existingOcrText = '', onProgre
   let extractedCount = 0;
   let details = [];
   let storedFiles = [];
+  let qualityReport = null;
 
   try {
     const res = await axios.post(`${API}/upload/extract`, {
@@ -183,6 +184,7 @@ export async function extractTextFromFiles(files, existingOcrText = '', onProgre
         combinedText = pollResult.extracted_text || '';
         details = pollResult.details || [];
         extractedCount = details.filter(d => d.has_text).length;
+        qualityReport = pollResult.quality_report || null;
         if (pollResult.stored_files) storedFiles = pollResult.stored_files;
       } else {
         for (const f of allFiles) {
@@ -193,6 +195,7 @@ export async function extractTextFromFiles(files, existingOcrText = '', onProgre
       combinedText = res.data.extracted_text || '';
       details = res.data.details || [];
       extractedCount = details.filter(d => d.has_text).length;
+      qualityReport = res.data.quality_report || null;
     }
   } catch (err) {
     // Retry once on timeout/network errors
@@ -205,6 +208,7 @@ export async function extractTextFromFiles(files, existingOcrText = '', onProgre
         combinedText = res2.data.extracted_text || '';
         details = res2.data.details || [];
         extractedCount = details.filter(d => d.has_text).length;
+        qualityReport = res2.data.quality_report || null;
       } catch (retryErr) {
         console.warn('Chunked extraction retry failed:', retryErr.message);
         for (const f of allFiles) {
@@ -233,6 +237,7 @@ export async function extractTextFromFiles(files, existingOcrText = '', onProgre
     storedFiles,
     fileCount: files.length,
     extractedCount,
+    qualityReport,
   };
 }
 
@@ -265,6 +270,7 @@ async function extractBase64(files, existingOcrText = '') {
   let extractedCount = 0;
   let details = [];
   let storedFiles = [];
+  let qualityReport = null;
 
   if (filesToExtract.some(f => f.data)) {
     // Dispatch periodic progress events while waiting for server (Gemini Vision can take 60-90s per scanned PDF)
@@ -337,6 +343,7 @@ async function extractBase64(files, existingOcrText = '') {
           details = pollResult.details || [];
           if (pollResult.stored_files && pollResult.stored_files.length) storedFiles = pollResult.stored_files;
           extractedCount = details.filter(d => d.has_text).length;
+          qualityReport = pollResult.quality_report || null;
         } else {
           for (const f of filesToExtract) {
             combinedText += `\n--- ${f.name} ---\n[Extraction en cours — délai dépassé]\n`;
@@ -347,6 +354,7 @@ async function extractBase64(files, existingOcrText = '') {
         details = res.data.details || [];
         storedFiles = res.data.stored_files || [];
         extractedCount = details.filter(d => d.has_text).length;
+        qualityReport = res.data.quality_report || null;
       }
     } catch (err) {
       stopExtractionTimer();
@@ -358,6 +366,7 @@ async function extractBase64(files, existingOcrText = '') {
           details = res2.data.details || [];
           storedFiles = res2.data.stored_files || [];
           extractedCount = details.filter(d => d.has_text).length;
+          qualityReport = res2.data.quality_report || null;
         } catch (retryErr) {
           console.warn('Base64 extraction retry failed:', retryErr.message);
           for (const f of filesToExtract) {
@@ -391,5 +400,6 @@ async function extractBase64(files, existingOcrText = '') {
     storedFiles,
     fileCount: files.length,
     extractedCount,
+    qualityReport,
   };
 }
