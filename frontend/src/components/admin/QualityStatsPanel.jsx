@@ -13,13 +13,13 @@ const Metric = ({ value, label, testid }) => (
 
 export const QualityStatsPanel = ({ token }) => {
   const [stats, setStats] = useState(null);
+  const [product, setProduct] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`${API}/admin/quality-stats`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then(setStats)
-      .catch(e => setError(String(e)));
+    const h = { headers: { Authorization: `Bearer ${token}` } };
+    fetch(`${API}/admin/quality-stats`, h).then(r => r.json()).then(setStats).catch(e => setError(String(e)));
+    fetch(`${API}/admin/product-stats`, h).then(r => r.json()).then(setProduct).catch(() => {});
   }, [token]);
 
   if (error) return <p className="text-sm text-destructive" data-testid="quality-stats-error">Erreur de chargement : {error}</p>;
@@ -73,6 +73,22 @@ export const QualityStatsPanel = ({ token }) => {
           <Metric value={ci.verified_rate_pct != null ? `${ci.verified_rate_pct} %` : '—'} label="taux de vérification" testid="qs-cit-rate" />
         </div>
       </div>
+
+      {product && (
+        <div data-testid="product-stats-section">
+          <h3 className="text-sm font-semibold flex items-center gap-2 mb-3"><FileSearch className="w-4 h-4 text-accent" /> Pilotage produit &amp; business (phase d'observation)</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+            <Metric value={product.produit?.visites_dossier_express ?? '—'} label="visites Dossier Express" testid="ps-visits" />
+            <Metric value={product.produit?.paiements ?? 0} label="paiements" testid="ps-paid" />
+            <Metric value={product.produit?.conversion_visite_achat_pct != null ? `${product.produit.conversion_visite_achat_pct} %` : '—'} label="conversion visite → achat" testid="ps-conversion" />
+            <Metric value={product.produit?.abandons_apres_paiement ?? 0} label="abandons après paiement" testid="ps-abandons" />
+            <Metric value={product.produit?.dossiers_completes ?? 0} label="rapports livrés" testid="ps-completed" />
+            <Metric value={product.produit?.delai_moyen_analyse_s != null ? `${Math.round(product.produit.delai_moyen_analyse_s / 60)} min` : '—'} label="délai moyen d'analyse" testid="ps-delay" />
+            <Metric value={product.business?.cout_ia_estime_par_dossier_eur != null ? `~${product.business.cout_ia_estime_par_dossier_eur} €` : '—'} label="coût IA estimé / dossier" testid="ps-cost" />
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-2">{product.business?.note}</p>
+        </div>
+      )}
 
       <Card className="border-dashed">
         <CardContent className="p-4 flex items-start gap-3">

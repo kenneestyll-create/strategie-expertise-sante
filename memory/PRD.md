@@ -538,3 +538,10 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - BUG TROUVÉ+CORRIGÉ (preview): /api/admin/dossier-express/{id}/preview-pdf régénérait le PDF SANS quality_summary/citation_stats → params ajoutés (routes/admin.py). Le PDF CLIENT prod les contient (même code que étalon). À inclure au prochain déploiement
 - PHASE 3: scheduler _report_feedback_scheduler (server.py, horaire): email J+3 après completed_at, exclut admin_test, marque feedback_email_sent, collection report_feedbacks. Testé réel (sink delivered@resend.dev): 1/1 envoyé. EN PREVIEW — nécessite redéploiement pour être actif en prod
 - PHASE 2 (observation) active via onglet admin Qualité. PHASE 4: seuil 10-20 dossiers réels avant Lot 2. Reportés inchangés
+
+## 2026-08-05 — Point de monitoring post-Lot 1 (phase observation)
+- Monitoring factuel effectué : 0 dossier client réel (15/15 admin_test), 224 tracking_events (dossier-express : uniquement events de test HeadlessChrome), 70 extractions qualité (score moyen 84, 7.2% pages illisibles), citations 7/7 vérifiées.
+- Vérification tracking + dashboard : POST /api/tracking/event OK (persisté), /admin/quality-stats et /admin/product-stats cohérents avec la DB, onglet Qualité UI affiche les mêmes valeurs. Aucune régression.
+- Rappel : chiffres = base PREVIEW. Suivi réel à faire sur le dashboard PRODUCTION.
+- Statut : Lot 1 clos. Observation en cours (attente 10-20 dossiers réels). SEO gelé jusqu'à J+28.
+- Prochaine étape planifiée : Cluster RSDAE (attente export GSC filtré "rsdae" fourni par l'utilisateur).

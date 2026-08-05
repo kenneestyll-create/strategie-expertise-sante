@@ -74,6 +74,41 @@ async def get_quality_stats(admin: dict = Depends(get_current_admin)):
     return stats
 
 
+@router.get("/admin/product-stats")
+async def get_product_stats(admin: dict = Depends(get_current_admin)):
+    """LOT 1 — Indicateurs produit & business (phase d'observation). Anonymisé."""
+    out = {"produit": {}, "business": {}}
+
+    visits = await db.tracking_events.count_documents({"page": {"$regex": "dossier-express"}})
+    paid = await db.payment_transactions.count_documents({"payment_status": "paid", "package_id": {"$regex": "dossier", "$options": "i"}})
+    if not paid:
+        paid = await db.payment_transactions.count_documents({"payment_status": "paid"})
+    real_dossiers = {"admin_test": {"$ne": True}, "email": {"$ne": "admin@test"}}
+    submitted = await db.dossier_express.count_documents(real_dossiers)
+    completed = await db.dossier_express.count_documents({**real_dossiers, "status": "completed"})
+
+    agg = await db.dossier_express.aggregate([
+        {"$match": {**real_dossiers, "status": "completed", "timings.total": {"$gt": 0}}},
+        {"$group": {"_id": None, "avg_total_s": {"$avg": "$timings.total"}, "avg_llm_s": {"$avg": "$timings.llm_generation"}, "n": {"$sum": 1}}},
+    ]).to_list(1)
+
+    out["produit"] = {
+        "visites_dossier_express": visits,
+        "paiements": paid,
+        "conversion_visite_achat_pct": round(paid / visits * 100, 2) if visits else None,
+        "abandons_apres_paiement": max(paid - submitted, 0),
+        "dossiers_soumis": submitted,
+        "dossiers_completes": completed,
+        "delai_moyen_analyse_s": round(agg[0]["avg_total_s"], 1) if agg else None,
+    }
+    out["business"] = {
+        "dossiers_vendus": paid,
+        "cout_ia_estime_par_dossier_eur": 0.25,
+        "note": "Coût IA estimé (OCR+analyse) ; temps support et questions récurrentes : suivi manuel via boîte contact",
+    }
+    return out
+
+
 # ==================== GESTION MOT DE PASSE & COMPTES ADMIN ====================
 
 @router.put("/admin/change-password")

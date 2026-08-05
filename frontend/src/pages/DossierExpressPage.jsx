@@ -215,6 +215,11 @@ const dossierFaqData = [
 const DossierExpressFAQ = () => {
   const [openIndex, setOpenIndex] = useState(null);
 
+  // Tracking anonyme de visite (indicateur conversion visite → achat, phase d'observation)
+  useEffect(() => {
+    axios.post(`${API}/tracking/event`, { page: 'dossier-express', action: 'page_view' }).catch(() => {});
+  }, []);
+
   useEffect(() => {
     document.querySelectorAll('script[type="application/ld+json"]').forEach(s => {
       try { if (JSON.parse(s.textContent)['@type'] === 'FAQPage') s.remove(); } catch {}
