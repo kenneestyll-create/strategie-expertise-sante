@@ -25,6 +25,55 @@ router = APIRouter()
 
 
 
+@router.get("/admin/quality-stats")
+async def get_quality_stats(admin: dict = Depends(get_current_admin)):
+    """LOT 1 — Statistiques techniques anonymisées de la chaîne documentaire (aucune donnée personnelle/médicale)."""
+    stats = {"extractions": {}, "choices": {}, "citations": {}}
+
+    pipeline = [{"$group": {
+        "_id": None,
+        "count": {"$sum": 1},
+        "avg_pages": {"$avg": "$pages_total"},
+        "avg_score": {"$avg": "$confidence_score"},
+        "total_pages": {"$sum": "$pages_total"},
+        "total_unusable": {"$sum": "$pages_unusable"},
+        "total_partial": {"$sum": "$pages_partial"},
+        "degraded_docs": {"$sum": {"$cond": [{"$gt": [{"$add": ["$pages_unusable", "$pages_partial"]}, 0]}, 1, 0]}},
+    }}]
+    agg = await db.docchain_stats.aggregate(pipeline).to_list(1)
+    if agg:
+        a = agg[0]
+        stats["extractions"] = {
+            "total": a["count"],
+            "avg_pages": round(a["avg_pages"] or 0, 1),
+            "avg_confidence_score": round(a["avg_score"] or 0, 1),
+            "degraded_rate_pct": round(a["degraded_docs"] / a["count"] * 100, 1) if a["count"] else 0,
+            "unusable_pages_rate_pct": round(a["total_unusable"] / a["total_pages"] * 100, 1) if a["total_pages"] else 0,
+            "partial_pages_rate_pct": round(a["total_partial"] / a["total_pages"] * 100, 1) if a["total_pages"] else 0,
+        }
+    levels = await db.docchain_stats.aggregate([{"$group": {"_id": "$confidence_level", "n": {"$sum": 1}}}]).to_list(10)
+    stats["extractions"]["levels"] = {(l["_id"] or "?"): l["n"] for l in levels}
+
+    choices = await db.dossier_express.aggregate([{"$group": {"_id": "$quality_choice", "n": {"$sum": 1}}}]).to_list(10)
+    stats["choices"] = {(c["_id"] or "not_available"): c["n"] for c in choices}
+
+    cit = await db.dossier_express.aggregate([
+        {"$match": {"citation_stats.total": {"$gt": 0}}},
+        {"$group": {"_id": None, "dossiers": {"$sum": 1},
+                    "total": {"$sum": "$citation_stats.total"},
+                    "verified": {"$sum": "$citation_stats.verified"}}},
+    ]).to_list(1)
+    if cit:
+        c = cit[0]
+        stats["citations"] = {
+            "dossiers_with_citations": c["dossiers"],
+            "total": c["total"],
+            "verified": c["verified"],
+            "verified_rate_pct": round(c["verified"] / c["total"] * 100, 1) if c["total"] else 0,
+        }
+    return stats
+
+
 # ==================== GESTION MOT DE PASSE & COMPTES ADMIN ====================
 
 @router.put("/admin/change-password")

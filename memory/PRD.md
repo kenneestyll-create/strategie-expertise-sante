@@ -525,3 +525,10 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - Test étalon RÉEL bout en bout (dossier 210988c0-f21): 7/7 citations vérifiées, tableau complet dans PDF, analyse intacte. Corpus: 8/8 FP=0 FN=0
 - Étape 5 respectée: badge landing, marketing, Mistral, jurisprudence, comparatif, stats reportés
 - JALON: validation finale utilisateur avant tout déploiement production. Aucune page SEO/tunnel modifiée
+
+## 2026-08-05 — CLÔTURE LOT 1 (ordre de mission 5 phases)
+- P1: DOCUMENTATION_LOT1_2026-08-05.md (architecture, schémas, score v1.1, pondération, limites, validateur, erreurs, tests, corpus)
+- P2: Dashboard admin onglet Qualité (GET /api/admin/quality-stats + QualityStatsPanel.jsx, 7 indicateurs anonymisés) — testé visuellement OK. NB: incident édition AdminDashboard.jsx (duplication queue de fichier) détecté et corrigé
+- P3: pré-déploiement OK — tunnel testé (agent + étalon réel), SEO 3 pages gelées intactes (title/H1/canonical/schemas vérifiés), build OK, temps génération inchangé (validateur <1s). Sauvegarde = checkpoints plateforme/rollback
+- P5: ARCHITECTURE_LOT2_FICHE_STRUCTUREE_2026-08-05.md (schéma Contrat B, principes, découpage L2-1/2/3) — SANS développement
+- EN ATTENTE UTILISATEUR: clic Deploy pour mise en production du Lot 1, puis PHASE 4 (collecte données réelles)

@@ -73,6 +73,7 @@ import { TarifsEditor, ChiffresClesEditor } from '@/components/ConfigEditors';
 import axios from 'axios';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { BarChart3, BellRing, Download, FlaskConical, PenTool, FileSearch, QrCode, Globe, BadgeCheck, Tag, ShieldCheck, Sparkles, Crown, Lock } from 'lucide-react';
+import { QualityStatsPanel } from '@/components/admin/QualityStatsPanel';
 import KitProfessionnelTab from '@/components/admin/KitProfessionnelTab';
 import { EmailTemplateEditor } from '@/components/EmailTemplateEditor';
 import { AdminConseilsStrate } from '@/components/AdminConseilsStrate';
@@ -1182,6 +1183,7 @@ export const AdminDashboard = () => {
               </optgroup>
               <optgroup label="Suivi">
                 <option value="analytics">Analytique</option>
+                <option value="qualite">Qualité</option>
                 <option value="documents">Documents</option>
                 <option value="conseils-strate">Strate</option>
               </optgroup>
@@ -1261,6 +1263,10 @@ export const AdminDashboard = () => {
               <TabsTrigger value="analytics" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-analytics">
                 <BarChart3 className="w-3.5 h-3.5 text-emerald-600" />
                 Analytique
+              </TabsTrigger>
+              <TabsTrigger value="qualite" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-qualite">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                Qualité
               </TabsTrigger>
               <TabsTrigger value="documents" className="gap-1.5 text-xs whitespace-nowrap px-3 py-2 rounded-lg data-[state=active]:bg-foreground data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all" data-testid="tab-admin-documents">
                 <FileText className="w-3.5 h-3.5 text-teal-600" />
@@ -3175,6 +3181,10 @@ export const AdminDashboard = () => {
           </TabsContent>
 
           {/* Analytics Tab */}
+          <TabsContent value="qualite" className="space-y-6" data-testid="qualite-tab-content">
+            <QualityStatsPanel token={token} />
+          </TabsContent>
+
           <TabsContent value="analytics" className="space-y-6" data-testid="analytics-tab-content">
             {/* Sub-tabs: Analytique / Comptabilité */}
             <div className="flex gap-2 border-b" data-testid="analytics-subtabs">
@@ -5035,3 +5045,4 @@ export const AdminDashboard = () => {
     </div>
   );
 };
+
