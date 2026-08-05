@@ -16,12 +16,21 @@ Garanties zéro régression :
 import re
 from config import logger
 
-FORMULA_VERSION = "1.0"
+FORMULA_VERSION = "1.1"
 
 # Seuils v1 (calibrage prévu après 50-100 dossiers réels — cf. étude d'architecture)
 CHARS_OK = 150          # page considérée exploitable
 CHARS_MIN = 20          # en-dessous : inexploitable
 LETTER_RATIO_MIN = 0.5  # ratio de caractères alphanumériques minimal (bruit OCR)
+
+# v1.1 — Pondération par importance de pièce (déterministe, mots-clés, aucun appel LLM)
+ESSENTIAL_WEIGHT = 1.5
+_ESSENTIAL_KEYWORDS = (
+    "expertise", "conclusions de l'expert",
+    "taux d'incapacité", "taux d'ipp", "taux ipp", "consolidation",
+    "notification", "décision", "decision", "cdaph", "cpam", "caisse primaire",
+    "contrat d'assurance", "conditions générales", "avenant", "tableau des garanties",
+)
 
 LEVELS = [(97, "Excellent"), (90, "Élevé"), (75, "Bon"), (50, "Moyen"), (0, "Faible")]
 
@@ -68,6 +77,13 @@ def _classify_block(block: str) -> tuple:
     return "partial", chars, illisible
 
 
+def _doc_weight(name: str, text: str) -> float:
+    """Poids déterministe : 1.5 si la pièce paraît essentielle (expertise, notification,
+    décision, contrat), 1.0 sinon. Basé sur le nom de fichier + le début du texte extrait."""
+    probe = f"{name} {text[:3000]}".lower().replace("_", " ").replace("-", " ")
+    return ESSENTIAL_WEIGHT if any(k in probe for k in _ESSENTIAL_KEYWORDS) else 1.0
+
+
 def _score_to_level(score: float) -> str:
     for threshold, label in LEVELS:
         if score >= threshold:
@@ -87,6 +103,7 @@ def build_quality_report(results: list) -> dict:
         status = r.get("status", "")
         text = r.get("text", "") or ""
         blocks = _split_pages(text)
+        weight = _doc_weight(name, text)
 
         doc_pages = []
         if declared_pages and blocks:
@@ -109,11 +126,13 @@ def build_quality_report(results: list) -> dict:
                 doc_pages.append({"page": p, "exploitability": fallback, "chars": len(text) // n, "illisible_marks": 0})
 
         for pr in doc_pages:
-            pages_records.append({"doc_index": doc_index, "doc_name": name, "weight": 1.0, **pr})
+            pages_records.append({"doc_index": doc_index, "doc_name": name, "weight": weight, **pr})
 
         per_document.append({
             "name": name,
             "status": status,
+            "weight": weight,
+            "essential": weight > 1.0,
             "pages_total": len(doc_pages),
             "pages_ok": sum(1 for p in doc_pages if p["exploitability"] == "ok"),
             "pages_partial": sum(1 for p in doc_pages if p["exploitability"] == "partial"),
@@ -127,10 +146,22 @@ def build_quality_report(results: list) -> dict:
     pages_partial = sum(1 for p in pages_records if p["exploitability"] == "partial")
     pages_unusable = pages_total - pages_ok - pages_partial
 
-    if pages_total:
-        score = round((pages_ok * 1.0 + pages_partial * 0.5) / pages_total * 100, 1)
+    # v1.1 — Score pondéré par importance de pièce
+    _VALUE = {"ok": 1.0, "partial": 0.5, "unusable": 0.0}
+    weight_sum = sum(p["weight"] for p in pages_records)
+    if weight_sum:
+        score = round(sum(p["weight"] * _VALUE[p["exploitability"]] for p in pages_records) / weight_sum * 100, 1)
     else:
         score = 0.0
+    level = _score_to_level(score)
+
+    # v1.1 — Alertes pièces essentielles dégradées + plafonnement anti-score-artificiel
+    alerts = []
+    for d in per_document:
+        if d["essential"] and d["pages_unusable"] > 0:
+            alerts.append({"type": "essential_degraded", "doc": d["name"], "unusable_pages": d["unusable_pages"]})
+            if d["pages_unusable"] > d["pages_total"] * 0.5 and level in ("Excellent", "Élevé", "Bon"):
+                level = "Moyen"  # une pièce essentielle majoritairement illisible plafonne le niveau
 
     return {
         "formula_version": FORMULA_VERSION,
@@ -140,7 +171,8 @@ def build_quality_report(results: list) -> dict:
         "pages_partial": pages_partial,
         "pages_unusable": pages_unusable,
         "confidence_score": score,
-        "confidence_level": _score_to_level(score),
+        "confidence_level": level,
+        "alerts": alerts,
         "per_document": per_document,
         "pages": pages_records,
     }
@@ -157,5 +189,6 @@ def stats_record(quality_report: dict) -> dict:
         "pages_unusable": quality_report.get("pages_unusable"),
         "confidence_score": quality_report.get("confidence_score"),
         "confidence_level": quality_report.get("confidence_level"),
+        "alerts_count": len(quality_report.get("alerts", [])),
         "statuses": [d.get("status") for d in quality_report.get("per_document", [])],
     }

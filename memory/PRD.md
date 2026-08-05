@@ -499,3 +499,11 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - JALON: validation utilisateur Phase A requise AVANT Phase B (écran client). Phases: B écran A/B (3 chemins entrée Stripe/admin/VIP), C enrichissement rapport (tableau+P4+validateur citations), D pièces manquantes
 - Exigences utilisateur: jamais de régression, validation entre phases, tests 5 profils avant chaque validation, mesures réelles, doc complète fin de lot
 - RAPPEL GEL: /dossier-express (page), /expertise-medicale, /expertise-medicale/assureur + schemas gelés jusqu au J+28 (01/09)
+
+## 2026-08-05 — ÉTAPE SÉCURISATION PRÉ-PHASE B LIVRÉE
+- Corpus permanent: /app/backend/tests/corpus/ (16 PDF: R1-R5 référence + D1-D8 dégradés) + runner non-régression tests/run_corpus.py (attentes humaines codées) + tests/load_test.py
+- Résultats corpus v1.1: 13/13 niveaux conformes, FP=0, FN=0, 0 échec. Limites documentées: flou/rotation lus par Gemini = OK correct (exploitabilité), ordre pages non détectable (Lot 2), pièces manquantes = SF5
+- Score v1.1: pondération pièces essentielles (mots-clés, poids 1.5) + alerte essential_degraded + plafonnement niveau. Bug normalisation underscores corrigé. Démo anti-score-artificiel: 83.3 Bon -> 76.9 Moyen + alerte
+- Charge: 6 extractions simultanées 6/6 OK, mémoire stable, backend RUNNING
+- Proposition UX Phase B: /app/memory/UX_PHASE_B_ECRAN_QUALITE_2026-08-05.md (recommandation = version intermédiaire client + avancée dans rapport/admin)
+- JALON: validation utilisateur (corpus + score + stabilité + UX) requise avant développement Phase B
