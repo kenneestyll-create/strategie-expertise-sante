@@ -492,6 +492,8 @@ STRUCTURE EXACTE À RESPECTER (utilise ces titres markdown exacts) :
 ### 4. ÉLÉMENTS CLÉS IDENTIFIÉS
 (Extraction intelligente des éléments significatifs trouvés dans les pièces. Chaque élément doit être lié à la pièce source quand c'est possible.)
 
+RÈGLE DE CITATION (traçabilité) : lorsque tu cites un passage d'une pièce fournie, reproduis-le STRICTEMENT à l'identique (mot pour mot) entre guillemets français « … », suivi de la référence (nom de la pièce, page si connue). N'utilise JAMAIS les guillemets « … » pour reformuler ou paraphraser : toute citation entre « … » doit exister telle quelle dans les documents. Ces citations sont vérifiées automatiquement contre les pièces.
+
 ### 5. DROITS ET INDEMNISATIONS IDENTIFIÉS
 (Liste exhaustive des droits potentiels, incluant l'incidence professionnelle et la PGPF si applicable. Cite les textes de référence.)
 

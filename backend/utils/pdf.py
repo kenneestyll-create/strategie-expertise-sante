@@ -109,6 +109,9 @@ def generate_secured_pdf(
     report_number: str = "",
     relecture_expert: bool = False,
     document_details: list = None,
+    quality_summary: dict = None,
+    quality_choice: str = "",
+    citation_stats: dict = None,
 ) -> bytes:
     from fpdf import FPDF
 
@@ -325,7 +328,98 @@ def generate_secured_pdf(
     # ══════════════════════════════════════════════════════════════
     # Dossier Express: Document Summary Compact
     # ══════════════════════════════════════════════════════════════
-    if is_dossier_express and document_details:
+    # ══════════════════════════════════════════════════════════════
+    # Dossier Express — LOT 1 PHASE C1 : Tableau documentaire (quality_summary)
+    # Remplace le bloc compact quand le contrôle qualité est disponible.
+    # ══════════════════════════════════════════════════════════════
+    if is_dossier_express and quality_summary:
+        try:
+            qs = quality_summary
+            problem_docs = [
+                d for d in (qs.get("per_document") or [])
+                if (d.get("partial_pages") or d.get("unusable_pages"))
+            ]
+            dy = pdf.get_y()
+            pdf.set_fill_color(*_DE_BG)
+            pdf.set_draw_color(*_DE_ACCENT)
+
+            pdf.set_xy(LM, dy)
+            pdf.set_font("LibSans", "B", 7)
+            pdf.set_text_color(*_DE_ACCENT)
+            pdf.cell(CW, 4, "ANALYSE DOCUMENTAIRE — CONTRÔLE QUALITÉ")
+            pdf.ln(5)
+
+            col_w = (CW - 12) / 4
+            metrics = [
+                (str(qs.get("files", "-")), "documents reçus"),
+                (str(qs.get("pages_total", "-")), "pages analysées"),
+                (str(qs.get("pages_ok", "-")), "pages exploitables"),
+                (_safe(qs.get("confidence_level", "-")), "qualité documentaire"),
+            ]
+            my = pdf.get_y()
+            pdf.rect(LM, my, CW, 12, "F")
+            pdf.set_fill_color(*_DE_ACCENT)
+            pdf.rect(LM, my, 2, 12, "F")
+            for i, (val, label) in enumerate(metrics):
+                cx = LM + 4 + col_w * i
+                pdf.set_xy(cx, my + 2.5)
+                pdf.set_font("LibSans", "B", 9)
+                pdf.set_text_color(*_DARK_TEXT)
+                pdf.cell(col_w, 4, _safe(val), align="C")
+                pdf.set_xy(cx, my + 7)
+                pdf.set_font("LibSans", "", 5.5)
+                pdf.set_text_color(*_MUTED)
+                pdf.cell(col_w, 2.5, _safe(label), align="C")
+            pdf.set_xy(LM, my + 14)
+
+            if qs.get("pages_partial"):
+                pdf.set_font("LibSans", "", 7)
+                pdf.set_text_color(*_MUTED)
+                pdf.cell(CW, 3.5, _safe(f"Dont {qs['pages_partial']} page(s) partiellement exploitable(s)."))
+                pdf.ln(4.5)
+
+            if problem_docs:
+                essential_hit = any(a.get("type") == "essential_degraded" for a in (qs.get("alerts") or []))
+                pdf.set_font("LibSans", "B", 7.5)
+                pdf.set_text_color(*_DARK_TEXT)
+                pdf.cell(CW, 4, "Points d'attention :")
+                pdf.ln(4.5)
+                pdf.set_font("LibSans", "", 7)
+                pdf.set_text_color(*_BODY_TEXT)
+                for d in problem_docs[:8]:
+                    pages_pb = sorted((d.get("unusable_pages") or []) + (d.get("partial_pages") or []))
+                    pages_str = ", ".join(str(p) for p in pages_pb)
+                    pdf.set_x(LM + 3)
+                    pdf.multi_cell(CW - 6, 3.5, _safe(f"• {d.get('name', 'Document')} — page(s) {pages_str} : qualité insuffisante"))
+                pdf.ln(1)
+                pdf.set_x(LM + 3)
+                pdf.set_font("LibSans", "I", 7)
+                pdf.set_text_color(*_MUTED)
+                if essential_hit:
+                    impact_line = ("Impact potentiel : les pages concernées appartiennent à une pièce essentielle du dossier ; "
+                                   "certaines informations issues de ces pages pourraient nécessiter confirmation et modifier certaines conclusions.")
+                else:
+                    impact_line = ("Les limitations constatées portent sur des pièces secondaires et n'ont probablement pas "
+                                   "d'impact sur les conclusions principales.")
+                pdf.multi_cell(CW - 6, 3.5, _safe(impact_line))
+                if quality_choice == "continue_degraded":
+                    pdf.set_x(LM + 3)
+                    pdf.multi_cell(CW - 6, 3.5, _safe("Le demandeur a choisi de poursuivre l'analyse en connaissance de ces limites."))
+            total_p = qs.get("pages_total", 0)
+            pdf.set_x(LM + 3)
+            pdf.set_font("LibSans", "", 7)
+            pdf.set_text_color(*_MUTED)
+            pdf.multi_cell(CW - 6, 3.5, _safe(f"Cette analyse repose sur {qs.get('pages_ok', total_p)} page(s) exploitable(s) sur {total_p} fournie(s)."))
+            if citation_stats and citation_stats.get("total"):
+                pdf.set_x(LM + 3)
+                pdf.multi_cell(CW - 6, 3.5, _safe(
+                    f"Traçabilité des sources : {citation_stats.get('verified', 0)} citation(s) documentaire(s) "
+                    f"vérifiée(s) sur {citation_stats['total']} contre les pièces fournies."))
+            pdf.ln(6)
+        except Exception:
+            pass  # jamais bloquant : le rapport est livré même si le tableau échoue
+
+    elif is_dossier_express and document_details:
         total_docs = len(document_details)
         total_pages = sum(d.get("pages", 0) for d in document_details)
         statuses = [d.get("status", "") for d in document_details]
@@ -865,7 +959,7 @@ def generate_secured_pdf(
     return bytes(pdf.output())
 
 
-def generate_dossier_pdf(name, email, type_dossier, regime, analysis, premium_pdf=False, document_details=None):
+def generate_dossier_pdf(name, email, type_dossier, regime, analysis, premium_pdf=False, document_details=None, quality_summary=None, quality_choice="", citation_stats=None):
     return generate_secured_pdf(
         analysis=analysis,
         report_type="Dossier Express IA",
@@ -875,4 +969,7 @@ def generate_dossier_pdf(name, email, type_dossier, regime, analysis, premium_pd
         regime=regime,
         with_watermark=not premium_pdf,
         document_details=document_details,
+        quality_summary=quality_summary,
+        quality_choice=quality_choice,
+        citation_stats=citation_stats,
     )

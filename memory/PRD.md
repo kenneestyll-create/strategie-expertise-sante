@@ -516,3 +516,12 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - Reportés sur ordre utilisateur: Mistral OCR, fraude documentaire, comparatif dossiers, stats réussite, jurisprudence auto, métriques commerciales simulées
 - JALON: validation utilisateur Phase B en preview -> ensuite GO Phase C (C1 tableau -> C2 mentions -> C3 validateur citations)
 - RAPPEL GEL SEO: /dossier-express (landing intacte), /expertise-medicale, /expertise-medicale/assureur jusqu au 01/09
+
+## 2026-08-05 — PHASE C COMPLÈTE (C1+C3+C2) EN PREVIEW — ordre de mission exécuté
+- Étape 1: validation manuelle Phase B OK (cas 1 zéro friction, cas 2 gate/remplacer/continuer visuellement vérifiés)
+- C1: tableau documentaire page 1 du PDF (pdf.py, quality_summary+quality_choice via generate_dossier_pdf) — rétrocompatible (fallback bloc compact)
+- C3: utils/citation_check.py (validateur « » vs documents_text normalisé, localisation doc+page, annotation [référence non vérifiée]) + règle citation verbatim dans prompts.py §4 + intégration pipeline (_process_dossier_express) + citation_stats en DB + log [CITATION-CHECK]
+- C2: mentions impact graduées (pièce essentielle vs secondaire) + « Cette analyse repose sur X/Y » + ligne traçabilité citations dans tableau C1. Jamais de pourcentage de fiabilité
+- Test étalon RÉEL bout en bout (dossier 210988c0-f21): 7/7 citations vérifiées, tableau complet dans PDF, analyse intacte. Corpus: 8/8 FP=0 FN=0
+- Étape 5 respectée: badge landing, marketing, Mistral, jurisprudence, comparatif, stats reportés
+- JALON: validation finale utilisateur avant tout déploiement production. Aucune page SEO/tunnel modifiée

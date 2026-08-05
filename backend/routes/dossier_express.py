@@ -654,6 +654,24 @@ CONTENU DES DOCUMENTS FOURNIS :
 
     timings["llm_generation"] = round(time.monotonic() - t_llm, 2)
 
+    # === LOT 1 PHASE C3 — Validateur de citations (jamais bloquant) ===
+    citation_stats = None
+    if analysis:
+        try:
+            from utils.citation_check import verify_citations
+            analysis, citation_stats = verify_citations(analysis, documents_text)
+            if citation_stats["total"]:
+                logger.info(
+                    f"[CITATION-CHECK][{dossier_id}] total={citation_stats['total']} "
+                    f"verified={citation_stats['verified']} unverified={citation_stats['unverified']}"
+                )
+                await db.dossier_express.update_one({"id": dossier_id}, {"$set": {"citation_stats": {
+                    "total": citation_stats["total"], "verified": citation_stats["verified"],
+                    "unverified": citation_stats["unverified"],
+                }}})
+        except Exception as cc_err:
+            logger.warning(f"[CITATION-CHECK][{dossier_id}] non-blocking failure: {cc_err}")
+
     if not analysis:
         error_label = "Echec generation IA"
         if "budget" in last_error.lower() or "exceeded" in last_error.lower():
@@ -711,12 +729,15 @@ CONTENU DES DOCUMENTS FOURNIS :
     t_pdf = time.monotonic()
     await _update_dossier_step(dossier_id, "pdf_en_cours", "en_attente_traitement", {"progress_step": "generating", "analysis": analysis[:30000]})
 
-    dossier_doc = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0, "document_details": 1})
+    dossier_doc = await db.dossier_express.find_one({"id": dossier_id}, {"_id": 0, "document_details": 1, "quality_summary": 1, "quality_choice": 1, "citation_stats": 1})
     doc_details = dossier_doc.get("document_details", []) if dossier_doc else []
+    quality_summary = dossier_doc.get("quality_summary") if dossier_doc else None
+    quality_choice = dossier_doc.get("quality_choice", "") if dossier_doc else ""
+    db_citation_stats = dossier_doc.get("citation_stats") if dossier_doc else None
 
     pdf_bytes = None
     try:
-        pdf_bytes = generate_dossier_pdf(name, email, type_dossier, regime, analysis, premium_pdf=premium_pdf, document_details=doc_details)
+        pdf_bytes = generate_dossier_pdf(name, email, type_dossier, regime, analysis, premium_pdf=premium_pdf, document_details=doc_details, quality_summary=quality_summary, quality_choice=quality_choice, citation_stats=db_citation_stats)
         if not pdf_bytes or len(pdf_bytes) < 100:
             raise ValueError("PDF vide ou corrompu")
         logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] PDF genere ({len(pdf_bytes)} bytes)")
