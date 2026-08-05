@@ -37,6 +37,13 @@ _PREVIEW_ALLOWLIST = {
 }
 
 
+TEST_EMAIL_REGEX = _TEST_PATTERNS.pattern
+
+
+def is_test_address(email: str) -> bool:
+    return bool(_TEST_PATTERNS.search((email or "").strip().lower()))
+
+
 def is_blocked(email: str) -> bool:
     e = (email or "").strip().lower()
     if not e:

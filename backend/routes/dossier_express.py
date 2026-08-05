@@ -1315,6 +1315,62 @@ async def dossier_express_admin_bypass(request: Request):
     return {"dossier_id": dossier_id, "status": "processing", "admin_test": True}
 
 
+async def _send_real_dossier_alert(dossier_id: str, created_at: str, quality_choice: str, quality_summary: dict | None):
+    """Alerte interne : un client réel vient de lancer une analyse (aucune donnée sensible)."""
+    try:
+        from config import RESEND_AVAILABLE, SENDER_EMAIL, NOTIFICATION_EMAIL
+        from utils.email_guard import IS_PREVIEW, TEST_EMAIL_REGEX
+        if not (RESEND_AVAILABLE and os.environ.get("RESEND_API_KEY") and NOTIFICATION_EMAIL):
+            logger.info(f"[REAL-DOSSIER-ALERT][{dossier_id}] Resend non configuré — alerte non envoyée")
+            return
+        rank = await db.dossier_express.count_documents({
+            "admin_test": {"$ne": True},
+            "email": {"$not": {"$regex": TEST_EMAIL_REGEX, "$options": "i"}},
+        })
+        qs = quality_summary or {}
+        quality_rows = ""
+        if qs:
+            quality_rows = f"""
+            <tr><td style="padding:10px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Score qualité documentaire</td>
+                <td style="padding:10px 16px;font-size:15px;font-weight:700;text-align:right;border-bottom:1px solid #f0ebe0;">{qs.get('confidence_score', '—')} / 100 ({qs.get('confidence_level', '—')})</td></tr>
+            <tr><td style="padding:10px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Pages analysées / illisibles</td>
+                <td style="padding:10px 16px;font-size:15px;font-weight:700;text-align:right;border-bottom:1px solid #f0ebe0;">{qs.get('pages_total', '—')} / {qs.get('pages_unusable', 0)}</td></tr>"""
+        choice_label = {"continue_degraded": "A continué malgré l'alerte qualité", "replaced": "A remplacé des pages", "not_available": "Aucune alerte qualité"}.get(quality_choice, quality_choice or "—")
+        date_str = created_at[:16].replace("T", " à ")
+        env_tag = "[PREVIEW] " if IS_PREVIEW else ""
+        html = f"""
+        <html><body style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#f5f0e8;">
+        <div style="background:#0a0a08;padding:24px;text-align:center;">
+            <h1 style="margin:0;color:#C9A84C;font-size:18px;">Dossier Express — Client réel n°{rank}</h1>
+            <p style="margin:6px 0 0;color:#999;font-size:11px;text-transform:uppercase;letter-spacing:0.15em;">Alerte observation Lot 1</p>
+        </div>
+        <div style="background:#fff;border:1px solid #e5e0d6;">
+        <table style="width:100%;border-collapse:collapse;">
+            <tr><td style="padding:10px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Date (UTC)</td>
+                <td style="padding:10px 16px;font-size:15px;font-weight:700;text-align:right;border-bottom:1px solid #f0ebe0;">{date_str}</td></tr>
+            <tr><td style="padding:10px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Référence dossier</td>
+                <td style="padding:10px 16px;font-size:15px;font-weight:700;text-align:right;border-bottom:1px solid #f0ebe0;">{dossier_id}</td></tr>
+            <tr><td style="padding:10px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Statut</td>
+                <td style="padding:10px 16px;font-size:15px;font-weight:700;color:#0d9488;text-align:right;border-bottom:1px solid #f0ebe0;">Analyse lancée</td></tr>
+            {quality_rows}
+            <tr><td style="padding:10px 16px;font-size:13px;color:#666;">Choix face aux alertes qualité</td>
+                <td style="padding:10px 16px;font-size:14px;font-weight:600;text-align:right;">{choice_label}</td></tr>
+        </table>
+        <p style="padding:12px 16px;margin:0;font-size:11px;color:#999;border-top:1px solid #f0ebe0;">Aucune donnée personnelle ou médicale incluse. Suivi complet dans l'onglet Dossier Express du dashboard admin.</p>
+        </div>
+        </body></html>"""
+        import resend
+        await asyncio.to_thread(resend.Emails.send, {
+            "from": SENDER_EMAIL,
+            "to": [NOTIFICATION_EMAIL],
+            "subject": f"{env_tag}Dossier Express : client réel n°{rank} — analyse lancée",
+            "html": html,
+        })
+        logger.info(f"[REAL-DOSSIER-ALERT][{dossier_id}] Alerte client réel n°{rank} envoyée à l'admin")
+    except Exception as e:
+        logger.error(f"[REAL-DOSSIER-ALERT][{dossier_id}] Echec envoi alerte: {e}")
+
+
 @router.post("/dossier-express/submit")
 async def dossier_express_submit(request: Request):
     """Client submission after successful Stripe checkout.
@@ -1399,6 +1455,12 @@ async def dossier_express_submit(request: Request):
     ))
 
     logger.info(f"[DOSSIER_EXPRESS][submit][{dossier_id}] Pipeline lance pour {email} ({len(original_documents)} document(s) lie(s), session={session_id})")
+
+    # Alerte interne "client réel" (exclut les adresses de test automatisées)
+    from utils.email_guard import is_test_address
+    if not is_test_address(email):
+        asyncio.create_task(_send_real_dossier_alert(dossier_id, dossier_entry["created_at"], quality_choice, quality_summary))
+
     return {"dossier_id": dossier_id, "status": "processing"}
 
 

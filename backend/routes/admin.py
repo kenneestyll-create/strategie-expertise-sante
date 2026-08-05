@@ -2712,7 +2712,54 @@ async def _generate_weekly_report_data():
     total_clients = await db.client_users.count_documents({})
     conversion_rate = round((total_clients / total_contacts * 100), 1) if total_contacts > 0 else 0
 
+    # --- Observation Dossier Express (clients réels uniquement, 7 jours) ---
+    from utils.email_guard import TEST_EMAIL_REGEX, IS_PREVIEW
+    real_filter = {
+        "admin_test": {"$ne": True},
+        "email": {"$not": {"$regex": TEST_EMAIL_REGEX, "$options": "i"}},
+        "created_at": {"$gte": cutoff},
+    }
+    de_soumis = await db.dossier_express.count_documents(real_filter)
+    de_completes = await db.dossier_express.count_documents({**real_filter, "status": "completed"})
+    de_erreurs = await db.dossier_express.count_documents({**real_filter, "status": "error"})
+    de_taux_termine = round(de_completes / de_soumis * 100, 1) if de_soumis else None
+    de_taux_abandon = round((de_soumis - de_completes) / de_soumis * 100, 1) if de_soumis else None
+
+    de_timing = await db.dossier_express.aggregate([
+        {"$match": {**real_filter, "status": "completed", "timings.total": {"$gt": 0}}},
+        {"$group": {"_id": None, "avg_s": {"$avg": "$timings.total"}}},
+    ]).to_list(1)
+    de_delai_moyen = round(de_timing[0]["avg_s"], 1) if de_timing else None
+
+    de_choix = {}
+    async for c in db.dossier_express.aggregate([
+        {"$match": real_filter},
+        {"$group": {"_id": "$quality_choice", "n": {"$sum": 1}}},
+    ]):
+        de_choix[c["_id"] or "not_available"] = c["n"]
+
+    dq = await db.docchain_stats.aggregate([
+        {"$match": {"created_at": {"$gte": cutoff}}},
+        {"$group": {"_id": None, "avg_score": {"$avg": "$confidence_score"},
+                    "pages_unusable": {"$sum": "$pages_unusable"}, "n": {"$sum": 1}}},
+    ]).to_list(1)
+
+    dossier_express_obs = {
+        "dossiers_reels": de_soumis,
+        "completes": de_completes,
+        "taux_upload_termine_pct": de_taux_termine,
+        "taux_abandon_pct": de_taux_abandon,
+        "delai_moyen_s": de_delai_moyen,
+        "choix_qualite": de_choix,
+        "extractions_7d": dq[0]["n"] if dq else 0,
+        "score_qualite_moyen": round(dq[0]["avg_score"], 1) if dq else None,
+        "pages_illisibles": dq[0]["pages_unusable"] if dq else 0,
+        "incidents": de_erreurs,
+    }
+
     return {
+        "environment": "preview" if IS_PREVIEW else "production",
+        "dossier_express_obs": dossier_express_obs,
         "period": f"{(datetime.now(timezone.utc) - timedelta(days=7)).strftime('%d/%m/%Y')} — {datetime.now(timezone.utc).strftime('%d/%m/%Y')}",
         "contacts_7d": contacts_7d,
         "analyses_7d": analyses_7d,
@@ -2737,6 +2784,51 @@ def _build_weekly_report_html(data: dict) -> str:
         if b > 1024: return f"{b/1024:.1f} Ko"
         return f"{b} o"
 
+    obs = data.get("dossier_express_obs") or {}
+    choice_labels = {"continue_degraded": "Poursuite malgré alerte", "replaced": "Remplacement de pages", "not_available": "Sans alerte qualité"}
+    choix_str = " · ".join(f"{choice_labels.get(k, k)} : {v}" for k, v in obs.get("choix_qualite", {}).items()) or "—"
+    def _pct(v):
+        return f"{v} %" if v is not None else "—"
+    obs_html = f"""
+        <div style="padding:16px 24px 6px;border-top:2px solid #C9A84C;">
+            <p style="margin:0;font-size:12px;color:#C9A84C;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;">Dossier Express — Observation clients réels (7 j)</p>
+        </div>
+        <table style="width:100%;border-collapse:collapse;">
+            <tr style="background:#fafaf8;">
+                <td style="padding:12px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Dossiers réels soumis</td>
+                <td style="padding:12px 16px;font-size:16px;font-weight:700;text-align:right;border-bottom:1px solid #f0ebe0;">{obs.get('dossiers_reels', 0)}</td>
+            </tr>
+            <tr>
+                <td style="padding:12px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Taux upload terminé</td>
+                <td style="padding:12px 16px;font-size:16px;font-weight:700;text-align:right;border-bottom:1px solid #f0ebe0;">{_pct(obs.get('taux_upload_termine_pct'))} ({obs.get('completes', 0)} complété(s))</td>
+            </tr>
+            <tr style="background:#fafaf8;">
+                <td style="padding:12px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Taux d'abandon</td>
+                <td style="padding:12px 16px;font-size:16px;font-weight:700;text-align:right;border-bottom:1px solid #f0ebe0;">{_pct(obs.get('taux_abandon_pct'))}</td>
+            </tr>
+            <tr>
+                <td style="padding:12px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Score qualité documentaire moyen</td>
+                <td style="padding:12px 16px;font-size:16px;font-weight:700;text-align:right;border-bottom:1px solid #f0ebe0;">{obs.get('score_qualite_moyen') if obs.get('score_qualite_moyen') is not None else '—'} / 100 ({obs.get('extractions_7d', 0)} extraction(s))</td>
+            </tr>
+            <tr style="background:#fafaf8;">
+                <td style="padding:12px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Pages illisibles détectées</td>
+                <td style="padding:12px 16px;font-size:16px;font-weight:700;text-align:right;border-bottom:1px solid #f0ebe0;">{obs.get('pages_illisibles', 0)}</td>
+            </tr>
+            <tr>
+                <td style="padding:12px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Choix client face aux alertes</td>
+                <td style="padding:12px 16px;font-size:13px;font-weight:600;text-align:right;border-bottom:1px solid #f0ebe0;">{choix_str}</td>
+            </tr>
+            <tr style="background:#fafaf8;">
+                <td style="padding:12px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Délai moyen génération rapport</td>
+                <td style="padding:12px 16px;font-size:16px;font-weight:700;text-align:right;border-bottom:1px solid #f0ebe0;">{f"{obs.get('delai_moyen_s')} s" if obs.get('delai_moyen_s') is not None else '—'}</td>
+            </tr>
+            <tr>
+                <td style="padding:12px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Incidents (analyses en erreur)</td>
+                <td style="padding:12px 16px;font-size:16px;font-weight:700;color:{'#dc2626' if obs.get('incidents') else '#0d9488'};text-align:right;border-bottom:1px solid #f0ebe0;">{obs.get('incidents', 0)}</td>
+            </tr>
+        </table>
+    """
+
     alert_html = ""
     if data.get("s3_exceeded_thresholds"):
         labels = ", ".join(data["s3_exceeded_thresholds"])
@@ -2750,8 +2842,9 @@ def _build_weekly_report_html(data: dict) -> str:
     </div>
     <div style="background:#FFFFFF;padding:0;border-left:1px solid #e5e0d6;border-right:1px solid #e5e0d6;">
         <div style="padding:20px 24px;border-bottom:1px solid #f0ebe0;">
-            <p style="margin:0;font-size:13px;color:#888;">Période : <strong style="color:#333;">{data['period']}</strong></p>
+            <p style="margin:0;font-size:13px;color:#888;">Période : <strong style="color:#333;">{data['period']}</strong> — Environnement : <strong style="color:#333;">{data.get('environment', 'production')}</strong></p>
         </div>
+        {obs_html}
         <table style="width:100%;border-collapse:collapse;">
             <tr style="background:#fafaf8;">
                 <td style="padding:14px 16px;font-size:13px;color:#666;border-bottom:1px solid #f0ebe0;">Nouveaux contacts</td>

@@ -824,7 +824,10 @@ async def _weekly_report_scheduler():
                 if now.weekday() == target_day and now.hour == target_hour:
                     today_str = now.strftime("%Y-%m-%d")
                     already_sent = await db.weekly_report_history.find_one({"sent_at": {"$regex": f"^{today_str}"}}, {"_id": 0})
-                    if not already_sent:
+                    from utils.email_guard import IS_PREVIEW
+                    if not already_sent and IS_PREVIEW:
+                        logger.info("[WEEKLY_REPORT] Envoi automatique ignoré en preview — suivi hebdomadaire production uniquement")
+                    elif not already_sent:
                         from config import RESEND_AVAILABLE, SENDER_EMAIL, NOTIFICATION_EMAIL
                         if RESEND_AVAILABLE:
                             from routes.admin import _generate_weekly_report_data, _build_weekly_report_html

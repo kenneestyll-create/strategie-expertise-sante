@@ -545,3 +545,11 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - Rappel : chiffres = base PREVIEW. Suivi réel à faire sur le dashboard PRODUCTION.
 - Statut : Lot 1 clos. Observation en cours (attente 10-20 dossiers réels). SEO gelé jusqu'à J+28.
 - Prochaine étape planifiée : Cluster RSDAE (attente export GSC filtré "rsdae" fourni par l'utilisateur).
+
+## 2026-08-05 — Alerte dossier réel + suivi hebdo production (ordre utilisateur)
+1. **Alerte interne "client réel"** : `_send_real_dossier_alert()` dans routes/dossier_express.py, déclenchée sur POST /dossier-express/submit (chemin client réel uniquement — admin-bypass exclu). Filtre les adresses de test (is_test_address dans utils/email_guard.py). Contenu : date, référence dossier, statut, score/niveau qualité, pages illisibles, choix qualité. AUCUNE donnée sensible (ni nom, ni email, ni situation). Sujet préfixé [PREVIEW] hors production. Envoyée à NOTIFICATION_EMAIL. Testée : email réellement dispatché via le guard.
+2. **Rapport hebdo enrichi** : section "Dossier Express — Observation clients réels (7 j)" dans _generate_weekly_report_data/_build_weekly_report_html (routes/admin.py) : dossiers réels, taux upload terminé, taux abandon, score qualité moyen, pages illisibles, choix client, délai moyen, incidents. Tag environnement dans le rapport.
+3. **Production uniquement** : envoi auto du rapport hebdo désactivé en preview (guard IS_PREVIEW dans _weekly_report_scheduler, server.py). Preview manuel admin inchangé.
+- Tests : syntaxe OK, alerte envoyée e2e, HTML validé, endpoints quality-stats/product-stats/weekly-report 200, backend redémarré sans erreur.
+- Interdits toujours actifs : pas de Lot 2, SEO gelé J+28, aucune autre modification produit.
+- RSDAE : en attente export GSC ; livrable = analyse requêtes + plan Hn uniquement (pas de rédaction).
