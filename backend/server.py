@@ -269,6 +269,7 @@ async def startup_db_client():
 
     # Start the guide followup scheduler (checks every hour)
     asyncio.create_task(_guide_followup_scheduler())
+    asyncio.create_task(_report_feedback_scheduler())
 
     # Start the data purge scheduler (runs daily at 3:00 AM)
     asyncio.create_task(_data_purge_scheduler())
@@ -442,6 +443,82 @@ async def _data_purge_scheduler():
 
         except Exception as e:
             logger.error(f"Data purge scheduler error: {e}")
+            await asyncio.sleep(3600)
+
+
+def _build_report_feedback_html(dossier: dict) -> tuple:
+    """LOT 1 PHASE 3 — Email de suivi léger J+3 après livraison du rapport."""
+    name = dossier.get("name", "") or "Bonjour"
+    subject = "Votre rapport Dossier Express IA vous a-t-il été utile ?"
+    html = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #1f2937;">
+      <p>{name},</p>
+      <p>Il y a quelques jours, vous avez reçu votre rapport d'analyse <strong>Dossier Express IA</strong>.
+      Nous aimerions savoir, en quelques mots, ce que vous en avez pensé.</p>
+      <p style="margin-bottom:4px;"><strong>Répondez simplement à cet email</strong> (même brièvement) :</p>
+      <ul style="line-height:1.7; color:#374151;">
+        <li>Le rapport vous a-t-il été utile pour votre démarche ?</li>
+        <li>Le tableau « Analyse documentaire » en début de rapport était-il clair ?</li>
+        <li>Avez-vous rencontré une difficulté (compréhension, documents, téléchargement) ?</li>
+      </ul>
+      <p>Vos retours servent directement à améliorer le service.</p>
+      <p style="color:#6b7280; font-size:13px;">Stratégie &amp; Expertise Santé — vous pouvez répondre directement à cet email.</p>
+    </div>
+    """
+    return subject, html
+
+
+async def _report_feedback_scheduler():
+    """LOT 1 PHASE 3 — Envoie un email de suivi 72h après la livraison d'un rapport Dossier Express.
+    Exclut les dossiers de test admin. Jamais bloquant."""
+    logger.info("Report feedback scheduler started (J+3)")
+    while True:
+        try:
+            from config import RESEND_AVAILABLE, SENDER_EMAIL
+            cutoff = (datetime.now(timezone.utc) - timedelta(hours=72)).isoformat()
+            dossiers = await db.dossier_express.find(
+                {
+                    "status": "completed",
+                    "completed_at": {"$lte": cutoff, "$ne": None},
+                    "feedback_email_sent": {"$ne": True},
+                    "admin_test": {"$ne": True},
+                    "email": {"$nin": [None, "", "admin@test"]},
+                },
+                {"_id": 0, "id": 1, "email": 1, "name": 1},
+            ).to_list(50)
+
+            sent = 0
+            for d in dossiers:
+                try:
+                    email = d.get("email", "")
+                    subject, html = _build_report_feedback_html(d)
+                    if RESEND_AVAILABLE and os.environ.get("RESEND_API_KEY"):
+                        import resend
+                        resend.api_key = os.environ.get("RESEND_API_KEY", "")
+                        await asyncio.to_thread(resend.Emails.send, {
+                            "from": SENDER_EMAIL,
+                            "to": [email],
+                            "subject": subject,
+                            "html": html,
+                        })
+                    await db.report_feedbacks.insert_one({
+                        "id": str(uuid.uuid4()),
+                        "dossier_id": d.get("id"),
+                        "status": "sent",
+                        "sent_at": datetime.now(timezone.utc).isoformat(),
+                    })
+                    await db.dossier_express.update_one(
+                        {"id": d.get("id")},
+                        {"$set": {"feedback_email_sent": True, "feedback_email_sent_at": datetime.now(timezone.utc).isoformat()}},
+                    )
+                    sent += 1
+                except Exception as e:
+                    logger.error(f"Report feedback send error for dossier {d.get('id')}: {e}")
+            if sent:
+                logger.info(f"[REPORT-FEEDBACK] {sent}/{len(dossiers)} emails J+3 envoyés")
+            await asyncio.sleep(3600)
+        except Exception as e:
+            logger.error(f"Report feedback scheduler error: {e}")
             await asyncio.sleep(3600)
 
 

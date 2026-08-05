@@ -861,6 +861,9 @@ async def preview_dossier_express_pdf(dossier_id: str, admin: dict = Depends(get
         analysis=analysis,
         premium_pdf=dossier.get("premium_pdf", False),
         document_details=dossier.get("document_details", []),
+        quality_summary=dossier.get("quality_summary"),
+        quality_choice=dossier.get("quality_choice", ""),
+        citation_stats=dossier.get("citation_stats"),
     )
     safe_name = dossier.get("name", "dossier").replace(" ", "_")[:30]
     return Response(

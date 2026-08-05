@@ -532,3 +532,9 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - P3: pré-déploiement OK — tunnel testé (agent + étalon réel), SEO 3 pages gelées intactes (title/H1/canonical/schemas vérifiés), build OK, temps génération inchangé (validateur <1s). Sauvegarde = checkpoints plateforme/rollback
 - P5: ARCHITECTURE_LOT2_FICHE_STRUCTUREE_2026-08-05.md (schéma Contrat B, principes, découpage L2-1/2/3) — SANS développement
 - EN ATTENTE UTILISATEUR: clic Deploy pour mise en production du Lot 1, puis PHASE 4 (collecte données réelles)
+
+## 2026-08-05 — POST-DÉPLOIEMENT LOT 1 (prod) + PHASE 3 suivi J+3
+- Vérifs PROD OK: tunnel 200 (0.73s), extraction 6.8s avec quality_report (75/Bon, page 4 détectée), analyse+PDF 149s, citations 4/4 vérifiées (quality-stats prod), écran qualité présent dans bundle prod (chunk 3247), SEO gelé intact, stats prod enregistrées
+- BUG TROUVÉ+CORRIGÉ (preview): /api/admin/dossier-express/{id}/preview-pdf régénérait le PDF SANS quality_summary/citation_stats → params ajoutés (routes/admin.py). Le PDF CLIENT prod les contient (même code que étalon). À inclure au prochain déploiement
+- PHASE 3: scheduler _report_feedback_scheduler (server.py, horaire): email J+3 après completed_at, exclut admin_test, marque feedback_email_sent, collection report_feedbacks. Testé réel (sink delivered@resend.dev): 1/1 envoyé. EN PREVIEW — nécessite redéploiement pour être actif en prod
+- PHASE 2 (observation) active via onglet admin Qualité. PHASE 4: seuil 10-20 dossiers réels avant Lot 2. Reportés inchangés
