@@ -507,3 +507,12 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - Charge: 6 extractions simultanées 6/6 OK, mémoire stable, backend RUNNING
 - Proposition UX Phase B: /app/memory/UX_PHASE_B_ECRAN_QUALITE_2026-08-05.md (recommandation = version intermédiaire client + avancée dans rapport/admin)
 - JALON: validation utilisateur (corpus + score + stabilité + UX) requise avant développement Phase B
+
+## 2026-08-05 — PHASE B LIVRÉE + CLÔTURE PHASE A (ordre mission pré-commercialisation)
+- Phase B: écran qualité client (step quality_check, data-testids quality-gate-*), choix Remplacer/Continuer, jamais bloquant, paiement préservé, traçage quality_choice+quality_summary (submit + admin-bypass) + log [QUALITY-CHOICE]
+- pdfExtractor.js retourne qualityReport (6 points de capture). Testing agent iteration_211: 8/8 PASS (backend 3/3, frontend 4/4 + régression landing). Test permanent: tests/test_quality_gate_phase_b.py
+- Non-régression corpus post-Phase B: 8/8 conformes FP=0 FN=0
+- Docs: LIMITES_MODULE_QUALITE_2026-08-05.md (clôture Phase A) + PREPARATION_PHASE_C_2026-08-05.md (étude, NON activée)
+- Reportés sur ordre utilisateur: Mistral OCR, fraude documentaire, comparatif dossiers, stats réussite, jurisprudence auto, métriques commerciales simulées
+- JALON: validation utilisateur Phase B en preview -> ensuite GO Phase C (C1 tableau -> C2 mentions -> C3 validateur citations)
+- RAPPEL GEL SEO: /dossier-express (landing intacte), /expertise-medicale, /expertise-medicale/assureur jusqu au 01/09
