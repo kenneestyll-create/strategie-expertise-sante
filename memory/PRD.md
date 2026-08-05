@@ -490,3 +490,12 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - Workflow: attendre export GSC "rsdae" utilisateur -> analyse -> plan Hn détaillé + maillage exact -> validation -> rédaction
 - Suivi GSC J+28 (2026-09-01) en place: /app/memory/SUIVI_GSC_J28_2026-08-04.md. Pages gelées: /dossier-express, /expertise-medicale, /expertise-medicale/assureur + schemas
 - En attente: SSR (observation), Lot B (après J+28), fille MDPH (après GSC)
+
+## 2026-08-05 — LOT 1 PHASE A LIVRÉE (preview) — GO utilisateur avec exigences qualité
+- Module /app/backend/utils/quality_report.py (SF1+SF2 fusionnés): qualité par page (Contrat A), score confiance 5 niveaux (formula_version 1.0), stats anonymisées docchain_stats
+- Intégration purement additive dans _process_files_payload (clé quality_report) — moteur analyse + prompt extraction INTOUCHÉS, dégradation gracieuse (None si erreur)
+- Tests: 5 profils (parfait/médiocre/dégradé/incomplet/volumineux) 5/5 OK + e2e API prod path OK. Localisation exacte pages dégradées. 0 appel LLM ajouté, +0,00 €/dossier
+- Fichier de test: /app/backend/tests_phase_a.py
+- JALON: validation utilisateur Phase A requise AVANT Phase B (écran client). Phases: B écran A/B (3 chemins entrée Stripe/admin/VIP), C enrichissement rapport (tableau+P4+validateur citations), D pièces manquantes
+- Exigences utilisateur: jamais de régression, validation entre phases, tests 5 profils avant chaque validation, mesures réelles, doc complète fin de lot
+- RAPPEL GEL: /dossier-express (page), /expertise-medicale, /expertise-medicale/assureur + schemas gelés jusqu au J+28 (01/09)

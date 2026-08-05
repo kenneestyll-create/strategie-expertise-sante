@@ -240,9 +240,30 @@ async def _process_files_payload(files_data: list, progress_cb=None) -> dict:
         f"failed={e_failed}\n" + "\n".join(inst_lines)
     )
 
+    # === LOT 1 PHASE A — Rapport qualité documentaire (purement additif, jamais bloquant) ===
+    quality_report = None
+    try:
+        from utils.quality_report import build_quality_report, stats_record
+        quality_report = build_quality_report(results)
+        logger.info(
+            f"[QUALITY-REPORT] files={quality_report['files']} pages={quality_report['pages_total']} "
+            f"ok={quality_report['pages_ok']} partial={quality_report['pages_partial']} "
+            f"unusable={quality_report['pages_unusable']} score={quality_report['confidence_score']} "
+            f"level={quality_report['confidence_level']}"
+        )
+        try:
+            record = stats_record(quality_report)
+            record["created_at"] = datetime.now(timezone.utc).isoformat()
+            await db.docchain_stats.insert_one(record)
+        except Exception as stats_err:
+            logger.warning(f"[QUALITY-REPORT] stats persistence failed (non-blocking): {stats_err}")
+    except Exception as qr_err:
+        logger.warning(f"[QUALITY-REPORT] build failed (non-blocking, pipeline unchanged): {qr_err}")
+
     return {
         "extracted_text": combined_clean,
         "files_processed": len(results),
+        "quality_report": quality_report,
         "details": [{
             "name": r["name"],
             "method": r["method"],
