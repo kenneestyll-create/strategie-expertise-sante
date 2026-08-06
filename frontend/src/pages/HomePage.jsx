@@ -147,8 +147,8 @@ export const HomePage = () => {
   return (
     <main className="page-transition">
       <SEO
-        title="Accueil"
-        description="Stratégie & Expertise Santé : accompagnement expert en maladie professionnelle, accident du travail, MDPH et protection juridique."
+        title="Accident du travail, maladie professionnelle & expertise médicale : défendre vos droits"
+        description="Faire reconnaître un accident du travail ou une maladie professionnelle, préparer une expertise médicale, contester un taux IPP, obtenir l'AAH : stratégie, outils et accompagnement humain."
         path="/"
       />
 
@@ -221,10 +221,10 @@ export const HomePage = () => {
                 style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
                 data-testid="hero-title"
               >
-                Vous n'êtes plus seul<br className="hidden sm:block" /> face à{' '}
-                <span className="text-[#C9A84C]">votre dossier</span>,{' '}
-                <span className="text-[#C9A84C]">vos droits</span><br className="hidden sm:block" /> ou{' '}
-                <span className="text-[#C9A84C]">vos recours</span>.
+                Vous n'êtes plus seul face à un{' '}
+                <span className="text-[#C9A84C]">accident du travail</span>, une{' '}
+                <span className="text-[#C9A84C]">maladie professionnelle</span><br className="hidden sm:block" /> ou une{' '}
+                <span className="text-[#C9A84C]">expertise médicale</span>.
               </h1>
 
               {/* Sous-titre */}
@@ -443,6 +443,44 @@ export const HomePage = () => {
       <div className="md:hidden px-4 py-4 bg-[#111]">
         <MascotteMobileWidget />
       </div>
+
+      {/* ══════════════════════════════════════════════════════════
+          1bis. DOMAINES D'INTERVENTION — Maillage piliers (Phase 1 SEO)
+      ══════════════════════════════════════════════════════════ */}
+      <section className="py-14 sm:py-16 bg-[#0a0a08] border-b border-white/5" data-testid="home-domaines-section">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-[11px] font-medium text-[#C9A84C] uppercase tracking-[0.2em] mb-2">Domaines d'intervention</p>
+          <h2 className="text-lg md:text-lg font-semibold text-[#f5f0e8] mb-8" style={{ fontFamily: "'Playfair Display', serif" }}>
+            Comprendre et défendre vos droits, étape par étape
+          </h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <Link to="/accident-travail-maladie-professionnelle" className="group p-5 rounded-xl border border-white/8 hover:border-[#C9A84C]/40 bg-white/[0.02] hover:bg-[#C9A84C]/5 transition-colors" data-testid="home-domaine-accident-travail">
+              <h3 className="text-sm font-semibold text-[#f5f0e8] mb-1.5 group-hover:text-[#C9A84C] transition-colors">Accident du travail</h3>
+              <p className="text-xs text-[#f5f0e8]/45 leading-relaxed">Déclaration, reconnaissance, rente et recours en cas de refus ou de faute inexcusable.</p>
+            </Link>
+            <Link to="/accident-travail-maladie-professionnelle" className="group p-5 rounded-xl border border-white/8 hover:border-[#C9A84C]/40 bg-white/[0.02] hover:bg-[#C9A84C]/5 transition-colors" data-testid="home-domaine-maladie-professionnelle">
+              <h3 className="text-sm font-semibold text-[#f5f0e8] mb-1.5 group-hover:text-[#C9A84C] transition-colors">Maladie professionnelle</h3>
+              <p className="text-xs text-[#f5f0e8]/45 leading-relaxed">Faire reconnaître votre maladie professionnelle, délais CPAM et contestation d'un refus.</p>
+            </Link>
+            <Link to="/expertise-medicale" className="group p-5 rounded-xl border border-white/8 hover:border-[#C9A84C]/40 bg-white/[0.02] hover:bg-[#C9A84C]/5 transition-colors" data-testid="home-domaine-expertise-medicale">
+              <h3 className="text-sm font-semibold text-[#f5f0e8] mb-1.5 group-hover:text-[#C9A84C] transition-colors">Expertise médicale</h3>
+              <p className="text-xs text-[#f5f0e8]/45 leading-relaxed">Préparer l'expertise, comprendre les enjeux et contester des conclusions défavorables.</p>
+            </Link>
+            <Link to="/calculatrice-ipp" className="group p-5 rounded-xl border border-white/8 hover:border-[#C9A84C]/40 bg-white/[0.02] hover:bg-[#C9A84C]/5 transition-colors" data-testid="home-domaine-ipp">
+              <h3 className="text-sm font-semibold text-[#f5f0e8] mb-1.5 group-hover:text-[#C9A84C] transition-colors">Taux IPP &amp; rente</h3>
+              <p className="text-xs text-[#f5f0e8]/45 leading-relaxed">Calculer votre rente IPP, comprendre le barème et contester un taux sous-évalué.</p>
+            </Link>
+            <Link to="/mdph" className="group p-5 rounded-xl border border-white/8 hover:border-[#C9A84C]/40 bg-white/[0.02] hover:bg-[#C9A84C]/5 transition-colors" data-testid="home-domaine-mdph">
+              <h3 className="text-sm font-semibold text-[#f5f0e8] mb-1.5 group-hover:text-[#C9A84C] transition-colors">MDPH &amp; AAH</h3>
+              <p className="text-xs text-[#f5f0e8]/45 leading-relaxed">Monter un dossier MDPH solide, obtenir l'AAH et contester un refus (RSDAE, RQTH).</p>
+            </Link>
+            <Link to="/guides-pratiques" className="group p-5 rounded-xl border border-white/8 hover:border-[#C9A84C]/40 bg-white/[0.02] hover:bg-[#C9A84C]/5 transition-colors" data-testid="home-domaine-guides">
+              <h3 className="text-sm font-semibold text-[#f5f0e8] mb-1.5 group-hover:text-[#C9A84C] transition-colors">Guides pratiques</h3>
+              <p className="text-xs text-[#f5f0e8]/45 leading-relaxed">Recours, délais, procédures : nos guides étape par étape pour agir efficacement.</p>
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* ══════════════════════════════════════════════════════════
           2. POURQUOI CE SITE EXISTE — Ivory background, rounded image

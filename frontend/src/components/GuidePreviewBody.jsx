@@ -266,23 +266,24 @@ export const GuidePreviewBody = ({ page, slug, currentYear, onCtaClick, isPrevie
         <section className="mb-10" data-testid="guide-maillage">
           <h2 className="font-semibold text-sm mb-3 text-muted-foreground flex items-center gap-2">
             <BookOpen className="w-4 h-4" />
-            Guides connexes
+            Pour aller plus loin
           </h2>
           <div className="grid gap-2">
-            {maillage.map((link, i) => (
-              isPreview ? (
+            {maillage.map((link, i) => {
+              const target = link.href || `/guide/${link.slug}`;
+              return isPreview ? (
                 <div key={i} className="flex items-center gap-2 p-3 rounded-lg border border-border/50 text-sm text-foreground/80">
                   <ChevronRight className="w-3.5 h-3.5 text-[#C9A84C] shrink-0" />
                   <span>{link.text}</span>
-                  <span className="text-[10px] text-muted-foreground ml-auto">/guide/{link.slug}</span>
+                  <span className="text-[10px] text-muted-foreground ml-auto">{target}</span>
                 </div>
               ) : (
-                <Link key={i} to={`/guide/${link.slug}`} className="flex items-center gap-2 p-3 rounded-lg border border-border/50 hover:border-[#C9A84C]/40 hover:bg-[#C9A84C]/5 transition-colors text-sm text-foreground/80 hover:text-foreground">
+                <Link key={i} to={target} className="flex items-center gap-2 p-3 rounded-lg border border-border/50 hover:border-[#C9A84C]/40 hover:bg-[#C9A84C]/5 transition-colors text-sm text-foreground/80 hover:text-foreground">
                   <ChevronRight className="w-3.5 h-3.5 text-[#C9A84C] shrink-0" />
                   <span>{link.text}</span>
                 </Link>
-              )
-            ))}
+              );
+            })}
           </div>
         </section>
       )}

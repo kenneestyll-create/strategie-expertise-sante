@@ -44,7 +44,7 @@ export const Header = () => {
     { name: 'Protection juridique', href: '/protection-juridique' },
     { name: 'Expertise médicale', href: '/expertise-medicale' },
     { name: 'Médecin conseil', href: '/medecin-conseil' },
-    { name: 'AT / MP', href: '/accident-travail-maladie-professionnelle' },
+    { name: 'Accident du travail & maladie professionnelle', href: '/accident-travail-maladie-professionnelle' },
     { name: 'MDPH', href: '/mdph' },
   ];
 

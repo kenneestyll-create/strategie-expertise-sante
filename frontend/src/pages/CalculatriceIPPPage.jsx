@@ -11,6 +11,7 @@ import { SEO } from '@/components/SEO';
 import { DossierExpressCTA } from '@/components/DossierExpressCTA';
 import { PillarLeadMagnet } from '@/components/PillarLeadMagnet';
 import { TerrainNote } from '@/components/TerrainNote';
+import { SeoRelatedLinks } from '@/components/SeoRelatedLinks';
 import {
   Calculator,
   AlertTriangle,
@@ -609,6 +610,19 @@ export const CalculatriceIPPPage = () => {
               "Le coefficient socio-professionnel : la majoration que personne ne demande",
               "Le seuil 10 % : rente viagère vs capital — l'enjeu stratégique invisible",
               "Les dires : votre seule arme écrite pour contester un rapport faible",
+            ]}
+          />
+
+          <SeoRelatedLinks
+            testId="ipp-related-links"
+            title="Approfondir : taux IPP, rente et recours"
+            links={[
+              { href: '/accident-travail-maladie-professionnelle', text: 'Accident du travail et maladie professionnelle : vos droits et recours' },
+              { href: '/guide/rente-accident-travail-calcul-contestation', text: 'Rente accident du travail : calcul, montant et contestation' },
+              { href: '/guide/taux-ipp-5-pourcent-contester', text: 'Taux IPP de 5 % : comment le contester' },
+              { href: '/guide/ipp-fonction-publique-hospitaliere', text: 'IPP fonction publique hospitalière : ATI et recours' },
+              { href: '/guide/recours-tribunal-judiciaire-pole-social', text: 'Contester devant le pôle social du tribunal judiciaire' },
+              { href: '/guide/faute-inexcusable-employeur', text: "Faute inexcusable de l'employeur : indemnisation complémentaire" },
             ]}
           />
 

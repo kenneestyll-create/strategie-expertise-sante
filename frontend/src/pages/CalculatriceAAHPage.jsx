@@ -11,6 +11,7 @@ import { SEO } from '@/components/SEO';
 import { DossierExpressCTA } from '@/components/DossierExpressCTA';
 import { PillarLeadMagnet } from '@/components/PillarLeadMagnet';
 import { TerrainNote } from '@/components/TerrainNote';
+import { SeoRelatedLinks } from '@/components/SeoRelatedLinks';
 import {
   Calculator,
   AlertTriangle,
@@ -552,6 +553,17 @@ export const CalculatriceAAHPage = () => {
               "RSDAE : la notion floue qui fait gagner ou perdre 90 % des dossiers",
               "Le délai de 2 mois pour le RAPO — irrattrapable une fois passé",
               "Les pièces nouvelles à ajouter pour faire basculer le dossier",
+            ]}
+          />
+
+          <SeoRelatedLinks
+            testId="aah-related-links"
+            title="Approfondir : MDPH, AAH et recours"
+            links={[
+              { href: '/mdph', text: 'MDPH : comprendre vos droits et structurer votre dossier' },
+              { href: '/guide/refus-mdph-aah-que-faire', text: 'Refus MDPH AAH : recours, délais et solutions' },
+              { href: '/guide/refus-aah-rsdae-non-reconnue', text: 'Refus AAH pour RSDAE non reconnue : la stratégie de recours' },
+              { href: '/guide/comment-demander-rqth-strategic', text: 'Demander la RQTH : démarches et stratégie' },
             ]}
           />
 

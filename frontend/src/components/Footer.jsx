@@ -180,7 +180,7 @@ export const Footer = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
           {/* Brand */}
           <div className="lg:col-span-2">
             <Link to="/" className="logo-shimmer flex items-center gap-0 mb-4">
@@ -191,6 +191,45 @@ export const Footer = () => {
               accidents du travail, litiges assurantiels, expertises médicales et démarches MDPH. Une aide humaine et experte, 
               née d'une expérience vécue.
             </p>
+          </div>
+
+          {/* Vos droits — piliers SEO */}
+          <div>
+            <h4 className="font-semibold mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
+              Vos droits
+            </h4>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/accident-travail-maladie-professionnelle" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors" data-testid="footer-link-at-mp">
+                  Accident du travail &amp; maladie professionnelle
+                </Link>
+              </li>
+              <li>
+                <Link to="/expertise-medicale" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors" data-testid="footer-link-expertise-medicale">
+                  Expertise médicale
+                </Link>
+              </li>
+              <li>
+                <Link to="/calculatrice-ipp" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors" data-testid="footer-link-ipp">
+                  Calcul IPP &amp; rente
+                </Link>
+              </li>
+              <li>
+                <Link to="/mdph" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors" data-testid="footer-link-mdph">
+                  MDPH &amp; AAH
+                </Link>
+              </li>
+              <li>
+                <Link to="/guide/comment-faire-reconnaitre-maladie-professionnelle" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors" data-testid="footer-link-guide-mp">
+                  Faire reconnaître une maladie professionnelle
+                </Link>
+              </li>
+              <li>
+                <Link to="/protection-juridique" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors" data-testid="footer-link-protection-juridique">
+                  Protection juridique
+                </Link>
+              </li>
+            </ul>
           </div>
 
           {/* Navigation */}
@@ -211,7 +250,7 @@ export const Footer = () => {
               </li>
               <li>
                 <Link to="/medecin-conseil" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Choisir son médecin conseil
+                  Médecin conseil CPAM
                 </Link>
               </li>
               <li>

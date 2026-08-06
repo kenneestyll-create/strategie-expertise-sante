@@ -58,8 +58,8 @@ export default function MedecinConseilPage() {
   return (
     <main className="page-transition pt-20">
       <SEO
-        title="Médecin conseil CPAM : erreurs à éviter et comment se préparer"
-        description="Examen médecin conseil CPAM : préparez-vous efficacement, évitez les erreurs fréquentes et comprenez comment contester une décision défavorable."
+        title="Médecin conseil CPAM : rôle, convocation, avis et recours"
+        description="Médecin conseil de la CPAM : son rôle, la convocation à l'examen, la portée de son avis et comment contester une décision défavorable. Conseils pour vous préparer et défendre votre indemnisation."
         path="/medecin-conseil"
       />
 
@@ -69,7 +69,7 @@ export default function MedecinConseilPage() {
           <div className="max-w-3xl">
             <span className="text-sm font-medium text-accent uppercase tracking-wider">Expertise stratégique</span>
             <h1 className="text-4xl sm:text-5xl font-semibold mt-2 mb-6" data-testid="médecin-conseil-title">
-              Choisir le bon médecin conseil : un enjeu déterminant pour votre indemnisation
+              Médecin conseil CPAM ou médecin conseil de victime : comprendre les rôles, défendre votre indemnisation
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
               Dans toute procédure d'indemnisation du dommage corporel, le choix du médecin conseil
@@ -89,6 +89,55 @@ export default function MedecinConseilPage() {
                   <span className="hidden sm:inline">Être accompagné dans le choix de mon médecin conseil</span>
                 </Link>
               </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── MÉDECIN CONSEIL CPAM — bloc informationnel (Phase 1 SEO, ajout additif) ── */}
+      <section className="section-padding" data-testid="médecin-conseil-cpam-info">
+        <div className="max-w-7xl mx-auto">
+          <div className="max-w-3xl mb-8">
+            <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Médecin conseil CPAM : rôle, convocation, avis et recours</h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Avant de parler du médecin conseil de victime, il faut comprendre celui que vous ne choisissez pas :
+              le médecin conseil de la CPAM. C'est lui qui rend les avis qui conditionnent vos indemnités journalières,
+              votre consolidation et votre taux d'IPP.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="p-5 rounded-xl border border-border bg-card" data-testid="mc-cpam-role">
+              <h3 className="font-semibold text-sm mb-2">Son rôle</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Le médecin conseil du service médical de la CPAM contrôle la justification médicale de vos arrêts,
+                fixe la date de consolidation et évalue vos séquelles. Son avis s'impose à la caisse : c'est lui qui
+                détermine en pratique votre taux d'incapacité permanente et donc le montant de votre rente.
+              </p>
+            </div>
+            <div className="p-5 rounded-xl border border-border bg-card" data-testid="mc-cpam-convocation">
+              <h3 className="font-semibold text-sm mb-2">La convocation</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                La convocation à l'examen est obligatoire : ne pas s'y rendre peut suspendre vos indemnités.
+                Préparez ce rendez-vous comme une expertise : dossier médical complet, liste des séquelles et de leurs
+                répercussions concrètes, comptes rendus récents. L'examen dure souvent moins de 20 minutes — chaque élément compte.
+              </p>
+            </div>
+            <div className="p-5 rounded-xl border border-border bg-card" data-testid="mc-cpam-avis">
+              <h3 className="font-semibold text-sm mb-2">La portée de son avis</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Consolidation, taux d'IPP, aptitude : ces décisions ont des conséquences financières majeures.
+                Un écart de quelques points d'IPP peut représenter des milliers d'euros.{' '}
+                <Link to="/calculatrice-ipp" className="text-accent hover:underline font-medium">Estimez l'enjeu avec le simulateur rente IPP</Link>.
+              </p>
+            </div>
+            <div className="p-5 rounded-xl border border-border bg-card" data-testid="mc-cpam-recours">
+              <h3 className="font-semibold text-sm mb-2">Contester une décision</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                L'avis du médecin conseil se conteste : expertise médicale technique (CMRA) puis, si nécessaire,{' '}
+                <Link to="/guide/recours-tribunal-judiciaire-pole-social" className="text-accent hover:underline font-medium">recours devant le pôle social du tribunal judiciaire</Link>.
+                En cas de conclusions défavorables, consultez notre guide{' '}
+                <Link to="/guide/expertise-medicale-defavorable-recours" className="text-accent hover:underline font-medium">expertise médicale défavorable : les recours</Link>.
+              </p>
             </div>
           </div>
         </div>

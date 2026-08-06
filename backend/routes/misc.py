@@ -795,7 +795,7 @@ async def sitemap_xml():
     if seo_pages:
         urls += f"""  <url>\n    <loc>{SITE_URL}/guides-pratiques</loc>\n    <lastmod>{today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.6</priority>\n  </url>\n"""
     xml = f"""<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{urls}</urlset>"""
-    return Response(content=xml, media_type="application/xml")
+    return Response(content=xml, media_type="application/xml", headers={"X-Robots-Tag": "noindex"})
 
 @router.get("/robots.txt")
 async def robots_txt():

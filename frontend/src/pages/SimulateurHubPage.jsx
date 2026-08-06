@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -415,6 +416,26 @@ export default function SimulateurHubPage() {
             </p>
           </div>
           <FAQSection />
+        </section>
+
+        {/* Maillage cocons — Phase 1 SEO */}
+        <section className="max-w-5xl mx-auto px-5 sm:px-8 py-8 border-t border-zinc-900" data-testid="hub-related-links">
+          <h2 className="text-base font-medium text-zinc-300 mb-4">Comprendre vos droits avant de simuler</h2>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {[
+              { href: '/calculatrice-ipp', text: 'Simulateur rente IPP : calcul détaillé et contestation' },
+              { href: '/calculatrice-aah', text: 'Simulateur AAH : montant et éligibilité' },
+              { href: '/accident-travail-maladie-professionnelle', text: 'Accident du travail et maladie professionnelle : vos droits' },
+              { href: '/mdph', text: 'MDPH : comprendre vos droits et votre dossier' },
+              { href: '/guide/rente-accident-travail-calcul-contestation', text: 'Rente accident du travail : calcul et contestation' },
+              { href: '/guide/refus-mdph-aah-que-faire', text: 'Refus MDPH AAH : recours et solutions' },
+            ].map((l, i) => (
+              <Link key={i} to={l.href} className="flex items-center gap-2 p-3 rounded-lg border border-zinc-800 hover:border-[#C9A84C]/40 hover:bg-[#C9A84C]/5 transition-colors text-sm text-zinc-400 hover:text-zinc-100" data-testid={`hub-related-link-${i}`}>
+                <ChevronRight className="w-3.5 h-3.5 text-[#C9A84C] shrink-0" />
+                <span>{l.text}</span>
+              </Link>
+            ))}
+          </div>
         </section>
 
         {/* Footer note */}
