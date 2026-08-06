@@ -553,3 +553,17 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - Tests : syntaxe OK, alerte envoyée e2e, HTML validé, endpoints quality-stats/product-stats/weekly-report 200, backend redémarré sans erreur.
 - Interdits toujours actifs : pas de Lot 2, SEO gelé J+28, aucune autre modification produit.
 - RSDAE : en attente export GSC ; livrable = analyse requêtes + plan Hn uniquement (pas de rédaction).
+
+## 2026-08-06 — Audit SEO complet + Phase 1 SEO exécutée
+- **Audit SEO** (rapport : /app/memory/AUDIT_SEO_COMPLET_2026-08-06.md) : hypothèse utilisateur validée — problème d'architecture d'autorité (guides orphelins 0 lien, /contact page la plus liée, piliers 3,5% des clics). Base technique saine (rendu Googlebot OK).
+- **Phase 1 SEO livrée et testée (iteration_212 : 11/11 OK)** :
+  1. Maillage 17 guides via migration idempotente `2026-08-06-phase1-maillage-guides` (utils/seo_migrations.py, appliquée 17/17, propagera en production au déploiement). Template GuidePreviewBody étendu (liens href absolus, "Pour aller plus loin").
+  2. Hubs outils : SeoRelatedLinks.jsx sur /calculatrice-ipp (6 liens), /calculatrice-aah (4), /simulateur (6). Aucun CTA commercial ajouté.
+  3. Accueil : title + H1 avec mots-clés (design hero conservé), section "Domaines d'intervention" (6 cartes piliers).
+  4. Footer colonne "Vos droits" (6 liens piliers) + ancre header "AT / MP" → complète.
+  5. /medecin-conseil : réalignement additif "médecin conseil CPAM" (title, H1, section 4 blocs, contenu existant conservé).
+  6. X-Robots-Tag noindex sur /api/sitemap.xml.
+- Journal complet : /app/memory/JOURNAL_SEO_PHASE1.md (source/cible/ancre/justification par lien).
+- Bug corrigé par testing agent : import Link manquant dans SimulateurHubPage.jsx.
+- Pages gelées non modifiées (vérifié par tests) : /dossier-express, /expertise-medicale, /expertise-medicale/assureur.
+- **Phase 2 (post-J+28)** : scission AT/MP en 2 piliers, création piliers /taux-ipp /invalidite /consolidation /rechute /faute-inexcusable, reconstruction cocons.
