@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { HelpCircle, X, Search, ChevronRight, ArrowRight, Sparkles, BookOpen, Users, MessageSquare, Gift, Calendar, FolderOpen, Send, Zap, Brain, FileSearch, BarChart3, FileText, Star, Settings, Bell, PenTool, ChevronDown, RotateCcw, Mail, Crown, Lock, Video } from 'lucide-react';
+import { HelpCircle, X, Search, ChevronRight, ArrowRight, Sparkles, BookOpen, Users, MessageSquare, Gift, Calendar, FolderOpen, Send, Zap, Brain, FileSearch, BarChart3, FileText, Star, Settings, Bell, PenTool, ChevronDown, RotateCcw, Mail, Crown, Lock, Video, GraduationCap } from 'lucide-react';
 
 const HELP_SECTIONS = [
   {
@@ -150,6 +150,27 @@ const HELP_SECTIONS = [
       { label: 'Bonnes pratiques', text: 'Workflow recommandé : 1) Ouvrir le dossier → onglet Analyse pour le contexte. 2) Onglet Documents pour vérifier les pièces. 3) Onglet 🔒 Kit Pro → générer / lire les 7 sections. 4) Consigner vos notes admin. 5) Retour onglet "Revue expert" pour rédiger la version client définitive en s\'appuyant sur le kit.' },
     ],
     keywords: ['kit', 'kit pro', 'kit professionnel', 'kit-pro', 'confidentiel', 'admin', 'synthèse', 'stratégique', 'diagnostic juridique', 'plan d\'action', 'lettres-types', 'lettre type', 'contestation', 'arguments', 'pièces', 'calendrier', 'suivi', 'notes', 'admin_notes', 'régénérer', 'régénération', 'pdf', 'export', 'cadenas', 'lock', 'consulter l\'analyse', 'relire']
+  },
+  {
+    id: 'evaluateurs-experts',
+    tab: 'dossier-express',
+    icon: GraduationCap,
+    title: 'Évaluateurs Experts — Accès gratuits, invitation & retours',
+    color: '#C9A84C',
+    summary: 'Invitez des experts (médecins, avocats, associations) à tester Dossier Express IA gratuitement, avec quota, cas fictif prêt à l\'emploi, grille d\'évaluation et alerte automatique à chaque retour. Zéro impact sur vos statistiques commerciales.',
+    steps: [
+      { label: 'Où le trouver ?', text: 'Onglet "Dossier Express" → carte dorée "Accès Évaluateurs Experts" tout en haut. Les valeurs par défaut (quota d\'analyses, durée en jours) se règlent en haut à droite de la carte.' },
+      { label: 'Créer un évaluateur', text: 'Renseignez nom (ex. "Dr de Thiballier"), email EXACT (il devra le confirmer pour entrer), type de profil, quota et durée (vides = défauts), notes internes éventuelles. Cliquez "Créer" → le lien d\'invitation personnel est copié automatiquement dans votre presse-papiers.' },
+      { label: 'Bouton "Inviter" — envoi de l\'invitation depuis l\'admin', text: 'Quand VOUS êtes prêt, cliquez le bouton doré "Inviter" sur la ligne de l\'évaluateur → confirmation → l\'email d\'invitation part automatiquement depuis contact@strategie-expertise-sante.fr avec son lien personnel intégré. Le contenu est calibré : demande d\'évaluation critique, cas fictif disponible, confidentialité, aucune tournure commerciale. Après envoi, le bouton devient "Renvoyer (env. date)" — vous pouvez renvoyer si besoin.' },
+      { label: 'Ce que vit l\'évaluateur', text: 'Il clique son lien → confirme son email → découvre son espace privé : concept, limites assumées, cas fictif de démonstration téléchargeable (6 PDF filigranés "CAS FICTIF DE DÉMONSTRATION" — dossier psychiatrique MP hors tableau, refus CPAM), grille d\'évaluation, bouton "Démarrer le test". Le paiement est remplacé par "Mode évaluation". Chaque analyse décrémente son quota.' },
+      { label: 'Suivi d\'activité', text: 'Sous chaque évaluateur : nombre d\'analyses réalisées, quota restant, date de dernière activité (connexion, analyse ou retour). "Jamais connecté" = il n\'a pas encore ouvert son lien.' },
+      { label: 'Voir le retour (grille d\'évaluation)', text: 'Quand l\'évaluateur soumet sa grille, un bouton vert "Voir le retour" apparaît sur sa ligne → modal avec les 6 critères notés de 1 à 5, la moyenne globale, ses commentaires libres (points forts, mises en défaut, réserves) et la date de soumission.' },
+      { label: 'Alerte automatique', text: 'À chaque soumission de grille, vous recevez immédiatement un email "[EVALUATEUR] Retour reçu — nom (moyenne/5)" avec les commentaires et le lien vers l\'admin. Objectif : répondre vite au premier retour externe.' },
+      { label: 'Gérer au quotidien', text: 'Quota modifiable à tout moment (champ à côté du compteur) · "+30 j" prolonge l\'expiration · interrupteur active/désactive l\'accès instantanément · "Lien" re-copie le lien · corbeille supprime l\'accès ET son retour (les dossiers générés restent en base, marqués eval_test).' },
+      { label: 'Garanties intégrées', text: 'Dossiers marqués eval_test + source_type=evaluateur_expert → exclus des stats commerciales, du rapport hebdo, de l\'alerte "client réel" et des relances automatiques — mais ils enrichissent la mémoire IA (Case Outcome Memory). Page /evaluation-expert : noindex, hors sitemap, bloquée dans robots.txt. Coût max par évaluateur : quota × ~0,25 € d\'IA.' },
+      { label: 'Règle importante', text: 'Pour les évaluateurs, utilisez TOUJOURS ce module (lien /evaluation-expert?t=...), jamais l\'accès Invités VIP : seul ce module garantit le marquage complet et l\'exclusion des statistiques.' },
+    ],
+    keywords: ['évaluateur', 'evaluateur', 'expert', 'évaluation', 'evaluation', 'invitation', 'inviter', 'grille', 'retour', 'feedback', 'quota', 'cas fictif', 'démonstration', 'demonstration', 'psychiatre', 'médecin expert', 'medecin', 'thiballier', 'eval_test', 'source_type', 'alerte', 'voir le retour', 'moyenne', 'gratuit', 'test', 'programme']
   },
   {
     id: 'analytics',
