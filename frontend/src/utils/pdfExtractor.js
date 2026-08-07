@@ -84,7 +84,7 @@ async function chunkedUpload(file, uploadId, onProgress) {
  * @param {string} existingOcrText
  * @param {function} onProgress - (filename, uploadedChunks, totalChunks) callback
  */
-export async function extractTextFromFiles(files, existingOcrText = '', onProgress = null) {
+export async function extractTextFromFiles(files, existingOcrText = '', onProgress = null, sourceHint = '') {
   const smallFiles = [];
   const largeFiles = [];
 
@@ -149,6 +149,7 @@ export async function extractTextFromFiles(files, existingOcrText = '', onProgre
     const res = await axios.post(`${API}/upload/extract`, {
       upload_id: uploadId,
       files: allFiles,
+      source_hint: sourceHint,
     }, { timeout: 300000 });
 
     // Capture stored files from response
@@ -204,6 +205,7 @@ export async function extractTextFromFiles(files, existingOcrText = '', onProgre
         const res2 = await axios.post(`${API}/upload/extract`, {
           upload_id: uploadId,
           files: allFiles,
+          source_hint: sourceHint,
         }, { timeout: 300000 });
         combinedText = res2.data.extracted_text || '';
         details = res2.data.details || [];
@@ -297,7 +299,7 @@ async function extractBase64(files, existingOcrText = '') {
     };
 
     try {
-      const res = await axios.post(`${API}/extract-document-text`, { files: filesToExtract }, {
+      const res = await axios.post(`${API}/extract-document-text`, { files: filesToExtract, source_hint: sourceHint }, {
         timeout: 300000,
         onUploadProgress: (progressEvent) => {
           if (progressEvent.total) {
@@ -361,7 +363,7 @@ async function extractBase64(files, existingOcrText = '') {
       // Retry once on timeout/network error
       if (err.code === 'ECONNABORTED' || err.message?.includes('timeout') || !err.response) {
         try {
-          const res2 = await axios.post(`${API}/extract-document-text`, { files: filesToExtract }, { timeout: 300000 });
+          const res2 = await axios.post(`${API}/extract-document-text`, { files: filesToExtract, source_hint: sourceHint }, { timeout: 300000 });
           combinedText = res2.data.extracted_text || '';
           details = res2.data.details || [];
           storedFiles = res2.data.stored_files || [];

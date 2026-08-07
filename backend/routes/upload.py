@@ -278,7 +278,7 @@ async def _reassemble_files(upload_id, files_meta):
     return assembled
 
 
-async def _run_extraction(extraction_id, assembled_files):
+async def _run_extraction(extraction_id, assembled_files, source_type=None):
     """Background task: run OCR extraction and store result in MongoDB.
 
     Résilience prod (fix 04/08/2026) :
@@ -313,7 +313,7 @@ async def _run_extraction(extraction_id, assembled_files):
         from routes.dossier_express import _process_files_payload
 
         result = await asyncio.wait_for(
-            _process_files_payload(assembled_files, progress_cb=_progress),
+            _process_files_payload(assembled_files, progress_cb=_progress, source_type=source_type),
             timeout=EXTRACTION_GLOBAL_TIMEOUT_S,
         )
         await _set_extraction(extraction_id, {
@@ -369,6 +369,8 @@ async def extract_chunked_files(request_body: dict):
     """
     upload_id = request_body.get("upload_id", "")
     files_meta = request_body.get("files", [])
+    _hint = request_body.get("source_hint", "")
+    source_type = _hint if _hint in ("client_paye", "evaluateur_expert", "vip", "test_admin", "partenaire") else None
 
     if not upload_id or not files_meta:
         raise HTTPException(status_code=400, detail="upload_id et files requis")
@@ -396,7 +398,7 @@ async def extract_chunked_files(request_body: dict):
         "stored_files": stored_files,
         "last_heartbeat_at": datetime.now(timezone.utc).isoformat(),
     })
-    asyncio.create_task(_run_extraction(extraction_id, assembled_files))
+    asyncio.create_task(_run_extraction(extraction_id, assembled_files, source_type=source_type))
     return {"async": True, "extraction_id": extraction_id, "stored_files": stored_files, "message": f"Extraction en cours — {pdf_count} PDF(s), {estimated_raw/1024/1024:.1f} MB"}
 
 

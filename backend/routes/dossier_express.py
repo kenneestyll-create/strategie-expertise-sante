@@ -97,7 +97,7 @@ async def _extract_one_file(name: str, file_bytes: bytes, file_type: str, size_k
     }
 
 
-async def _process_files_payload(files_data: list, progress_cb=None) -> dict:
+async def _process_files_payload(files_data: list, progress_cb=None, source_type=None) -> dict:
     """Decode → validate → extract in PARALLEL (bounded) → assemble combined result.
 
     Bounded concurrency (4) protects Gemini rate limits while still cutting wall-clock time
@@ -254,6 +254,7 @@ async def _process_files_payload(files_data: list, progress_cb=None) -> dict:
         try:
             record = stats_record(quality_report)
             record["created_at"] = datetime.now(timezone.utc).isoformat()
+            record["source_type"] = source_type or "inconnu"
             await db.docchain_stats.insert_one(record)
         except Exception as stats_err:
             logger.warning(f"[QUALITY-REPORT] stats persistence failed (non-blocking): {stats_err}")
@@ -322,6 +323,8 @@ async def extract_document_text(request: Request):
       timeouts (~120s) when the user uploads many scanned PDFs (each takes 60-90s on Gemini).
     """
     body = await request.json()
+    _hint = body.get("source_hint", "")
+    source_type = _hint if _hint in ("client_paye", "evaluateur_expert", "vip", "test_admin", "partenaire") else None
     files_data = body.get("files", [])
     if not files_data:
         return {"extracted_text": "", "files_processed": 0, "details": [], "stored_files": []}
@@ -356,7 +359,7 @@ async def extract_document_text(request: Request):
             "stored_files": [],
             "last_heartbeat_at": datetime.now(timezone.utc).isoformat(),
         })
-        asyncio.create_task(_run_extraction(extraction_id, files_data))
+        asyncio.create_task(_run_extraction(extraction_id, files_data, source_type=source_type))
         return {
             "async": True,
             "extraction_id": extraction_id,
@@ -365,7 +368,7 @@ async def extract_document_text(request: Request):
         }
 
     # Sync mode: small payload, parallelized internally
-    return await _process_files_payload(files_data)
+    return await _process_files_payload(files_data, source_type=source_type)
 
 
 
@@ -700,11 +703,14 @@ CONTENU DES DOCUMENTS FOURNIS :
         logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}] Quality scoring failed (non-blocking): {qs_err}")
 
     # Case Outcome Memory — collecte silencieuse (V2 preparation, non bloquant)
+    # NOTE: tous les types de sources contribuent (client, vip, évaluateur, test) — seul improvement_optout exclut.
     try:
         if not improvement_optout:
             from utils.case_outcome_memory import extract_case_features, store_case_outcome
+            _src_doc = await db.dossier_express.find_one({"id": dossier_id}, {"source_type": 1})
+            _source_type = (_src_doc or {}).get("source_type") or "inconnu"
             features = extract_case_features(analysis, type_dossier=type_dossier, regime=regime, situation=situation)
-            await store_case_outcome(db, "dossier_express", type_dossier, regime, features, quality_score=quality_score, improvement_optout=improvement_optout)
+            await store_case_outcome(db, "dossier_express", type_dossier, regime, features, quality_score=quality_score, improvement_optout=improvement_optout, source_type=_source_type)
     except Exception as com_err:
         logger.debug(f"[DOSSIER_EXPRESS][{dossier_id}] Case outcome memory failed (non-blocking): {com_err}")
     # V2 Predictive hook dormant — conditionne au feature flag (OFF par defaut = aucun impact)
@@ -939,6 +945,7 @@ CONTENU DES DOCUMENTS FOURNIS :
                 "dossier_id": dossier_id, "status": PremiumStatus.EN_ATTENTE,
                 "relecture_expert_required": True, "premium_pdf": premium_pdf,
                 "amount": 0, "admin_test": True,
+        "source_type": "test_admin",
                 "created_at": datetime.now(timezone.utc).isoformat()
             }
             assert_premium_analyses_entry(pa_entry, f"dossier_express_auto_register_{dossier_id}")
@@ -1326,6 +1333,7 @@ async def _send_real_dossier_alert(dossier_id: str, created_at: str, quality_cho
         rank = await db.dossier_express.count_documents({
             "admin_test": {"$ne": True},
             "eval_test": {"$ne": True},
+            "vip_access": {"$ne": True},
             "email": {"$not": {"$regex": TEST_EMAIL_REGEX, "$options": "i"}},
         })
         qs = quality_summary or {}
@@ -1396,7 +1404,19 @@ async def dossier_express_submit(request: Request):
     quality_choice = body.get("quality_choice", "not_available")
     quality_summary = body.get("quality_summary")
 
-    if not session_id:
+    # Détection VIP côté serveur (cookie de session partenaire) — circuit non commercial
+    vip_flag = False
+    try:
+        vip_sid = request.cookies.get("vip_session")
+        if vip_sid:
+            vs = await db.vip_sessions.find_one({"session_id": vip_sid}, {"guest_id": 1})
+            if vs:
+                g = await db.vip_guests.find_one({"id": vs["guest_id"]}, {"active": 1})
+                vip_flag = bool(g and g.get("active"))
+    except Exception as vip_err:
+        logger.warning(f"[DOSSIER_EXPRESS][submit] VIP detection failed (non-blocking): {vip_err}")
+
+    if not session_id and not vip_flag:
         raise HTTPException(status_code=400, detail="session_id requis")
     if not email or not situation.strip():
         raise HTTPException(status_code=400, detail="email et situation requis")
@@ -1404,15 +1424,15 @@ async def dossier_express_submit(request: Request):
         raise HTTPException(status_code=503, detail="Service IA non disponible")
 
     # Idempotence: if a dossier already exists for this session_id, return it
-    existing = await db.dossier_express.find_one({"session_id": session_id}, {"_id": 0, "id": 1, "status": 1})
+    existing = await db.dossier_express.find_one({"session_id": session_id}, {"_id": 0, "id": 1, "status": 1}) if session_id else None
     if existing:
         logger.info(f"[DOSSIER_EXPRESS][submit] Idempotent return for session {session_id} → dossier {existing['id']}")
         return {"dossier_id": existing["id"], "status": existing.get("status", "processing")}
 
     # Payment verification — match payment_transactions OR allow if webhook hasn't fired yet
     # but transaction exists (frontend submits after Stripe redirect, webhook may lag a few seconds)
-    tx = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
-    if not tx:
+    tx = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0}) if session_id else None
+    if not tx and not vip_flag:
         # Conservative: don't reject if tx not yet created — Stripe may take a moment.
         # But log for monitoring.
         logger.warning(f"[DOSSIER_EXPRESS][submit] No payment_transactions row yet for session {session_id} — accepting submission, webhook will verify")
@@ -1434,6 +1454,8 @@ async def dossier_express_submit(request: Request):
         "processing_step": "checkout_valide",
         "premium_pdf": premium_pdf,
         "payment_verified": bool(tx and tx.get("payment_status") == "paid"),
+        "source_type": "vip" if vip_flag else "client_paye",
+        **({"vip_access": True} if vip_flag else {}),
         "improvement_optout": improvement_optout,
         "quality_choice": quality_choice,
         "quality_summary": quality_summary,
@@ -1459,7 +1481,7 @@ async def dossier_express_submit(request: Request):
 
     # Alerte interne "client réel" (exclut les adresses de test automatisées)
     from utils.email_guard import is_test_address
-    if not is_test_address(email):
+    if not vip_flag and not is_test_address(email):
         asyncio.create_task(_send_real_dossier_alert(dossier_id, dossier_entry["created_at"], quality_choice, quality_summary))
 
     return {"dossier_id": dossier_id, "status": "processing"}

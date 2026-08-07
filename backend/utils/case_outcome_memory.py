@@ -115,7 +115,7 @@ def extract_case_features(analysis_text, type_dossier=None, regime=None, situati
     }
 
 
-async def store_case_outcome(db, source, type_dossier, regime, features, quality_score=None, improvement_optout=False):
+async def store_case_outcome(db, source, type_dossier, regime, features, quality_score=None, improvement_optout=False, source_type="inconnu"):
     """
     Stocke un enregistrement anonymise dans la collection case_outcomes.
     Respecte strictement improvement_optout.
@@ -128,6 +128,7 @@ async def store_case_outcome(db, source, type_dossier, regime, features, quality
     record = {
         "id": str(uuid.uuid4()),
         "source": source,
+        "source_type": source_type,
         "categorie_dossier": type_dossier or "",
         "regime_ou_type_garantie": regime or "",
         "blocage_principal": features.get("blocages_detectes", [None])[0] if features.get("blocages_detectes") else "",

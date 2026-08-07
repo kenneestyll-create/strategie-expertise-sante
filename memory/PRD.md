@@ -577,3 +577,14 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - Évaluateur de démonstration en base : Dr Test Evaluateur / evaluateur.test@medecine-test.fr (quota 1 ou 2/3 restant, preview uniquement).
 - ⚠️ Gap connu signalé (non corrigé, hors périmètre) : les invités VIP passent par /submit SANS marquage → peuvent polluer stats/alerte. À arbitrer.
 - Prochaine étape programme : rédaction des 4 supports (S2 page évaluateur = déjà structurée dans l'app ; S3 cas de démonstration fictif ; S4 grille ; S1 invitation) sur validation utilisateur.
+
+## 2026-08-07 — Séparation circuits commercial / maturité IA (source_type)
+- Champ `source_type` unifié (client_paye | evaluateur_expert | vip | test_admin | partenaire réservé) propagé automatiquement dans : dossier_express (aux 3 points de création), case_outcomes (via store_case_outcome), docchain_stats (via source_hint frontend → _process_files_payload).
+- **Chemin VIP corrigé** : détection serveur du cookie vip_session dans /submit → soumission possible sans session_id pour un VIP actif, dossier marqué source_type=vip + vip_access=True. (Le chemin était cassé avant : 400 session_id requis.)
+- Exclusions commerciales étendues à vip_access : product-stats, rapport hebdo, alerte client réel (skip + rank), quality-stats (choices+citations).
+- Chaîne de maturité IA INTACTE pour toutes les sources (seul improvement_optout exclut) — vérifié e2e : dossier VIP complet → case_outcomes {test_admin:15, vip:1}.
+- Rétro-étiquetage idempotent au démarrage : 15 case_outcomes + 70 docchain_stats → test_admin.
+- Vérifications : KPIs commerciaux à 0 malgré dossiers VIP+éval réels, aucune alerte déclenchée, aucune PII ajoutée (labels uniquement), page publique /dossier-express inchangée (Googlebot + screenshot).
+
+## BACKLOG V2 — Issue réelle des dossiers (noté sur ordre utilisateur, NE PAS développer)
+Objectif futur : écran admin permettant de renseigner l'issue réelle d'un dossier (recours gagné, taux modifié, reconnaissance obtenue, résultat final) dans les champs déjà prévus `issue_reelle` / `action_recommandee` de case_outcomes. Cette donnée deviendra l'élément majeur de maturité IA (apprentissage pondéré par source_type). Déclencheur : premiers retours clients réels.

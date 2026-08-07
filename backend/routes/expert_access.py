@@ -198,6 +198,7 @@ async def expert_access_submit(request: Request):
         "processing_step": "checkout_valide",
         "premium_pdf": premium_pdf,
         "eval_test": True,
+        "source_type": "evaluateur_expert",
         "evaluator_id": entry["id"],
         "evaluator_profile": entry.get("profile_type", "autre"),
         "amount": 0,

@@ -558,7 +558,8 @@ export const DossierExpressPage = () => {
         if (typeof window !== 'undefined') window.addEventListener('upload-progress', handleUploadProgress);
         let extraction;
         try {
-          extraction = await extractTextFromFiles(files, form.documents_text || '', onChunkProgress);
+          const sourceHint = evalAccess ? 'evaluateur_expert' : (isAdminMode && adminToken) ? 'test_admin' : isVip ? 'vip' : 'client_paye';
+          extraction = await extractTextFromFiles(files, form.documents_text || '', onChunkProgress, sourceHint);
         } finally {
           if (typeof window !== 'undefined') window.removeEventListener('upload-progress', handleUploadProgress);
         }

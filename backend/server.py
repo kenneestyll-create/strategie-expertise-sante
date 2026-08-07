@@ -241,6 +241,15 @@ async def startup_db_client():
     except Exception as e:
         logger.warning(f"agents_versions auto-snapshot skipped (non-blocking): {e}")
 
+    # Rétro-étiquetage maturité IA (idempotent) — historique = tests admin (07/08/2026)
+    try:
+        r1 = await db.case_outcomes.update_many({"source_type": {"$exists": False}}, {"$set": {"source_type": "test_admin"}})
+        r2 = await db.docchain_stats.update_many({"source_type": {"$exists": False}}, {"$set": {"source_type": "test_admin"}})
+        if r1.modified_count or r2.modified_count:
+            logger.info(f"[SOURCE_TYPE] Rétro-étiquetage: case_outcomes={r1.modified_count}, docchain_stats={r2.modified_count}")
+    except Exception as e:
+        logger.warning(f"[SOURCE_TYPE] Rétro-étiquetage échoué (non bloquant): {e}")
+
     # Initialize cron config if not exists
     cron_config = await db.app_config.find_one({"key": "reminder_cron"}, {"_id": 0})
     if not cron_config:
