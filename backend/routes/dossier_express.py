@@ -1325,6 +1325,7 @@ async def _send_real_dossier_alert(dossier_id: str, created_at: str, quality_cho
             return
         rank = await db.dossier_express.count_documents({
             "admin_test": {"$ne": True},
+            "eval_test": {"$ne": True},
             "email": {"$not": {"$regex": TEST_EMAIL_REGEX, "$options": "i"}},
         })
         qs = quality_summary or {}

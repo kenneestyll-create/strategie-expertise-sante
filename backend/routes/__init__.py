@@ -23,6 +23,7 @@ from routes.agents_versions import router as agents_versions_router
 from routes.test_cleanup import router as test_cleanup_router
 from routes.admin_cleanup import router as admin_cleanup_router
 from routes.video_factory import router as video_factory_router
+from routes.expert_access import router as expert_access_router, admin_router as expert_access_admin_router
 
 all_routers = [
     public_router,
@@ -50,4 +51,6 @@ all_routers = [
     test_cleanup_router,
     admin_cleanup_router,
     video_factory_router,
+    expert_access_router,
+    expert_access_admin_router,
 ]

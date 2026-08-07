@@ -79,6 +79,7 @@ import { EmailTemplateEditor } from '@/components/EmailTemplateEditor';
 import { AdminConseilsStrate } from '@/components/AdminConseilsStrate';
 import { AdminSettingsTab } from '@/components/AdminSettingsTab';
 import { AdminConversionAnalytics } from '@/components/AdminConversionAnalytics';
+import { AdminExpertAccess } from '@/components/AdminExpertAccess';
 import { AdminPremiumReview } from '@/components/AdminPremiumReview';
 import { AdminV2Readiness } from '@/components/AdminV2Readiness';
 import { AdminPredictiveV2 } from '@/components/AdminPredictiveV2';
@@ -2419,6 +2420,9 @@ export const AdminDashboard = () => {
           </TabsContent>
           {/* Dossier Express IA Admin Tab — PREMIUM COCKPIT */}
           <TabsContent value="dossier-express" className="space-y-8" data-testid="dossier-express-tab-content">
+
+            {/* ====== ACCÈS ÉVALUATEURS EXPERTS ====== */}
+            <AdminExpertAccess token={token} />
 
             {/* ====== LAUNCH MODE CONTROL ====== */}
             <Card className={`border-2 transition-all ${launchMode.mode === 'ouvert' ? 'border-green-300 bg-green-50/20' : launchMode.mode === 'controle' ? 'border-amber-300 bg-amber-50/20' : 'border-red-300 bg-red-50/20'}`} data-testid="launch-mode-card">

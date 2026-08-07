@@ -54,11 +54,11 @@ async def get_quality_stats(admin: dict = Depends(get_current_admin)):
     levels = await db.docchain_stats.aggregate([{"$group": {"_id": "$confidence_level", "n": {"$sum": 1}}}]).to_list(10)
     stats["extractions"]["levels"] = {(l["_id"] or "?"): l["n"] for l in levels}
 
-    choices = await db.dossier_express.aggregate([{"$group": {"_id": "$quality_choice", "n": {"$sum": 1}}}]).to_list(10)
+    choices = await db.dossier_express.aggregate([{"$match": {"eval_test": {"$ne": True}}}, {"$group": {"_id": "$quality_choice", "n": {"$sum": 1}}}]).to_list(10)
     stats["choices"] = {(c["_id"] or "not_available"): c["n"] for c in choices}
 
     cit = await db.dossier_express.aggregate([
-        {"$match": {"citation_stats.total": {"$gt": 0}}},
+        {"$match": {"citation_stats.total": {"$gt": 0}, "eval_test": {"$ne": True}}},
         {"$group": {"_id": None, "dossiers": {"$sum": 1},
                     "total": {"$sum": "$citation_stats.total"},
                     "verified": {"$sum": "$citation_stats.verified"}}},
@@ -83,7 +83,7 @@ async def get_product_stats(admin: dict = Depends(get_current_admin)):
     paid = await db.payment_transactions.count_documents({"payment_status": "paid", "package_id": {"$regex": "dossier", "$options": "i"}})
     if not paid:
         paid = await db.payment_transactions.count_documents({"payment_status": "paid"})
-    real_dossiers = {"admin_test": {"$ne": True}, "email": {"$ne": "admin@test"}}
+    real_dossiers = {"admin_test": {"$ne": True}, "eval_test": {"$ne": True}, "email": {"$ne": "admin@test"}}
     submitted = await db.dossier_express.count_documents(real_dossiers)
     completed = await db.dossier_express.count_documents({**real_dossiers, "status": "completed"})
 
@@ -2716,6 +2716,7 @@ async def _generate_weekly_report_data():
     from utils.email_guard import TEST_EMAIL_REGEX, IS_PREVIEW
     real_filter = {
         "admin_test": {"$ne": True},
+        "eval_test": {"$ne": True},
         "email": {"$not": {"$regex": TEST_EMAIL_REGEX, "$options": "i"}},
         "created_at": {"$gte": cutoff},
     }

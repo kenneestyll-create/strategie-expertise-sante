@@ -799,7 +799,7 @@ async def sitemap_xml():
 
 @router.get("/robots.txt")
 async def robots_txt():
-    content = f"""User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /admin/login\nDisallow: /espace-client\n\nSitemap: {SITE_URL}/api/sitemap.xml\n"""
+    content = f"""User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /admin/login\nDisallow: /espace-client\nDisallow: /evaluation-expert\n\nSitemap: {SITE_URL}/api/sitemap.xml\n"""
     return PlainTextResponse(content=content)
 
 

@@ -291,6 +291,9 @@ export const DossierExpressPage = () => {
   const [step, setStep] = useState('landing');
   const [loading, setLoading] = useState(false);
   const { isAdminMode, adminToken } = useAdminTest();
+  const [evalAccess] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('expert_access') || 'null'); } catch { return null; }
+  });
   const { isVip, vipName } = useVip();
   const [consent, setConsent] = useState(false);
   const [improvementOptout, setImprovementOptout] = useState(false);
@@ -299,6 +302,12 @@ export const DossierExpressPage = () => {
     type_dossier: '', regime: '',
     documents_text: ''
   });
+  useEffect(() => {
+    if (evalAccess?.email) {
+      setForm(f => ({ ...f, email: f.email || evalAccess.email, name: f.name || evalAccess.name || '' }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [files, setFiles] = useState([]);
   const [dossierId, setDossierId] = useState(null);
   const [pollStatus, setPollStatus] = useState(null);
@@ -440,6 +449,13 @@ export const DossierExpressPage = () => {
       return;
     }
     // VIP bypass: skip payment like admin
+    if (evalAccess) {
+      safeSessionStorage.set('dossier_express_form', JSON.stringify(form));
+      safeSessionStorage.set('dossier_express_premium_pdf', premiumPdf ? '1' : '0');
+      setAdminPaid(true);
+      toast.success(`Mode évaluation (${evalAccess.name}) : analyse offerte, hors statistiques.`);
+      return;
+    }
     if (isVip) {
       safeSessionStorage.set('dossier_express_form', JSON.stringify(form));
       safeSessionStorage.set('dossier_express_premium_pdf', premiumPdf ? '1' : '0');
@@ -633,11 +649,20 @@ export const DossierExpressPage = () => {
   // LOT 1 PHASE B — soumission effective (appelée directement ou après l'écran qualité)
   const performSubmit = async (documentsText, documentDetails, storedFiles, qualityChoice, qualitySummary) => {
     const isAdminBypass = isAdminMode && adminToken;
+    const isEvalMode = !isAdminBypass && !!evalAccess;
     try {
       const isPremium = safeSessionStorage.get('dossier_express_premium_pdf') === '1';
-      const endpoint = isAdminBypass ? `${API}/dossier-express/admin-bypass` : `${API}/dossier-express/submit`;
+      const endpoint = isAdminBypass ? `${API}/dossier-express/admin-bypass` : isEvalMode ? `${API}/expert-access/submit` : `${API}/dossier-express/submit`;
       const payload = isAdminBypass ? {
         name: form.name, email: form.email, situation: form.situation,
+        type_dossier: form.type_dossier, regime: form.regime,
+        documents_text: documentsText, document_details: documentDetails,
+        original_documents: storedFiles, premium_pdf: isPremium,
+        improvement_optout: improvementOptout,
+        quality_choice: qualityChoice, quality_summary: qualitySummary
+      } : isEvalMode ? {
+        token: evalAccess.token, email: evalAccess.email,
+        name: form.name, situation: form.situation,
         type_dossier: form.type_dossier, regime: form.regime,
         documents_text: documentsText, document_details: documentDetails,
         original_documents: storedFiles, premium_pdf: isPremium,
@@ -661,6 +686,14 @@ export const DossierExpressPage = () => {
       safeSessionStorage.remove('dossier_express_premium_pdf');
       safeSessionStorage.remove('dossier_express_admin_bypass');
       if (isAdminBypass) toast.success("Dossier soumis — analyse IA en cours (mode admin).");
+      else if (isEvalMode) {
+        const rem = res.data?.quota_remaining;
+        toast.success(`Analyse lancée (mode évaluation)${typeof rem === 'number' ? ` — ${rem} analyse(s) restante(s)` : ''}.`);
+        try {
+          const s = JSON.parse(sessionStorage.getItem('expert_access') || 'null');
+          if (s && typeof rem === 'number') { s.quota_remaining = rem; sessionStorage.setItem('expert_access', JSON.stringify(s)); }
+        } catch { /* ignore */ }
+      }
     } catch (err) {
       // Submission failed — revert from 'processing' back to 'form' so the user can retry.
       setStep('form');
@@ -1158,7 +1191,7 @@ export const DossierExpressPage = () => {
                       disabled={loading || (!isAdminMode && !isVip && (!form.email || !form.name || !consent))}
                       data-testid="de-checkout-button"
                     >
-                      {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection vers le paiement...</> : isVip ? <><CreditCard className="w-5 h-5" /> Accès Partenaire — Lancer l'analyse</> : <><CreditCard className="w-5 h-5" /> {adminPaid ? 'Mode Admin — Paiement validé' : `Payer ${totalAmount} € — Analyse sous 2h`}</>}
+                      {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirection vers le paiement...</> : evalAccess ? <><CreditCard className="w-5 h-5" /> Mode évaluation — Lancer l'analyse</> : isVip ? <><CreditCard className="w-5 h-5" /> Accès Partenaire — Lancer l'analyse</> : <><CreditCard className="w-5 h-5" /> {adminPaid ? 'Mode Admin — Paiement validé' : `Payer ${totalAmount} € — Analyse sous 2h`}</>}
                     </Button>
                   )}
 

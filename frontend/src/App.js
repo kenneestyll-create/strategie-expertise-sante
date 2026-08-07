@@ -102,6 +102,7 @@ const MedecinConseilPage = lazy(() => import("@/pages/MedecinConseilPage"));
 const GuidePage = lazy(() => import("@/pages/GuidePage"));
 const GuidesPratiquesPage = lazy(() => import("@/pages/GuidesPratiquesPage"));
 const VipAccessPage = lazy(() => import("@/pages/VipAccessPage"));
+const EvaluateurExpertPage = lazy(() => import("@/pages/EvaluateurExpertPage"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -176,6 +177,7 @@ function App() {
                   <Route path="/guide/:slug" element={<><Header /><GuidePage /><Footer /></>} />
                   <Route path="/guides-pratiques" element={<><Header /><GuidesPratiquesPage /><Footer /></>} />
                   <Route path="/acces-invite" element={<><Header /><VipAccessPage /><Footer /></>} />
+                  <Route path="/evaluation-expert" element={<EvaluateurExpertPage />} />
                   <Route path="/admin/login" element={<AdminLoginPage />} />
                   <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
                   <Route path="/admin/v5-phaseA-test" element={<ProtectedRoute><V5PhaseATest /></ProtectedRoute>} />
