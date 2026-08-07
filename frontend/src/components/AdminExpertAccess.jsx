@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { UserPlus, Copy, Trash2, Loader2, GraduationCap } from 'lucide-react';
+import { UserPlus, Copy, Trash2, Loader2, GraduationCap, MessageSquareText } from 'lucide-react';
+import { ExpertFeedbackDialog } from './ExpertFeedbackDialog';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const PROFILES = {
@@ -18,16 +19,22 @@ export const AdminExpertAccess = ({ token }) => {
   const [config, setConfig] = useState({ default_quota: 3, default_validity_days: 30 });
   const [form, setForm] = useState({ name: '', email: '', profile_type: 'medecin_expert', quota_analyses: '', validity_days: '', notes: '' });
   const [loading, setLoading] = useState(false);
+  const [feedbacks, setFeedbacks] = useState({});
+  const [viewFeedback, setViewFeedback] = useState(null);
   const headers = { Authorization: `Bearer ${token}` };
 
   const load = useCallback(async () => {
     try {
-      const [l, c] = await Promise.all([
+      const [l, c, fb] = await Promise.all([
         axios.get(`${API}/admin/expert-access`, { headers }),
         axios.get(`${API}/admin/expert-access/config`, { headers }),
+        axios.get(`${API}/admin/expert-access/feedback`, { headers }),
       ]);
       setList(l.data.evaluators || []);
       setConfig(c.data);
+      const map = {};
+      (fb.data.feedback || []).forEach((f) => { map[f.evaluator_id] = f; });
+      setFeedbacks(map);
     } catch { toast.error('Chargement des évaluateurs impossible'); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
@@ -121,6 +128,11 @@ export const AdminExpertAccess = ({ token }) => {
                   <div className="min-w-[220px]">
                     <p className="font-medium text-sm">{e.name} <span className="text-[10px] text-muted-foreground font-normal">({PROFILES[e.profile_type] || e.profile_type})</span></p>
                     <p className="text-muted-foreground">{e.email}{e.notes ? ` — ${e.notes}` : ''}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5" data-testid={`ea-activity-${e.id}`}>
+                      {e.dossiers_count > 0 ? `${e.dossiers_count} analyse${e.dossiers_count > 1 ? 's' : ''} réalisée${e.dossiers_count > 1 ? 's' : ''}` : 'Aucune analyse'}
+                      {' · '}Restant : {Math.max(0, e.quota_analyses - e.analyses_used)}
+                      {e.last_activity_at ? ` · Dernière activité : ${new Date(e.last_activity_at).toLocaleDateString('fr-FR')}` : ' · Jamais connecté'}
+                    </p>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <span className="text-muted-foreground">Quota</span>
@@ -133,6 +145,14 @@ export const AdminExpertAccess = ({ token }) => {
                     <Button size="sm" variant="ghost" className="h-6 text-[10px] ml-1 px-1.5" onClick={() => update(e.id, { extend_days: 30 })} data-testid={`ea-extend-${e.id}`}>+30 j</Button>
                   </div>
                   <div className="flex items-center gap-2">
+                    {e.has_feedback ? (
+                      <Button size="sm" variant="outline" className="h-6 text-[10px] gap-1 px-2 border-emerald-500/40 text-emerald-600 hover:text-emerald-700"
+                        onClick={() => setViewFeedback(feedbacks[e.id])} data-testid={`ea-view-feedback-${e.id}`}>
+                        <MessageSquareText className="w-3 h-3" /> Voir le retour
+                      </Button>
+                    ) : (
+                      <span className="text-[10px] text-muted-foreground italic" data-testid={`ea-no-feedback-${e.id}`}>Pas de retour</span>
+                    )}
                     <Switch checked={e.active} onCheckedChange={(v) => update(e.id, { active: v })} data-testid={`ea-toggle-${e.id}`} />
                     <Button size="sm" variant="outline" className="h-6 text-[10px] gap-1 px-2" onClick={() => copyLink(e.token)} data-testid={`ea-copy-${e.id}`}>
                       <Copy className="w-3 h-3" /> Lien
@@ -146,6 +166,7 @@ export const AdminExpertAccess = ({ token }) => {
             })}
           </div>
         )}
+        <ExpertFeedbackDialog feedback={viewFeedback} open={!!viewFeedback} onOpenChange={(o) => !o && setViewFeedback(null)} />
       </CardContent>
     </Card>
   );

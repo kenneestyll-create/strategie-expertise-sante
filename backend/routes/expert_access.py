@@ -88,7 +88,27 @@ async def create_expert_access(request: Request, admin: dict = Depends(get_curre
 @admin_router.get("")
 async def list_expert_access(admin: dict = Depends(get_current_admin)):
     entries = await db.expert_access.find({}).sort("created_at", -1).to_list(200)
-    return {"evaluators": [_serialize(e) for e in entries]}
+    ids = [e["id"] for e in entries]
+    feedbacks = await db.expert_feedback.find({"evaluator_id": {"$in": ids}}, {"_id": 0}).to_list(200)
+    fb_map = {f["evaluator_id"]: f for f in feedbacks}
+    dossier_agg = await db.dossier_express.aggregate([
+        {"$match": {"evaluator_id": {"$in": ids}}},
+        {"$group": {"_id": "$evaluator_id", "last_dossier_at": {"$max": "$created_at"}, "dossiers_count": {"$sum": 1}}},
+    ]).to_list(200)
+    d_map = {d["_id"]: d for d in dossier_agg}
+    out = []
+    for e in entries:
+        s = _serialize(e)
+        fb = fb_map.get(e["id"])
+        d = d_map.get(e["id"], {})
+        s["has_feedback"] = bool(fb)
+        s["feedback_updated_at"] = (fb or {}).get("updated_at")
+        s["last_dossier_at"] = d.get("last_dossier_at")
+        s["dossiers_count"] = d.get("dossiers_count", 0)
+        activity = [x for x in (s.get("last_login_at"), s["feedback_updated_at"], s["last_dossier_at"]) if x]
+        s["last_activity_at"] = max(activity) if activity else None
+        out.append(s)
+    return {"evaluators": out}
 
 
 @admin_router.put("/{access_id}")
