@@ -295,6 +295,13 @@ export const DossierExpressPage = () => {
     try { return JSON.parse(sessionStorage.getItem('expert_access') || 'null'); } catch { return null; }
   });
   const { isVip, vipName } = useVip();
+  const evalBanner = evalAccess ? (
+    <div className="sticky top-16 z-40 bg-[#C9A84C] text-[#0a0a08] text-center text-xs sm:text-sm font-medium px-4 py-2" data-testid="eval-mode-banner">
+      Mode évaluation expert actif — aucune facturation. Vous testez l'expérience proposée aux utilisateurs de Dossier Express IA.
+    </div>
+  ) : null;
+
+
   const [consent, setConsent] = useState(false);
   const [improvementOptout, setImprovementOptout] = useState(false);
   const [form, setForm] = useState({
@@ -718,6 +725,7 @@ export const DossierExpressPage = () => {
   if (step === 'landing') {
     return (
       <main className="page-transition pt-20">
+      {evalBanner}
       <SEO title="Analyse de dossier maladie professionnelle — rapport sous 2 h" description="Faites analyser votre dossier maladie professionnelle ou accident du travail : rapport personnalisé sous 2 h, jurisprudences et barèmes croisés — 97 €." path="/dossier-express" />
 
         {/* Hero */}
@@ -1027,6 +1035,7 @@ export const DossierExpressPage = () => {
 
     return (
       <main className="page-transition pt-20">
+      {evalBanner}
         <section className="section-padding">
           <div className="max-w-5xl mx-auto">
             <button onClick={() => setStep('landing')} className="text-sm text-muted-foreground hover:text-foreground mb-4 flex items-center gap-1 transition-colors">
@@ -1224,6 +1233,7 @@ export const DossierExpressPage = () => {
     const hasEssentialAlert = (qualityGate.alerts || []).length > 0;
     return (
       <main className="page-transition pt-20 min-h-screen bg-secondary/30">
+      {evalBanner}
         <section className="section-padding">
           <div className="max-w-2xl mx-auto">
             <Card className="border-border shadow-lg" data-testid="quality-gate-screen">
@@ -1307,6 +1317,7 @@ export const DossierExpressPage = () => {
     if (isIncident) {
       return (
         <main className="page-transition pt-20">
+      {evalBanner}
           <section className="section-padding">
             <div className="max-w-xl mx-auto text-center">
               <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -1402,6 +1413,7 @@ export const DossierExpressPage = () => {
 
     return (
       <main className="page-transition pt-20">
+      {evalBanner}
         <section className="section-padding">
           <div className="max-w-xl mx-auto">
 
@@ -1593,6 +1605,7 @@ export const DossierExpressPage = () => {
   if (step === 'success') {
     return (
       <main className="page-transition pt-20">
+      {evalBanner}
         <section className="section-padding">
           <div className="max-w-lg mx-auto text-center">
             <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -1647,6 +1660,7 @@ export const DossierExpressPage = () => {
   if (step === 'error') {
     return (
       <main className="page-transition pt-20">
+      {evalBanner}
         <section className="section-padding">
           <div className="max-w-lg mx-auto text-center">
             <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
