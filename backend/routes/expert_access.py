@@ -33,6 +33,7 @@ def _serialize(e: dict) -> dict:
         "expires_at": e["expires_at"], "active": e.get("active", True),
         "notes": e.get("notes", ""), "created_at": e.get("created_at"),
         "last_login_at": e.get("last_login_at"),
+        "invitation_sent_at": e.get("invitation_sent_at"),
     }
 
 
@@ -135,6 +136,84 @@ async def update_expert_access(access_id: str, request: Request, admin: dict = D
     if not res:
         raise HTTPException(status_code=404, detail="Accès introuvable")
     return _serialize(res)
+
+
+def _build_invitation_html(name: str, link: str, quota: int, validity_date: str) -> str:
+    return f"""<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#f4f2ed;font-family:Georgia,'Times New Roman',serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f2ed;padding:32px 16px;">
+<tr><td align="center">
+<table width="620" cellpadding="0" cellspacing="0" style="max-width:620px;background:#ffffff;border-radius:8px;overflow:hidden;">
+<tr><td style="background:#141410;padding:26px 36px;">
+  <span style="color:#f5f0e8;font-size:17px;font-weight:bold;">Strat&eacute;gie &amp; Expertise Sant&eacute;</span><br/>
+  <span style="color:#C9A84C;font-size:11px;letter-spacing:3px;text-transform:uppercase;">Programme d'&eacute;valuation expert</span>
+</td></tr>
+<tr><td style="padding:34px 36px;">
+  <p style="font-size:15px;color:#222;">Docteur,</p>
+  <p style="font-size:14px;color:#444;line-height:1.75;">
+    Nous d&eacute;veloppons un outil d'aide &agrave; la structuration de dossiers pour les personnes confront&eacute;es
+    &agrave; un refus de reconnaissance (maladie professionnelle, MDPH, litige assurantiel) : <strong>Dossier Express IA</strong>.
+    Avant d'aller plus loin, nous avons besoin d'un regard ext&eacute;rieur exigeant &mdash; et le v&ocirc;tre serait particuli&egrave;rement pr&eacute;cieux.
+  </p>
+  <p style="font-size:14px;color:#444;line-height:1.75;"><strong>Ce que nous vous proposons :</strong></p>
+  <ul style="font-size:14px;color:#444;line-height:1.75;padding-left:20px;margin:0 0 14px;">
+    <li>Un acc&egrave;s d'&eacute;valuation strictement priv&eacute;, gratuit, valable jusqu'au {validity_date} ({quota} analyses).</li>
+    <li>Un <strong>cas enti&egrave;rement fictif</strong>, pr&eacute;par&eacute; pour l'&eacute;valuation, disponible imm&eacute;diatement dans votre espace.</li>
+    <li>La possibilit&eacute;, facultative, de tester un dossier professionnel <strong>anonymis&eacute; par vos soins</strong>.</li>
+    <li>Une grille d'&eacute;valuation int&eacute;gr&eacute;e pour consigner votre retour &mdash; <strong>vos critiques sont le livrable attendu</strong>, pas votre approbation.</li>
+  </ul>
+  <p style="font-size:14px;color:#444;line-height:1.75;">
+    <strong>Ce que l'outil n'est pas &mdash; et ne doit jamais devenir :</strong> il n'analyse que l'organisation documentaire
+    et les &eacute;l&eacute;ments proc&eacute;duraux. Il ne porte aucun jugement clinique, ne discute aucun diagnostic et ne pr&eacute;tend
+    remplacer ni l'expertise m&eacute;dicale, ni le m&eacute;decin, ni l'avocat. C'est pr&eacute;cis&eacute;ment cette fronti&egrave;re que nous
+    vous demandons d'&eacute;prouver.
+  </p>
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;"><tr><td align="center">
+    <a href="{link}" style="display:inline-block;background:#C9A84C;color:#141410;font-size:14px;font-weight:bold;padding:13px 30px;border-radius:6px;text-decoration:none;">Acc&eacute;der &agrave; mon espace d'&eacute;valuation</a>
+  </td></tr></table>
+  <p style="font-size:12px;color:#777;line-height:1.7;">
+    Il vous suffira de confirmer votre adresse email (celle-ci) pour entrer. Temps total estim&eacute; : environ 1 heure, &agrave; votre rythme.
+    Votre &eacute;valuation restera strictement confidentielle et votre nom ne sera jamais cit&eacute; sans votre accord &eacute;crit.
+    Aucune sollicitation commerciale ne suivra cet essai.
+  </p>
+  <p style="font-size:13px;color:#555;">Nous vous remercions sinc&egrave;rement du temps que vous voudrez bien y consacrer.</p>
+  <p style="font-size:13px;color:#555;">Bien respectueusement,<br/>Strat&eacute;gie &amp; Expertise Sant&eacute;</p>
+</td></tr>
+<tr><td style="background:#141410;padding:14px 36px;text-align:center;">
+  <p style="color:#C9A84C;font-size:11px;margin:0;">contact@strategie-expertise-sante.fr</p>
+</td></tr>
+</table></td></tr></table></body></html>"""
+
+
+@admin_router.post("/{access_id}/send-invitation")
+async def send_expert_invitation(access_id: str, admin: dict = Depends(get_current_admin)):
+    entry = await db.expert_access.find_one({"id": access_id})
+    if not entry:
+        raise HTTPException(status_code=404, detail="Accès introuvable")
+    if not entry.get("active", True):
+        raise HTTPException(status_code=400, detail="Accès désactivé — réactivez-le avant d'inviter")
+    from config import RESEND_AVAILABLE, SENDER_EMAIL, SITE_URL
+    import resend
+    if not (RESEND_AVAILABLE and resend.api_key):
+        raise HTTPException(status_code=503, detail="Service email non disponible")
+    link = f"{SITE_URL}/evaluation-expert?t={entry['token']}"
+    validity_date = datetime.fromisoformat(entry["expires_at"]).strftime("%d/%m/%Y")
+    html = _build_invitation_html(entry["name"], link, entry["quota_analyses"], validity_date)
+    try:
+        await asyncio.to_thread(resend.Emails.send, {
+            "from": SENDER_EMAIL,
+            "to": [entry["email"]],
+            "subject": "Invitation personnelle — regard d'expert sur Dossier Express IA",
+            "html": html,
+        })
+    except Exception as e:
+        logger.error(f"[EXPERT-ACCESS] Envoi invitation échoué pour {entry['name']}: {e}")
+        raise HTTPException(status_code=502, detail=f"Envoi impossible : {str(e)[:120]}")
+    sent_at = datetime.now(timezone.utc).isoformat()
+    await db.expert_access.update_one({"id": access_id}, {"$set": {"invitation_sent_at": sent_at}})
+    logger.info(f"[EXPERT-ACCESS] Invitation envoyée à {entry['name']} ({entry['email']})")
+    return {"status": "sent", "invitation_sent_at": sent_at}
 
 
 @admin_router.delete("/feedback/{evaluator_id}")

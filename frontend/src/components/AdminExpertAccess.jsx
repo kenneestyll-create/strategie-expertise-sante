@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { UserPlus, Copy, Trash2, Loader2, GraduationCap, MessageSquareText } from 'lucide-react';
+import { UserPlus, Copy, Trash2, Loader2, GraduationCap, MessageSquareText, Send } from 'lucide-react';
 import { ExpertFeedbackDialog } from './ExpertFeedbackDialog';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -73,6 +73,20 @@ export const AdminExpertAccess = ({ token }) => {
     if (!window.confirm(`Supprimer l'accès de ${name} ?`)) return;
     try { await axios.delete(`${API}/admin/expert-access/${id}`, { headers }); await load(); toast.success('Accès supprimé'); }
     catch { toast.error('Suppression impossible'); }
+  };
+
+  const [sendingInvite, setSendingInvite] = useState(null);
+
+  const sendInvitation = async (e) => {
+    const already = e.invitation_sent_at ? `\n(Une invitation a déjà été envoyée le ${new Date(e.invitation_sent_at).toLocaleDateString('fr-FR')}.)` : '';
+    if (!window.confirm(`Envoyer l'email d'invitation à ${e.name} (${e.email}) ?${already}`)) return;
+    setSendingInvite(e.id);
+    try {
+      await axios.post(`${API}/admin/expert-access/${e.id}/send-invitation`, {}, { headers });
+      toast.success(`Invitation envoyée à ${e.email}`);
+      await load();
+    } catch (err) { toast.error(err.response?.data?.detail || "Envoi impossible"); }
+    finally { setSendingInvite(null); }
   };
 
   const saveConfig = async () => {
@@ -145,6 +159,12 @@ export const AdminExpertAccess = ({ token }) => {
                     <Button size="sm" variant="ghost" className="h-6 text-[10px] ml-1 px-1.5" onClick={() => update(e.id, { extend_days: 30 })} data-testid={`ea-extend-${e.id}`}>+30 j</Button>
                   </div>
                   <div className="flex items-center gap-2">
+                    <Button size="sm" variant={e.invitation_sent_at ? 'ghost' : 'default'} disabled={sendingInvite === e.id}
+                      className={`h-6 text-[10px] gap-1 px-2 ${e.invitation_sent_at ? 'text-muted-foreground' : 'bg-[#C9A84C] hover:bg-[#b8963e] text-[#141410]'}`}
+                      onClick={() => sendInvitation(e)} data-testid={`ea-invite-${e.id}`}>
+                      {sendingInvite === e.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                      {e.invitation_sent_at ? `Renvoyer (env. ${new Date(e.invitation_sent_at).toLocaleDateString('fr-FR')})` : 'Inviter'}
+                    </Button>
                     {e.has_feedback ? (
                       <Button size="sm" variant="outline" className="h-6 text-[10px] gap-1 px-2 border-emerald-500/40 text-emerald-600 hover:text-emerald-700"
                         onClick={() => setViewFeedback(feedbacks[e.id])} data-testid={`ea-view-feedback-${e.id}`}>
