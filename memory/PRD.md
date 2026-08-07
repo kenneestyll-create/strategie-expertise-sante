@@ -567,3 +567,13 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - Bug corrigé par testing agent : import Link manquant dans SimulateurHubPage.jsx.
 - Pages gelées non modifiées (vérifié par tests) : /dossier-express, /expertise-medicale, /expertise-medicale/assureur.
 - **Phase 2 (post-J+28)** : scission AT/MP en 2 piliers, création piliers /taux-ipp /invalidite /consolidation /rechute /faute-inexcusable, reconstruction cocons.
+
+## 2026-08-07 — Module « Évaluateur Expert » livré et testé (iteration_213 : 100 %)
+- Backend routes/expert_access.py : CRUD admin + config défauts (site_settings.expert_access_config, rien codé en dur) + verify (token+email) + submit gratuit avec décrément quota atomique. Dossiers marqués eval_test+evaluator_id, amount 0.
+- Exclusions KPIs : eval_test exclu de product-stats, rapport hebdo, alerte client réel, quality-stats (choices+citations).
+- Frontend : EvaluateurExpertPage (/evaluation-expert?t=, noindex, hors sitemap, Disallow robots.txt) ; mode évaluateur conditionnel dans DossierExpressPage (inactif par défaut — régression publique vérifiée) ; panneau AdminExpertAccess dans l'onglet Dossier Express (création, quota éditable, +30j, toggle, copie lien, suppression, profils : médecin/avocat/association/comité/bêta/partenaire).
+- Preuve d'invariance : diff HTML Googlebot /dossier-express AVANT/APRÈS identique (hors nonce dev). Pages gelées intactes.
+- Guide d'utilisation : /app/memory/GUIDE_MODULE_EVALUATEUR.md.
+- Évaluateur de démonstration en base : Dr Test Evaluateur / evaluateur.test@medecine-test.fr (quota 1 ou 2/3 restant, preview uniquement).
+- ⚠️ Gap connu signalé (non corrigé, hors périmètre) : les invités VIP passent par /submit SANS marquage → peuvent polluer stats/alerte. À arbitrer.
+- Prochaine étape programme : rédaction des 4 supports (S2 page évaluateur = déjà structurée dans l'app ; S3 cas de démonstration fictif ; S4 grille ; S1 invitation) sur validation utilisateur.
