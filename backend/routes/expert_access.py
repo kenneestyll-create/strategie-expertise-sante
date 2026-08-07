@@ -137,11 +137,20 @@ async def update_expert_access(access_id: str, request: Request, admin: dict = D
     return _serialize(res)
 
 
+@admin_router.delete("/feedback/{evaluator_id}")
+async def delete_expert_feedback(evaluator_id: str, admin: dict = Depends(get_current_admin)):
+    res = await db.expert_feedback.delete_one({"evaluator_id": evaluator_id})
+    if res.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Feedback introuvable")
+    return {"status": "deleted"}
+
+
 @admin_router.delete("/{access_id}")
 async def delete_expert_access(access_id: str, admin: dict = Depends(get_current_admin)):
     res = await db.expert_access.delete_one({"id": access_id})
     if res.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Accès introuvable")
+    await db.expert_feedback.delete_one({"evaluator_id": access_id})
     return {"status": "deleted"}
 
 
@@ -208,6 +217,10 @@ async def submit_expert_feedback(request: Request):
         upsert=True,
     )
     logger.info(f"[EXPERT-ACCESS] Grille d'évaluation reçue de {entry['name']} ({entry['id']}) — {len(clean_ratings)} notes")
+    from utils.notifications import notify_admin_expert_feedback
+    avg = f"{sum(clean_ratings.values()) / len(clean_ratings):.1f}" if clean_ratings else "n/a"
+    asyncio.create_task(notify_admin_expert_feedback(
+        entry["name"], entry.get("profile_type", "autre"), avg, len(clean_ratings), clean_comments))
     return {"status": "ok"}
 
 

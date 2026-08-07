@@ -36,6 +36,32 @@ async def notify_admin_incident(dossier_id: str, email: str, name: str, service:
         logger.error(f"Failed to notify admin of incident: {e}")
 
 
+async def notify_admin_expert_feedback(evaluator_name: str, profile_type: str, average: str, n_ratings: int, comments: dict):
+    """Alerte admin : une grille d'evaluation expert vient d'etre soumise."""
+    try:
+        if RESEND_AVAILABLE and resend.api_key and NOTIFICATION_EMAIL:
+            comments_html = "".join(
+                f"<p style='margin:6px 0;'><strong>{label} :</strong> {str(comments[key])[:400]}</p>"
+                for key, label in [("points_forts", "Points forts"), ("mises_en_defaut", "Mises en defaut"), ("reserves", "Reserves")]
+                if comments.get(key)
+            ) or "<p><em>Aucun commentaire libre.</em></p>"
+            html = f"""<h2>Retour d'evaluateur expert recu</h2>
+<p><strong>Evaluateur :</strong> {evaluator_name} ({profile_type})</p>
+<p><strong>Moyenne :</strong> {average} / 5 ({n_ratings} critere(s) note(s))</p>
+{comments_html}
+<p><strong>Action recommandee :</strong> consulter le retour complet et repondre rapidement a l'expert.</p>
+<p><a href="{SITE_URL}/admin">Ouvrir l'admin — onglet Dossier Express → carte Evaluateurs</a></p>"""
+            await asyncio.to_thread(resend.Emails.send, {
+                "from": SENDER_EMAIL,
+                "to": [NOTIFICATION_EMAIL],
+                "subject": f"[EVALUATEUR] Retour recu — {evaluator_name} ({average}/5)",
+                "html": html,
+            })
+            logger.info(f"[EXPERT-FEEDBACK-ALERT] Admin notifie du retour de {evaluator_name}")
+    except Exception as e:
+        logger.error(f"Failed to notify admin of expert feedback: {e}")
+
+
 async def notify_client_delay(email: str, name: str, service: str):
     """Send professional delay notification to client."""
     try:

@@ -602,6 +602,14 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - **Mission 4** : cluster RSDAE explicitement reporté APRÈS retour du premier expert (ordre user).
 - Séquence validée : Déploiement → création accès prod → envoi S1 → retour expert → corrections → RSDAE.
 
+## 2026-08-07 — Validation production + alerte retour expert (Missions 1-8 ordre post-déploiement)
+- **Validation disponibilité PROD (strategie-expertise-sante.fr)** : /evaluation-expert 200 + verrouillé sans token ✅ · ZIP cas fictif 200 (55 Ko) + PDF n°4 200 ✅ · flux token complet testé en prod (création éval test → verify → grille POST → vue admin enrichie has_feedback/last_activity → suppression) ✅ · robots.txt prod : Disallow /evaluation-expert + /cas-demonstration/ ✅ · sitemap vide ✅ · noindex : meta helmet noindex,nofollow présente (coexiste avec l'index,follow statique d'index.html — Google applique la plus restrictive ; pattern identique /espace-client) ✅ · aucun email commercial (par design, filtre source_type vérifié) ✅.
+- **Mission 5 — Alerte retour expert** : `notify_admin_expert_feedback()` dans utils/notifications.py, déclenchée en tâche de fond à chaque soumission de grille (sujet « [EVALUATEUR] Retour reçu — nom (moyenne/5) », commentaires inclus, lien admin). Testée en preview : email parti vers NOTIFICATION_EMAIL ✅. **⚠️ Nécessite un REDÉPLOIEMENT avant l'envoi de l'invitation** pour être active en prod.
+- **Hygiène** : suppression d'un évaluateur supprime désormais aussi son feedback (cascade) + endpoint admin `DELETE /admin/expert-access/feedback/{evaluator_id}`. ⚠️ Reliquat prod à purger après redéploiement : feedback orphelin evaluator_id=7fbacd5c (test validation).
+- **Mission 3/4 EN ATTENTE** : création Dr de Thiballier en prod (médecin expert, quota 3, 30 j) — bloqué sur l'email exact du Dr (à fournir par l'utilisateur). Email S1 prêt (/app/memory/EMAIL_INVITATION_S1.md), envoi personnel par l'utilisateur.
+- **Mission 6 — GEL** : aucune nouvelle fonctionnalité après l'envoi, jusqu'au retour de l'expert.
+- **Missions 7/8** : anonymisation assistée au backlog (positionnement « Anonymisation assistée, sous contrôle du professionnel », conditions : retour expert + validation besoin + périmètre RGPD) ; RSDAE reporté après retour + corrections.
+
 ## BACKLOG — Anonymisation assistée avant analyse (ÉTUDE livrée 07/08/2026, NE PAS développer sans validation)
 Étude complète : /app/memory/ETUDE_ANONYMISATION_ASSISTEE_2026-08-07.md. Recommandation : V1 texte hybride regex+LLM réservée évaluateurs, validation humaine obligatoire, mapping jamais stocké serveur, originaux non conservés en mode anonymisé. ~2 jours dev, +0,01 €/dossier, zéro impact pipeline/SEO. Déclencheur suggéré : après retour Dr de Thiballier.
 
