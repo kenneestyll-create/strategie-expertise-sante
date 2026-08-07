@@ -602,5 +602,8 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - **Mission 4** : cluster RSDAE explicitement reporté APRÈS retour du premier expert (ordre user).
 - Séquence validée : Déploiement → création accès prod → envoi S1 → retour expert → corrections → RSDAE.
 
+## BACKLOG — Anonymisation assistée avant analyse (ÉTUDE livrée 07/08/2026, NE PAS développer sans validation)
+Étude complète : /app/memory/ETUDE_ANONYMISATION_ASSISTEE_2026-08-07.md. Recommandation : V1 texte hybride regex+LLM réservée évaluateurs, validation humaine obligatoire, mapping jamais stocké serveur, originaux non conservés en mode anonymisé. ~2 jours dev, +0,01 €/dossier, zéro impact pipeline/SEO. Déclencheur suggéré : après retour Dr de Thiballier.
+
 ## BACKLOG V2 — Issue réelle des dossiers (noté sur ordre utilisateur, NE PAS développer)
 Objectif futur : écran admin permettant de renseigner l'issue réelle d'un dossier (recours gagné, taux modifié, reconnaissance obtenue, résultat final) dans les champs déjà prévus `issue_reelle` / `action_recommandee` de case_outcomes. Cette donnée deviendra l'élément majeur de maturité IA (apprentissage pondéré par source_type). Déclencheur : premiers retours clients réels.
