@@ -7,5 +7,7 @@ Allow: /
 Disallow: /admin
 Disallow: /admin/login
 Disallow: /espace-client
+Disallow: /evaluation-expert
+Disallow: /cas-demonstration/
 
 Sitemap: https://strategie-expertise-sante.fr/sitemap.xml

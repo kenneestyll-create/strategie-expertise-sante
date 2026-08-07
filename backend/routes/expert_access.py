@@ -154,6 +154,56 @@ async def verify_expert_access(request: Request):
     }
 
 
+GRID_CRITERIA = ["fidelite_documentaire", "pertinence_procedurale", "respect_perimetre",
+                 "detection_qualite", "clarte_rapport", "experience_parcours"]
+COMMENT_FIELDS = ["points_forts", "mises_en_defaut", "reserves"]
+
+
+@router.post("/feedback")
+async def submit_expert_feedback(request: Request):
+    """Grille d'évaluation structurée remplie par l'évaluateur — stockée pour exploitation future."""
+    body = await request.json()
+    entry = await _validate_access(body.get("token", ""), body.get("email", ""))
+    ratings, comments = body.get("ratings") or {}, body.get("comments") or {}
+    clean_ratings = {}
+    for k in GRID_CRITERIA:
+        try:
+            v = int(ratings.get(k))
+            if 1 <= v <= 5:
+                clean_ratings[k] = v
+        except (TypeError, ValueError):
+            continue
+    clean_comments = {k: str(comments[k]).strip()[:5000] for k in COMMENT_FIELDS if comments.get(k) and str(comments[k]).strip()}
+    if not clean_ratings and not clean_comments:
+        raise HTTPException(status_code=400, detail="Aucun retour fourni")
+    now = datetime.now(timezone.utc).isoformat()
+    await db.expert_feedback.update_one(
+        {"evaluator_id": entry["id"]},
+        {"$set": {
+            "evaluator_name": entry["name"], "evaluator_email": entry["email"],
+            "profile_type": entry.get("profile_type", "autre"),
+            "ratings": clean_ratings, "comments": clean_comments,
+            "updated_at": now,
+        }, "$setOnInsert": {"evaluator_id": entry["id"], "created_at": now}},
+        upsert=True,
+    )
+    logger.info(f"[EXPERT-ACCESS] Grille d'évaluation reçue de {entry['name']} ({entry['id']}) — {len(clean_ratings)} notes")
+    return {"status": "ok"}
+
+
+@router.get("/feedback")
+async def get_own_expert_feedback(token: str, email: str):
+    entry = await _validate_access(token, email)
+    fb = await db.expert_feedback.find_one({"evaluator_id": entry["id"]}, {"_id": 0})
+    return {"feedback": fb}
+
+
+@admin_router.get("/feedback")
+async def list_expert_feedback(admin: dict = Depends(get_current_admin)):
+    items = await db.expert_feedback.find({}, {"_id": 0}).sort("updated_at", -1).to_list(200)
+    return {"feedback": items}
+
+
 @router.post("/submit")
 async def expert_access_submit(request: Request):
     from routes.dossier_express import _process_dossier_express, _link_documents_to_dossier, _has_llm_key
