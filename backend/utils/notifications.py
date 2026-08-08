@@ -36,10 +36,15 @@ async def notify_admin_incident(dossier_id: str, email: str, name: str, service:
         logger.error(f"Failed to notify admin of incident: {e}")
 
 
-async def notify_admin_expert_feedback(evaluator_name: str, profile_type: str, average: str, n_ratings: int, comments: dict):
+async def notify_admin_expert_feedback(evaluator_name: str, profile_type: str, average: str, n_ratings: int, comments: dict, benefits: list = None):
     """Alerte admin : une grille d'evaluation expert vient d'etre soumise."""
     try:
         if RESEND_AVAILABLE and resend.api_key and NOTIFICATION_EMAIL:
+            benefit_labels = {"gain_temps": "Gain de temps", "comprehension_initiale": "Comprehension initiale",
+                              "pieces_manquantes": "Pieces manquantes", "chronologie": "Chronologie",
+                              "incoherences": "Incoherences", "tracabilite_sources": "Tracabilite des sources",
+                              "hierarchisation": "Hierarchisation"}
+            benefits_html = ("<p><strong>Benefices constates :</strong> " + ", ".join(benefit_labels.get(b, b) for b in benefits) + "</p>") if benefits else "<p><strong>Benefices constates :</strong> <em>aucun coche</em></p>"
             comments_html = "".join(
                 f"<p style='margin:6px 0;'><strong>{label} :</strong> {str(comments[key])[:400]}</p>"
                 for key, label in [("points_forts", "Points forts"), ("mises_en_defaut", "Mises en defaut"), ("reserves", "Reserves")]
@@ -48,6 +53,7 @@ async def notify_admin_expert_feedback(evaluator_name: str, profile_type: str, a
             html = f"""<h2>Retour d'evaluateur expert recu</h2>
 <p><strong>Evaluateur :</strong> {evaluator_name} ({profile_type})</p>
 <p><strong>Moyenne :</strong> {average} / 5 ({n_ratings} critere(s) note(s))</p>
+{benefits_html}
 {comments_html}
 <p><strong>Action recommandee :</strong> consulter le retour complet et repondre rapidement a l'expert.</p>
 <p><a href="{SITE_URL}/admin">Ouvrir l'admin — onglet Dossier Express → carte Evaluateurs</a></p>"""

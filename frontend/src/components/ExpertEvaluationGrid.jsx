@@ -23,10 +23,21 @@ const COMMENTS = [
   { key: 'reserves', label: 'Risques ou réserves (déontologiques, juridiques, cliniques)' },
 ];
 
+const BENEFITS = [
+  { key: 'gain_temps', label: 'Gain de temps' },
+  { key: 'comprehension_initiale', label: 'Meilleure compréhension initiale du dossier' },
+  { key: 'pieces_manquantes', label: 'Repérage de pièces manquantes' },
+  { key: 'chronologie', label: 'Chronologie' },
+  { key: 'incoherences', label: "Identification d'incohérences" },
+  { key: 'tracabilite_sources', label: 'Traçabilité des sources' },
+  { key: 'hierarchisation', label: 'Hiérarchisation des points à vérifier' },
+];
+
 export const ExpertEvaluationGrid = ({ token, email }) => {
   const [open, setOpen] = useState(false);
   const [ratings, setRatings] = useState({});
   const [comments, setComments] = useState({});
+  const [benefits, setBenefits] = useState([]);
   const [sending, setSending] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -36,16 +47,19 @@ export const ExpertEvaluationGrid = ({ token, email }) => {
         if (res.data.feedback) {
           setRatings(res.data.feedback.ratings || {});
           setComments(res.data.feedback.comments || {});
+          setBenefits(res.data.feedback.benefits_observed || []);
           setSaved(true);
         }
       })
       .catch(() => {});
   }, [token, email]);
 
+  const toggleBenefit = (key) => setBenefits((b) => b.includes(key) ? b.filter((x) => x !== key) : [...b, key]);
+
   const submit = async () => {
     setSending(true);
     try {
-      await axios.post(`${API}/expert-access/feedback`, { token, email, ratings, comments });
+      await axios.post(`${API}/expert-access/feedback`, { token, email, ratings, comments, benefits });
       setSaved(true);
       toast.success('Votre évaluation a bien été enregistrée. Merci.');
     } catch (err) {
@@ -55,7 +69,7 @@ export const ExpertEvaluationGrid = ({ token, email }) => {
     }
   };
 
-  const hasContent = Object.keys(ratings).length > 0 || Object.values(comments).some((v) => v && v.trim());
+  const hasContent = Object.keys(ratings).length > 0 || benefits.length > 0 || Object.values(comments).some((v) => v && v.trim());
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
@@ -100,6 +114,28 @@ export const ExpertEvaluationGrid = ({ token, email }) => {
                   </div>
                 </div>
               ))}
+            </div>
+            <div className="p-4 rounded-lg border border-[#C9A84C]/25 bg-[#C9A84C]/5" data-testid="eval-grid-benefits">
+              <p className="text-sm font-medium text-[#f5f0e8] mb-1">Bénéfices professionnels réellement constatés</p>
+              <p className="text-xs text-[#f5f0e8]/50 leading-relaxed mb-3">
+                « Parmi les bénéfices potentiels suivants, lesquels avez-vous réellement constatés pendant votre test :
+                gain de temps, meilleure compréhension initiale du dossier, repérage de pièces manquantes, chronologie,
+                identification d'incohérences, traçabilité des sources, hiérarchisation des points à vérifier ? »
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {BENEFITS.map((b) => (
+                  <button key={b.key} type="button" onClick={() => toggleBenefit(b.key)}
+                    data-testid={`eval-grid-benefit-${b.key}`}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      benefits.includes(b.key)
+                        ? 'bg-[#C9A84C] border-[#C9A84C] text-[#0a0a08]'
+                        : 'border-white/15 text-[#f5f0e8]/60 hover:border-[#C9A84C]/50'
+                    }`}>
+                    {benefits.includes(b.key) ? '✓ ' : ''}{b.label}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-[#f5f0e8]/35 mt-2">Ne cochez que ce que vous avez réellement constaté — « aucun » est un retour tout aussi précieux.</p>
             </div>
             <div className="space-y-4">
               {COMMENTS.map((c) => (

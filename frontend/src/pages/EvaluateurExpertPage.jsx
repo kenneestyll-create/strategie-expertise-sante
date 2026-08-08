@@ -122,6 +122,36 @@ export default function EvaluateurExpertPage() {
           </ul>
         </section>
 
+        <section className="mb-10 p-5 sm:p-6 rounded-xl border border-[#C9A84C]/25 bg-white/[0.02]" data-testid="eval-professional-value">
+          <h2 className="text-lg md:text-lg font-semibold mb-3 text-[#C9A84C]">Ce que l'outil peut vous apporter, concrètement</h2>
+          <p className="text-sm text-[#f5f0e8]/75 leading-relaxed mb-4">
+            « Dossier Express IA ne cherche pas à remplacer l'expertise du professionnel. Il cherche à lui faire gagner
+            du temps sur le travail documentaire qui précède son expertise, afin qu'il puisse consacrer davantage de son
+            temps à ce qui relève réellement de son jugement professionnel. »
+          </p>
+          <p className="text-xs text-[#f5f0e8]/50 mb-3">Pendant votre test, voici les gains concrets à mesurer :</p>
+          <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-1.5 text-sm text-[#f5f0e8]/70 mb-5">
+            <li>— Réduction du temps de première lecture d'un dossier volumineux</li>
+            <li>— Vision structurée et chronologique des éléments documentaires</li>
+            <li>— Identification rapide des pièces manquantes, illisibles ou problématiques</li>
+            <li>— Repérage des incohérences documentaires</li>
+            <li>— Identification et hiérarchisation des points procéduraux à vérifier</li>
+            <li>— Traçabilité des informations et de leurs sources documentaires</li>
+            <li>— Préparation plus rapide d'un dossier avant votre propre travail d'expertise</li>
+          </ul>
+          {access.profile_type === 'medecin_expert' && (
+            <div className="p-4 rounded-lg border border-white/8 bg-white/[0.02]" data-testid="eval-medecin-note">
+              <p className="text-xs text-[#f5f0e8]/65 leading-relaxed italic">
+                « L'outil ne se prononce pas sur le diagnostic, la gravité d'un état psychiatrique, l'imputabilité
+                médicale ou toute autre conclusion clinique. Son intérêt potentiel est ailleurs : vous permettre
+                d'arriver plus rapidement à une compréhension structurée du dossier documentaire et vous laisser
+                ensuite exercer pleinement votre propre jugement. »
+              </p>
+            </div>
+          )}
+          <p className="text-[11px] text-[#f5f0e8]/35 mt-3">Aucun gain de temps chiffré n'est avancé : nous n'avons pas encore de mesure objective — c'est précisément ce que votre évaluation aidera à établir.</p>
+        </section>
+
         <section className="mb-10">
           <h2 className="text-lg md:text-lg font-semibold mb-4 text-[#C9A84C]">La méthode, en quatre étapes</h2>
           <div className="grid sm:grid-cols-2 gap-3">

@@ -265,6 +265,8 @@ async def verify_expert_access(request: Request):
 GRID_CRITERIA = ["fidelite_documentaire", "pertinence_procedurale", "respect_perimetre",
                  "detection_qualite", "clarte_rapport", "experience_parcours"]
 COMMENT_FIELDS = ["points_forts", "mises_en_defaut", "reserves"]
+BENEFIT_KEYS = ["gain_temps", "comprehension_initiale", "pieces_manquantes", "chronologie",
+                "incoherences", "tracabilite_sources", "hierarchisation"]
 
 
 @router.post("/feedback")
@@ -282,7 +284,8 @@ async def submit_expert_feedback(request: Request):
         except (TypeError, ValueError):
             continue
     clean_comments = {k: str(comments[k]).strip()[:5000] for k in COMMENT_FIELDS if comments.get(k) and str(comments[k]).strip()}
-    if not clean_ratings and not clean_comments:
+    clean_benefits = [b for b in (body.get("benefits") or []) if b in BENEFIT_KEYS]
+    if not clean_ratings and not clean_comments and not clean_benefits:
         raise HTTPException(status_code=400, detail="Aucun retour fourni")
     now = datetime.now(timezone.utc).isoformat()
     await db.expert_feedback.update_one(
@@ -291,6 +294,7 @@ async def submit_expert_feedback(request: Request):
             "evaluator_name": entry["name"], "evaluator_email": entry["email"],
             "profile_type": entry.get("profile_type", "autre"),
             "ratings": clean_ratings, "comments": clean_comments,
+            "benefits_observed": clean_benefits,
             "updated_at": now,
         }, "$setOnInsert": {"evaluator_id": entry["id"], "created_at": now}},
         upsert=True,
@@ -299,7 +303,7 @@ async def submit_expert_feedback(request: Request):
     from utils.notifications import notify_admin_expert_feedback
     avg = f"{sum(clean_ratings.values()) / len(clean_ratings):.1f}" if clean_ratings else "n/a"
     asyncio.create_task(notify_admin_expert_feedback(
-        entry["name"], entry.get("profile_type", "autre"), avg, len(clean_ratings), clean_comments))
+        entry["name"], entry.get("profile_type", "autre"), avg, len(clean_ratings), clean_comments, clean_benefits))
     return {"status": "ok"}
 
 

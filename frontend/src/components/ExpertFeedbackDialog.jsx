@@ -14,6 +14,15 @@ const COMMENT_LABELS = {
   mises_en_defaut: 'Mises en défaut, erreurs ou approximations',
   reserves: 'Risques ou réserves',
 };
+const BENEFIT_LABELS = {
+  gain_temps: 'Gain de temps',
+  comprehension_initiale: 'Compréhension initiale du dossier',
+  pieces_manquantes: 'Repérage de pièces manquantes',
+  chronologie: 'Chronologie',
+  incoherences: "Identification d'incohérences",
+  tracabilite_sources: 'Traçabilité des sources',
+  hierarchisation: 'Hiérarchisation des points à vérifier',
+};
 
 export const ExpertFeedbackDialog = ({ feedback, open, onOpenChange }) => {
   if (!feedback) return null;
@@ -57,6 +66,18 @@ export const ExpertFeedbackDialog = ({ feedback, open, onOpenChange }) => {
                 )}
               </div>
             ))}
+          </div>
+          <div className="p-3 rounded-lg bg-muted/40">
+            <p className="text-xs font-semibold mb-1.5">Bénéfices professionnels constatés</p>
+            {(feedback.benefits_observed || []).length ? (
+              <div className="flex flex-wrap gap-1.5" data-testid="ea-feedback-benefits">
+                {feedback.benefits_observed.map((b) => (
+                  <span key={b} className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#C9A84C]/15 text-[#8a6d2f] border border-[#C9A84C]/30">✓ {BENEFIT_LABELS[b] || b}</span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-[11px] text-muted-foreground italic" data-testid="ea-feedback-no-benefits">Aucun bénéfice constaté (ou question non renseignée)</p>
+            )}
           </div>
           {Object.entries(COMMENT_LABELS).map(([key, label]) => comments[key] ? (
             <div key={key}>
