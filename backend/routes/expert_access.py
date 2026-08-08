@@ -58,6 +58,109 @@ async def update_expert_access_config(request: Request, admin: dict = Depends(ge
     return {"status": "ok", **updates}
 
 
+TEMPLATE_ID = "expert_invitation_template"
+DEFAULT_INVITATION_SUBJECT = "Invitation personnelle — regard d'expert sur Dossier Express IA"
+DEFAULT_INVITATION_BODY = """Docteur,
+
+Nous développons un outil d'aide à la structuration de dossiers pour les personnes confrontées à un refus de reconnaissance (maladie professionnelle, MDPH, litige assurantiel) : **Dossier Express IA**. Avant d'aller plus loin, nous avons besoin d'un regard extérieur exigeant — et le vôtre serait particulièrement précieux.
+
+**Notre hypothèse — que nous vous demandons précisément de mettre à l'épreuve :** l'outil peut faire gagner un temps significatif sur le travail documentaire qui précède l'expertise — première lecture d'un dossier volumineux, reconstitution de la chronologie, repérage des pièces manquantes ou illisibles, identification des incohérences entre documents, traçabilité de chaque information vers sa pièce source. Le professionnel consacre alors davantage de son temps à ce qui relève réellement de son jugement.
+
+**Sa limite, assumée et volontaire :** il n'analyse que l'organisation documentaire et les éléments procéduraux. Il ne porte aucun jugement clinique, ne discute aucun diagnostic et ne prétend remplacer ni l'expertise médicale, ni le médecin, ni l'avocat. C'est précisément cette frontière que nous vous demandons d'éprouver.
+
+**Concrètement :**
+- Un accès d'évaluation strictement privé, gratuit, valable jusqu'au {DATE_VALIDITE} ({QUOTA} analyses).
+- Votre espace contient un **guide de prise en main très court** ainsi qu'un **cas fictif** permettant de réaliser immédiatement un premier test, sans avoir besoin de préparer un dossier réel.
+- La possibilité, facultative, de tester ensuite un dossier professionnel **anonymisé par vos soins**.
+- Une grille d'évaluation intégrée pour consigner votre retour — **vos critiques sont le livrable attendu**, pas votre approbation.
+
+Il vous suffira de confirmer votre adresse email (celle-ci) pour entrer. Temps total estimé : environ 1 heure, à votre rythme. Votre évaluation restera strictement confidentielle et votre nom ne sera jamais cité sans votre accord écrit. Aucune sollicitation commerciale ne suivra cet essai.
+
+Nous vous remercions sincèrement du temps que vous voudrez bien y consacrer.
+
+Bien respectueusement,
+Stratégie & Expertise Santé"""
+TEMPLATE_PLACEHOLDERS = ["{NOM}", "{QUOTA}", "{DATE_VALIDITE}"]
+
+
+async def _get_invitation_template() -> dict:
+    saved = await db.site_settings.find_one({"_id": TEMPLATE_ID})
+    if saved:
+        return {"subject": saved["subject"], "body": saved["body"], "is_default": False}
+    return {"subject": DEFAULT_INVITATION_SUBJECT, "body": DEFAULT_INVITATION_BODY, "is_default": True}
+
+
+def _render_body_html(body_text: str) -> str:
+    import html as html_mod
+    import re
+    text = html_mod.escape(body_text)
+    text = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", text, flags=re.DOTALL)
+    blocks_html = []
+    for block in text.split("\n\n"):
+        block = block.strip()
+        if not block:
+            continue
+        lines = block.split("\n")
+        if all(l.strip().startswith("- ") for l in lines):
+            items = "".join(f"<li>{l.strip()[2:]}</li>" for l in lines)
+            blocks_html.append(f'<ul style="font-size:14px;color:#444;line-height:1.75;padding-left:20px;margin:0 0 14px;">{items}</ul>')
+        else:
+            blocks_html.append(f'<p style="font-size:14px;color:#444;line-height:1.75;">{"<br/>".join(lines)}</p>')
+    return "".join(blocks_html)
+
+
+@admin_router.get("/invitation-template")
+async def get_invitation_template(admin: dict = Depends(get_current_admin)):
+    tpl = await _get_invitation_template()
+    return {**tpl, "placeholders": TEMPLATE_PLACEHOLDERS}
+
+
+@admin_router.put("/invitation-template")
+async def update_invitation_template(request: Request, admin: dict = Depends(get_current_admin)):
+    body = await request.json()
+    subject = str(body.get("subject", "")).strip()[:300]
+    body_text = str(body.get("body", "")).strip()[:20000]
+    if not subject or not body_text:
+        raise HTTPException(status_code=400, detail="Objet et corps requis")
+    await db.site_settings.update_one(
+        {"_id": TEMPLATE_ID},
+        {"$set": {"subject": subject, "body": body_text, "updated_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True,
+    )
+    return {"status": "ok"}
+
+
+@admin_router.delete("/invitation-template")
+async def reset_invitation_template(admin: dict = Depends(get_current_admin)):
+    await db.site_settings.delete_one({"_id": TEMPLATE_ID})
+    return {"status": "reset", "subject": DEFAULT_INVITATION_SUBJECT, "body": DEFAULT_INVITATION_BODY}
+
+
+@admin_router.post("/invitation-template/preview")
+async def preview_invitation_template(request: Request, admin: dict = Depends(get_current_admin)):
+    """Envoie un aperçu du modèle (valeurs d'exemple) à l'adresse de notification admin."""
+    body = await request.json()
+    subject = str(body.get("subject", "")).strip() or DEFAULT_INVITATION_SUBJECT
+    body_text = str(body.get("body", "")).strip() or DEFAULT_INVITATION_BODY
+    from config import RESEND_AVAILABLE, SENDER_EMAIL, SITE_URL, NOTIFICATION_EMAIL
+    import resend
+    if not (RESEND_AVAILABLE and resend.api_key and NOTIFICATION_EMAIL):
+        raise HTTPException(status_code=503, detail="Service email non disponible")
+    sample_date = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%d/%m/%Y")
+    filled = body_text.replace("{NOM}", "Dr de Thiballier").replace("{QUOTA}", "3").replace("{DATE_VALIDITE}", sample_date)
+    html = _build_invitation_html(_render_body_html(filled), f"{SITE_URL}/evaluation-expert?t=APERCU-LIEN-EXEMPLE")
+    try:
+        await asyncio.to_thread(resend.Emails.send, {
+            "from": SENDER_EMAIL,
+            "to": [NOTIFICATION_EMAIL],
+            "subject": f"[APERÇU] {subject.replace('{NOM}', 'Dr de Thiballier')}",
+            "html": html,
+        })
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Envoi impossible : {str(e)[:120]}")
+    return {"status": "sent", "to": NOTIFICATION_EMAIL}
+
+
 @admin_router.post("")
 async def create_expert_access(request: Request, admin: dict = Depends(get_current_admin)):
     body = await request.json()
@@ -138,7 +241,7 @@ async def update_expert_access(access_id: str, request: Request, admin: dict = D
     return _serialize(res)
 
 
-def _build_invitation_html(name: str, link: str, quota: int, validity_date: str) -> str:
+def _build_invitation_html(body_html: str, link: str) -> str:
     return f"""<!DOCTYPE html>
 <html lang="fr"><head><meta charset="utf-8"></head>
 <body style="margin:0;padding:0;background:#f4f2ed;font-family:Georgia,'Times New Roman',serif;">
@@ -150,43 +253,10 @@ def _build_invitation_html(name: str, link: str, quota: int, validity_date: str)
   <span style="color:#C9A84C;font-size:11px;letter-spacing:3px;text-transform:uppercase;">Programme d'&eacute;valuation expert</span>
 </td></tr>
 <tr><td style="padding:34px 36px;">
-  <p style="font-size:15px;color:#222;">Docteur,</p>
-  <p style="font-size:14px;color:#444;line-height:1.75;">
-    Nous d&eacute;veloppons un outil d'aide &agrave; la structuration de dossiers pour les personnes confront&eacute;es
-    &agrave; un refus de reconnaissance (maladie professionnelle, MDPH, litige assurantiel) : <strong>Dossier Express IA</strong>.
-    Avant d'aller plus loin, nous avons besoin d'un regard ext&eacute;rieur exigeant &mdash; et le v&ocirc;tre serait particuli&egrave;rement pr&eacute;cieux.
-  </p>
-  <p style="font-size:14px;color:#444;line-height:1.75;">
-    <strong>Notre hypoth&egrave;se &mdash; que nous vous demandons pr&eacute;cis&eacute;ment de mettre &agrave; l'&eacute;preuve :</strong>
-    l'outil peut faire gagner un temps significatif sur le travail documentaire qui pr&eacute;c&egrave;de l'expertise &mdash;
-    premi&egrave;re lecture d'un dossier volumineux, reconstitution de la chronologie, rep&eacute;rage des pi&egrave;ces
-    manquantes ou illisibles, identification des incoh&eacute;rences entre documents, tra&ccedil;abilit&eacute; de chaque
-    information vers sa pi&egrave;ce source. Le professionnel consacre alors davantage de son temps &agrave; ce qui
-    rel&egrave;ve r&eacute;ellement de son jugement.
-  </p>
-  <p style="font-size:14px;color:#444;line-height:1.75;">
-    <strong>Sa limite, assum&eacute;e et volontaire :</strong> il n'analyse que l'organisation documentaire
-    et les &eacute;l&eacute;ments proc&eacute;duraux. Il ne porte aucun jugement clinique, ne discute aucun diagnostic et ne pr&eacute;tend
-    remplacer ni l'expertise m&eacute;dicale, ni le m&eacute;decin, ni l'avocat. C'est pr&eacute;cis&eacute;ment cette fronti&egrave;re que nous
-    vous demandons d'&eacute;prouver.
-  </p>
-  <p style="font-size:14px;color:#444;line-height:1.75;"><strong>Concr&egrave;tement :</strong></p>
-  <ul style="font-size:14px;color:#444;line-height:1.75;padding-left:20px;margin:0 0 14px;">
-    <li>Un acc&egrave;s d'&eacute;valuation strictement priv&eacute;, gratuit, valable jusqu'au {validity_date} ({quota} analyses).</li>
-    <li>Votre espace contient un <strong>guide de prise en main tr&egrave;s court</strong> ainsi qu'un <strong>cas fictif</strong> permettant de r&eacute;aliser imm&eacute;diatement un premier test, sans avoir besoin de pr&eacute;parer un dossier r&eacute;el.</li>
-    <li>La possibilit&eacute;, facultative, de tester ensuite un dossier professionnel <strong>anonymis&eacute; par vos soins</strong>.</li>
-    <li>Une grille d'&eacute;valuation int&eacute;gr&eacute;e pour consigner votre retour &mdash; <strong>vos critiques sont le livrable attendu</strong>, pas votre approbation.</li>
-  </ul>
+{body_html}
   <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;"><tr><td align="center">
     <a href="{link}" style="display:inline-block;background:#C9A84C;color:#141410;font-size:14px;font-weight:bold;padding:13px 30px;border-radius:6px;text-decoration:none;">Acc&eacute;der &agrave; mon espace d'&eacute;valuation</a>
   </td></tr></table>
-  <p style="font-size:12px;color:#777;line-height:1.7;">
-    Il vous suffira de confirmer votre adresse email (celle-ci) pour entrer. Temps total estim&eacute; : environ 1 heure, &agrave; votre rythme.
-    Votre &eacute;valuation restera strictement confidentielle et votre nom ne sera jamais cit&eacute; sans votre accord &eacute;crit.
-    Aucune sollicitation commerciale ne suivra cet essai.
-  </p>
-  <p style="font-size:13px;color:#555;">Nous vous remercions sinc&egrave;rement du temps que vous voudrez bien y consacrer.</p>
-  <p style="font-size:13px;color:#555;">Bien respectueusement,<br/>Strat&eacute;gie &amp; Expertise Sant&eacute;</p>
 </td></tr>
 <tr><td style="background:#141410;padding:14px 36px;text-align:center;">
   <p style="color:#C9A84C;font-size:11px;margin:0;">contact@strategie-expertise-sante.fr</p>
@@ -207,12 +277,17 @@ async def send_expert_invitation(access_id: str, admin: dict = Depends(get_curre
         raise HTTPException(status_code=503, detail="Service email non disponible")
     link = f"{SITE_URL}/evaluation-expert?t={entry['token']}"
     validity_date = datetime.fromisoformat(entry["expires_at"]).strftime("%d/%m/%Y")
-    html = _build_invitation_html(entry["name"], link, entry["quota_analyses"], validity_date)
+    tpl = await _get_invitation_template()
+    filled_body = (tpl["body"].replace("{NOM}", entry["name"])
+                   .replace("{QUOTA}", str(entry["quota_analyses"]))
+                   .replace("{DATE_VALIDITE}", validity_date))
+    subject = tpl["subject"].replace("{NOM}", entry["name"])
+    html = _build_invitation_html(_render_body_html(filled_body), link)
     try:
         await asyncio.to_thread(resend.Emails.send, {
             "from": SENDER_EMAIL,
             "to": [entry["email"]],
-            "subject": "Invitation personnelle — regard d'expert sur Dossier Express IA",
+            "subject": subject,
             "html": html,
         })
     except Exception as e:

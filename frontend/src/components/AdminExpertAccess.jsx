@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { UserPlus, Copy, Trash2, Loader2, GraduationCap, MessageSquareText, Send, FileText, Download, Eye } from 'lucide-react';
+import { UserPlus, Copy, Trash2, Loader2, GraduationCap, MessageSquareText, Send, FileText, Download, Eye, PenLine } from 'lucide-react';
 import { ExpertFeedbackDialog } from './ExpertFeedbackDialog';
+import { ExpertInvitationEditor } from './ExpertInvitationEditor';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const PROFILES = {
@@ -122,6 +123,7 @@ export const AdminExpertAccess = ({ token }) => {
   };
 
   const [sendingInvite, setSendingInvite] = useState(null);
+  const [editorOpen, setEditorOpen] = useState(false);
 
   const sendInvitation = async (e) => {
     const already = e.invitation_sent_at ? `\n(Une invitation a déjà été envoyée le ${new Date(e.invitation_sent_at).toLocaleDateString('fr-FR')}.)` : '';
@@ -152,6 +154,9 @@ export const AdminExpertAccess = ({ token }) => {
             </div>
           </div>
           <div className="flex items-center gap-2 text-xs">
+            <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5" onClick={() => setEditorOpen(true)} data-testid="ea-edit-invitation">
+              <PenLine className="w-3 h-3" /> Email d'invitation
+            </Button>
             <span className="text-muted-foreground">Défauts :</span>
             <Input type="number" className="w-16 h-7 text-xs" value={config.default_quota}
               onChange={(e) => setConfig(c => ({ ...c, default_quota: e.target.value }))} data-testid="ea-config-quota" />
@@ -235,6 +240,7 @@ export const AdminExpertAccess = ({ token }) => {
           </div>
         )}
         <ExpertFeedbackDialog feedback={viewFeedback} open={!!viewFeedback} onOpenChange={(o) => !o && setViewFeedback(null)} />
+        <ExpertInvitationEditor token={token} open={editorOpen} onOpenChange={setEditorOpen} />
       </CardContent>
     </Card>
   );
