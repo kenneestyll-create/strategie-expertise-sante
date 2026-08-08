@@ -85,6 +85,7 @@ const V5PhaseCTest = lazy(() => import("@/pages/V5PhaseCTest"));
 const ReferralPage = lazy(() => import("@/pages/ReferralPage").then(m => ({ default: m.ReferralPage })));
 const AgendaPage = lazy(() => import("@/pages/AgendaPage").then(m => ({ default: m.AgendaPage })));
 const SimulateurPage = lazy(() => import("@/pages/SimulateurHubPage"));
+const AutoDiagnosticPage = lazy(() => import("@/pages/AutoDiagnosticPage"));
 const SimulateurIPPAccidentTravailPreviewPage = lazy(() => import("@/pages/SimulateurIPPAccidentTravailPreviewPage"));
 const SimulateurMaladieProfessionnellePreviewPage = lazy(() => import("@/pages/SimulateurMaladieProfessionnellePreviewPage"));
 const EspaceClientPage = lazy(() => import("@/pages/EspaceClientPage").then(m => ({ default: m.EspaceClientPage })));
@@ -158,6 +159,7 @@ function App() {
                   <Route path="/agenda" element={<><Header /><AgendaPage /><Footer /></>} />
                   <Route path="/rdv" element={<><Header /><AgendaPage /><Footer /></>} />
                   <Route path="/simulateur" element={<><Header /><SimulateurPage /><Footer /></>} />
+                  <Route path="/auto-diagnostic" element={<><Header /><AutoDiagnosticPage /><Footer /></>} />
                   <Route path="/simulateur-rente-ipp-accident-travail-preview" element={<><Header /><SimulateurIPPAccidentTravailPreviewPage /><Footer /></>} />
                   <Route path="/simulateur-rente-maladie-professionnelle-preview" element={<><Header /><SimulateurMaladieProfessionnellePreviewPage /><Footer /></>} />
                   <Route path="/espace-client" element={<><Header /><EspaceClientPage /><Footer /></>} />
