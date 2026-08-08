@@ -156,19 +156,27 @@ def _build_invitation_html(name: str, link: str, quota: int, validity_date: str)
     &agrave; un refus de reconnaissance (maladie professionnelle, MDPH, litige assurantiel) : <strong>Dossier Express IA</strong>.
     Avant d'aller plus loin, nous avons besoin d'un regard ext&eacute;rieur exigeant &mdash; et le v&ocirc;tre serait particuli&egrave;rement pr&eacute;cieux.
   </p>
-  <p style="font-size:14px;color:#444;line-height:1.75;"><strong>Ce que nous vous proposons :</strong></p>
-  <ul style="font-size:14px;color:#444;line-height:1.75;padding-left:20px;margin:0 0 14px;">
-    <li>Un acc&egrave;s d'&eacute;valuation strictement priv&eacute;, gratuit, valable jusqu'au {validity_date} ({quota} analyses).</li>
-    <li>Un <strong>cas enti&egrave;rement fictif</strong>, pr&eacute;par&eacute; pour l'&eacute;valuation, disponible imm&eacute;diatement dans votre espace.</li>
-    <li>La possibilit&eacute;, facultative, de tester un dossier professionnel <strong>anonymis&eacute; par vos soins</strong>.</li>
-    <li>Une grille d'&eacute;valuation int&eacute;gr&eacute;e pour consigner votre retour &mdash; <strong>vos critiques sont le livrable attendu</strong>, pas votre approbation.</li>
-  </ul>
   <p style="font-size:14px;color:#444;line-height:1.75;">
-    <strong>Ce que l'outil n'est pas &mdash; et ne doit jamais devenir :</strong> il n'analyse que l'organisation documentaire
+    <strong>Notre hypoth&egrave;se &mdash; que nous vous demandons pr&eacute;cis&eacute;ment de mettre &agrave; l'&eacute;preuve :</strong>
+    l'outil peut faire gagner un temps significatif sur le travail documentaire qui pr&eacute;c&egrave;de l'expertise &mdash;
+    premi&egrave;re lecture d'un dossier volumineux, reconstitution de la chronologie, rep&eacute;rage des pi&egrave;ces
+    manquantes ou illisibles, identification des incoh&eacute;rences entre documents, tra&ccedil;abilit&eacute; de chaque
+    information vers sa pi&egrave;ce source. Le professionnel consacre alors davantage de son temps &agrave; ce qui
+    rel&egrave;ve r&eacute;ellement de son jugement.
+  </p>
+  <p style="font-size:14px;color:#444;line-height:1.75;">
+    <strong>Sa limite, assum&eacute;e et volontaire :</strong> il n'analyse que l'organisation documentaire
     et les &eacute;l&eacute;ments proc&eacute;duraux. Il ne porte aucun jugement clinique, ne discute aucun diagnostic et ne pr&eacute;tend
     remplacer ni l'expertise m&eacute;dicale, ni le m&eacute;decin, ni l'avocat. C'est pr&eacute;cis&eacute;ment cette fronti&egrave;re que nous
     vous demandons d'&eacute;prouver.
   </p>
+  <p style="font-size:14px;color:#444;line-height:1.75;"><strong>Concr&egrave;tement :</strong></p>
+  <ul style="font-size:14px;color:#444;line-height:1.75;padding-left:20px;margin:0 0 14px;">
+    <li>Un acc&egrave;s d'&eacute;valuation strictement priv&eacute;, gratuit, valable jusqu'au {validity_date} ({quota} analyses).</li>
+    <li>Votre espace contient un <strong>guide de prise en main tr&egrave;s court</strong> ainsi qu'un <strong>cas fictif</strong> permettant de r&eacute;aliser imm&eacute;diatement un premier test, sans avoir besoin de pr&eacute;parer un dossier r&eacute;el.</li>
+    <li>La possibilit&eacute;, facultative, de tester ensuite un dossier professionnel <strong>anonymis&eacute; par vos soins</strong>.</li>
+    <li>Une grille d'&eacute;valuation int&eacute;gr&eacute;e pour consigner votre retour &mdash; <strong>vos critiques sont le livrable attendu</strong>, pas votre approbation.</li>
+  </ul>
   <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;"><tr><td align="center">
     <a href="{link}" style="display:inline-block;background:#C9A84C;color:#141410;font-size:14px;font-weight:bold;padding:13px 30px;border-radius:6px;text-decoration:none;">Acc&eacute;der &agrave; mon espace d'&eacute;valuation</a>
   </td></tr></table>
