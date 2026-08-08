@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ShieldCheck, FileSearch, ScanSearch, FileCheck2, AlertTriangle, ArrowRight, Loader2, Lock, Download, FileText } from 'lucide-react';
 import { ExpertEvaluationGrid } from '@/components/ExpertEvaluationGrid';
+import { EvaluatorTutorial } from '@/components/EvaluatorTutorial';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -220,6 +221,8 @@ export default function EvaluateurExpertPage() {
             </p>
           </div>
         </section>
+
+        <EvaluatorTutorial />
 
         <ExpertEvaluationGrid token={token} email={access.email} />
 
