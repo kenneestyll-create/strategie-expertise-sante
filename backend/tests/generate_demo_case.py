@@ -125,9 +125,9 @@ doc("3-compte-rendu-psychiatrique.pdf",
 img = Image.new("RGB", (1240, 1754), "#f4f1ea")
 d = ImageDraw.Draw(img)
 try:
-    f_big = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 34)
-    f_txt = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 26)
-    f_wm = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 48)
+    f_big = ImageFont.truetype("/app/backend/fonts/DejaVuSans-Bold.ttf", 34)
+    f_txt = ImageFont.truetype("/app/backend/fonts/DejaVuSans.ttf", 26)
+    f_wm = ImageFont.truetype("/app/backend/fonts/DejaVuSans-Bold.ttf", 48)
 except Exception:
     f_big = f_txt = f_wm = ImageFont.load_default()
 d.text((80, 60), "AVIS D'ARRÊT DE TRAVAIL (prolongation)", font=f_big, fill="#222")
@@ -139,12 +139,20 @@ lines4 = ["Cerfa fictif n° 10170*07", "", "Patiente : Mme DEMONSTRATION Claire 
 y = 160
 for l in lines4:
     d.text((80, y), l, font=f_txt, fill="#333"); y += 48
-wm = Image.new("RGBA", img.size, (0, 0, 0, 0))
-dw = ImageDraw.Draw(wm)
-dw.text((150, 700), "CAS FICTIF DE DÉMONSTRATION", font=f_wm, fill=(200, 30, 30, 60))
-img = Image.alpha_composite(img.convert("RGBA"), wm.rotate(30, center=(620, 877))).convert("RGB")
 img = img.rotate(-2, expand=False, fillcolor="#e8e4da")
 img = img.filter(ImageFilter.GaussianBlur(3.2)).resize((520, 736)).resize((1240, 1754))
+# Filigrane NET appliqué APRÈS le flou (le contenu reste dégradé, le filigrane reste lisible)
+wm = Image.new("RGBA", img.size, (0, 0, 0, 0))
+dw = ImageDraw.Draw(wm)
+dw.text((150, 700), "CAS FICTIF DE DÉMONSTRATION", font=f_wm, fill=(200, 30, 30, 110))
+wm = wm.rotate(30, center=(620, 877))
+dwb = ImageDraw.Draw(wm)
+try:
+    f_band = ImageFont.truetype("/app/backend/fonts/DejaVuSans-Bold.ttf", 26)
+except Exception:
+    f_band = f_txt
+dwb.text((70, 30), "CAS FICTIF DE DÉMONSTRATION — Aucune personne réelle.", font=f_band, fill=(170, 20, 20, 230))
+img = Image.alpha_composite(img.convert("RGBA"), wm).convert("RGB")
 img.save(f"{OUT}/4-arret-travail-scan-degrade.pdf", "PDF", resolution=100)
 print("OK 4-arret-travail-scan-degrade.pdf (volontairement flou)")
 

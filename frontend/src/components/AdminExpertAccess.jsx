@@ -5,13 +5,59 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { UserPlus, Copy, Trash2, Loader2, GraduationCap, MessageSquareText, Send } from 'lucide-react';
+import { UserPlus, Copy, Trash2, Loader2, GraduationCap, MessageSquareText, Send, FileText, Download, Eye } from 'lucide-react';
 import { ExpertFeedbackDialog } from './ExpertFeedbackDialog';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const PROFILES = {
   medecin_expert: 'Médecin expert', avocat: 'Avocat', association: 'Association',
   comite_scientifique: 'Comité scientifique', beta_privee: 'Bêta privée', partenaire: 'Partenaire', autre: 'Autre',
+};
+
+const DEMO_CASE_FILES = [
+  ['1-certificat-medical-initial.pdf', 'Certificat médical initial'],
+  ['2-notification-refus-cpam.pdf', 'Notification de refus CPAM'],
+  ['3-compte-rendu-psychiatrique.pdf', 'Compte rendu psychiatrique'],
+  ['4-arret-travail-scan-degrade.pdf', 'Arrêt de travail (scan volontairement flou)'],
+  ['5-elements-contexte-professionnel.pdf', 'Éléments de contexte professionnel'],
+  ['6-courrier-medecin-conseil.pdf', 'Courrier du médecin-conseil'],
+];
+
+const DemoCasePreview = () => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="p-3 rounded-lg border border-dashed border-[#C9A84C]/40 bg-[#C9A84C]/5" data-testid="ea-demo-preview">
+      <button className="w-full flex items-center justify-between text-left" onClick={() => setOpen(o => !o)} data-testid="ea-demo-preview-toggle">
+        <span className="flex items-center gap-2 text-xs font-semibold">
+          <Eye className="w-3.5 h-3.5 text-[#C9A84C]" /> Prévisualiser le cas fictif de démonstration
+          <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded border border-red-400/40 text-red-600 bg-red-500/10">Cas fictif</span>
+        </span>
+        <span className="text-[10px] text-muted-foreground">{open ? 'Réduire' : 'Afficher'}</span>
+      </button>
+      {open && (
+        <div className="mt-3 space-y-2">
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            Ce sont <strong>exactement les mêmes fichiers</strong> que ceux proposés à l'évaluateur sur /evaluation-expert
+            (source unique : /cas-demonstration/). Chaque page porte le filigrane « CAS FICTIF DE DÉMONSTRATION ».
+          </p>
+          <div className="grid sm:grid-cols-2 gap-1.5">
+            {DEMO_CASE_FILES.map(([file, label], i) => (
+              <a key={file} href={`/cas-demonstration/${file}`} target="_blank" rel="noreferrer"
+                className="flex items-center gap-2 text-[11px] p-2 rounded-md border border-border hover:border-[#C9A84C]/50 hover:bg-[#C9A84C]/5 transition-colors"
+                data-testid={`ea-demo-file-${i + 1}`}>
+                <FileText className="w-3.5 h-3.5 text-[#C9A84C] shrink-0" /> {i + 1}. {label}
+              </a>
+            ))}
+          </div>
+          <a href="/cas-demonstration/cas-demonstration-complet.zip" download
+            className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#C9A84C] hover:underline mt-1"
+            data-testid="ea-demo-zip">
+            <Download className="w-3.5 h-3.5" /> Télécharger le dossier complet (.zip) — identique à celui de l'évaluateur
+          </a>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export const AdminExpertAccess = ({ token }) => {
@@ -116,6 +162,8 @@ export const AdminExpertAccess = ({ token }) => {
             <Button size="sm" variant="outline" className="h-7 text-xs" onClick={saveConfig} data-testid="ea-config-save">OK</Button>
           </div>
         </div>
+
+        <DemoCasePreview />
 
         <div className="grid sm:grid-cols-6 gap-2 items-end p-3 rounded-lg bg-muted/40" data-testid="ea-create-form">
           <Input placeholder="Nom (Dr ...)" value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} className="sm:col-span-1 h-8 text-xs" data-testid="ea-input-name" />
