@@ -399,7 +399,7 @@ export default function SimulateurHubPage() {
               Choisissez votre situation
             </h2>
             <p className="text-sm text-zinc-500 mt-1">
-              Chaque simulateur spécialisé arrive prochainement avec ses propres formules et leviers d'optimisation.
+              Chaque simulateur spécialisé arrive prochainement avec ses propres formules et points d'analyse et de préparation.
             </p>
           </div>
           <DecisionTree />

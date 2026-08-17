@@ -292,7 +292,7 @@ export default function SimulateurIPPAccidentTravailPreviewPage() {
               </p>
               <p>
                 Notre service <strong className="text-amber-300">Dossier Express IA</strong> analyse votre dossier complet et
-                identifie les leviers d'optimisation que les outils administratifs ne voient pas.
+                identifie les points d'analyse et de préparation que les outils administratifs ne voient pas.
               </p>
             </div>
             <a

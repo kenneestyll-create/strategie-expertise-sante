@@ -552,7 +552,7 @@ export const CalculatriceAAHPage = () => {
               "Les 3 motifs réels qui se cachent derrière chaque refus",
               "RSDAE : la notion floue qui fait gagner ou perdre 90 % des dossiers",
               "Le délai de 2 mois pour le RAPO — irrattrapable une fois passé",
-              "Les pièces nouvelles à ajouter pour faire basculer le dossier",
+              "Les pièces nouvelles à ajouter pour mettre en évidence les éléments importants du dossier",
             ]}
           />
 

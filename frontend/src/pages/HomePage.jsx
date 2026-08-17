@@ -89,7 +89,7 @@ export const HomePage = () => {
     { num: "01", icon: Crosshair, title: "Analyse stratégique", desc: "Étude approfondie de votre situation médicale, administrative et financière." },
     { num: "02", icon: ShieldAlert, title: "Identification des risques", desc: "Repérage des failles, incohérences et points de vigilance." },
     { num: "03", icon: Compass, title: "Orientation experte", desc: "Mise en relation avec les experts les plus adaptés à votre pathologie." },
-    { num: "04", icon: Focus, title: "Optimisation de l'expertise", desc: "Préparation stratégique pour maximiser la reconnaissance." },
+    { num: "04", icon: Focus, title: "Optimisation de l'expertise", desc: "Préparation des éléments utiles à la reconnaissance." },
     { num: "05", icon: RefreshCcw, title: "Suivi et ajustement", desc: "Accompagnement continu et adaptation de la stratégie." },
   ];
 
@@ -212,7 +212,7 @@ export const HomePage = () => {
 
               {/* Sous-titre métier — clarification immédiate */}
               <p className="text-[12px] sm:text-[13px] uppercase tracking-[0.22em] text-[#f5f0e8]/35 mb-2 sm:mb-3 lg:mb-1" data-testid="hero-metier-subtitle">
-                Conseil en droits MDPH, AT/MP et litiges assuranciels
+                Analyse & préparation de dossiers médico-administratifs
               </p>
 
               {/* Titre — noble et respirant */}
@@ -451,7 +451,7 @@ export const HomePage = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-[11px] font-medium text-[#C9A84C] uppercase tracking-[0.2em] mb-2">Domaines d'intervention</p>
           <h2 className="text-lg md:text-lg font-semibold text-[#f5f0e8] mb-8" style={{ fontFamily: "'Playfair Display', serif" }}>
-            Comprendre et défendre vos droits, étape par étape
+            Comprendre votre situation et préparer votre dossier, étape par étape
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <Link to="/accident-travail-maladie-professionnelle" className="group p-5 rounded-xl border border-white/8 hover:border-[#C9A84C]/40 bg-white/[0.02] hover:bg-[#C9A84C]/5 transition-colors" data-testid="home-domaine-accident-travail">
@@ -767,7 +767,7 @@ export const HomePage = () => {
               La Méthode <span className="text-[#C9A84C]">S.E.S</span>
             </h2>
             <p className="text-sm text-[#f5f0e8]/40">
-              Une méthodologie structurée et éprouvée pour défendre efficacement vos intérêts.
+              Une méthodologie structurée et éprouvée pour préparer efficacement votre dossier.
             </p>
           </div>
 
@@ -903,6 +903,25 @@ export const HomePage = () => {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          QUI SOMMES-NOUS (définition canonique — Vague 2)
+      ══════════════════════════════════════════════════════════ */}
+      <section className="py-16 sm:py-20 overflow-clip bg-[#0d0d0a]" data-testid="qui-sommes-nous-section">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <span className="text-xs font-medium text-[#C9A84C] uppercase tracking-[0.2em]">Qui sommes-nous ?</span>
+          <p className="text-sm sm:text-base text-[#f5f0e8]/80 leading-relaxed mt-5" data-testid="definition-canonique">
+            Stratégie &amp; Expertise Santé est une structure spécialisée dans l'analyse et la préparation stratégique
+            de dossiers médico-administratifs complexes. Elle analyse, structure, organise et documente les pièces
+            d'un dossier afin de fournir à la personne concernée et, lorsque nécessaire, aux professionnels compétents
+            (avocat, médecin-conseil, expert) une base de travail claire et exploitable.
+          </p>
+          <p className="text-xs sm:text-sm text-[#f5f0e8]/50 leading-relaxed mt-4" data-testid="definition-perimetre">
+            SES n'est ni un cabinet médical, ni un cabinet d'avocats, ni un expert judiciaire&nbsp;: son intervention
+            vient en complément des professionnels du droit et de la santé.
+          </p>
         </div>
       </section>
 
