@@ -13,6 +13,7 @@ BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 # Test credentials
 from tests.test_config import ADMIN_EMAIL, ADMIN_PASSWORD
 CLIENT_EMAIL = f"test-admin-docs-{uuid.uuid4().hex[:8]}@example.com"
+CLIENT_PASSWORD = "TestAdminDocs2026!"
 
 # Sample French admin document text for OCR testing
 SAMPLE_OCR_TEXT = """CPAM de Paris - Notification de décision

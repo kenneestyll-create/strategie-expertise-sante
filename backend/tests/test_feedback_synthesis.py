@@ -241,7 +241,7 @@ class TestFeedbackSynthesisRecommandations:
             )
             if login_res.status_code == 200:
                 self.admin_token = login_res.json().get("access_token")
-        except:
+        except Exception:
             pass
     
     def test_synthesis_generates_recommandations(self):

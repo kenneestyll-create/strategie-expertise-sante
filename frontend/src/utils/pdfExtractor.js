@@ -99,7 +99,7 @@ export async function extractTextFromFiles(files, existingOcrText = '', onProgre
 
   // If no large files, use existing base64 approach (faster for small files)
   if (largeFiles.length === 0) {
-    return extractBase64(smallFiles, existingOcrText);
+    return extractBase64(smallFiles, existingOcrText, sourceHint);
   }
 
   // Mixed approach: chunk large files + base64 small files
@@ -246,7 +246,7 @@ export async function extractTextFromFiles(files, existingOcrText = '', onProgre
 /**
  * Original base64 approach for small files.
  */
-async function extractBase64(files, existingOcrText = '') {
+async function extractBase64(files, existingOcrText = '', sourceHint = '') {
   const filesToExtract = [];
 
   for (const file of files) {

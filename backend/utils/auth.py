@@ -77,7 +77,7 @@ async def get_optional_forum_user(credentials: HTTPAuthorizationCredentials = De
         if not payload.get("is_forum_user"):
             return None
         return payload
-    except:
+    except Exception:
         return None
 
 async def get_optional_admin(credentials: HTTPAuthorizationCredentials = Depends(security_optional)):
@@ -89,7 +89,7 @@ async def get_optional_admin(credentials: HTTPAuthorizationCredentials = Depends
         if payload.get("is_admin"):
             return payload
         return None
-    except:
+    except Exception:
         return None
 
 async def get_current_client(credentials: HTTPAuthorizationCredentials = Depends(security)):

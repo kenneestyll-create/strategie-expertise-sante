@@ -45,7 +45,7 @@ class TestVIPGuestSystem:
                 for guest in guests_res.json():
                     if guest.get("email") == TEST_VIP_EMAIL:
                         self.session.delete(f"{BASE_URL}/api/admin/vip-guests/{guest['id']}", headers=self.admin_headers)
-        except:
+        except Exception:
             pass
 
     # ==================== ADMIN ENDPOINTS ====================

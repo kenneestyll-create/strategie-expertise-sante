@@ -1,4 +1,5 @@
 /* Service Worker for Push Notifications - Stratégie & Expertise Santé */
+/* global clients */
 
 self.addEventListener('push', function(event) {
   let data = { title: 'Stratégie & Expertise Santé', body: 'Nouvelle notification', url: '/espace-client' };
