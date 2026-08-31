@@ -11,7 +11,7 @@ import {
   ArrowRight, FileSearch, Shield, Users, Briefcase,
   CheckCircle, Star, GraduationCap, Building2, CreditCard,
   Loader2, PartyPopper, Gift, Percent, Tag, Zap, Clock,
-  Wallet, Brain, FileText, Sparkles, ChevronRight, Scale
+  Brain, FileText, Sparkles, ChevronRight, Scale
 } from 'lucide-react';
 import axios from 'axios';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
