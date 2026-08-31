@@ -625,6 +625,13 @@ Plateforme de conseil en santé : paiements sécurisés, conformité légale, st
 - **Mission 6 — GEL** : aucune nouvelle fonctionnalité après l'envoi, jusqu'au retour de l'expert.
 - **Missions 7/8** : anonymisation assistée au backlog (positionnement « Anonymisation assistée, sous contrôle du professionnel », conditions : retour expert + validation besoin + périmètre RGPD) ; RSDAE reporté après retour + corrections.
 
+## 2026-08-31 — CHANTIERS 1 & 2 GSC LIVRÉS EN PREVIEW (GO user, slugs et CTA validés)
+- **Chantier 1 — /guide/refus-mdph-aah-que-faire enrichi** (migration `2026-08-31-chantier1-enrichissement-refus-mdph`) : H1/title CONSERVÉS ; meta description affinée (RAPO 2 mois, modèle de démarche, délais) ; strategie enrichie (précision recours gracieux supprimé depuis 2019 → RAPO) ; FAQ 3→7 (recours gracieux vs RAPO, rédaction lettre RAPO, délai de réponse MDPH 2 mois = rejet implicite, montant AAH 2026 = 1041,59 €) ; maillage 5→7 (ajout des 2 articles RSDAE).
+- **Chantier 2 — Cluster RSDAE créé** (migration `2026-08-31-chantier2-cluster-rsdae`, upsert idempotent) : 2 nouveaux guides complets (gabarit identique aux 17 existants : reponse_rapide/contexte/limites/blocages/erreurs/strategie/orientation/reassurance/maillage/faq) — `/guide/rsdae-definition-criteres-conditions` (7 FAQ) et `/guide/comment-prouver-rsdae` (6 FAQ). CTA identique au pilier : « Faire analyser mon refus AAH » → dossier_express. Maillage bidirectionnel : pilier refus-aah-rsdae-non-reconnue mis à jour (7 liens dont les 2 satellites), guide MDPH → satellites, satellites ↔ pilier + MDPH + RQTH + /calculatrice-aah + /mdph.
+- **Vérifications passées** : migrations appliquées au boot (logs), 19 guides sur /api/guides (nouveaux en tête du hub), sitemap dynamique inclut les 2 nouvelles URLs, montant 1041,59 € présent, rendu frontend validé par screenshot (titre + année, réponse rapide, CTA, 6 liens maillage, 7 FAQ, FAQPage JSON-LD généré par GuidePage). Pages gelées NON touchées (/calculatrice-ipp, /expertise-medicale, /dossier-express).
+- ⚠️ REDÉPLOIEMENT requis pour la prod (les migrations s'appliqueront automatiquement au boot prod).
+- Prochaine étape SEO : Vague 3 (requalification schémas Medical*, provider Dossier Express, wording garantie) — INTERDITE avant le 04/09/2026 (fin du gel 28 j).
+
 ## BACKLOG — Anonymisation assistée avant analyse (ÉTUDE livrée 07/08/2026, NE PAS développer sans validation)
 Étude complète : /app/memory/ETUDE_ANONYMISATION_ASSISTEE_2026-08-07.md. Recommandation : V1 texte hybride regex+LLM réservée évaluateurs, validation humaine obligatoire, mapping jamais stocké serveur, originaux non conservés en mode anonymisé. ~2 jours dev, +0,01 €/dossier, zéro impact pipeline/SEO. Déclencheur suggéré : après retour Dr de Thiballier.
 

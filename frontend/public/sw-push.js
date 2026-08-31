@@ -39,7 +39,7 @@ self.addEventListener('notificationclick', function(event) {
   const url = event.notification.data?.url || '/espace-client';
   
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
       for (let i = 0; i < clientList.length; i++) {
         const client = clientList[i];
         if (client.url.includes(self.location.origin) && 'focus' in client) {
@@ -47,7 +47,7 @@ self.addEventListener('notificationclick', function(event) {
           return client.focus();
         }
       }
-      return clients.openWindow(url);
+      return self.clients.openWindow(url);
     })
   );
 });
