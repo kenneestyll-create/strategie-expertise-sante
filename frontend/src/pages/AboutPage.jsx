@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Calendar, FileText, Scale, Heart, Award, Download, ChevronLeft, ChevronRight, Shield, Trophy, Gavel, BookOpen, Users, Star, CheckCircle } from 'lucide-react';
+import { ArrowRight, Calendar, FileText, Scale, Heart, Award, Download, ChevronLeft, ChevronRight, Shield, Trophy, BookOpen, Users, Star, CheckCircle } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 
 export const AboutPage = () => {
