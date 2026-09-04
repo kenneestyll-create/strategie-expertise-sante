@@ -247,7 +247,7 @@ const DossierExpressFAQ = () => {
       "name": "Analyse de dossier maladie professionnelle et accident du travail",
       "serviceType": "Analyse de dossier médico-administratif",
       "description": "Analyse personnalisée de votre dossier (maladie professionnelle, accident du travail, MDPH, assurance, expertise médicale) croisant jurisprudences, barèmes officiels et cas similaires. Rapport PDF livré sous 2 heures.",
-      "provider": { "@type": "Organization", "name": "Stratégie & Expertise Santé", "url": "https://strategie-expertise-sante.fr" },
+      "provider": { "@type": "Organization", "@id": "https://strategie-expertise-sante.fr/#organization", "name": "Stratégie & Expertise Santé", "url": "https://strategie-expertise-sante.fr" },
       "areaServed": "FR",
       "offers": { "@type": "Offer", "price": "97", "priceCurrency": "EUR", "url": "https://strategie-expertise-sante.fr/dossier-express" }
     });
@@ -1017,7 +1017,7 @@ export const DossierExpressPage = () => {
                   <div className="flex items-center justify-center gap-4 mt-5 text-xs text-primary-foreground/40">
                     <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Paiement sécurisé</span>
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> Livré sous 2h</span>
-                    <span className="flex items-center gap-1"><RefreshCw className="w-3 h-3" /> Garantie satisfaction</span>
+                    <span className="flex items-center gap-1"><RefreshCw className="w-3 h-3" /> Reprise incluse si besoin</span>
                   </div>
                 </div>
               </CardContent>

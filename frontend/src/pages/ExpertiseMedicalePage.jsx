@@ -473,7 +473,7 @@ const ExpertiseFaq = () => {
 // PHASE 2 — Sections enrichies (déployées 2026-06-16)
 // Ordre exécutif validé : ton factuel, neutre, juridiquement prudent.
 // Aucune modification : Title / Meta / H1 / structure globale / maillage existant.
-// Schemas ajoutés : MedicalScholarlyArticle + HowTo + BreadcrumbList
+// Schemas ajoutés : Article + BreadcrumbList
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ExpertisePhase2Sections = () => {
@@ -498,34 +498,29 @@ const ExpertisePhase2Sections = () => {
     });
     document.head.appendChild(breadcrumbScript);
 
-    // 3. MedicalScholarlyArticle Schema (author = Organization, signal E-E-A-T)
+    // 3. Article Schema (author = Organization, signal E-E-A-T)
     const articleScript = document.createElement('script');
     articleScript.id = 'expertise-medical-article-schema';
     articleScript.type = 'application/ld+json';
     articleScript.textContent = JSON.stringify({
       "@context": "https://schema.org",
-      "@type": "MedicalScholarlyArticle",
+      "@type": "Article",
       "headline": "Expertise médicale stratégique : assureur, AT, MDPH",
       "description": "Guide stratégique pour préparer une expertise médicale dans le cadre d'un contrat d'assurance, d'un dossier d'accident du travail ou d'une demande MDPH.",
       "author": {
         "@type": "Organization",
+        "@id": "https://strategie-expertise-sante.fr/#organization",
         "name": "Stratégie & Expertise Santé",
         "url": "https://strategie-expertise-sante.fr/"
       },
       "publisher": {
         "@type": "Organization",
+        "@id": "https://strategie-expertise-sante.fr/#organization",
         "name": "Stratégie & Expertise Santé",
         "url": "https://strategie-expertise-sante.fr/"
       },
       "datePublished": "2026-05-17",
-      "dateModified": "2026-08-04",
-      "about": [
-        { "@type": "MedicalProcedure", "name": "Expertise médicale" }
-      ],
-      "audience": {
-        "@type": "PeopleAudience",
-        "audienceType": "Personnes engagées dans un dossier d'expertise médicale (assureur, CPAM, MDPH, juridiction)"
-      },
+      "dateModified": "2026-09-04",
       "mainEntityOfPage": "https://strategie-expertise-sante.fr/expertise-medicale"
     });
     document.head.appendChild(articleScript);
