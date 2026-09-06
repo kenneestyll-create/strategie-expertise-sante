@@ -84,7 +84,7 @@ async def _extract_one_file(name: str, file_bytes: bytes, file_type: str, size_k
     # A typical scanned medical expertise = ~25-50k chars. The downstream LLM context
     # window (Claude 200k tokens) is the only meaningful cap and it's enforced
     # centrally in llm.py via DOCS_LIMIT_CHARS.
-    PER_FILE_LIMIT = 60_000
+    PER_FILE_LIMIT = 800_000
     return {
         "name": name,
         "text": extracted[:PER_FILE_LIMIT],
