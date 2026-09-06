@@ -599,6 +599,22 @@ export const DossierExpressPage = () => {
       }
     }
 
+    // === GARDE-FOU EXTRACTION — jamais d'analyse sur un dossier vide ou placeholder ===
+    const hasPlaceholder = documentsText.includes('[Extraction en cours — délai dépassé]') || documentsText.includes('[Extraction echouee]');
+    const emptyWithFiles = files.length > 0 && documentsText.replace(/---[^\n]*---/g, '').trim().length < 200;
+    if (hasPlaceholder || emptyWithFiles) {
+      setLoading(false);
+      setStep('form');
+      toast.error(
+        hasPlaceholder
+          ? "L'extraction de vos documents n'est pas terminée ou a échoué. Aucune analyse ne sera lancée sur un dossier incomplet — votre paiement reste valable, merci de réessayer l'envoi de vos documents."
+          : "Le contenu extrait de vos documents est vide ou inexploitable. Aucune analyse ne sera lancée — votre paiement reste valable, merci de vérifier vos fichiers puis de réessayer.",
+        { duration: 12000 }
+      );
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     // === LOT 1 PHASE B — Contrôle qualité documentaire avant analyse (jamais bloquant) ===
     const qualityReport = extractionQualityReport;
     const qualitySummary = qualityReport ? {

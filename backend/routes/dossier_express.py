@@ -483,12 +483,37 @@ async def _send_dossier_express_confirmation(dossier_id: str, email: str, name: 
         logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}] confirmation email failed (non-blocking): {e}")
 
 
+_EXTRACTION_PLACEHOLDERS = ("[Extraction en cours — délai dépassé]", "[Extraction echouee]")
+_DOCS_MIN_CHARS = 200
+
+
+def _docs_exploitables(documents_text: str, document_details=None) -> tuple:
+    """Garde-fou extraction : (ok, raison). Analyse interdite si placeholder d'extraction ou contenu vide/inexploitable avec fichiers joints."""
+    txt = (documents_text or "").strip()
+    for p in _EXTRACTION_PLACEHOLDERS:
+        if p in txt:
+            return False, "extraction incomplete ou echouee (placeholder detecte)"
+    if document_details and len(txt) < _DOCS_MIN_CHARS:
+        return False, f"contenu extrait vide ou inexploitable ({len(txt)} caracteres)"
+    return True, ""
+
+
 async def _process_dossier_express(dossier_id: str, email: str, name: str, situation: str, type_dossier: str, regime: str, documents_text: str, premium_pdf: bool = False, improvement_optout: bool = False):
     """Full pipeline with granular step tracking, timing instrumentation, and fail-safe notifications."""
     import time
     t_start = time.monotonic()
     timings = {}
     logger.info(f"[DOSSIER_EXPRESS][{dossier_id}][START] email={email} type={type_dossier} regime={regime} premium_pdf={premium_pdf}")
+
+    # === STEP 0: GARDE-FOU EXTRACTION — jamais d'appel IA sur un dossier vide/placeholder ===
+    _gf_doc = await db.dossier_express.find_one({"id": dossier_id}, {"document_details": 1})
+    docs_ok, docs_reason = _docs_exploitables(documents_text, (_gf_doc or {}).get("document_details"))
+    if not docs_ok:
+        logger.error(f"[DOSSIER_EXPRESS][{dossier_id}][GARDE-FOU] analyse refusee AVANT tout appel IA: {docs_reason}")
+        await _update_dossier_step(dossier_id, "erreur_extraction", "incident_technique", {"status": "error", "error": f"Analyse non lancee — {docs_reason}"})
+        await _notify_admin_incident(dossier_id, email, name, "Dossier Express IA", "Garde-fou extraction", f"Analyse refusee avant tout appel IA : {docs_reason}")
+        await _notify_client_delay(email, name, "Dossier Express IA")
+        return
 
     # === STEP 1: Documents received ===
     await _update_dossier_step(dossier_id, "documents_recus", "en_attente_traitement")
@@ -1283,6 +1308,10 @@ async def dossier_express_admin_bypass(request: Request):
 
     if not situation.strip():
         raise HTTPException(status_code=400, detail="Situation requise")
+    docs_ok, docs_reason = _docs_exploitables(documents_text, document_details)
+    if not docs_ok:
+        logger.warning(f"[DOSSIER_EXPRESS][admin-bypass][GARDE-FOU] soumission bloquee: {docs_reason}")
+        raise HTTPException(status_code=400, detail=f"Garde-fou extraction : {docs_reason}. Analyse non lancee.")
     if not _has_llm_key():
         raise HTTPException(status_code=503, detail="Service IA non disponible")
 
@@ -1408,6 +1437,12 @@ async def dossier_express_submit(request: Request):
     improvement_optout = body.get("improvement_optout", False)
     quality_choice = body.get("quality_choice", "not_available")
     quality_summary = body.get("quality_summary")
+
+    # === GARDE-FOU EXTRACTION — refus avant toute analyse (paiement deja effectue, il reste valable) ===
+    docs_ok, docs_reason = _docs_exploitables(documents_text, document_details)
+    if not docs_ok:
+        logger.warning(f"[DOSSIER_EXPRESS][submit][GARDE-FOU] soumission bloquee: {docs_reason} (email={email})")
+        raise HTTPException(status_code=400, detail="L'extraction de vos documents n'est pas terminee ou a echoue. Aucune analyse ne peut etre lancee sur un dossier vide — votre paiement reste valable : merci de reessayer l'envoi de vos documents ou de nous contacter.")
 
     # Détection VIP côté serveur (cookie de session partenaire) — circuit non commercial
     vip_flag = False
