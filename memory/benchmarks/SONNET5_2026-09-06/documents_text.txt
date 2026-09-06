@@ -1,0 +1,376 @@
+=== DOCUMENT: 1-certificat-medical-initial.pdf ===
+[Page 1] CAS FICTIF DE DÉMONSTRATION — Aucune personne réelle. Document créé pour l'évaluation de Dossier Express IA.
+Dr Paul EXEMPLE
+Villefictive, le 18/02/2026
+Médecin généraliste — RPPS fictif 99999999901
+Cabinet médical fictif — 12 rue de la Démonstration, 99000 Villefictive
+Tél. fictif : 09 99 99 99 99 — Conventionné secteur 1
+CERTIFICAT MÉDICAL INITIAL
+N
+Maladie professionnelle — formulaire type Cerfa (document fictif)
+O
+Je soussigné, Dr Paul EXEMPLE, médecin généraliste (RPPS fictif I99999999901), certifie avoir examiné
+T
+ce jour :
+A
+Mme DEMONSTRATION Claire, née le 12/03/198R1 (identité fictive)
+T
+Profession déclarée : cadre de proximité en établSissement médico-social. N
+N O
+CONSTATATIONS
+O I
+Syndrome dépressif caractérisé d'intensité sévère : humeur triste permanente, anThédonie, troubles du
+M
+A
+sommeil majeurs, ruminations anxieuses centrées sur le travail, perte de poids (6 kg en 3 mois), idéation
+É R
+suicidaire passive sans scénario.
+D
+T
+Symptomatologie apparue progressivement dans un contexte décrSit de surcharge professionnelle durable,
+N
+E
+d'objectifs contradic D toires et d'isolement managérial. N O
+DIAGNOSTIC ÉV OQUÉ O I
+F T
+M
+Épisode dépIressif caractérisé sévère, sans symptôme psychotique, en lien évoqué avec A l'activité
+T
+É R
+profeCssionnelle (maladie hors tableau).
+D
+T
+I
+DFate de première constatation médicale : 18/02/2026.
+S
+E
+SArrêt de travail initial prescrit. OrientaDtion vers suivi psychiatrique spécialisé. N
+A O
+F Fait à Villefictive, le 18/02/2026
+C M
+I
+T Dr Paul EXEMPLE
+É
+C (signature fictive)
+D
+I
+F
+E
+S D
+A
+F
+C
+I
+T
+C
+I
+F
+S
+A
+C
+
+=== DOCUMENT: 2-notification-refus-cpam.pdf ===
+[Page 1] CAS FICTIF DE DÉMONSTRATION — Aucune personne réelle. Document créé pour l'évaluation de Dossier Express IA.
+CPAM FICTIVE DE LA DÉMONSTRATION
+Villefictive, le 12/05/2026
+Service Risques Professionnels Dossier n° MP-FICTIF-2026-00427
+99 avenue de l'Administration, 99000 Villefictive NIR fictif : 2 81 03 99 999 999
+www.cpam-fictive-demonstration.example (site fictif)
+Mme DEMONSTRATION Claire
+N
+Objet : notification de décision — refus de reconnaissance du caractère professionnel de votre
+O
+maladie
+I
+T
+Lettre recommandée avec accusé de réception (fictive)
+A
+Madame, R
+T
+Vous avez déclaré le 24/02/2026 une maladie « épisode dépressif sévère » que vous estimez d'origine
+S N
+professionnelle.
+N O
+Après instruction, votre maladie ne figOure dans aucun tableau de maladies prof
+I
+essionnelles du
+T
+régime général.
+M
+A
+Conformément à l'article L.461-1É du code de la sécurité sociale, la reconnRaissance au titre du système
+complémentaire nécessite quDe l'incapacité permanente prévisible soit Tau moins égale à 25 % et que le
+lien direct et essentiel avec le travail habituel soit établi par le ComSité Régional de Reconnaissance des N
+E
+Maladies Professio D nnelles (CRRMP). N O
+O I
+Le médecin-cFonseil a évalué votre taux d'incapacité permanente prévisible à 20 %, taux inférTieur
+M
+au seuil reqIuis. En conséquence, votre dossier n'a pas été transmis au CRRMP et votre dAemande
+T
+est REJETÉE. É R
+C
+D
+T
+I
+F S
+VOIES ET DÉLAIS DE RECOURS E
+S D N
+Vous disposez d'un délai de DEUX MOIS à compter de la réception de la présente pour saisir la
+A O
+Commission de Recours AmiabFle (CRA) de notre organisme.
+C M
+Vous pouvez également contIester l'évaluation médicale (taux d'incapacité prévisible) selon les
+T
+modalités prévues par le code de la sécurité sociale. É
+C
+D
+I
+F
+E
+Villefictive, le 12/05/2026
+S D
+Le Directeur (fictif)
+A
+F CPAM fictive de la Démonstration
+C
+I
+T
+C
+I
+F
+S
+A
+C
+
+=== DOCUMENT: 3-compte-rendu-psychiatrique.pdf ===
+[Page 1] CAS FICTIF DE DÉMONSTRATION — Aucune personne réelle. Document créé pour l'évaluation de Dossier Express IA.
+Dr Anne SPECIMEN — Psychiatre
+Villefictive, le 20/06/2026
+RPPS fictif 99999999902 — Cabinet fictif
+4 avenue de l'Exemple, 99000 Villefictive
+Consultations sur rendez-vous (fictif)
+COMPTE RENDU DE SUIVI PSYCHIATRIQUE
+N
+Document fictif établi pour la démonstration
+O
+Patiente : Mme DEMONSTRATION Claire, 45 ans (identité fictiveI)
+T
+A
+Suivie depuis le 03/03/2026 — 6 consultations à ce jour.
+R
+ANAMNÈSE
+T
+Cadre de proximité depuis 2015, décrit depuis 20S23 une dégradation continue des conditionNs d'exercice :
+sous-effectif chronique, injonctions contradictNoires, astreintes non compensées, alerte Oadressée à la
+direction en 09/2025 restée sans réponseO. I
+T
+M
+Pas d'antécédent psychiatrique personnel ou familial. Pas de facteur de vulnéArabilité extra-professionnel
+identifié à ce jour. É R
+D
+T
+CLINIQUE ACTUELLE
+S N
+E
+Épisode dépressif cDaractérisé d'intensité sévère (PHQ-9 : 21/2N7). Ruminations exclusivement centrées sOur
+la sphère professi onnelle, reviviscences anxieuses à l'évocOation du lieu de travail, évitement. AmélioraItion
+F T
+partielle depuis l'éloignement du poste (arrêt de travaiMl continu).
+I A
+T
+TRAITEMENT É R
+C
+D
+T
+SertIraline 100 mg/j (fictif), psychothérapie hebdomadaire.
+F S
+E
+SÉVOLUTION
+D
+N
+A
+Stabilisation lente ; incapacité du rable prévisible en l'état. L'imputabilit
+O
+é professionnelle apparaît
+F
+C M
+cliniquement prépondéranteI.
+T
+É
+C Villefictive, le 20/06/2026
+D
+I
+F D r Anne SPECIMEN, psychiatre
+E
+RPPS fictif 99999999902 (signature fictive)
+S D
+A
+F
+C
+I
+T
+C
+I
+F
+S
+A
+C
+
+=== DOCUMENT: 4-arret-travail-scan-degrade.pdf ===
+[Page 1]
+CAS FICTIF DE DÉMONSTRATION — Aucune personne réelle.
+AVIS D'ARRET DE TRAVAIL (prolongation)
+
+Cerfa fictif n° 10170*07
+
+Patiente : Mme DEMONSTRATION Claire (identité fictive)
+Prolongation du 15/04/2026 au 15/06/2026 inclus
+Motif : épisode dépressif sévère — lien professionnel évoqué
+Sorties autorisées : oui, en dehors des heures de présence obligatoire
+
+Dr Paul EXEMPLE — 18/04/2026 (signature fictive lisible)
+
+CAS FICTIF DE DÉMONSTRATION
+
+=== DOCUMENT: 5-elements-contexte-professionnel.pdf ===
+[Page 1] CAS FICTIF DE DÉMONSTRATION — Aucune personne réelle. Document créé pour l'évaluation de Dossier Express IA.
+RÉSIDENCE DE LA DÉMONSTRATION
+Villefictive, le 02/04/2026
+Établissement médico-social fictif
+Instance représentative du personnel
+7 chemin du Modèle, 99000 Villefictive
+ATTESTATION ET ÉLÉMENTS DE CONTEXTE PROFESSIONNEL
+N
+Document fictif établi pour la démonstration
+O
+Je soussignée, Mme Sophie MODELE, déléguée du personnel (fictiIve) de l'établissement « Résidence de
+T
+la Démonstration » (structure fictive), atteste des faits suivants :
+A
+R
+1. Depuis janvier 2023, le service encadré par Mme DEMONSTRATION fonctionne en
+sous-effectif permanent (2 postes vacants non Tremplacés sur 8).
+S N
+2. Un signalement écrit sur la surchargeN de l'encadrement a été transmis à la di
+O
+rection le
+14/09/2025 (copie jointe au CSE fictifO). Aucune mesure n'a suivi.
+I
+T
+3. Les astreintes de week-end onMt doublé entre 2024 et 2026 sans compAensation.
+É R
+4. Deux autres salariés du même service sont en arrêt pour des motifs similaires.
+D
+T
+S N
+E
+PIÈCE JOINTE — FICHE DE POSTE (extrait)
+D N O
+Encadrement d' équipe, continuité de service, gestion des sOituations de crise,
+I
+disponibilité Fpermanente téléphonique. T
+M
+I A
+T
+É R
+C
+Fait pour servir et valoir ce que de droit (documDent fictif de démonstration).
+T
+I
+F S
+E Villefictive, le 02/04/2026
+S D N
+Mme Sophie MODELE
+A O
+F Déléguée du personnel (fictive)
+C M
+I
+T
+É
+C
+D
+I
+F
+E
+S D
+A
+F
+C
+I
+T
+C
+I
+F
+S
+A
+C
+
+=== DOCUMENT: 6-courrier-medecin-conseil.pdf ===
+[Page 1] CAS FICTIF DE DÉMONSTRATION — Aucune personne réelle. Document créé pour l'évaluation de Dossier Express IA.
+SERVICE MÉDICAL
+Villefictive, le 05/05/2026
+CPAM fictive de la Démonstration Réf. dossier MP-FICTIF-2026-00427
+Échelon local du service médical (fictif)
+99 avenue de l'Administration, 99000 Villefictive
+Mme DEMONSTRATION Claire
+N
+Objet : évaluation du taux d'incapacité permanente prévisible
+O
+Madame, I
+T
+À la suite de l'examen du 28/04/2026, le service médical retiAent :
+R
+— épisode dépressif caractérisé, d'intensité jugée « modérée à sévère » à l'examen ;
+T
+— retentissement socioprofessionnel préseSnt mais estimé « partiellement réversibNle » ;
+N O
+— taux d'incapacité permanente PRÉVISIBLE évalué à 20 %.
+O I
+T
+Ce taux étant inférieur au seuil de 25 % prévu à l'article R.461-8 du code de la sécurité sociale, les
+M
+A
+conditions de saisine du CRRMP ne sont pas réunies.
+É R
+D
+T
+ÉLÉMENTS NOUVEAU X RECEVABLES
+S N
+E
+Il vous est loisible D de produire tout élément médical nouveau deN nature à modifier cette O
+évaluation : exp ertise psychiatrique détaillée, échelles d'évOaluation, retentissement
+I
+fonctionnel dFocumenté. T
+M
+I A
+T
+É R
+C
+D Villefictive, le 05/05/2026 T
+I
+F E Dr Marc TYPE, médecSin-conseil (fictif)
+S D Service médical — CPNAM fictive
+A O
+F
+C M
+I
+T
+É
+C
+D
+I
+F
+E
+S D
+A
+F
+C
+I
+T
+C
+I
+F
+S
+A
+C

@@ -1,0 +1,44 @@
+[
+ {
+  "file": "1-certificat-medical-initial.pdf",
+  "method": "PDF texte — 1 page, extraction directe (1/1 pages lisibles)",
+  "pages": 1,
+  "status": "text_extracted",
+  "chars": 1583
+ },
+ {
+  "file": "2-notification-refus-cpam.pdf",
+  "method": "PDF texte — 1 page, extraction directe (1/1 pages lisibles)",
+  "pages": 1,
+  "status": "text_extracted",
+  "chars": 1886
+ },
+ {
+  "file": "3-compte-rendu-psychiatrique.pdf",
+  "method": "PDF texte — 1 page, extraction directe (1/1 pages lisibles)",
+  "pages": 1,
+  "status": "text_extracted",
+  "chars": 1626
+ },
+ {
+  "file": "4-arret-travail-scan-degrade.pdf",
+  "method": "PDF — 1 page, extraction Gemini Vision",
+  "pages": 1,
+  "status": "vision_extracted",
+  "chars": 450
+ },
+ {
+  "file": "5-elements-contexte-professionnel.pdf",
+  "method": "PDF texte — 1 page, extraction directe (1/1 pages lisibles)",
+  "pages": 1,
+  "status": "text_extracted",
+  "chars": 1462
+ },
+ {
+  "file": "6-courrier-medecin-conseil.pdf",
+  "method": "PDF texte — 1 page, extraction directe (1/1 pages lisibles)",
+  "pages": 1,
+  "status": "text_extracted",
+  "chars": 1329
+ }
+]

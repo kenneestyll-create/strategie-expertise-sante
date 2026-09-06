@@ -1,0 +1,24 @@
+[
+ {
+  "model": "claude-sonnet-5",
+  "variant": "sonnet_5_nothink",
+  "elapsed_s": 76.7,
+  "input_tokens": 10978,
+  "output_tokens": 7263,
+  "thinking_tokens": null,
+  "chars": 17593,
+  "stop_reason": "end_turn",
+  "cost_usd": 0.0946
+ },
+ {
+  "model": "claude-sonnet-5",
+  "variant": "sonnet_5_think16k",
+  "elapsed_s": 76.5,
+  "input_tokens": 10978,
+  "output_tokens": 7164,
+  "thinking_tokens": null,
+  "chars": 17264,
+  "stop_reason": "end_turn",
+  "cost_usd": 0.0936
+ }
+]

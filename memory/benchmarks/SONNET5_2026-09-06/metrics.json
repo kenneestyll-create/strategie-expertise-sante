@@ -1,0 +1,22 @@
+{
+ "sonnet_4_5": {
+  "model": "claude-sonnet-4-5-20250929",
+  "elapsed_s": 153.0,
+  "usage": {
+   "input_tokens": 8299,
+   "output_tokens": 8000
+  },
+  "chars": 25707,
+  "cost_usd": 0.1449
+ },
+ "sonnet_5": {
+  "model": "claude-sonnet-5",
+  "elapsed_s": 79.5,
+  "usage": {
+   "input_tokens": 10978,
+   "output_tokens": 8000
+  },
+  "chars": 9237,
+  "cost_usd": 0.102
+ }
+}
