@@ -45,6 +45,8 @@ def llm_sync_call(api_key, session_id, system_message, user_text, provider, mode
     import anthropic
     if api_key:
         client = anthropic.Anthropic(api_key=api_key, timeout=120.0)
+        # Sonnet 5: adaptive thinking ON par defaut -> desactive pour preserver le budget de sortie
+        extra = {"thinking": {"type": "disabled"}} if model == "claude-sonnet-5" else {}
         # Stream the response to avoid request timeout on long generations
         full_text_parts = []
         with client.messages.stream(
@@ -52,6 +54,7 @@ def llm_sync_call(api_key, session_id, system_message, user_text, provider, mode
             max_tokens=max_tokens,
             system=system_message,
             messages=[{"role": "user", "content": user_text}],
+            **extra,
         ) as stream:
             for chunk in stream.text_stream:
                 full_text_parts.append(chunk)
@@ -68,6 +71,8 @@ async def llm_stream_call(messages, model, max_tokens=4000):
     url = f"{proxy_url}/llm/chat/completions"
     headers = {"Authorization": f"Bearer {EMERGENT_LLM_KEY}", "Content-Type": "application/json"}
     payload = {"model": model, "messages": messages, "max_tokens": max_tokens, "stream": True}
+    if model == "claude-sonnet-5":
+        payload["thinking"] = {"type": "disabled"}
     async with httpx.AsyncClient(timeout=httpx.Timeout(300.0, connect=30.0)) as client:
         async with client.stream("POST", url, headers=headers, json=payload) as resp:
             if resp.status_code != 200:
@@ -203,7 +208,7 @@ async def generate_section_llmchat(section_id: str, system_msg: str, user_msg: s
     msgs = [{"role": "system", "content": system_msg}, {"role": "user", "content": user_msg}]
     for attempt in range(retries):
         try:
-            text = await llm_stream_call(msgs, "claude-sonnet-4-5-20250929", max_tokens=max_tokens)
+            text = await llm_stream_call(msgs, "claude-sonnet-5", max_tokens=max_tokens)
             if not text.strip():
                 raise Exception(f"Section {section_id}: reponse vide")
             logger.info(f"[DOSSIER_EXPRESS][{dossier_id}][{section_id}] OK attempt={attempt+1} chars={len(text)}")

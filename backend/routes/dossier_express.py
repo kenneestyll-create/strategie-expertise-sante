@@ -623,7 +623,7 @@ CONTENU DES DOCUMENTS FOURNIS :
                 analysis = await asyncio.wait_for(
                     llm_call(
                         ANTHROPIC_API_KEY, session_id_llm, enhanced_de_system, user_msg,
-                        "anthropic", "claude-sonnet-4-5-20250929", max_tokens=8000
+                        "anthropic", "claude-sonnet-5", max_tokens=8000
                     ),
                     timeout=180.0  # 3 min hard cap per attempt → max 6 min total before fallback
                 )

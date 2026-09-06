@@ -55,7 +55,7 @@ async def _check_llm_health():
             client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
             resp = await asyncio.to_thread(
                 client.messages.create,
-                model="claude-sonnet-4-5-20250929",
+                model="claude-sonnet-5",
                 max_tokens=10,
                 messages=[{"role": "user", "content": "OK"}],
             )
@@ -80,7 +80,7 @@ async def _check_llm_health():
         try:
             from emergentintegrations.llm.chat import LlmChat, UserMessage
             chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id="health_check", system_message="OK")
-            chat.with_model("anthropic", "claude-sonnet-4-5-20250929")
+            chat.with_model("anthropic", "claude-sonnet-5")
             chat.with_params(timeout=30, max_tokens=10)
             resp = await chat.send_message(UserMessage(text="OK"))
             if resp:
@@ -209,7 +209,7 @@ INSTRUCTION : Utilise cette matiere documentaire structuree pour affiner ta lect
             user_msg = f"""Type de dossier : {type_dossier}\nRegime : {regime}\nDescription de la situation : {situation}\n{case_context}{dossier_express_context}{assurance_context}{contestation_context}{mdph_context}\n\n{analysis_prompt}"""
             session_id = f"strategiia_{str(uuid.uuid4())[:8]}"
             response = await llm_call(
-                ANTHROPIC_API_KEY, session_id, enhanced_system, user_msg, "anthropic", "claude-sonnet-4-5-20250929"
+                ANTHROPIC_API_KEY, session_id, enhanced_system, user_msg, "anthropic", "claude-sonnet-5"
             )
             analysis_doc = {"id": str(uuid.uuid4()), "type_dossier": type_dossier, "regime": regime, "situation": situation[:500], "analysis": response, "is_premium": is_premium, "email": email if email else "", "admin_test": is_admin_test, "job_id": job_id, "created_at": datetime.now(timezone.utc).isoformat(), "improvement_optout": improvement_optout}
             # Trace interne assureur détecté (non bloquant)
