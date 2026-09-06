@@ -1438,12 +1438,6 @@ async def dossier_express_submit(request: Request):
     quality_choice = body.get("quality_choice", "not_available")
     quality_summary = body.get("quality_summary")
 
-    # === GARDE-FOU EXTRACTION — refus avant toute analyse (paiement deja effectue, il reste valable) ===
-    docs_ok, docs_reason = _docs_exploitables(documents_text, document_details)
-    if not docs_ok:
-        logger.warning(f"[DOSSIER_EXPRESS][submit][GARDE-FOU] soumission bloquee: {docs_reason} (email={email})")
-        raise HTTPException(status_code=400, detail="L'extraction de vos documents n'est pas terminee ou a echoue. Aucune analyse ne peut etre lancee sur un dossier vide — votre paiement reste valable : merci de reessayer l'envoi de vos documents ou de nous contacter.")
-
     # Détection VIP côté serveur (cookie de session partenaire) — circuit non commercial
     vip_flag = False
     try:
@@ -1469,13 +1463,46 @@ async def dossier_express_submit(request: Request):
         logger.info(f"[DOSSIER_EXPRESS][submit] Idempotent return for session {session_id} → dossier {existing['id']}")
         return {"dossier_id": existing["id"], "status": existing.get("status", "processing")}
 
-    # Payment verification — match payment_transactions OR allow if webhook hasn't fired yet
-    # but transaction exists (frontend submits after Stripe redirect, webhook may lag a few seconds)
-    tx = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0}) if session_id else None
-    if not tx and not vip_flag:
-        # Conservative: don't reject if tx not yet created — Stripe may take a moment.
-        # But log for monitoring.
-        logger.warning(f"[DOSSIER_EXPRESS][submit] No payment_transactions row yet for session {session_id} — accepting submission, webhook will verify")
+    # === CONTRÔLE PAIEMENT BLOQUANT — aucune analyse sans paiement confirme (source de verite : DB paid, sinon Stripe direct) ===
+    payment_ok = False
+    if not vip_flag:
+        tx = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0, "payment_status": 1}) if session_id else None
+        payment_ok = bool(tx and tx.get("payment_status") == "paid")  # couvre Stripe (webhook/status) ET PayPal (tx paid en base)
+        if not payment_ok:
+            import stripe as stripe_sdk
+            stripe_sdk.api_key = STRIPE_API_KEY
+            stripe_status = None
+            for attempt in range(2):  # 1 essai + 1 retry court (erreur transitoire uniquement)
+                try:
+                    stripe_session = await asyncio.to_thread(stripe_sdk.checkout.Session.retrieve, session_id)
+                    stripe_status = stripe_session.payment_status or "unknown"
+                    break
+                except Exception as stripe_err:
+                    err_txt = str(stripe_err)
+                    if "No such checkout.session" in err_txt or "No such session" in err_txt or "Invalid checkout.session" in err_txt:
+                        stripe_status = "not_found"
+                        break
+                    logger.warning(f"[DOSSIER_EXPRESS][submit][PAIEMENT] erreur Stripe transitoire (tentative {attempt + 1}): {err_txt[:150]}")
+                    if attempt == 0:
+                        await asyncio.sleep(1.5)
+            if stripe_status == "paid":
+                await db.payment_transactions.update_one(
+                    {"session_id": session_id},
+                    {"$set": {"status": "complete", "payment_status": "paid", "updated_at": datetime.now(timezone.utc).isoformat()}},
+                )
+                payment_ok = True
+            elif stripe_status is None:
+                logger.error(f"[DOSSIER_EXPRESS][submit][PAIEMENT] Stripe injoignable pour session {session_id} — soumission refusee sans creation de dossier")
+                raise HTTPException(status_code=402, detail="Verification du paiement momentanement indisponible. Votre paiement n'est pas perdu : merci de reessayer dans quelques instants.")
+            if not payment_ok:
+                logger.warning(f"[DOSSIER_EXPRESS][submit][PAIEMENT] session {session_id} refusee (statut Stripe={stripe_status}, tx DB={tx.get('payment_status') if tx else 'absente'}) — aucune analyse lancee")
+                raise HTTPException(status_code=402, detail="Paiement non confirme pour cette session. Aucune analyse ne peut etre lancee. Si vous venez de payer, patientez quelques secondes puis reessayez ; sinon contactez-nous.")
+
+    # === GARDE-FOU EXTRACTION — refus avant toute analyse (paiement deja confirme, il reste valable) ===
+    docs_ok, docs_reason = _docs_exploitables(documents_text, document_details)
+    if not docs_ok:
+        logger.warning(f"[DOSSIER_EXPRESS][submit][GARDE-FOU] soumission bloquee: {docs_reason} (email={email})")
+        raise HTTPException(status_code=400, detail="L'extraction de vos documents n'est pas terminee ou a echoue. Aucune analyse ne peut etre lancee sur un dossier vide — votre paiement reste valable : merci de reessayer l'envoi de vos documents ou de nous contacter.")
 
     dossier_id = str(uuid.uuid4())[:12]
     dossier_entry = {
@@ -1493,7 +1520,7 @@ async def dossier_express_submit(request: Request):
         "delivery_status": "en_attente_traitement",
         "processing_step": "checkout_valide",
         "premium_pdf": premium_pdf,
-        "payment_verified": bool(tx and tx.get("payment_status") == "paid"),
+        "payment_verified": payment_ok,
         "source_type": "vip" if vip_flag else "client_paye",
         **({"vip_access": True} if vip_flag else {}),
         "improvement_optout": improvement_optout,
