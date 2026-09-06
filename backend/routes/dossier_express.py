@@ -597,6 +597,11 @@ async def _process_dossier_express(dossier_id: str, email: str, name: str, situa
         except Exception as e:
             logger.warning(f"[DOSSIER_EXPRESS][{dossier_id}] Knowledge patterns injection failed (non-blocking): {e}")
 
+    is_large = len(documents_text or "") > 120000
+    docs_limit = 800000 if is_large else 120000
+    de_max_tokens = 12000 if is_large else 8000
+    de_timeout = 300.0 if is_large else 180.0
+
     if ANTHROPIC_API_KEY:
         llm_path_used = "native_anthropic"
         user_msg = f"""DOSSIER EXPRESS IA - Analyse complete demandee
@@ -609,7 +614,7 @@ DESCRIPTION DE LA SITUATION :
 {situation}
 
 CONTENU DES DOCUMENTS FOURNIS :
-{documents_text[:120000] if documents_text else "(Aucun document textuel fourni)"}
+{documents_text[:docs_limit] if documents_text else "(Aucun document textuel fourni)"}
 {case_context}{assurance_context}{contestation_context}{mdph_context}
 
 {DOSSIER_EXPRESS_PROMPT}"""
@@ -623,9 +628,9 @@ CONTENU DES DOCUMENTS FOURNIS :
                 analysis = await asyncio.wait_for(
                     llm_call(
                         ANTHROPIC_API_KEY, session_id_llm, enhanced_de_system, user_msg,
-                        "anthropic", "claude-sonnet-5", max_tokens=8000
+                        "anthropic", "claude-sonnet-5", max_tokens=de_max_tokens
                     ),
-                    timeout=180.0  # 3 min hard cap per attempt → max 6 min total before fallback
+                    timeout=de_timeout  # 180s standard / 300s gros dossiers (>120k chars)
                 )
                 logger.info(f"[DOSSIER_EXPRESS][{dossier_id}] PATH A native reussie (tentative {attempt+1}, {len(analysis or '')} chars)")
                 break

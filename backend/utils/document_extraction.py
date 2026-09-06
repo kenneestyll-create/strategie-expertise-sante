@@ -268,7 +268,7 @@ def _pdfplumber_pass_sync(file_bytes: bytes, name: str):
     total_pages = len(pdf.pages)
     pages_text = []
     readable = 0
-    for i, page in enumerate(pdf.pages[:30]):
+    for i, page in enumerate(pdf.pages):
         text = page.extract_text()
         if text and text.strip() and len(text.strip()) > 20:
             pages_text.append(f"[Page {i+1}] {text.strip()}")
